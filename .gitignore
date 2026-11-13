@@ -1,0 +1,38 @@
+# Unity (各作品は games/NNN-name/ 配下の独立プロジェクト)
+/games/*/Library/
+/games/*/Temp/
+/games/*/Obj/
+/games/*/obj/
+/games/*/Logs/
+/games/*/UserSettings/
+/games/*/Builds/
+/games/*/MemoryCaptures/
+/games/*/Recordings/
+/games/*/CodeCoverage/
+/games/*/.vscode/
+/games/*/.utmp/
+# Unity が生成する IDE 用プロジェクト (dotnet/ 配下の csproj は管理対象)
+/games/*/*.csproj
+/games/*/*.sln
+/games/*/*.slnx
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+crashlytics-build.properties
+
+# dotnet
+bin/
+obj/
+TestResults/
+test-results*.xml
+
+# IDE / OS
+.vs/
+.idea/
+*.user
+*.suo
+.DS_Store
+Thumbs.db
+
+# Claude Code のローカル設定
+.claude/settings.local.json

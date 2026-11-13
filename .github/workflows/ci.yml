@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core:
+    # Unity 非依存の Game.Core のみを検証する。Unity 層はローカルの dev test -Unity / dev build で確認する。
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Lint
+        run: pwsh ./dev.ps1 lint
+      - name: Type check
+        run: pwsh ./dev.ps1 check
+      - name: Test
+        run: pwsh ./dev.ps1 test

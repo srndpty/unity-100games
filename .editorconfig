@@ -1,0 +1,53 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{json,yml,yaml,xml,csproj,props,slnx,asmdef}]
+indent_size = 2
+
+[*.md]
+# Markdown は行末スペース2つが改行を意味する
+trim_trailing_whitespace = false
+
+[*.cmd]
+end_of_line = crlf
+
+[*.ps1]
+# Windows PowerShell 5.1 が日本語を読めるよう BOM を付ける
+charset = utf-8-bom
+
+# Unity が生成・管理するファイルはエディタに触らせない
+[*.{meta,unity,prefab,asset,mat,anim,controller,inputactions,scenetemplate}]
+trim_trailing_whitespace = false
+insert_final_newline = unset
+indent_size = unset
+
+[*.cs]
+# Unity 6.6 は C# 9.0 のため、ファイルスコープ名前空間 (C# 10) は使えない
+csharp_style_namespace_declarations = block_scoped:warning
+dotnet_sort_system_directives_first = true
+csharp_new_line_before_open_brace = all
+csharp_prefer_braces = true:warning
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
+dotnet_style_readonly_field = true:warning
+
+# 命名: private フィールドは _camelCase
+dotnet_naming_rule.private_fields_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore.style = underscore_camel
+dotnet_naming_rule.private_fields_underscore.severity = warning
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_camel.capitalization = camel_case
+dotnet_naming_style.underscore_camel.required_prefix = _
+
+[**/Assets/Tests/**.cs]
+# テストメソッド名は Arrange_Act_Assert 形式のアンダースコアを許可する
+dotnet_diagnostic.CA1707.severity = none

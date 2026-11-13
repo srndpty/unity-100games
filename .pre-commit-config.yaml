@@ -1,0 +1,46 @@
+default_install_hook_types: [pre-commit, pre-push]
+
+# 仕様書 (plan/) と Unity が生成・管理するファイルは自動修正の対象外
+exclude: >-
+  (?x)^(
+    plan/|
+    games/[^/]+/(ProjectSettings|Packages)/|
+    .*\.(meta|unity|prefab|asset|mat|anim|controller|inputactions|scenetemplate)$
+  )
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=2000]
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: check-yaml
+        files: ^(\.github/|\.pre-commit-config\.yaml)
+      - id: check-json
+        files: \.(json|asmdef)$
+
+  - repo: local
+    hooks:
+      - id: dev-lint
+        name: dev lint
+        entry: pwsh -NoProfile -File dev.ps1 lint
+        language: system
+        pass_filenames: false
+        files: ^(games/|build/|templates/|\.editorconfig|unity-100games\.slnx)
+      - id: dev-check
+        name: dev check
+        entry: pwsh -NoProfile -File dev.ps1 check
+        language: system
+        pass_filenames: false
+        files: \.(cs|csproj|props|slnx)$
+      - id: dev-test
+        name: dev test
+        entry: pwsh -NoProfile -File dev.ps1 test
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
