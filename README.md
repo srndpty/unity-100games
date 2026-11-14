@@ -35,4 +35,4 @@ dev run 002          # ビルドを起動
 
 | No. | 題材 | 状態 |
 |---:|---|---|
-| 001 | [Pong](games/001-pong/README.md) | 検証待ち（人間の通しプレイが未確認） |
+| 001 | [Pong](games/001-pong/README.md) | 完了 |
