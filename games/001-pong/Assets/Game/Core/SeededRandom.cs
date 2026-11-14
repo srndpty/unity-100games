@@ -1,0 +1,52 @@
+namespace Game.Core
+{
+    /// <summary>
+    /// シードから決定的に値を生成する乱数（xorshift32）。
+    /// System.Random は実行環境（Mono / .NET）で系列が一致する保証がないため使わない。
+    /// </summary>
+    public sealed class SeededRandom
+    {
+        private uint _state;
+
+        public SeededRandom(int seed)
+        {
+            _state = Scramble(unchecked((uint)seed));
+            if (_state == 0)
+            {
+                _state = 0x9E3779B9u;
+            }
+        }
+
+        public uint NextUInt()
+        {
+            var x = _state;
+            x ^= x << 13;
+            x ^= x >> 17;
+            x ^= x << 5;
+            _state = x;
+            return x;
+        }
+
+        /// <summary>[0, 1) の一様乱数。</summary>
+        public float NextFloat() => (NextUInt() >> 8) * (1f / 16777216f);
+
+        /// <summary>[min, max) の一様乱数。</summary>
+        public float Range(float min, float max) => min + ((max - min) * NextFloat());
+
+        public bool NextBool() => (NextUInt() >> 31) == 0;
+
+        // 近いシード同士で序盤の系列が似ないよう、ビットを撹拌する（MurmurHash3 の finalizer）。
+        private static uint Scramble(uint value)
+        {
+            unchecked
+            {
+                value ^= value >> 16;
+                value *= 0x85EBCA6Bu;
+                value ^= value >> 13;
+                value *= 0xC2B2AE35u;
+                value ^= value >> 16;
+                return value;
+            }
+        }
+    }
+}

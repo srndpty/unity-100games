@@ -2,32 +2,77 @@
 
 仕様書：[plan/games/001-pong.md](../../plan/games/001-pong.md)
 
+プレイヤー（左）と CPU（右）が打ち合い、先に 5 点取った方が勝ち。
+
 ## 環境
 
-- Unity：6000.6.9f1
+- Unity：6000.6.9f1（Universal 2D テンプレート）
 - 対象プラットフォーム：Windows (StandaloneWindows64)
-- 入力方式：（着手時に記入）
+- 入力方式：Input System のプロジェクト全体の Input Actions（`Assets/Settings/InputSystem_Actions.inputactions`）。キーボードとゲームパッド
 
 ## 起動手順
 
 ```
-dev gui 001      # エディタで開く
+dev gui 001      # エディタで開く（Assets/Scenes/Pong.unity）
 dev build 001    # Windows ビルド
 dev run 001      # ビルドを起動
 ```
 
+シーンは [PongSceneBuilder](Assets/Game/Unity/Editor/PongSceneBuilder.cs) が生成する。シーン構成を変えるときはこのスクリプトを直して再生成する（エディタのメニュー「Game > Rebuild Pong Scene」、またはバッチで `unity run games/001-pong -- -executeMethod Game.Unity.Editor.PongSceneBuilder.Build`）。
+
 ## 操作
 
-（着手時に記入）
+| 操作 | キーボード | ゲームパッド |
+|---|---|---|
+| パドル上下 | W / S、↑ / ↓ | 左スティック、十字キー |
+| 開始・再戦 | Enter、Space | South ボタン |
+| タイトルへ戻る（タイトルでは終了） | Esc | East ボタン |
 
 ## 採用ルール
 
-（着手前に小さなルール表として固定する）
+| 項目 | 採用した内容 |
+|---|---|
+| 勝利条件 | 先に 5 点（`WinScore`） |
+| コート | 幅 16 × 高さ 9（ワールド単位）。上下は壁で反射、左右がゴール |
+| 得点 | ボールが**完全に**ゴールラインを越えたら、反対側の得点 |
+| サーブ | 試合開始は向きを乱数で決定。得点後は**失点した側**へ。1 秒待ってから中央から発射。角度は水平 ±30° の範囲で乱数 |
+| パドル反射 | 当たった位置で角度が決まる。中央なら水平、端ほど急になり、最大 55°。上側で打てば上へ |
+| 加速 | パドルで打つたびに +0.5、最高 16（サーブ 7） |
+| パドルの側面 | 判定しない。ボールがパドルの内側の面を越えた後は返せず、そのままゴールへ |
+| CPU | 向かってくるボールの高さを追い、離れていく間は中央へ戻る。最高速度はプレイヤーの約 5.5 割。狙いに毎回ぶれがあり、ぶれが大きいとパドルの端を外して空振りする。速い球には追いつけない |
+
+パラメータは [PongSettings.asset](Assets/Game/Unity/PongSettings.asset) で調整できる。
 
 ## 設計上の選択
 
-（Core / App / Unity の境界、物理エンジンに委譲した範囲など）
+| アセンブリ | 主なクラス | 責務 |
+|---|---|---|
+| `Game.Core` | `BallSim`、`MatchState`、`Paddle`、`CpuController`、`SeededRandom` | ルール。Unity 非依存で、dotnet でもテストする |
+| `Game.App` | `PongFlow` | 画面遷移（タイトル → 試合 → 結果 → 再戦）と、実時間から固定刻み（60 Tick/秒）への変換 |
+| `Game.Unity` | `PongGame`、`CourtView`、`PongHud`、`PongAudio` | 入力の読み取り、スプライト描画、UI Toolkit の HUD、効果音 |
+
+- **ボールの移動は掃引判定。** 1 Tick の移動を線分として扱い、壁・パドルのうち最も早く当たるものから順に処理する。高速でもパドルをすり抜けない。
+- **パドルとの衝突は進行方向を考慮する。** パドルへ向かっていて、かつその Tick 中に面を越える場合だけ反射する。離れていくボールや、すでに面を越えたボールとは衝突しない。
+- **物理エンジンは使わない。** 衝突も含めて Core の自前計算で、Unity の 2D 物理には何も委譲していない。描画は Core の状態を写すだけ。
+- **再現性。** 乱数は試合（サーブ）用と CPU 用でシードを分けた xorshift。System.Random は Mono と .NET で系列が一致する保証がないため使わない。同じシードと入力列なら勝敗・スコア・Tick 数・ボール位置まで一致することをテストしている。
+- **描画は Tick 間を補間する。** 60Hz の Tick と描画フレームのずれは `MatchSnapshot.Interpolate` で埋める。得点直後はボールを中央へ瞬間移動させるため補間しない。
+- **処理落ち対策。** 1 フレームで処理する Tick は最大 5 回で、それ以上溜まった時間は切り捨てる。
+- **素材は作らない。** スプライトは実行時に生成した 1×1 の白テクスチャ、効果音は実行時に合成した矩形波。
+- **音量は控えめ。** 矩形波は耳に刺さるため振幅を 0.05 に抑えた。テストなどのバッチ実行（`Application.isBatchMode`）では消音する。
+
+## テスト
+
+| 種類 | 場所 | 実行 | 件数 |
+|---|---|---|---:|
+| Core（EditMode / dotnet） | `Assets/Tests/Core/` | `dev test` | 30 |
+| App（EditMode） | `Assets/Tests/App/` | `dev test 001 -Unity` | 13 |
+| シーン・入力（PlayMode） | `Assets/Tests/Unity/` | `dev test 001 -Unity -Mode PlayMode` | 6 |
+
+PlayMode テストは実際のシーンを読み込み、仮想キーボードから開始・パドル操作・タイトル復帰・決着・再戦までを確認する。
 
 ## 未実装範囲
 
-（仕様書の Out of scope と、削った機能）
+- 仕様の Out of scope：オンライン対戦、パドル強化アイテム
+- 2 人対戦（ローカル）、難易度選択、一時停止
+- パドル側面・角での反射
+- タイトル・結果以外の演出（得点時のエフェクトなど）
