@@ -360,7 +360,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1989386717
+--- !u!1 &2031418981
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -368,10 +368,11 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1989386721}
-  - component: {fileID: 1989386720}
-  - component: {fileID: 1989386719}
-  - component: {fileID: 1989386718}
+  - component: {fileID: 2031418986}
+  - component: {fileID: 2031418985}
+  - component: {fileID: 2031418984}
+  - component: {fileID: 2031418983}
+  - component: {fileID: 2031418982}
   m_Layer: 0
   m_Name: Pong
   m_TagString: Untagged
@@ -379,27 +380,39 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1989386718
+--- !u!114 &2031418982
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1989386717}
+  m_GameObject: {fileID: 2031418981}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d75d49cb15282b47b255c7cedc74bef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.PongCaptureScenario
+--- !u!114 &2031418983
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2031418981}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 955caa63b45976d4683318e38a50c683, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Unity::Game.Unity.PongGame
   _settings: {fileID: 11400000, guid: ca71700712af84b4abcdb62675c531bc, type: 2}
-  _hudDocument: {fileID: 1989386720}
---- !u!82 &1989386719
+  _hudDocument: {fileID: 2031418985}
+--- !u!82 &2031418984
 AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1989386717}
+  m_GameObject: {fileID: 2031418981}
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
@@ -490,13 +503,13 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &1989386720
+--- !u!114 &2031418985
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1989386717}
+  m_GameObject: {fileID: 2031418981}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
@@ -513,13 +526,13 @@ MonoBehaviour:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_WorldSpaceCollider: {fileID: 0}
---- !u!4 &1989386721
+--- !u!4 &2031418986
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1989386717}
+  m_GameObject: {fileID: 2031418981}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -534,4 +547,4 @@ SceneRoots:
   m_Roots:
   - {fileID: 519420032}
   - {fileID: 619394802}
-  - {fileID: 1989386721}
+  - {fileID: 2031418986}

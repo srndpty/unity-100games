@@ -177,6 +177,7 @@ function Show-Help {
   gui [NNN]                     Unity エディタで開く
   build [NNN]                   Windows 向けにビルド (games/NNN-*/Builds/Windows/)
   run [NNN]                     ビルド済みのゲームを起動
+  capture [NNN]                 ビルドを撮影モードで起動し、evidence/ にスクリーンショットを保存 (自動で終了)
   test                          全作品の Core テストを dotnet で実行 (高速、Unity 不要)
   test [NNN] -Unity [-Mode EditMode|PlayMode]
                                 Unity 上でテストを実行
@@ -203,6 +204,20 @@ switch ($Command) {
         $exe = Get-BuildExe (Get-RequiredGameDir)
         if (-not (Test-Path $exe)) { throw "ビルドがありません。先に dev build を実行してください: $exe" }
         Start-Process $exe
+    }
+    'capture' {
+        $gameDir = Get-RequiredGameDir
+        $exe = Get-BuildExe $gameDir
+        if (-not (Test-Path $exe)) { throw "ビルドがありません。先に dev build を実行してください: $exe" }
+        $evidence = Join-Path $gameDir.FullName 'evidence'
+        $log = Join-Path $gameDir.FullName 'Logs/capture.log'
+        # ゲーム側の撮影台本 (ICaptureScenario) が画面を進めて撮影し、自分で終了する。撮影中はキー入力を無視する。
+        $process = Start-Process $exe -PassThru -Wait -ArgumentList @(
+            '-capture', "`"$evidence`"", '-logFile', "`"$log`"",
+            '-screen-fullscreen', '0', '-screen-width', '1280', '-screen-height', '720'
+        )
+        if ($process.ExitCode -ne 0) { throw "撮影に失敗しました (終了コード $($process.ExitCode))。ログ: $log" }
+        Write-Host "撮影しました: $evidence"
     }
     'test' {
         if ($Unity) {

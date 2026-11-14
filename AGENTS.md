@@ -29,6 +29,11 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 | `Game.App` | `Assets/Game/App/` | 画面遷移とユースケース。入力を意図に変換して Core に渡す |
 | `Game.Unity` | `Assets/Game/Unity/` | 描画、音、入力、物理、Prefab/Scene。Core の結果を反映する |
 | `Game.Core.Tests` | `Assets/Tests/Core/` | Core の EditMode テスト（NUnit） |
+| `Game.App.Tests` | `Assets/Tests/App/` | App の EditMode テスト（必要になったら作る） |
+| `Game.Unity.Tests` | `Assets/Tests/Unity/` | 実シーンを読み込む PlayMode テスト。入力は雛形の `TestKeyboard` で送る |
+
+- `Game.App` も Unity API に依存しない（`noEngineReferences`、Nullable 有効）。時間は引数で受け取り、固定刻みへの変換もここで行う。
+- 雛形には共通部品が入っている：証跡撮影（`Game.Unity.Evidence`）、音の方針（`AudioPolicy`）、PlayMode 用の仮想キーボード（`TestKeyboard`）。
 
 - `Game.Core` とそのテストは `dotnet/` 配下の csproj からも同じソースを参照しており、Unity なしでビルド・テスト・静的解析できる。CI はこの経路のみを検証する。
 - そのため Core とそのテストでは、Unity と .NET の両方で動く書き方をする（NUnit 3.5 にある API、C# 9.0 まで）。
@@ -51,6 +56,7 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 | `dev new 002` | 仕様書に対応する Unity プロジェクトを作成（`-Template 3d` で 3D URP） |
 | `dev gui 001` | Unity エディタで開く |
 | `dev build 001` / `dev run 001` | Windows ビルド／ビルドを起動 |
+| `dev capture 001` | ビルドを撮影モードで起動し、`evidence/` にスクリーンショットを保存して自動終了 |
 | `dev test` | 全作品の Core テスト（dotnet、高速） |
 | `dev test 001 -Unity [-Mode PlayMode]` | Unity 上でテスト（エディタを閉じた状態で実行） |
 | `dev lint` / `dev format` | 整形・アナライザー・`.meta` の検証／整形の適用 |
@@ -58,6 +64,30 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 | `dev clean [001]` | 生成物の削除 |
 
 変更後は `dev lint`、`dev check`、`dev test` を通す。Unity 層を触ったら `dev test NNN -Unity` も通す。
+
+## 1本の進め方
+
+[ワークフロー](plan/docs/WORKFLOW.md) に従う。要点：
+
+- 1 作品 1 セッションを基本にする。大きい題材は「Core とテスト」「Playable」「検証」でセッションを分け、途中の状態を `progress.csv` の記録/メモに残す。
+- 自動検証（lint・check・test・Unity テスト・ビルド・`dev capture`）まで通したら状態を「検証待ち」にして人間に渡す。人間が `dev run NNN` で遊んで調整点を返し、OK が出てから「完了」にする。
+- 難易度・速度・音量など遊んで決める値は、最初から設定アセット（ScriptableObject）に出しておく。
+- 完了時に振り返りを書き、他の作品にも効く知見は下の「Unity 実装の知見」へ移す。
+
+## Unity 実装の知見
+
+作品を作る中で踏んだ落とし穴。新しい知見はここに追記する。
+
+- **シーンはエディタスクリプトで生成する。** 手で編集せず `Editor/` の生成スクリプトを正とし、`unity run games/NNN -- -executeMethod <型>.Build` で再生成する（`-quit` は CLI の予約語で渡せない）。
+- **シーンを開いてからアセットを読む。** `EditorSceneManager.OpenScene` は未使用アセットをアンロードするので、先に読んだアセットへの参照が切れて fileID 0 で保存される。
+- **PlayMode テストで `InputTestFixture` を使わない。** 入力システムを初期化し直すため `InputSystem.actions`（プロジェクト全体の Input Actions）が null になる。`TestKeyboard` で仮想デバイスに状態イベントを送る。
+- **バッチ実行ではゲームビューにフォーカスがなく、入力が捨てられる。** `TestKeyboard` は使用中だけ `InputSettings` でフォーカスを無視させている。
+- **`unity test` はバッチ実行（`Application.isBatchMode` が true）。** エディタを開いたままだと実行できないので、人間が遊ぶときは `dev run` を使う。
+- **音は控えめに。** 既定の音量は小さくし、`AudioPolicy.ShouldMute`（バッチ実行・証跡撮影）のときは消音する。矩形波は振幅 0.05 程度で十分に聞こえる。
+- **証跡は `dev capture` で撮る。** 実ウィンドウにキー入力を送る方式は、作業中の画面と入力を奪う。各作品は `ICaptureScenario` を実装したコンポーネントをシーンに 1 つ置き、撮影中（`EvidenceCapture.IsRunning`）はプレイヤー入力を読まない。
+- **Core の設定クラスは公開フィールドで書く。** Unity のシリアライズのため。Core に限り CA1051 を無効化してある。
+- **乱数は自前の xorshift を使う。** `System.Random` は Mono と .NET で系列が一致する保証がなく、dotnet と Unity でテスト結果が変わりうる。
+- **非推奨 API に注意。** `FindFirstObjectByType` は警告（CS0618）になる。`FindAnyObjectByType` を使う。
 
 ## 注意点
 

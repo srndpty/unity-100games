@@ -4,36 +4,22 @@ using Game.Core;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 
 namespace Game.Unity.Tests
 {
-    /// <summary>
-    /// 実際のシーンを読み込み、キーボード入力から画面遷移とパドル操作までの配線を確認する。
-    /// プロジェクト全体の Input Actions をそのまま使うため、InputTestFixture（入力システムを初期化し直す）は使わず、
-    /// 仮想キーボードを追加して状態イベントを送る。
-    /// </summary>
+    /// <summary>実際のシーンを読み込み、仮想キーボードの入力から画面遷移とパドル操作までの配線を確認する。</summary>
     public sealed class PongSceneTests
     {
-        private Keyboard _keyboard;
+        private TestKeyboard _keyboard;
         private PongGame _game;
-        private InputSettings.BackgroundBehavior _backgroundBehavior;
-        private InputSettings.EditorInputBehaviorInPlayMode _editorInputBehavior;
 
         [UnitySetUp]
         public IEnumerator LoadScene()
         {
-            // バッチモードではゲームビューにフォーカスがなく入力が捨てられるため、テスト中だけフォーカスを無視させる。
-            var settings = InputSystem.settings;
-            _backgroundBehavior = settings.backgroundBehavior;
-            _editorInputBehavior = settings.editorInputBehaviorInPlayMode;
-            settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
-            settings.editorInputBehaviorInPlayMode = InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
-
-            _keyboard = InputSystem.AddDevice<Keyboard>();
+            _keyboard = new TestKeyboard();
             yield return SceneManager.LoadSceneAsync("Pong");
             _game = Object.FindAnyObjectByType<PongGame>();
         }
@@ -41,9 +27,7 @@ namespace Game.Unity.Tests
         [TearDown]
         public void RestoreInput()
         {
-            InputSystem.RemoveDevice(_keyboard);
-            InputSystem.settings.backgroundBehavior = _backgroundBehavior;
-            InputSystem.settings.editorInputBehaviorInPlayMode = _editorInputBehavior;
+            _keyboard.Dispose();
         }
 
         [UnityTest]
@@ -67,17 +51,17 @@ namespace Game.Unity.Tests
         [UnityTest]
         public IEnumerator EnterKey_StartsMatch_EscapeReturnsToTitle()
         {
-            yield return Tap(Key.Enter);
+            yield return _keyboard.Tap(Key.Enter);
             Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Playing));
 
-            yield return Tap(Key.Escape);
+            yield return _keyboard.Tap(Key.Escape);
             Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Title));
         }
 
         [UnityTest]
         public IEnumerator SpaceKey_StartsMatch()
         {
-            yield return Tap(Key.Space);
+            yield return _keyboard.Tap(Key.Space);
 
             Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Playing));
         }
@@ -85,11 +69,11 @@ namespace Game.Unity.Tests
         [UnityTest]
         public IEnumerator HoldingW_MovesPlayerPaddleUp()
         {
-            yield return Tap(Key.Enter);
+            yield return _keyboard.Tap(Key.Enter);
 
-            Hold(Key.W);
+            _keyboard.Hold(Key.W);
             yield return new WaitForSeconds(0.3f);
-            Hold();
+            _keyboard.Hold();
             yield return null;
 
             Assert.That(_game.Flow.Match!.Left.Y, Is.GreaterThan(0f));
@@ -98,7 +82,7 @@ namespace Game.Unity.Tests
         [UnityTest]
         public IEnumerator MatchEnd_ShowsWinnerOnResultOverlay_ThenEnterRematches()
         {
-            yield return Tap(Key.Enter);
+            yield return _keyboard.Tap(Key.Enter);
 
             // 何もしなければ CPU が勝つ。時間を早送りして決着まで進める（1 フレームの Tick 数は上限で抑えられる）。
             Time.timeScale = 20f;
@@ -122,23 +106,9 @@ namespace Game.Unity.Tests
             Assert.That(root.Q<VisualElement>("overlay").resolvedStyle.display, Is.EqualTo(DisplayStyle.Flex));
             Assert.That(root.Q<Label>("headline").text, Is.EqualTo(expected));
 
-            yield return Tap(Key.Enter);
+            yield return _keyboard.Tap(Key.Enter);
             Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Playing));
             Assert.That(_game.Flow.Match.LeftScore + _game.Flow.Match.RightScore, Is.Zero);
-        }
-
-        private IEnumerator Tap(Key key)
-        {
-            Hold(key);
-            yield return null;
-            Hold();
-            yield return null;
-        }
-
-        // 指定したキーだけが押されている状態にする（引数なしで全キーを離す）。
-        private void Hold(params Key[] keys)
-        {
-            InputSystem.QueueStateEvent(_keyboard, new KeyboardState(keys));
         }
     }
 }

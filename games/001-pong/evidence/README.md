@@ -1,17 +1,20 @@
 # 動作証跡：001. Pong
 
-記録日：2026-11-14 / Unity 6000.6.9f1 / Windows 11
+記録日：2026-11-15 / Unity 6000.6.9f1 / Windows 11
 
 ## スクリーンショット
 
-Windows ビルド（1280×720 ウィンドウ）を起動し、キー入力を送って撮影した。
+`dev capture 001` で撮影した。Windows ビルドを 1280×720 のウィンドウで起動し、撮影台本 [PongCaptureScenario](../Assets/Game/Unity/PongCaptureScenario.cs) が画面を進めて撮る。プレイヤーのパドルは動かさないので CPU が勝つ。
 
 | 画面 | 内容 |
 |---|---|
 | ![タイトル](title.png) | タイトル。操作説明と勝利条件 |
-| ![試合中](playing.png) | Enter で開始し、W でパドルを上げた直後。CPU が 1 点先取 |
+| ![試合中](playing.png) | 開始から 2.5 秒後 |
+| ![結果](result.png) | 決着後の結果。勝者・スコア・再戦の案内 |
 
-結果画面は撮影していない。代わりに PlayMode テスト `MatchEnd_ShowsWinnerOnResultOverlay_ThenEnterRematches` で、決着すると結果オーバーレイに勝者が表示され、Enter で再戦できることを確認した。
+結果オーバーレイの表示と Enter での再戦は、PlayMode テスト `MatchEnd_ShowsWinnerOnResultOverlay_ThenEnterRematches` でも確認している。
+
+人間の通しプレイ（2026-11-15）：決着まで遊べることを確認。CPU が強すぎる、音量が大きすぎるという指摘を受け、CPU の速度と狙いの精度、効果音の音量を下げた。
 
 ## テスト結果
 

@@ -1,6 +1,7 @@
 using System;
 using Game.App;
 using Game.Core;
+using Game.Unity.Evidence;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -44,6 +45,24 @@ namespace Game.Unity
 
         private void Update()
         {
+            // 証跡撮影中は台本が画面を進めるので、プレイヤー入力は読まない。
+            var move = EvidenceCapture.IsRunning ? 0f : ReadPlayerInput();
+            _flow.Advance(Time.deltaTime, move);
+
+            foreach (var matchEvent in _flow.FrameEvents)
+            {
+                _audio.Play(matchEvent.Kind);
+            }
+
+            var snapshot = MatchSnapshot.Interpolate(_flow.Previous, _flow.Current, _flow.Alpha);
+            var showBall = _flow.Match is { Phase: not MatchPhase.Finished };
+            _court.Render(snapshot, showBall);
+            _hud.Render(_flow);
+        }
+
+        // 画面遷移の操作を処理し、パドルの上下入力を返す。
+        private float ReadPlayerInput()
+        {
             if (_submit.WasPressedThisFrame() || _jump.WasPressedThisFrame())
             {
                 _flow.Submit();
@@ -61,17 +80,7 @@ namespace Game.Unity
                 }
             }
 
-            _flow.Advance(Time.deltaTime, _move.ReadValue<Vector2>().y);
-
-            foreach (var matchEvent in _flow.FrameEvents)
-            {
-                _audio.Play(matchEvent.Kind);
-            }
-
-            var snapshot = MatchSnapshot.Interpolate(_flow.Previous, _flow.Current, _flow.Alpha);
-            var showBall = _flow.Match is { Phase: not MatchPhase.Finished };
-            _court.Render(snapshot, showBall);
-            _hud.Render(_flow);
+            return _move.ReadValue<Vector2>().y;
         }
     }
 }

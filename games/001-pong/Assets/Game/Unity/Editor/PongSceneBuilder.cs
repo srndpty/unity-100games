@@ -7,7 +7,7 @@ namespace Game.Unity.Editor
 {
     /// <summary>
     /// Pong のシーンと関連アセットを生成する。シーン構成はこのスクリプトを正とし、手で編集しない。
-    /// バッチ実行: unity run games/001-pong -- -executeMethod Game.Unity.Editor.PongSceneBuilder.Build -quit
+    /// バッチ実行: unity run games/001-pong -- -executeMethod Game.Unity.Editor.PongSceneBuilder.Build
     /// </summary>
     public static class PongSceneBuilder
     {
@@ -50,6 +50,7 @@ namespace Game.Unity.Editor
             serialized.FindProperty("_settings").objectReferenceValue = settings;
             serialized.FindProperty("_hudDocument").objectReferenceValue = document;
             serialized.ApplyModifiedPropertiesWithoutUndo();
+            game.AddComponent<PongCaptureScenario>();
 
             EditorSceneManager.SaveScene(scene);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };

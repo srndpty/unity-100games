@@ -14,6 +14,7 @@
 dev gui {{NNN}}      # エディタで開く
 dev build {{NNN}}    # Windows ビルド
 dev run {{NNN}}      # ビルドを起動
+dev capture {{NNN}}  # 証跡のスクリーンショットを evidence/ に撮る（ICaptureScenario の実装が必要）
 ```
 
 ## 操作
@@ -27,6 +28,10 @@ dev run {{NNN}}      # ビルドを起動
 ## 設計上の選択
 
 （Core / App / Unity の境界、物理エンジンに委譲した範囲など）
+
+## テスト
+
+（種類・場所・実行方法・件数の表）
 
 ## 未実装範囲
 

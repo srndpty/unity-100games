@@ -20,8 +20,7 @@ namespace Game.Unity
         {
             _source = source;
 
-            // テストなど画面なしのバッチ実行では、裏で音が鳴らないように消音する。
-            _source.mute = Application.isBatchMode;
+            _source.mute = AudioPolicy.ShouldMute;
         }
 
         public void Play(MatchEventKind kind)
