@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 817abfec598d46644a397e4cfb82b1af, type: 3}
+  m_Name: InvadersSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.InvadersSettings
+  Game:
+    Columns: 8
+    Rows: 4
+    Lives: 3
+    PlayerBulletLimit: 3
+    EnemyBulletLimit: 12
+    PlayerSpeed: 8
+    PlayerBulletSpeed: 20
+    EnemyBulletSpeed: 6
+    FormationSpeed: 1
+    WaveSpeedIncrease: 0.35
+    Descent: 0.5
+    PlayerFireSeconds: 0.25
+    EnemyFireSeconds: 0.9
+    WaveFireMultiplier: 0.8
+    TransitionSeconds: 1
+    RespawnSeconds: 1
+    InvincibleSeconds: 1
+  Volume: 0.15

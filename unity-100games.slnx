@@ -17,4 +17,10 @@
     <Project Path="games/003-snake/dotnet/Core.Tests/G003.Core.Tests.csproj" />
     <Project Path="games/003-snake/dotnet/Core/G003.Core.csproj" />
   </Folder>
+  <Folder Name="/004-space-invaders/">
+    <Project Path="games/004-space-invaders/dotnet/App.Tests/G004.App.Tests.csproj" />
+    <Project Path="games/004-space-invaders/dotnet/App/G004.App.csproj" />
+    <Project Path="games/004-space-invaders/dotnet/Core.Tests/G004.Core.Tests.csproj" />
+    <Project Path="games/004-space-invaders/dotnet/Core/G004.Core.csproj" />
+  </Folder>
 </Solution>
