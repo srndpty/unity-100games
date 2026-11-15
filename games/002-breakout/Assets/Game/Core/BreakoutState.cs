@@ -184,12 +184,10 @@ namespace Game.Core
 
         private void StepCapsules()
         {
-            var fall = Config.CapsuleSpeed * Config.TickDuration;
             for (var i = _capsules.Count - 1; i >= 0; i--)
             {
                 var capsule = _capsules[i];
-                capsule.Fall(fall);
-                if (capsule.Touches(Paddle, Config))
+                if (capsule.FallAndCatch(Paddle, Config))
                 {
                     _capsules.RemoveAt(i);
                     Activate(capsule.Effect);
