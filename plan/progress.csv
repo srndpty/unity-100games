@@ -1,6 +1,6 @@
 ﻿No,タイトル,難易度,Phase,仕様書,状態,着手日,完了日,実装時間h,テスト結果,ビルド結果,記録/メモ
 1,Pong,1,1,games/001-pong.md,完了,2026-11-14,2026-11-15,,Core 43/43・App 14/14・EditMode 57/57・PlayMode 20/20,Windows成功,通しプレイ確認済み（初回・レビュー1回目対応後、いずれも 2026-11-15）。レビュー2〜5回目の指摘は修正済み・自動テストで確認
-2,ブロック崩し,1,1,games/002-breakout.md,未着手,,,,,,
+2,ブロック崩し,1,1,games/002-breakout.md,進行中,2026-11-15,,,Core 106/106（dotnet・Unity EditMode）,,Core-first 済み（ルール表は README）。次は Playable：App の BreakoutFlow（タイトル→プレイ→結果→再戦、60 Tick/秒）、Unity 層（入力・描画・HUD・音・設定アセット・シーン生成）。Mono と .NET で浮動小数点の結果が分かれることを確認（振り返りで AGENTS.md へ）
 3,Snake,1,1,games/003-snake.md,未着手,,,,,,
 4,Space Invaders,1,1,games/004-space-invaders.md,未着手,,,,,,
 5,Asteroids,2,1,games/005-asteroids.md,未着手,,,,,,
