@@ -27,16 +27,16 @@ repos:
     hooks:
       - id: dev-lint
         name: dev lint
-        entry: pwsh -NoProfile -File dev.ps1 lint
+        entry: pwsh -NoProfile -File dev.ps1 lint -Staged
         language: system
         pass_filenames: false
-        files: ^(games/|build/|templates/|\.editorconfig|unity-100games\.slnx)
+        files: ^(games/|build/|\.editorconfig|global\.json|unity-100games\.slnx|dev\.ps1)
       - id: dev-check
         name: dev check
-        entry: pwsh -NoProfile -File dev.ps1 check
+        entry: pwsh -NoProfile -File dev.ps1 check -Staged
         language: system
         pass_filenames: false
-        files: \.(cs|csproj|props|slnx)$
+        files: (\.(cs|csproj|props|slnx)|^\.editorconfig|^global\.json|^dev\.ps1)$
       - id: dev-test
         name: dev test
         entry: pwsh -NoProfile -File dev.ps1 test

@@ -10,8 +10,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  core:
-    # Unity 非依存の Game.Core のみを検証する。Unity 層はローカルの dev test -Unity / dev build で確認する。
+  dotnet:
+    # Unity 非依存の Game.Core / Game.App を検証する。Unity 層はローカルの dev test -Unity / dev build で確認する。
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

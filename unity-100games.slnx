@@ -1,5 +1,7 @@
 <Solution>
   <Folder Name="/001-pong/">
+    <Project Path="games/001-pong/dotnet/App.Tests/G001.App.Tests.csproj" />
+    <Project Path="games/001-pong/dotnet/App/G001.App.csproj" />
     <Project Path="games/001-pong/dotnet/Core.Tests/G001.Core.Tests.csproj" />
     <Project Path="games/001-pong/dotnet/Core/G001.Core.csproj" />
   </Folder>

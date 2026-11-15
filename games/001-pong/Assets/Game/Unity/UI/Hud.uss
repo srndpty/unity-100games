@@ -1,0 +1,41 @@
+.hud {
+    flex-grow: 1;
+    color: rgb(255, 255, 255);
+}
+
+.scores {
+    flex-direction: row;
+    justify-content: space-around;
+    padding-top: 40px;
+}
+
+.score {
+    font-size: 96px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+}
+
+.overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.headline {
+    font-size: 120px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+    margin-bottom: 40px;
+}
+
+.message {
+    font-size: 36px;
+    -unity-text-align: middle-center;
+    white-space: normal;
+    color: rgb(220, 220, 220);
+}

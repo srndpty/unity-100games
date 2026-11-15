@@ -36,3 +36,9 @@ Thumbs.db
 
 # Claude Code のローカル設定
 .claude/settings.local.json
+tmp/
+
+# dev capture の一時フォルダ・ロック・ポインタの一時ファイル（通常は撮影の終わりに消える）
+/games/*/evidence/.staging-*/
+/games/*/evidence/.publish.lock
+/games/*/evidence/current.json.tmp-*

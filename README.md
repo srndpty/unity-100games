@@ -21,13 +21,16 @@ dev help
 ```
 dev new 002          # 仕様書 plan/games/002-*.md に対応するプロジェクトを作成
 dev gui 002          # Unity エディタで開く
-dev test             # 全作品の Core テスト (Unity 不要)
+dev test             # 全作品の Core / App テスト (Unity 不要)
 dev test 002 -Unity  # Unity 上でテスト
 dev lint             # 整形・静的解析の検証
 dev check            # 型チェック
 dev build 002        # Windows ビルド
 dev run 002          # ビルドを起動
+dev capture 002      # 証跡のスクリーンショットを撮る
 ```
+
+1本の進め方は [ワークフロー](plan/docs/WORKFLOW.md)。Claude が自動検証まで済ませて「検証待ち」で渡し、人間が `dev run` で遊んで調整点を返し、OK で完了にする。
 
 構成と開発ルールは [AGENTS.md](AGENTS.md) を参照。
 
@@ -35,4 +38,4 @@ dev run 002          # ビルドを起動
 
 | No. | 題材 | 状態 |
 |---:|---|---|
-| 001 | [Pong](games/001-pong/README.md) | 未着手（プロジェクト作成のみ） |
+| 001 | [Pong](games/001-pong/README.md) | 完了 |
