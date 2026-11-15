@@ -60,7 +60,7 @@ dev capture 001  # 証跡を evidence/ に撮る（画像は captures/<画像世
 - **画面比率に依存しない。** カメラの大きさを毎フレーム画面の縦横比から決め、コート全体と余白が収まるようにする（16:9 なら高さ、4:3 や 1:1 では幅で決まる）。
 - **物理エンジンは使わない。** 衝突も含めて Core の自前計算で、Unity の 2D 物理には何も委譲していない。描画は Core の状態を写すだけ。
 - **再現性。** 乱数は試合（サーブ）用と CPU 用でシードを分けた xorshift。System.Random は Mono と .NET で系列が一致する保証がないため使わない。同じシードと入力列なら勝敗・スコア・Tick 数・ボール位置まで一致することをテストしている。再戦を何度繰り返しても、各試合はそのシードと入力列だけで単独に再現できる。
-- **描画は Tick 間を補間する。** 60Hz の Tick と描画フレームのずれは `MatchSnapshot.Interpolate` で埋める。得点直後はボールを中央へ瞬間移動させるため補間しない。
+- **描画は Tick 間を補間する。** 60Hz の Tick と描画フレームのずれは `MatchSnapshot.Interpolate` で埋める。得点直後はボールを中央へ瞬間移動させるため補間しない。パドルは衝突判定と同じ軌跡（[PaddleMotion](Assets/Game/Core/PaddleMotion.cs)、端に着いたらそこで止まる）で描く。
 - **処理落ち対策。** 1 フレームで処理する Tick は最大 5 回で、それ以上溜まった時間は切り捨てる。
 - **証跡は撮影台本で撮る。** [PongCaptureScenario](Assets/Game/Unity/PongCaptureScenario.cs) がタイトル → 試合中 → 結果を自動で進めて撮影する（`dev capture 001`）。撮影中は固定シードで、試合を Tick 単位で進め、補間せずにその Tick の状態を描くので、同じビルドなら毎回同じ画像になる。プレイヤー入力は読まず、音も鳴らさない。撮った一式は manifest と照合してから、画像は内容で決まる画像世代、記録は撮影ごとの撮影記録として公開し、`evidence/current.json` で指す。
 - **実行時に作ったリソースは破棄する。** テクスチャ・スプライト（`CourtView`）と効果音のクリップ（`PongAudio`）は、`PongGame.OnDestroy` で破棄する。
@@ -71,7 +71,7 @@ dev capture 001  # 証跡を evidence/ に撮る（画像は captures/<画像世
 
 | 種類 | 場所 | 実行 | 件数 |
 |---|---|---|---:|
-| Core（EditMode / dotnet） | `Assets/Tests/Core/` | `dev test`（CI でも実行） | 39 |
+| Core（EditMode / dotnet） | `Assets/Tests/Core/` | `dev test`（CI でも実行） | 43 |
 | App（EditMode / dotnet） | `Assets/Tests/App/` | `dev test`（CI でも実行） | 14 |
 | シーン・入力・カメラ・証跡（PlayMode） | `Assets/Tests/Unity/` | `dev test 001 -Unity -Mode PlayMode` | 20 |
 

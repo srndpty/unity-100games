@@ -1,33 +1,42 @@
 namespace Game.Core
 {
-    /// <summary>描画に必要な位置だけを切り出した状態。Tick 間の補間に使う。</summary>
+    /// <summary>描画に必要な状態だけを切り出したもの。Tick 間の補間に使う。</summary>
     public readonly struct MatchSnapshot
     {
-        public MatchSnapshot(Vec2 ball, bool ballInPlay, float leftY, float rightY)
+        public MatchSnapshot(Vec2 ball, bool ballInPlay, PaddleMotion left, PaddleMotion right)
         {
             Ball = ball;
             BallInPlay = ballInPlay;
-            LeftY = leftY;
-            RightY = rightY;
+            Left = left;
+            Right = right;
         }
 
         public Vec2 Ball { get; }
 
         public bool BallInPlay { get; }
 
-        public float LeftY { get; }
+        /// <summary>この Tick の左パドルの軌跡。</summary>
+        public PaddleMotion Left { get; }
 
-        public float RightY { get; }
+        /// <summary>この Tick の右パドルの軌跡。</summary>
+        public PaddleMotion Right { get; }
 
-        /// <summary>from → to を t で補間する。ボールが中央へ戻った直後などは補間せず to を使う。</summary>
+        public float LeftY => Left.To;
+
+        public float RightY => Right.To;
+
+        /// <summary>
+        /// from → to の Tick 中の時刻 t での状態。ボールが中央へ戻った直後などは補間せず to を使う。
+        /// パドルは衝突判定と同じ軌跡（端に着いたらそこで止まる）をたどる。
+        /// </summary>
         public static MatchSnapshot Interpolate(MatchSnapshot from, MatchSnapshot to, float t)
         {
             var ball = from.BallInPlay && to.BallInPlay ? Vec2.Lerp(from.Ball, to.Ball, t) : to.Ball;
             return new MatchSnapshot(
                 ball,
                 to.BallInPlay,
-                from.LeftY + ((to.LeftY - from.LeftY) * t),
-                from.RightY + ((to.RightY - from.RightY) * t));
+                PaddleMotion.At(to.Left.YAt(t)),
+                PaddleMotion.At(to.Right.YAt(t)));
         }
     }
 }

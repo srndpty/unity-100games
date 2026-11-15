@@ -180,6 +180,24 @@ namespace Game.Core.Tests
             Assert.That(_left.YAt(0.5f), Is.EqualTo(-3.7f).Within(Tolerance));
         }
 
+        [TestCase(3.625f, 1f)]
+        [TestCase(-3.625f, -1f)]
+        [TestCase(0f, 1f)]
+        [TestCase(3.7f, 1f)]
+        public void InterpolatedSnapshot_DrawsPaddleWhereCollisionJudgesIt(float fromY, float input)
+        {
+            // 端に着く Tick でも、描画の補間は衝突判定（Paddle.YAt）と同じ位置になる。
+            _left.SetY(fromY);
+            var from = new MatchSnapshot(Vec2.Zero, true, _left.Motion, _left.Motion);
+            _left.Move(input, _config.TickDuration);
+            var to = new MatchSnapshot(Vec2.Zero, true, _left.Motion, _left.Motion);
+
+            foreach (var t in new[] { 0f, 0.25f, 0.5f, 0.75f, 1f })
+            {
+                Assert.That(MatchSnapshot.Interpolate(from, to, t).LeftY, Is.EqualTo(_left.YAt(t)), $"t = {t}");
+            }
+        }
+
         [Test]
         public void PaddleRightAfterReversing_StartsFromWhereThePreviousTickEnded()
         {
@@ -187,7 +205,7 @@ namespace Game.Core.Tests
             _left.Move(1f, _config.TickDuration);
             _left.Move(-1f, _config.TickDuration);
 
-            Assert.That(_left.PreviousY, Is.EqualTo(0.15f).Within(Tolerance));
+            Assert.That(_left.Motion.From, Is.EqualTo(0.15f).Within(Tolerance));
             Assert.That(_left.Y, Is.EqualTo(0f).Within(Tolerance));
             Assert.That(LaunchAcrossLeftFace(ballY: 1.05f, crossFraction: 0.1f), Is.True, "Tick 序盤はまだ上（0.135）にいる");
         }

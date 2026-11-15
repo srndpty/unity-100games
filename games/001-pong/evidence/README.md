@@ -35,8 +35,8 @@
 
 | 種類 | 実行方法 | 結果 |
 |---|---|---|
-| Core / App | `dev test`（dotnet） | 39 / 39、14 / 14 成功 |
-| Core + App（EditMode） | `dev test 001 -Unity` | 53 / 53 成功 |
+| Core / App | `dev test`（dotnet） | 43 / 43、14 / 14 成功 |
+| Core + App（EditMode） | `dev test 001 -Unity` | 57 / 57 成功 |
 | シーン・入力・カメラ・証跡（PlayMode） | `dev test 001 -Unity -Mode PlayMode` | 20 / 20 成功 |
 | lint / 型チェック | `dev lint`、`dev check` | 成功 |
 

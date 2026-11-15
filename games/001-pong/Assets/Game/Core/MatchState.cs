@@ -58,7 +58,7 @@ namespace Game.Core
         /// <summary>直前の <see cref="Tick"/> で起きた出来事。</summary>
         public IReadOnlyList<MatchEvent> Events => _events;
 
-        public MatchSnapshot Snapshot => new(Ball.Position, Ball.InPlay, Left.Y, Right.Y);
+        public MatchSnapshot Snapshot => new(Ball.Position, Ball.InPlay, Left.Motion, Right.Motion);
 
         public Paddle PaddleOf(Side side) => side == Side.Left ? Left : Right;
 
