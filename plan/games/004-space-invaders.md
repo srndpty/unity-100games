@@ -73,4 +73,6 @@
 
 ## 9. 実装記録
 
-採用ルール・環境・操作は [作品README](../../games/004-space-invaders/README.md)、実測結果・画像は [動作証跡](../../games/004-space-invaders/evidence/README.md) を参照。Core 31件・App 9件、Unity EditMode 40件・PlayMode 16件、全作品のlint・check・test、Windowsビルド・証跡撮影に成功。人間による操作感・難易度・音量の確認後に完了判断を受ける。
+採用ルール・環境・操作は [作品README](../../games/004-space-invaders/README.md)、実測結果・画像は [動作証跡](../../games/004-space-invaders/evidence/README.md) を参照。Core 37件・App 9件、Unity EditMode 46件・PlayMode 17件、全作品のlint・check・test、Windowsビルド・証跡撮影に成功。人間による操作感・難易度・音量の確認後に完了判断を受ける。
+
+2026-11-16、レビューP2-1（敵・盾・弾の接触時系列）・P2-2（残機設定の表示）・P3-1（秒→Tickの隣接float境界）を修正し回帰テストを追加。人間による3Waveの難易度・敵弾の避けやすさ・盾の削れ方・音量の確認は引き続き未実施。

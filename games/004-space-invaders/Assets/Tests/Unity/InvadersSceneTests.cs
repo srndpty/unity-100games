@@ -30,6 +30,29 @@ namespace Game.Unity.Tests
         [TearDown]
         public void Restore() => _keyboard.Dispose();
         [UnityTest]
+        public IEnumerator ConfiguredLives_MatchTitleAndStartedHud()
+        {
+            var original = _game.Settings.Game;
+            try
+            {
+                foreach (var lives in new[] { 1, 5 })
+                {
+                    var config = original.Copy(); config.Lives = lives;
+                    _game.Settings.Game = config;
+                    typeof(InvadersGame).GetProperty("Flow").SetValue(_game, new InvadersFlow(config, 1));
+                    _game.Render();
+                    Assert.That(_game.HudRoot.Q<Label>("score").text, Does.Contain("LIVES  " + lives));
+                    Assert.That(_game.HudRoot.Q<Label>("message").text, Does.Contain("Protect your " + lives + " lives."));
+                    yield return _keyboard.Tap(Key.Enter);
+                    Assert.That(_game.Flow.Game.Lives, Is.EqualTo(lives));
+                    Assert.That(_game.HudRoot.Q<Label>("score").text, Does.Contain("LIVES  " + lives));
+                    _game.Flow.Back(); _game.Render();
+                    Assert.That(_game.HudRoot.Q<Label>("score").text, Does.Contain("LIVES  " + lives));
+                }
+            }
+            finally { _game.Settings.Game = original; }
+        }
+        [UnityTest]
         public IEnumerator InputMovesFiresAndPauses()
         {
             Assert.That(_game.HudRoot.Q<Label>("headline").text, Is.EqualTo("STAR GUARD"));

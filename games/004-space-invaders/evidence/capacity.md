@@ -10,12 +10,12 @@
 - 全生成後、各サンプルで弾32発を補充し、Coreを1Tick更新してSpriteRendererへ反映する。300回のCPU時間を測る。
 - 予算：CPU p95が16.67ms未満、SpriteRenderer数356以下。画面出力・GPU処理・起動時間は含めない。
 
-## 実測
+## 実測（レビュー修正後）
 
 | 指標 | 結果 |
 |---|---|
-| CPU p50 | 1.280ms |
-| CPU p95 | 1.534ms |
+| CPU p50 | 1.256ms |
+| CPU p95 | 1.668ms |
 | SpriteRenderer | 356個 |
 
 `InvadersSceneTests.MaximumSettings_CpuAndRendererBudget`で回帰検証する。生成はウォームアップで行い、計測中は使い回す。GPU時間や他のPCのFPSを保証する値ではない。

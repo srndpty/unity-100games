@@ -202,10 +202,10 @@ namespace Game.Unity
         {
             if (_root == null || Flow == null) { return; }
             var screen = Flow.Screen; var game = Flow.Game;
-            _root.Q<Label>("score").text = "SCORE  " + (game?.Score ?? 0) + "     LIVES  " + (game?.Lives ?? 3) + "     WAVE  " + (game?.Wave ?? 1) + " / 3";
+            _root.Q<Label>("score").text = "SCORE  " + (game?.Score ?? 0) + "     LIVES  " + (game?.Lives ?? _settings.Game.Lives) + "     WAVE  " + (game?.Wave ?? 1) + " / 3";
             _root.Q<VisualElement>("overlay").style.display = screen == AppScreen.Playing ? DisplayStyle.None : DisplayStyle.Flex;
             _root.Q<Label>("headline").text = screen == AppScreen.Title ? "STAR GUARD" : screen == AppScreen.Paused ? "PAUSED" : game?.Phase == GamePhase.Won ? "YOU WIN" : "GAME OVER";
-            _root.Q<Label>("message").text = screen == AppScreen.Title ? "Defeat 3 waves. Protect your 3 lives.\nBoth sides can destroy the shields.\n\nA D / Left Right : move    Space : fire\nEnter : start / replay    P / Esc : pause"
+            _root.Q<Label>("message").text = screen == AppScreen.Title ? $"Defeat 3 waves. Protect your {_settings.Game.Lives} lives.\nBoth sides can destroy the shields.\n\nA D / Left Right : move    Space : fire\nEnter : start / replay    P / Esc : pause"
                 : screen == AppScreen.Paused ? "P / Esc : resume" : "SCORE  " + (game?.Score ?? 0) + "\nEnter : play again";
             Show("submit", screen == AppScreen.Title || screen == AppScreen.Result);
             _root.Q<Button>("submit").text = screen == AppScreen.Title ? "START" : "PLAY AGAIN";

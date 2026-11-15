@@ -20,6 +20,7 @@ namespace Game.Core
     }
     public sealed class InvadersState
     {
+        private enum ContactKind { BulletShield, BulletEnemy, BulletPlayer, EnemyShield }
         private readonly InvadersConfig _config;
         private readonly bool[] _enemies;
         private readonly bool[] _shields = new bool[3 * 12 * 6];
@@ -107,16 +108,26 @@ namespace Game.Core
                 motions[b] = new Motion(bullet.Position, 0, (bullet.Owner == BulletOwner.Player ? _config.PlayerBulletSpeed : -_config.EnemyBulletSpeed) / InvadersConfig.TickRate);
                 for (var s = 0; s < _shields.Length; s++)
                 {
-                    if (_shields[s]) { AddHit(b, s, 0, motions[b], new Motion(ShieldAt(s), 0, 0), .125f, .125f); }
+                    if (_shields[s]) { AddHit(b, s, ContactKind.BulletShield, motions[b], new Motion(ShieldAt(s), 0, 0), .185f, .275f); }
                 }
                 if (CanHit(bullet.Owner, BulletOwner.Enemy))
                 {
                     for (var e = 0; e < _enemies.Length; e++)
                     {
-                        if (_enemies[e]) { AddHit(b, e, 1, motions[b], EnemyMotion(e, formation), .5f, .35f); }
+                        if (_enemies[e]) { AddHit(b, e, ContactKind.BulletEnemy, motions[b], EnemyMotion(e, formation), .56f, .5f); }
                     }
                 }
-                else if (!invincible) { AddHit(b, 0, 2, motions[b], player, .5f, .3f); }
+                else if (!invincible) { AddHit(b, 0, ContactKind.BulletPlayer, motions[b], player, .56f, .45f); }
+            }
+            for (var e = 0; e < _enemies.Length; e++)
+            {
+                if (!_enemies[e]) { continue; }
+                var motion = EnemyMotion(e, formation);
+                if (Math.Min(motion.Start.Y, motion.At(1).Y) - .35f > -2.125f) { continue; }
+                for (var s = 0; s < _shields.Length; s++)
+                {
+                    if (_shields[s]) { AddHit(e, s, ContactKind.EnemyShield, motion, new Motion(ShieldAt(s), 0, 0), .625f, .475f); }
+                }
             }
             _hits.Sort(Hit.Compare);
             var consumed = _consumed;
@@ -124,13 +135,18 @@ namespace Game.Core
             var damaged = false;
             foreach (var hit in _hits)
             {
-                if (consumed[hit.Bullet]) { continue; }
-                if (hit.Kind == 0)
+                if (hit.Kind == ContactKind.EnemyShield)
+                {
+                    if (_enemies[hit.Source]) { _shields[hit.Target] = false; }
+                    continue;
+                }
+                if (consumed[hit.Source]) { continue; }
+                if (hit.Kind == ContactKind.BulletShield)
                 {
                     if (!_shields[hit.Target]) { continue; }
                     _shields[hit.Target] = false;
                 }
-                else if (hit.Kind == 1)
+                else if (hit.Kind == ContactKind.BulletEnemy)
                 {
                     if (!_enemies[hit.Target]) { continue; }
                     _enemies[hit.Target] = false; EnemyCount--; Score += 100;
@@ -140,7 +156,7 @@ namespace Game.Core
                     if (damaged) { continue; }
                     damaged = true; Lives--;
                 }
-                consumed[hit.Bullet] = true;
+                consumed[hit.Source] = true;
             }
             for (var b = _bullets.Count - 1; b >= 0; b--)
             {
@@ -156,11 +172,6 @@ namespace Game.Core
                 if (!_enemies[e]) { continue; }
                 var enemy = EnemyAt(e);
                 if (enemy.Y - .35f <= InvadersConfig.InvasionY) { invaded = true; }
-                for (var s = 0; s < _shields.Length; s++)
-                {
-                    if (!_shields[s] || enemy.Y - .35f > -2.125f || enemy.Y + .35f + _config.Descent < -3.625f) { continue; }
-                    if (Motion.Contact(EnemyMotion(e, formation), new Motion(ShieldAt(s), 0, 0), .625f, .475f) != null) { _shields[s] = false; }
-                }
             }
             if (Lives == 0 || invaded) { Phase = GamePhase.Lost; _bullets.Clear(); }
             else if (EnemyCount == 0)
@@ -215,15 +226,15 @@ namespace Game.Core
             return new Motion(new Point(formation.Start.X + offsetX, formation.Start.Y - index / _config.Columns * 1.15f), formation.Dx, formation.Dy, formation.Stop);
         }
 
-        private void AddHit(int bullet, int target, int kind, Motion a, Motion b, float hw, float hh)
+        private void AddHit(int source, int target, ContactKind kind, Motion a, Motion b, float hw, float hh)
         {
             var endA = a.At(1); var endB = b.At(1);
-            if (Math.Min(a.Start.Y, endA.Y) - .15f > Math.Max(b.Start.Y, endB.Y) + hh
-                || Math.Max(a.Start.Y, endA.Y) + .15f < Math.Min(b.Start.Y, endB.Y) - hh
-                || Math.Min(a.Start.X, endA.X) - .06f > Math.Max(b.Start.X, endB.X) + hw
-                || Math.Max(a.Start.X, endA.X) + .06f < Math.Min(b.Start.X, endB.X) - hw) { return; }
-            var time = Motion.Contact(a, b, hw + .06f, hh + .15f);
-            if (time != null) { _hits.Add(new Hit(time.Value, bullet, target, kind)); }
+            if (Math.Min(a.Start.Y, endA.Y) > Math.Max(b.Start.Y, endB.Y) + hh
+                || Math.Max(a.Start.Y, endA.Y) < Math.Min(b.Start.Y, endB.Y) - hh
+                || Math.Min(a.Start.X, endA.X) > Math.Max(b.Start.X, endB.X) + hw
+                || Math.Max(a.Start.X, endA.X) < Math.Min(b.Start.X, endB.X) - hw) { return; }
+            var time = Motion.Contact(a, b, hw, hh);
+            if (time != null) { _hits.Add(new Hit(time.Value, source, target, kind)); }
         }
         private int CountBullets(BulletOwner owner)
         {
@@ -252,17 +263,20 @@ namespace Game.Core
 
         private readonly struct Hit
         {
-            public Hit(float time, int bullet, int target, int kind) { Time = time; Bullet = bullet; Target = target; Kind = kind; }
+            public Hit(float time, int source, int target, ContactKind kind) { Time = time; Source = source; Target = target; Kind = kind; }
             private float Time { get; }
-            public int Bullet { get; }
+            public int Source { get; }
             public int Target { get; }
-            public int Kind { get; }
+            public ContactKind Kind { get; }
             public static int Compare(Hit a, Hit b)
             {
                 var time = a.Time.CompareTo(b.Time);
                 if (time != 0) { return time; }
-                var bullet = a.Bullet.CompareTo(b.Bullet);
-                if (bullet != 0) { return bullet; }
+                // 同時刻の撃破を先に確定し、撃破時刻以降の敵→盾接触を無効にする。
+                var category = (a.Kind == ContactKind.EnemyShield ? 1 : 0).CompareTo(b.Kind == ContactKind.EnemyShield ? 1 : 0);
+                if (category != 0) { return category; }
+                var source = a.Source.CompareTo(b.Source);
+                if (source != 0) { return source; }
                 var kind = a.Kind.CompareTo(b.Kind);
                 return kind != 0 ? kind : a.Target.CompareTo(b.Target);
             }

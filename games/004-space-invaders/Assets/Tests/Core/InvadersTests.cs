@@ -71,6 +71,56 @@ namespace Game.Core.Tests
             Assert.That(game.ShieldAlive(12), Is.False);
             Assert.That(game.BulletCount, Is.Zero);
         }
+        private static InvadersState DescendingEnemyWithOneShield()
+        {
+            var game = Create(); var enemies = Get<bool[]>(game, "_enemies"); var shields = Get<bool[]>(game, "_shields");
+            Array.Clear(enemies, 0, enemies.Length); enemies[0] = true; Property(game, "EnemyCount", 1);
+            Array.Clear(shields, 0, shields.Length); shields[67] = true;
+            Field(game, "_formationY", -1.6f); Field(game, "_descendPending", true);
+            return game;
+        }
+        [TestCase(-2.6f, false)]
+        [TestCase(-2.2f, true)]
+        public void EnemyShieldContact_RespectsKillTime(float bulletY, bool shieldSurvives)
+        {
+            var game = DescendingEnemyWithOneShield();
+            var enemy = new Motion(game.EnemyAt(0), 0, -.5f);
+            var shieldTime = Motion.Contact(enemy, new Motion(InvadersState.ShieldAt(67), 0, 0), .625f, .475f);
+            var killTime = Motion.Contact(new Motion(new Point(-4.9f, bulletY), 0, 20f / 60), enemy, .56f, .5f);
+            Assert.That(shieldTime, Is.Not.Null); Assert.That(killTime, Is.Not.Null);
+            Assert.That(killTime!.Value < shieldTime!.Value, Is.EqualTo(shieldSurvives));
+            BulletAt(game, 0, BulletOwner.Player, -4.9f, bulletY);
+            game.Step(default);
+            Assert.That(game.EnemyAlive(0), Is.False); Assert.That(game.Score, Is.EqualTo(100));
+            Assert.That(game.ShieldAlive(67), Is.EqualTo(shieldSurvives));
+        }
+        [TestCase(BulletOwner.Player, -2.775f)]
+        [TestCase(BulletOwner.Enemy, -1.9f)]
+        public void EnemyDestroysShield_First_LaterBulletPassesThrough(BulletOwner owner, float bulletY)
+        {
+            var game = DescendingEnemyWithOneShield();
+            Field(game, "_formationX", .05f);
+            var shield = InvadersState.ShieldAt(67);
+            // 盾には当たるが敵の水平範囲からは外れる位置。
+            var bulletX = shield.X - .175f;
+            var enemy = new Motion(game.EnemyAt(0), 0, -.5f);
+            var shieldTime = Motion.Contact(enemy, new Motion(shield, 0, 0), .625f, .475f);
+            var dy = owner == BulletOwner.Player ? 20f / 60 : -6f / 60;
+            var bulletTime = Motion.Contact(new Motion(new Point(bulletX, bulletY), 0, dy), new Motion(shield, 0, 0), .185f, .275f);
+            Assert.That(bulletTime, Is.Not.Null); Assert.That(bulletTime!.Value, Is.GreaterThan(shieldTime!.Value));
+            BulletAt(game, 0, owner, bulletX, bulletY);
+            game.Step(default);
+            Assert.That(game.ShieldAlive(67), Is.False); Assert.That(game.EnemyAlive(0), Is.True);
+            Assert.That(game.BulletCount, Is.EqualTo(1)); Assert.That(game.BulletAt(0).Position.Y, Is.EqualTo(bulletY + dy));
+        }
+        [Test]
+        public void EnemyKilledAtContactTime_DoesNotDestroyShield()
+        {
+            var game = DescendingEnemyWithOneShield(); Field(game, "_formationY", -2f);
+            BulletAt(game, 0, BulletOwner.Player, -4.9f, -2.1f);
+            game.Step(default);
+            Assert.That(game.EnemyAlive(0), Is.False); Assert.That(game.ShieldAlive(67), Is.True);
+        }
         [TestCase(BulletOwner.Player, BulletOwner.Player, false)]
         [TestCase(BulletOwner.Player, BulletOwner.Enemy, true)]
         [TestCase(BulletOwner.Enemy, BulletOwner.Player, true)]
@@ -199,6 +249,20 @@ namespace Game.Core.Tests
         [TestCase(.25f, 15)]
         [TestCase(1f, 60)]
         public void DurationConversion_UsesWholeTickBoundaries(float seconds, int ticks) => Assert.That(InvadersConfig.Ticks(seconds), Is.EqualTo(ticks));
+        [Test]
+        public void DurationConversion_DistinguishesAdjacentFloatsAtEveryConfiguredBoundary()
+        {
+            for (var tick = 1; tick <= 180; tick++)
+            {
+                var boundary = (float)((double)tick / InvadersConfig.TickRate);
+                var bits = BitConverter.SingleToInt32Bits(boundary);
+                var below = BitConverter.Int32BitsToSingle(bits - 1);
+                var above = BitConverter.Int32BitsToSingle(bits + 1);
+                Assert.That(InvadersConfig.Ticks(boundary), Is.EqualTo(tick), "boundary " + tick);
+                Assert.That(InvadersConfig.Ticks(below), Is.EqualTo(tick), "below " + tick);
+                Assert.That(InvadersConfig.Ticks(above), Is.EqualTo(tick + 1), "above " + tick);
+            }
+        }
         [Test]
         public void EveryFloatSetting_RejectsNonFiniteValues()
         {

@@ -60,8 +60,10 @@ namespace Game.Core
         {
             var ticks = (double)seconds * TickRate;
             var nearest = Math.Round(ticks);
-            // float設定の表現誤差だけを整数境界へ寄せる。Monoの中間精度にも依存させない。
-            return (int)(Math.Abs(ticks - nearest) <= ticks * 1e-7 ? nearest : Math.Ceiling(ticks));
+            // 整数Tickに対応するfloat表現との一致だけを認め、直上のfloatは切り上げる。
+            // doubleへ戻して比較し、Monoの中間精度に残った値もfloat精度へ確定させる。
+            var boundarySeconds = (double)(float)(nearest / TickRate);
+            return (int)((double)seconds == boundarySeconds ? nearest : Math.Ceiling(ticks));
         }
     }
 }
