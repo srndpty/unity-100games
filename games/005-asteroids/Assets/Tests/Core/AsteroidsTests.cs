@@ -79,6 +79,24 @@ namespace Game.Core.Tests
             Assert.That(Torus.Contact(default, default, default, default, .1f), Is.EqualTo(0));
         }
         [Test]
+        public void PeriodicSweep_BothMovingBodiesCrossEdgesBeforeContact()
+        {
+            // 弾は下端、小惑星は左端を先に越える。周期コピー上の初期差は(-.5, .125)、相対変位は(1, -.25)。
+            var bullet = new Point(15.53125f, -8.984375f); var bulletDelta = new Point(.875f, -.125f);
+            var asteroid = new Point(-15.96875f, 8.890625f); var asteroidDelta = new Point(-.125f, .125f);
+            const float radius = .23f;
+            var expectedTime = .5f - radius / MathF.Sqrt(1.0625f);
+            var time = Torus.Contact(bullet, bulletDelta, asteroid, asteroidDelta, radius);
+
+            Assert.That(time.HasValue, Is.True);
+            Assert.That(time!.Value, Is.EqualTo(expectedTime).Within(.00001f));
+            Assert.That(time.Value, Is.InRange(.25f, 1f));
+            Assert.That(bullet.Plus(bulletDelta.Scale(time.Value)).Y, Is.LessThan(-9));
+            Assert.That(asteroid.Plus(asteroidDelta.Scale(time.Value)).X, Is.LessThan(-16));
+            // 終了位置だけの重なり判定では見つからない、Tick途中の接触。
+            Assert.That(Torus.Difference(bullet.Plus(bulletDelta), asteroid.Plus(asteroidDelta)).Length, Is.GreaterThan(radius));
+        }
+        [Test]
         public void BulletAndAsteroidWrap_PreserveLinearAndAngularVelocity()
         {
             var game = Empty(); Rock(game, 10, 0, new Point(15.99f, 8.99f), new Point(2, 2));
@@ -147,6 +165,28 @@ namespace Game.Core.Tests
             if (size > 0)
             {
                 Assert.That(game.AsteroidAt(0).Velocity.Plus(game.AsteroidAt(1).Velocity).X, Is.EqualTo(2).Within(.0001));
+            }
+        }
+        [TestCase(2)]
+        [TestCase(1)]
+        public void MidTickHit_SpawnsChildrenAtImpactInsteadOfStartOrEnd(int size)
+        {
+            var config = new AsteroidsConfig { LargeRadius = .92f, MediumRadius = .42f };
+            var game = Empty(config);
+            // 相対速度は毎秒60、接触までの隙間は.5なので、命中はTickのちょうど半分。
+            Rock(game, 10, size, new Point(5, 3), new Point(6, 3));
+            Shot(game, 11, new Point(5 - config.Radius(size) - AsteroidsConfig.BulletRadius - .5f, 3), new Point(66, 3));
+            game.Step(default);
+
+            Assert.That(game.BulletCount, Is.Zero); Assert.That(game.AsteroidCount, Is.EqualTo(2));
+            for (var i = 0; i < game.AsteroidCount; i++)
+            {
+                var child = game.AsteroidAt(i);
+                Assert.That(child.Size, Is.EqualTo(size - 1));
+                Assert.That(child.Position.X, Is.EqualTo(5.05f).Within(.00001f));
+                Assert.That(child.Position.Y, Is.EqualTo(3.025f).Within(.00001f));
+                Assert.That(child.Position.X, Is.Not.EqualTo(5).Within(.00001f));
+                Assert.That(child.Position.X, Is.Not.EqualTo(5.1f).Within(.00001f));
             }
         }
         [Test]
