@@ -1,0 +1,45 @@
+{
+    "Product": "004-space-invaders",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "7a40b55bdc3a4f1d98a9978c219988ef",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-15T18:17:38.4490655Z",
+    "Info": [
+        {
+            "Key": "settings",
+            "Value": "{\"Columns\":8,\"Rows\":4,\"Lives\":3,\"PlayerBulletLimit\":3,\"EnemyBulletLimit\":12,\"PlayerSpeed\":8.0,\"PlayerBulletSpeed\":20.0,\"EnemyBulletSpeed\":6.0,\"FormationSpeed\":1.0,\"WaveSpeedIncrease\":0.3499999940395355,\"Descent\":0.5,\"PlayerFireSeconds\":0.25,\"EnemyFireSeconds\":0.8999999761581421,\"WaveFireMultiplier\":0.800000011920929,\"TransitionSeconds\":1.0,\"RespawnSeconds\":1.0,\"InvincibleSeconds\":1.0}"
+        },
+        {
+            "Key": "replaySeed",
+            "Value": "2"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.png",
+            "Sha256": "d9b0035289fbc695ede5e171582e26b5dad549d064e2fd1ee97b3a1be72f3461",
+            "Note": "Tick 0"
+        },
+        {
+            "File": "02-combat.png",
+            "Sha256": "08522f03873fee664e71a3e5fe6f0d6b695d17d2ef4a51f470fb400483ee1431",
+            "Note": "Tick 600"
+        },
+        {
+            "File": "03-wave-clear.png",
+            "Sha256": "ce05adbc77f539d7eef786d13269b4461aed9091ffccfcd7bc06c52e0ada430d",
+            "Note": "Tick 1667"
+        },
+        {
+            "File": "04-win.png",
+            "Sha256": "14d379d2d04df3535e21547e6b9daa5f96eaec88337d5f552306487c5b68ff49",
+            "Note": "Tick 4531"
+        },
+        {
+            "File": "05-loss.png",
+            "Sha256": "06024d628f6896660f16160d072681079663160ec731c90b28dfd971fc7b477d",
+            "Note": "Tick 7578"
+        }
+    ]
+}
