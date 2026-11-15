@@ -11,4 +11,10 @@
     <Project Path="games/002-breakout/dotnet/Core.Tests/G002.Core.Tests.csproj" />
     <Project Path="games/002-breakout/dotnet/Core/G002.Core.csproj" />
   </Folder>
+  <Folder Name="/003-snake/">
+    <Project Path="games/003-snake/dotnet/App.Tests/G003.App.Tests.csproj" />
+    <Project Path="games/003-snake/dotnet/App/G003.App.csproj" />
+    <Project Path="games/003-snake/dotnet/Core.Tests/G003.Core.Tests.csproj" />
+    <Project Path="games/003-snake/dotnet/Core/G003.Core.csproj" />
+  </Folder>
 </Solution>
