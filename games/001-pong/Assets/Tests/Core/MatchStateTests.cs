@@ -106,31 +106,6 @@ namespace Game.Core.Tests
             Assert.That(match.Events, Is.Empty);
         }
 
-        [Test]
-        public void Rematch_IsRejectedBeforeMatchEnds()
-        {
-            var match = TestCourt.NewMatch();
-            PlayUntilFirstPoint(match, out _);
-
-            Assert.That(match.Rematch(), Is.False);
-            Assert.That(match.LeftScore + match.RightScore, Is.EqualTo(1));
-        }
-
-        [Test]
-        public void Rematch_AfterMatchEnds_ResetsScoreAndServesAgain()
-        {
-            var match = TestCourt.NewMatch();
-            TestCourt.PlayToEnd(match, _ => 0f, _ => 0f);
-
-            Assert.That(match.Rematch(), Is.True);
-
-            Assert.That(match.Phase, Is.EqualTo(MatchPhase.Serving));
-            Assert.That(match.LeftScore, Is.Zero);
-            Assert.That(match.RightScore, Is.Zero);
-            Assert.That(match.Winner, Is.Null);
-            Assert.That(match.Rematch(), Is.False, "再戦の二重実行は拒否");
-        }
-
         [TestCase(float.NaN)]
         [TestCase(float.PositiveInfinity)]
         [TestCase(float.NegativeInfinity)]
@@ -178,6 +153,24 @@ namespace Game.Core.Tests
             Assert.Throws<ArgumentException>(() => new MatchState(new PongConfig { TicksPerSecond = 0 }, TestCourt.Seed));
             Assert.Throws<ArgumentException>(() => new MatchState(new PongConfig { PaddleHeight = 20f }, TestCourt.Seed));
             Assert.Throws<ArgumentException>(() => new MatchState(new PongConfig { MaxBallSpeed = 1f }, TestCourt.Seed));
+        }
+
+        [TestCase(float.PositiveInfinity)]
+        [TestCase(float.NaN)]
+        public void NonFiniteConfig_IsRejected(float value)
+        {
+            Assert.Throws<ArgumentException>(() => new MatchState(new PongConfig { MaxBallSpeed = value }, TestCourt.Seed));
+            Assert.Throws<ArgumentException>(() => new MatchState(new PongConfig { SpeedIncreasePerHit = value }, TestCourt.Seed));
+            Assert.Throws<ArgumentException>(() => new MatchState(new PongConfig { PaddleSpeed = value }, TestCourt.Seed));
+        }
+
+        [Test]
+        public void TooFastBallForTickRate_IsRejected()
+        {
+            // 既定のパドル高 1.6 に対し、1 Tick（1/10 秒）で 1 進む速度は上限（高さの半分）を超える。
+            var config = new PongConfig { TicksPerSecond = 10, MaxBallSpeed = 10f };
+
+            Assert.Throws<ArgumentException>(() => new MatchState(config, TestCourt.Seed));
         }
 
         // 誰も動かずに最初の得点が入るまで進め、失点した側を返す。

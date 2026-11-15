@@ -6,6 +6,7 @@ namespace Game.Core
     /// <summary>
     /// ボールの移動と衝突。1 Tick の移動を線分として扱い（掃引判定）、最も早い接触から順に処理するため、
     /// 高速でもパドルをすり抜けない。パドルとの衝突は「ボールがパドルへ向かって面を越えるとき」だけ起きる。
+    /// パドルも Tick 中に等速で動いたとみなし、接触した時刻でのパドル位置と比べる。
     /// </summary>
     public sealed class BallSim
     {
@@ -42,6 +43,10 @@ namespace Game.Core
             InPlay = true;
         }
 
+        /// <summary>
+        /// 1 Tick 進める。パドルはこの Tick の移動（<see cref="Paddle.PreviousY"/> → <see cref="Paddle.Y"/>）を済ませておくこと。
+        /// 接触が <see cref="MaxContactsPerStep"/> 回を超えたら、時間を取りこぼさないよう例外にする（設定の検証で起きない範囲に抑えている）。
+        /// </summary>
         public void Step(float deltaTime, Paddle left, Paddle right, ICollection<MatchEvent> events)
         {
             if (!InPlay)
@@ -51,22 +56,29 @@ namespace Game.Core
 
             var position = Position;
             var velocity = Velocity;
-            var remaining = deltaTime;
-            for (var i = 0; i < MaxContactsPerStep && remaining > 0f; i++)
+            var elapsed = 0f; // Tick 内で処理し終えた割合（0〜1）
+            for (var i = 0; i <= MaxContactsPerStep; i++)
             {
-                var delta = velocity * remaining;
-                var contact = FindEarliestContact(position, delta, left, right);
+                var span = 1f - elapsed;
+                var delta = velocity * (deltaTime * span);
+                var contact = FindEarliestContact(position, delta, elapsed, span, left, right);
                 if (contact.Paddle is null && !contact.IsWall)
                 {
-                    position += delta;
+                    Position = position + delta;
+                    Velocity = velocity;
+                    return;
+                }
+
+                if (i == MaxContactsPerStep)
+                {
                     break;
                 }
 
                 position += delta * contact.Time;
-                remaining *= 1f - contact.Time;
+                elapsed += span * contact.Time;
                 if (contact.Paddle is Paddle paddle)
                 {
-                    velocity = Bounce(paddle, position, velocity);
+                    velocity = Bounce(paddle, paddle.YAt(elapsed), position, velocity);
                     events.Add(new MatchEvent(MatchEventKind.PaddleHit, paddle.Side));
                 }
                 else
@@ -76,8 +88,7 @@ namespace Game.Core
                 }
             }
 
-            Position = position;
-            Velocity = velocity;
+            throw new InvalidOperationException($"1 Tick の接触が {MaxContactsPerStep} 回を超えました。ボール速度と Tick レートの設定を見直してください");
         }
 
         /// <summary>ボールが完全にゴールラインを越えた陣地。越えていなければ null。</summary>
@@ -97,7 +108,8 @@ namespace Game.Core
             return null;
         }
 
-        private Contact FindEarliestContact(Vec2 position, Vec2 delta, Paddle left, Paddle right)
+        // delta は Tick の残り（開始 tickStart、長さ span の区間）の移動量。返す Time はこの区間内の割合（0〜1）。
+        private Contact FindEarliestContact(Vec2 position, Vec2 delta, float tickStart, float span, Paddle left, Paddle right)
         {
             var earliest = Contact.None;
 
@@ -129,8 +141,9 @@ namespace Game.Core
 
             var time = (contactX - position.X) / delta.X;
             var yAtContact = position.Y + (delta.Y * time);
+            var paddleY = paddle.YAt(tickStart + (span * time));
             var reach = paddle.HalfHeight + HalfSize;
-            if (MathF.Abs(yAtContact - paddle.Y) <= reach && time < earliest.Time)
+            if (MathF.Abs(yAtContact - paddleY) <= reach && time < earliest.Time)
             {
                 earliest = Contact.With(paddle, time);
             }
@@ -138,11 +151,11 @@ namespace Game.Core
             return earliest;
         }
 
-        // 当たった位置がパドル中央から離れるほど反射角を大きくし、打つたびに加速する。
-        private Vec2 Bounce(Paddle paddle, Vec2 position, Vec2 velocity)
+        // 当たった位置（接触時刻のパドル中央からのずれ）が大きいほど反射角を大きくし、打つたびに加速する。
+        private Vec2 Bounce(Paddle paddle, float paddleY, Vec2 position, Vec2 velocity)
         {
             var reach = paddle.HalfHeight + HalfSize;
-            var offset = Math.Clamp((position.Y - paddle.Y) / reach, -1f, 1f);
+            var offset = Math.Clamp((position.Y - paddleY) / reach, -1f, 1f);
             var angle = offset * _config.MaxBounceAngleDegrees * DegreesToRadians;
             var speed = MathF.Min(velocity.Length + _config.SpeedIncreasePerHit, _config.MaxBallSpeed);
             var outward = -paddle.Side.Direction();

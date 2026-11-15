@@ -1,29 +1,44 @@
 using System;
 using System.IO;
+using System.Security.Cryptography;
 using UnityEngine;
 
 namespace Game.Unity.Evidence
 {
-    /// <summary>撮影台本から使う操作。スクリーンショットの保存と、条件待ち。</summary>
+    /// <summary>撮影台本から使う操作。スクリーンショットの保存、記録の追加、条件待ち。</summary>
     public sealed class CaptureContext
     {
         private readonly string _directory;
+        private readonly CaptureManifest _manifest;
 
-        public CaptureContext(string directory)
+        public CaptureContext(string directory, CaptureManifest manifest)
         {
             _directory = directory;
+            _manifest = manifest;
         }
 
-        /// <summary>現在のフレームを描画し終えた時点の画面を <c>&lt;name&gt;.png</c> として保存する。</summary>
-        public async Awaitable ShootAsync(string name)
+        /// <summary>撮影条件（設定値など）を manifest.json に残す。</summary>
+        public void Record(string key, string value)
         {
+            _manifest.Info.Add(new CaptureManifest.Entry { Key = key, Value = value });
+        }
+
+        /// <summary>
+        /// 画面を <c>&lt;name&gt;.png</c> として保存する。直前に状態を変えていても反映されるよう、1 フレーム描画させてから撮る。
+        /// <paramref name="note"/> には撮った時点（Tick 数など）を書く。
+        /// </summary>
+        public async Awaitable ShootAsync(string name, string note)
+        {
+            await Awaitable.NextFrameAsync();
             await Awaitable.EndOfFrameAsync();
             var texture = ScreenCapture.CaptureScreenshotAsTexture();
             try
             {
-                var path = Path.Combine(_directory, name + ".png");
-                File.WriteAllBytes(path, texture.EncodeToPNG());
-                Debug.Log($"[EvidenceCapture] 保存: {path}");
+                var file = name + ".png";
+                var png = texture.EncodeToPNG();
+                File.WriteAllBytes(Path.Combine(_directory, file), png);
+                _manifest.Shots.Add(new CaptureManifest.Shot { File = file, Sha256 = Sha256(png), Note = note });
+                Debug.Log($"[EvidenceCapture] 撮影: {file}（{note}）");
             }
             finally
             {
@@ -44,6 +59,12 @@ namespace Game.Unity.Evidence
 
                 await Awaitable.NextFrameAsync();
             }
+        }
+
+        private static string Sha256(byte[] data)
+        {
+            using var sha = SHA256.Create();
+            return BitConverter.ToString(sha.ComputeHash(data)).Replace("-", string.Empty).ToLowerInvariant();
         }
     }
 }

@@ -96,7 +96,7 @@ function Test-MetaFiles {
 function Invoke-Format([switch]$Verify) {
     [string[]]$verifyArgs = if ($Verify) { '--verify-no-changes' } else { @() }
     Invoke-Native dotnet format $Solution @verifyArgs
-    # Core 以外 (App / Unity 層) は dotnet のプロジェクトに含まれないため、空白整形のみ適用する。
+    # Unity 層とその PlayMode テストは dotnet のプロジェクトに含まれないため、空白整形のみ適用する。
     foreach ($gameDir in Get-GameDirs) {
         Invoke-Native dotnet format whitespace (Join-Path $gameDir.FullName 'Assets') --folder @verifyArgs
     }
@@ -178,12 +178,12 @@ function Show-Help {
   build [NNN]                   Windows 向けにビルド (games/NNN-*/Builds/Windows/)
   run [NNN]                     ビルド済みのゲームを起動
   capture [NNN]                 ビルドを撮影モードで起動し、evidence/ にスクリーンショットを保存 (自動で終了)
-  test                          全作品の Core テストを dotnet で実行 (高速、Unity 不要)
+  test                          全作品の Core / App テストを dotnet で実行 (高速、Unity 不要)
   test [NNN] -Unity [-Mode EditMode|PlayMode]
                                 Unity 上でテストを実行
   lint                          整形・アナライザー・.meta の検証 (変更しない)
   format                        コードを整形
-  check                         全作品の Core を型チェック (警告はエラー扱い)
+  check                         全作品の Core / App を型チェック (警告はエラー扱い)
   clean [NNN]                   生成物 (Library, Builds, bin, obj など) を削除。番号省略時は全作品
   help                          このヘルプ
 

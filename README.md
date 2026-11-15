@@ -21,7 +21,7 @@ dev help
 ```
 dev new 002          # 仕様書 plan/games/002-*.md に対応するプロジェクトを作成
 dev gui 002          # Unity エディタで開く
-dev test             # 全作品の Core テスト (Unity 不要)
+dev test             # 全作品の Core / App テスト (Unity 不要)
 dev test 002 -Unity  # Unity 上でテスト
 dev lint             # 整形・静的解析の検証
 dev check            # 型チェック

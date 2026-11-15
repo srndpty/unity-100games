@@ -147,6 +147,68 @@ namespace Game.Core.Tests
             Assert.That(_events, Is.Empty);
         }
 
+        // 以下、動くパドル。1 Tick で 0.15 動き、届く範囲はパドル中心から ±0.925。
+        // Tick 終了時の位置だけで判定すると結果が変わる高さを選んでいる。
+
+        [Test]
+        public void RisingPaddle_IsJudgedAtItsPositionWhenBallCrosses()
+        {
+            // 上昇中（0 → 0.15）。y = 0.95 のボールは、Tick の序盤に面を越えると届かず、終盤なら当たる。
+            Assert.That(CrossLeftFaceWhileMoving(fromY: 0f, input: 1f, ballY: 0.95f, crossFraction: 0.1f), Is.False);
+            Assert.That(CrossLeftFaceWhileMoving(fromY: 0f, input: 1f, ballY: 0.95f, crossFraction: 0.9f), Is.True);
+        }
+
+        [Test]
+        public void FallingPaddle_IsJudgedAtItsPositionWhenBallCrosses()
+        {
+            // 下降中（0.15 → 0）。y = 1.05 のボールは、序盤なら当たり、終盤には届かない。
+            Assert.That(CrossLeftFaceWhileMoving(fromY: 0.15f, input: -1f, ballY: 1.05f, crossFraction: 0.1f), Is.True);
+            Assert.That(CrossLeftFaceWhileMoving(fromY: 0.15f, input: -1f, ballY: 1.05f, crossFraction: 0.9f), Is.False);
+        }
+
+        [Test]
+        public void PaddleRightAfterReversing_StartsFromWhereThePreviousTickEnded()
+        {
+            _left.SetY(0f);
+            _left.Move(1f, _config.TickDuration);
+            _left.Move(-1f, _config.TickDuration);
+
+            Assert.That(_left.PreviousY, Is.EqualTo(0.15f).Within(Tolerance));
+            Assert.That(_left.Y, Is.EqualTo(0f).Within(Tolerance));
+            Assert.That(LaunchAcrossLeftFace(ballY: 1.05f, crossFraction: 0.1f), Is.True, "Tick 序盤はまだ上（0.135）にいる");
+        }
+
+        [Test]
+        public void MovingPaddle_BounceAngleUsesPaddlePositionAtContact()
+        {
+            // 上昇中のパドルの、接触時刻（Tick の中間）での中心（0.075）に当てると水平に返る。
+            _left.SetY(0f);
+            _left.Move(1f, _config.TickDuration);
+
+            Assert.That(LaunchAcrossLeftFace(ballY: 0.075f, crossFraction: 0.5f), Is.True);
+            Assert.That(_ball.Velocity.Y, Is.EqualTo(0f).Within(Tolerance));
+        }
+
+        // 左パドルを fromY から input の向きに 1 Tick 動かしながら、ボールを Tick 中の crossFraction の時刻に面へ届かせる。当たったら true。
+        private bool CrossLeftFaceWhileMoving(float fromY, float input, float ballY, float crossFraction)
+        {
+            _left.SetY(fromY);
+            _left.Move(input, _config.TickDuration);
+            return LaunchAcrossLeftFace(ballY, crossFraction);
+        }
+
+        // 水平に飛ぶボールが、1 Tick のうち crossFraction の時刻に左パドルの面（の接触位置）を越えるように打ち出し、1 Tick 進める。
+        private bool LaunchAcrossLeftFace(float ballY, float crossFraction)
+        {
+            _events.Clear();
+            const float Speed = 10f;
+            var contactX = _left.FaceX + _ball.HalfSize;
+            var perTick = Speed * _config.TickDuration;
+            _ball.Launch(new Vec2(contactX + (crossFraction * perTick), ballY), new Vec2(-Speed, 0f));
+            _ball.Step(_config.TickDuration, _left, _right, _events);
+            return _events.Contains(new MatchEvent(MatchEventKind.PaddleHit, Side.Left));
+        }
+
         // 左パドルの中心から offset（-1 = 下端、+1 = 上端）の高さに水平に当て、反射後の速度を返す。
         private Vec2 HitLeftPaddleAt(float offset, float? speed = null)
         {

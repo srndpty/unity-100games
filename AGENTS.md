@@ -18,7 +18,7 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 | `plan/progress.csv` | 進捗台帳。1本完了ごとに更新する |
 | `games/NNN-name/` | 各作品の Unity プロジェクト |
 | `templates/game/` | `dev new` が新規作品に展開する雛形 |
-| `build/*.props` | Core を dotnet で検証するための共通 MSBuild 設定 |
+| `build/*.props` | Core / App を dotnet で検証するための共通 MSBuild 設定（`GameLayer` で層を指定） |
 | `dev.ps1` | 開発用統一コマンド |
 
 ## 各作品の構造
@@ -29,15 +29,15 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 | `Game.App` | `Assets/Game/App/` | 画面遷移とユースケース。入力を意図に変換して Core に渡す |
 | `Game.Unity` | `Assets/Game/Unity/` | 描画、音、入力、物理、Prefab/Scene。Core の結果を反映する |
 | `Game.Core.Tests` | `Assets/Tests/Core/` | Core の EditMode テスト（NUnit） |
-| `Game.App.Tests` | `Assets/Tests/App/` | App の EditMode テスト（必要になったら作る） |
+| `Game.App.Tests` | `Assets/Tests/App/` | App の EditMode テスト（NUnit） |
 | `Game.Unity.Tests` | `Assets/Tests/Unity/` | 実シーンを読み込む PlayMode テスト。入力は雛形の `TestKeyboard` で送る |
 
 - `Game.App` も Unity API に依存しない（`noEngineReferences`、Nullable 有効）。時間は引数で受け取り、固定刻みへの変換もここで行う。
 - 雛形には共通部品が入っている：証跡撮影（`Game.Unity.Evidence`）、音の方針（`AudioPolicy`）、PlayMode 用の仮想キーボード（`TestKeyboard`）。
 
-- `Game.Core` とそのテストは `dotnet/` 配下の csproj からも同じソースを参照しており、Unity なしでビルド・テスト・静的解析できる。CI はこの経路のみを検証する。
-- そのため Core とそのテストでは、Unity と .NET の両方で動く書き方をする（NUnit 3.5 にある API、C# 9.0 まで）。
-- Core は Nullable 有効・警告はエラー扱い。
+- `Game.Core`・`Game.App` とそれぞれのテストは `dotnet/` 配下の csproj からも同じソースを参照しており、Unity なしでビルド・テスト・静的解析できる。CI はこの経路のみを検証する。
+- そのため Core・App とそのテストでは、Unity と .NET の両方で動く書き方をする（NUnit 3.5 にある API、C# 9.0 まで）。
+- Core・App は Nullable 有効・警告はエラー扱い。
 - 物理エンジンに密接な題材は完全分離を強制せず、何を物理エンジンに委譲したかを作品の README に書く。
 - 共通コードは、3題以上で再利用価値が明確になってから `packages/` にローカル UPM パッケージとして抽出する。
 
@@ -57,10 +57,10 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 | `dev gui 001` | Unity エディタで開く |
 | `dev build 001` / `dev run 001` | Windows ビルド／ビルドを起動 |
 | `dev capture 001` | ビルドを撮影モードで起動し、`evidence/` にスクリーンショットを保存して自動終了 |
-| `dev test` | 全作品の Core テスト（dotnet、高速） |
+| `dev test` | 全作品の Core / App テスト（dotnet、高速） |
 | `dev test 001 -Unity [-Mode PlayMode]` | Unity 上でテスト（エディタを閉じた状態で実行） |
 | `dev lint` / `dev format` | 整形・アナライザー・`.meta` の検証／整形の適用 |
-| `dev check` | Core の型チェック |
+| `dev check` | Core / App の型チェック |
 | `dev clean [001]` | 生成物の削除 |
 
 変更後は `dev lint`、`dev check`、`dev test` を通す。Unity 層を触ったら `dev test NNN -Unity` も通す。
@@ -84,7 +84,14 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - **バッチ実行ではゲームビューにフォーカスがなく、入力が捨てられる。** `TestKeyboard` は使用中だけ `InputSettings` でフォーカスを無視させている。
 - **`unity test` はバッチ実行（`Application.isBatchMode` が true）。** エディタを開いたままだと実行できないので、人間が遊ぶときは `dev run` を使う。
 - **音は控えめに。** 既定の音量は小さくし、`AudioPolicy.ShouldMute`（バッチ実行・証跡撮影）のときは消音する。矩形波は振幅 0.05 程度で十分に聞こえる。
-- **証跡は `dev capture` で撮る。** 実ウィンドウにキー入力を送る方式は、作業中の画面と入力を奪う。各作品は `ICaptureScenario` を実装したコンポーネントをシーンに 1 つ置き、撮影中（`EvidenceCapture.IsRunning`）はプレイヤー入力を読まない。
+- **証跡は `dev capture` で撮る。** 実ウィンドウにキー入力を送る方式は、作業中の画面と入力を奪う。各作品は `ICaptureScenario` を実装したコンポーネントをシーンに 1 つ置く。
+  - 撮影中（`EvidenceCapture.IsRunning`）は乱数に `EvidenceCapture.Seed` を使い、実時間・プレイヤー入力では進めず、台本が Tick 単位で進める。同じビルドなら毎回同じ画像になる。
+  - 画像と `manifest.json`（シード、設定、ビルド GUID、撮影 Tick、SHA-256）は一時フォルダに書き、全部撮れたときだけ `evidence/` へ移す。
+- **画面比率に依存させない。** 正投影カメラの大きさは固定せず、画面の縦横比から毎フレーム決めて、プレイ領域全体が収まるようにする（4:3 や 1:1 でもテストする）。
+- **再現性は「1 試合 = 1 シード」で保つ。** 再戦も新しいシードで作り直し、乱数の状態を試合をまたいで持ち越さない。シードと入力列だけで何試合目でも単独で再現できる。
+- **動く物体との衝突は、接触した時刻の位置で判定する。** Tick 終了時の位置で判定すると、端での当たり外れが変わる。
+- **実行時に作った Texture2D・Sprite・AudioClip などは所有者を決めて破棄する。** シーンを読み直すテストで溜まらないよう、`OnDestroy` から `Dispose` する。
+- **設定値は有限かを検証する。** Inspector から無限大や NaN を入れられる。`float.IsFinite` で弾く。
 - **Core の設定クラスは公開フィールドで書く。** Unity のシリアライズのため。Core に限り CA1051 を無効化してある。
 - **乱数は自前の xorshift を使う。** `System.Random` は Mono と .NET で系列が一致する保証がなく、dotnet と Unity でテスト結果が変わりうる。
 - **非推奨 API に注意。** Unity 6.6 では次が警告（CS0618）になる。
@@ -99,4 +106,4 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 
 - `Assets/` にファイルを追加・移動・削除したら `.meta` も一緒にコミットする。新規ファイルの `.meta` は Unity を一度起動すれば生成される（`dev test NNN -Unity` でよい）。
 - `Library/` などの生成物はコミットしない。
-- pre-commit で lint と型チェック、pre-push で Core テストが走る。`--no-verify` で回避しない。
+- pre-commit で lint と型チェック、pre-push で Core / App テストが走る。`--no-verify` で回避しない。

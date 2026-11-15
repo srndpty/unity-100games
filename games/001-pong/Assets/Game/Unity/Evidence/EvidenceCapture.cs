@@ -8,14 +8,20 @@ namespace Game.Unity.Evidence
     /// <summary>
     /// 起動引数 <c>-capture &lt;出力先フォルダ&gt;</c> があるとき、シーン上の <see cref="ICaptureScenario"/> を実行して
     /// スクリーンショットを撮り、終了する（`dev capture NNN` から使う）。
-    /// 撮影中は <see cref="IsRunning"/> が true になる。ゲーム側はプレイヤー入力を無視して手元の操作が紛れ込まないようにし、音も鳴らさない。
+    /// 撮影中は <see cref="IsRunning"/> が true になる。ゲーム側は乱数に <see cref="Seed"/> を使い、
+    /// 実時間やプレイヤー入力では進めず台本に進行を任せ、音も鳴らさない。これで同じビルドなら毎回同じ画像になる。
+    /// 画像と manifest.json は一時フォルダに書き、全部撮れたときだけ出力先へ移す（途中で失敗しても新旧が混ざらない）。
     /// </summary>
     public static class EvidenceCapture
     {
-        private const string Argument = "-capture";
+        /// <summary>撮影時に使う固定シード。</summary>
+        public const int Seed = 1;
 
-        // 起動引数は実行中に変わらないので一度だけ読む。Awake からも参照できるよう、シーン読み込みの前後に依存しない形にする。
+        private const string Argument = "-capture";
+        private const string ManifestFile = "manifest.json";
+
         // 撮影しない通常起動では null。
+        // 起動引数は実行中に変わらないので一度だけ読む。Awake からも参照できるよう、シーン読み込みの前後に依存しない形にする。
         private static readonly string OutputDirectory = ReadOutputDirectory();
 
         public static bool IsRunning => OutputDirectory != null;
@@ -29,24 +35,58 @@ namespace Game.Unity.Evidence
             }
 
             Application.runInBackground = true;
-            _ = RunAsync(OutputDirectory);
+            _ = RunAsync(Path.GetFullPath(OutputDirectory));
         }
 
         private static async Awaitable RunAsync(string directory)
         {
+            var staging = directory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + ".staging";
             var exitCode = 0;
             try
             {
-                Directory.CreateDirectory(directory);
-                await FindScenario().RunAsync(new CaptureContext(directory));
+                if (Directory.Exists(staging))
+                {
+                    Directory.Delete(staging, recursive: true);
+                }
+
+                Directory.CreateDirectory(staging);
+                var manifest = new CaptureManifest
+                {
+                    Product = Application.productName,
+                    Version = Application.version,
+                    UnityVersion = Application.unityVersion,
+                    BuildGuid = Application.buildGUID,
+                    Seed = Seed,
+                    CapturedAtUtc = DateTime.UtcNow.ToString("O"),
+                };
+                await FindScenario().RunAsync(new CaptureContext(staging, manifest));
+                File.WriteAllText(Path.Combine(staging, ManifestFile), JsonUtility.ToJson(manifest, prettyPrint: true) + "\n");
+                Commit(staging, directory);
+                Debug.Log($"[EvidenceCapture] 保存: {directory}");
             }
             catch (Exception exception)
             {
                 Debug.LogException(exception);
                 exitCode = 1;
             }
+            finally
+            {
+                if (Directory.Exists(staging))
+                {
+                    Directory.Delete(staging, recursive: true);
+                }
+            }
 
             Application.Quit(exitCode);
+        }
+
+        private static void Commit(string staging, string directory)
+        {
+            Directory.CreateDirectory(directory);
+            foreach (var file in Directory.GetFiles(staging))
+            {
+                File.Copy(file, Path.Combine(directory, Path.GetFileName(file)), overwrite: true);
+            }
         }
 
         private static string ReadOutputDirectory()

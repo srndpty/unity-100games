@@ -39,6 +39,9 @@ namespace Game.Core
 
         public void Validate()
         {
+            Require(
+                AllFinite(FieldWidth, FieldHeight, PaddleWidth, PaddleHeight, PaddleInset, PaddleSpeed, BallSize, ServeSpeed, SpeedIncreasePerHit, MaxBallSpeed, MaxBounceAngleDegrees, MaxServeAngleDegrees),
+                "実数値はすべて有限");
             Require(FieldWidth > 0f && FieldHeight > 0f, "コートの大きさは正の値");
             Require(PaddleWidth > 0f && PaddleHeight > 0f && PaddleHeight < FieldHeight, "パドルはコートに収まる正の大きさ");
             Require(PaddleInset > (PaddleWidth / 2f) + BallSize && PaddleInset < FieldWidth / 4f, "パドルはゴールラインより内側で、ボールが裏へ抜けられる位置");
@@ -50,7 +53,12 @@ namespace Game.Core
             Require(WinScore >= 1, "勝利点は 1 以上");
             Require(TicksPerSecond >= 1, "Tick レートは 1 以上");
             Require(ServeDelayTicks >= 1, "サーブ待ちは 1 Tick 以上");
+
+            // 1 Tick で動ける距離を抑え、1 Tick 内の接触回数（BallSim の上限）に余裕を持たせる。
+            Require(MaxBallSpeed * TickDuration < PaddleHeight / 2f, "最高速度での 1 Tick の移動量はパドルの高さの半分未満");
         }
+
+        private static bool AllFinite(params float[] values) => Array.TrueForAll(values, float.IsFinite);
 
         private static void Require(bool condition, string rule)
         {

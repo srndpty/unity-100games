@@ -14,6 +14,7 @@ namespace Game.Core
     /// <summary>
     /// 1 試合の状態とルール。固定刻みの <see cref="Tick"/> でのみ進行し、描画や実時間には依存しない。
     /// サーブの乱数はシードから決まるため、同じシードと同じ入力列なら同じ結果になる。
+    /// 1 インスタンス = 1 試合。再戦は新しいシードで作り直す（乱数の状態を試合をまたいで持ち越さない）。
     /// </summary>
     public sealed class MatchState
     {
@@ -32,7 +33,7 @@ namespace Game.Core
             Left = new Paddle(config, Side.Left);
             Right = new Paddle(config, Side.Right);
             Ball = new BallSim(config);
-            StartMatch();
+            PrepareServe(_serveRandom.NextBool() ? Side.Left : Side.Right);
         }
 
         public PongConfig Config { get; }
@@ -51,7 +52,7 @@ namespace Game.Core
 
         public Side? Winner { get; private set; }
 
-        /// <summary>試合開始からの累計 Tick 数（再戦でも継続）。</summary>
+        /// <summary>試合開始からの Tick 数。</summary>
         public long Ticks { get; private set; }
 
         /// <summary>直前の <see cref="Tick"/> で起きた出来事。</summary>
@@ -95,28 +96,6 @@ namespace Game.Core
             }
         }
 
-        /// <summary>決着後にのみ、スコアを戻して再戦する。それ以外の局面では何もせず false。</summary>
-        public bool Rematch()
-        {
-            if (Phase != MatchPhase.Finished)
-            {
-                return false;
-            }
-
-            _events.Clear();
-            StartMatch();
-            return true;
-        }
-
-        private void StartMatch()
-        {
-            LeftScore = 0;
-            RightScore = 0;
-            Winner = null;
-            Left.SetY(0f);
-            Right.SetY(0f);
-            PrepareServe(_serveRandom.NextBool() ? Side.Left : Side.Right);
-        }
 
         private void PrepareServe(Side receiver)
         {

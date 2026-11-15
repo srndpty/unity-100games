@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace Game.Unity
 {
-    /// <summary>試合の出来事に合わせて、実行時に合成した矩形波の効果音を鳴らす。</summary>
-    public sealed class PongAudio
+    /// <summary>試合の出来事に合わせて、実行時に合成した矩形波の効果音を鳴らす。合成したクリップはこのクラスが所有し <see cref="Dispose"/> で破棄する。</summary>
+    public sealed class PongAudio : System.IDisposable
     {
         private const int SampleRate = 44100;
         // 矩形波は振幅の割に大きく聞こえるため、かなり小さめにする。
@@ -34,6 +34,15 @@ namespace Game.Unity
                 _ => throw new System.ArgumentOutOfRangeException(nameof(kind), kind, null),
             };
             _source.PlayOneShot(clip);
+        }
+
+        public void Dispose()
+        {
+            _source.Stop();
+            Object.Destroy(_paddleHit);
+            Object.Destroy(_wallHit);
+            Object.Destroy(_scored);
+            Object.Destroy(_matchWon);
         }
 
         private static AudioClip CreateTone(string name, float frequency, float seconds)

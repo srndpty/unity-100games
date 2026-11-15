@@ -1,0 +1,35 @@
+{
+    "Product": "001-pong",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "1c33a1b2e50b4da09733a333f72aa9fb",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-15T08:43:51.7916764Z",
+    "Info": [
+        {
+            "Key": "settings",
+            "Value": "{\"_match\":{\"FieldWidth\":16.0,\"FieldHeight\":9.0,\"PaddleWidth\":0.25,\"PaddleHeight\":1.600000023841858,\"PaddleInset\":0.6000000238418579,\"PaddleSpeed\":9.0,\"BallSize\":0.25,\"ServeSpeed\":7.0,\"SpeedIncreasePerHit\":0.5,\"MaxBallSpeed\":16.0,\"MaxBounceAngleDegrees\":55.0,\"MaxServeAngleDegrees\":30.0,\"WinScore\":5,\"TicksPerSecond\":60,\"ServeDelayTicks\":60},\"_cpu\":{\"MaxSpeed\":5.0,\"DeadZone\":0.10000000149011612,\"AimError\":1.2999999523162842}}"
+        },
+        {
+            "Key": "matchSeed",
+            "Value": "1"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "title.png",
+            "Sha256": "e6ddab6dc106a96164a2560fd2b4ec6aa4ea4be41f71f4481341b2b56952a7ea",
+            "Note": "起動直後"
+        },
+        {
+            "File": "playing.png",
+            "Sha256": "0e23ba95b80cb28f2a0ce99b8db5020477b45bfeba74eece4d8ad11e592718c1",
+            "Note": "tick=100"
+        },
+        {
+            "File": "result.png",
+            "Sha256": "515798cbbd56466ce5923d1d8673cbc4de67de1e93b9506477dc1bb0ed256a79",
+            "Note": "tick=1268, 1-5"
+        }
+    ]
+}

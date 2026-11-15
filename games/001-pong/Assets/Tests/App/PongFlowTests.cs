@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Game.Core;
 using NUnit.Framework;
 
@@ -92,18 +93,55 @@ namespace Game.App.Tests
         }
 
         [Test]
-        public void MatchEnd_MovesToResult_ThenSubmitRematches()
+        public void MatchEnd_MovesToResult_ThenSubmitStartsNewMatchWithNextSeed()
         {
             _flow.Submit();
+            var firstSeed = _flow.MatchSeed;
             PlayUntilResult();
-            var match = _flow.Match!;
-            Assert.That(match.Winner, Is.Not.Null);
+            var finished = _flow.Match!;
+            Assert.That(finished.Winner, Is.Not.Null);
 
             _flow.Submit();
 
             Assert.That(_flow.Screen, Is.EqualTo(AppScreen.Playing));
-            Assert.That(_flow.Match, Is.SameAs(match));
-            Assert.That(match.LeftScore + match.RightScore, Is.Zero);
+            Assert.That(_flow.Match, Is.Not.SameAs(finished));
+            Assert.That(_flow.Match!.LeftScore + _flow.Match.RightScore, Is.Zero);
+            Assert.That(_flow.MatchSeed, Is.EqualTo(firstSeed + 1));
+        }
+
+        [Test]
+        public void NthRematch_CanBeReproducedFromItsSeedAndInputsAlone()
+        {
+            // 3 試合続けて遊び、各試合のシードとプレイヤー入力列を記録する。
+            var played = new List<(int Seed, List<float> Inputs, MatchState Match)>();
+            var random = new SeededRandom(7);
+            for (var match = 0; match < 3; match++)
+            {
+                _flow.Submit();
+                var inputs = new List<float>();
+                for (var frame = 0; frame < 60 * 60 * 30 && _flow.Screen == AppScreen.Playing; frame++)
+                {
+                    var input = random.Range(-1f, 1f);
+                    _flow.Advance(_config.TickDuration, input);
+                    inputs.Add(input);
+                }
+
+                Assert.That(_flow.Screen, Is.EqualTo(AppScreen.Result));
+                played.Add((_flow.MatchSeed, inputs, _flow.Match!));
+            }
+
+            // 3 試合目を、前の試合を一切流さずに単独で再現する。
+            var (seed, recorded, original) = played[2];
+            var replay = new SeededMatch(_config, new CpuConfig(), seed);
+            foreach (var input in recorded)
+            {
+                replay.Tick(input);
+            }
+
+            Assert.That(replay.State.Winner, Is.EqualTo(original.Winner));
+            Assert.That(replay.State.LeftScore, Is.EqualTo(original.LeftScore));
+            Assert.That(replay.State.RightScore, Is.EqualTo(original.RightScore));
+            Assert.That(replay.State.Ticks, Is.EqualTo(original.Ticks));
         }
 
         [Test]

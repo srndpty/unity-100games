@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 
 namespace Game.Core.Tests
@@ -46,6 +47,14 @@ namespace Game.Core.Tests
             match.Ball.Launch(new Vec2(0f, 0.05f), new Vec2(5f, 0f));
 
             Assert.That(cpu.Decide(match), Is.Zero);
+        }
+
+        [Test]
+        public void NonFiniteConfig_IsRejected()
+        {
+            Assert.Throws<ArgumentException>(() => new CpuController(new CpuConfig { MaxSpeed = float.PositiveInfinity }, Side.Right, 1));
+            Assert.Throws<ArgumentException>(() => new CpuController(new CpuConfig { DeadZone = float.PositiveInfinity }, Side.Right, 1));
+            Assert.Throws<ArgumentException>(() => new CpuController(new CpuConfig { AimError = float.NaN }, Side.Right, 1));
         }
     }
 }

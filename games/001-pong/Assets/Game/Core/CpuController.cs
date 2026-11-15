@@ -16,9 +16,10 @@ namespace Game.Core
 
         public void Validate()
         {
-            if (MaxSpeed <= 0f || DeadZone < 0f || AimError < 0f)
+            var finite = float.IsFinite(MaxSpeed) && float.IsFinite(DeadZone) && float.IsFinite(AimError);
+            if (!finite || MaxSpeed <= 0f || DeadZone < 0f || AimError < 0f)
             {
-                throw new ArgumentException("CpuConfig が不正です: 速度は正、不感帯とぶれは 0 以上");
+                throw new ArgumentException("CpuConfig が不正です: 有限の値で、速度は正、不感帯とぶれは 0 以上");
             }
         }
     }

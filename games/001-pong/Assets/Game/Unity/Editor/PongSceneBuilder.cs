@@ -39,7 +39,7 @@ namespace Game.Unity.Editor
             var camera = Object.FindAnyObjectByType<Camera>();
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = Color.black;
-            camera.orthographicSize = 5f;
+            CourtFraming.Fit(camera, settings.Match); // 実行中は PongGame が画面比率に合わせて毎フレーム合わせ直す
 
             var game = new GameObject(GameObjectName);
             var hudRenderer = game.AddComponent<PanelRenderer>();
@@ -49,6 +49,7 @@ namespace Game.Unity.Editor
             var serialized = new SerializedObject(pong);
             serialized.FindProperty("_settings").objectReferenceValue = settings;
             serialized.FindProperty("_hudRenderer").objectReferenceValue = hudRenderer;
+            serialized.FindProperty("_camera").objectReferenceValue = camera;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             game.AddComponent<PongCaptureScenario>();
 

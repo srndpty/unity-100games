@@ -23,7 +23,7 @@ namespace Game.App
         private readonly CpuConfig _cpuConfig;
         private readonly List<MatchEvent> _frameEvents = new();
         private int _nextSeed;
-        private CpuController? _cpu;
+        private SeededMatch? _session;
         private double _accumulator;
 
         public PongFlow(PongConfig config, CpuConfig cpuConfig, int seed)
@@ -38,10 +38,13 @@ namespace Game.App
         public AppScreen Screen { get; private set; } = AppScreen.Title;
 
         /// <summary>現在の試合。タイトル画面では null。</summary>
-        public MatchState? Match { get; private set; }
+        public MatchState? Match => _session?.State;
 
-        /// <summary>直前に使った試合のシード（再現用）。</summary>
-        public int MatchSeed { get; private set; }
+        /// <summary>
+        /// 現在の試合のシード。<see cref="SeededMatch"/> にこのシードとプレイヤー入力列を与えれば同じ試合を再現できる。
+        /// 試合を始めるたび（再戦を含む）に次のシードへ進む。
+        /// </summary>
+        public int MatchSeed => _session?.Seed ?? 0;
 
         public MatchSnapshot Previous { get; private set; }
 
@@ -53,20 +56,12 @@ namespace Game.App
         /// <summary>直前の <see cref="Advance"/> で起きた出来事。</summary>
         public IReadOnlyList<MatchEvent> FrameEvents => _frameEvents;
 
-        /// <summary>決定操作。タイトルなら試合開始、結果画面なら再戦。試合中は無視する。</summary>
+        /// <summary>決定操作。タイトルなら試合開始、結果画面なら再戦（新しいシードの独立した試合）。試合中は無視する。</summary>
         public void Submit()
         {
-            switch (Screen)
+            if (Screen != AppScreen.Playing)
             {
-                case AppScreen.Title:
-                    StartNewMatch();
-                    break;
-                case AppScreen.Result:
-                    Match!.Rematch();
-                    BeginPlaying();
-                    break;
-                case AppScreen.Playing:
-                    break;
+                StartNewMatch();
             }
         }
 
@@ -74,8 +69,7 @@ namespace Game.App
         public void Back()
         {
             Screen = AppScreen.Title;
-            Match = null;
-            _cpu = null;
+            _session = null;
             _frameEvents.Clear();
             Previous = default;
             Current = default;
@@ -90,14 +84,15 @@ namespace Game.App
                 return;
             }
 
-            var match = Match!;
+            var session = _session!;
+            var match = session.State;
             var tickDuration = (double)_config.TickDuration;
             _accumulator += deltaSeconds;
             for (var ticks = 0; ticks < MaxTicksPerFrame && _accumulator >= tickDuration; ticks++)
             {
                 _accumulator -= tickDuration;
                 Previous = Current;
-                match.Tick(playerInput, _cpu!.Decide(match));
+                session.Tick(playerInput);
                 Current = match.Snapshot;
                 _frameEvents.AddRange(match.Events);
                 if (match.Phase == MatchPhase.Finished)
@@ -118,18 +113,11 @@ namespace Game.App
 
         private void StartNewMatch()
         {
-            MatchSeed = _nextSeed++;
-            Match = new MatchState(_config, MatchSeed);
-            _cpu = new CpuController(_cpuConfig, Side.Right, ~MatchSeed);
-            BeginPlaying();
-        }
-
-        private void BeginPlaying()
-        {
+            _session = new SeededMatch(_config, _cpuConfig, _nextSeed++);
             Screen = AppScreen.Playing;
             _accumulator = 0d;
             Alpha = 0f;
-            Current = Match!.Snapshot;
+            Current = _session.State.Snapshot;
             Previous = Current;
         }
     }

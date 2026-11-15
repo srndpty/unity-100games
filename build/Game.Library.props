@@ -1,0 +1,19 @@
+<Project>
+  <!--
+    Unity 非依存のアセンブリ (Game.Core / Game.App) を Unity なしで検証するための共通設定。Unity 6.6 の C# 設定に合わせる。
+    取り込む前に GameLayer (Core または App) を設定する。ソースは Assets/Game/$(GameLayer)/ を Unity と共有する。
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <RootNamespace>Game.$(GameLayer)</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildProjectDirectory)/../../Assets/Game/$(GameLayer)/**/*.cs" />
+  </ItemGroup>
+</Project>
