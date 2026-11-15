@@ -14,7 +14,7 @@
 dev gui {{NNN}}      # エディタで開く
 dev build {{NNN}}    # Windows ビルド
 dev run {{NNN}}      # ビルドを起動
-dev capture {{NNN}}  # 証跡のスクリーンショットを evidence/captures/<世代>/ に撮る（ICaptureScenario の実装が必要）
+dev capture {{NNN}}  # 証跡を evidence/ に撮る（画像は captures/<画像世代>/、撮影記録は runs/）（ICaptureScenario の実装が必要）
 ```
 
 ## 操作

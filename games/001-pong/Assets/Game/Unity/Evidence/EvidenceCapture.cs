@@ -66,7 +66,7 @@ namespace Game.Unity.Evidence
                     Debug.LogWarning($"[EvidenceCapture] {warning}");
                 }
 
-                Debug.Log($"[EvidenceCapture] 公開: 世代 {result.Generation}（前回: {result.PreviousGeneration ?? "なし"}）");
+                Debug.Log($"[EvidenceCapture] 公開: 画像世代 {result.Generation}、撮影 {result.Run}（前回の画像世代: {result.Previous?.Generation ?? "なし"}）");
             }
             catch (Exception exception)
             {

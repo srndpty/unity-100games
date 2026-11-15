@@ -132,15 +132,26 @@ function Invoke-Lint {
     Invoke-WhitespaceFormat $targets -Verify
 }
 
-# evidence/README.md の相対リンク (画像など) の先が存在することを検証する。
-# 証跡は内容で決まる世代フォルダに置くため、画像が変わって撮り直すとリンク先が変わる。
+# evidence/README.md の相対リンク (画像など) を検証する。
+# - リンク先が存在すること。
+# - 証跡 (captures/<画像世代>/、runs/<撮影 ID>/) へのリンクは、公開中のもの (current.json が指すもの) であること。
+#   画像は内容で決まる世代フォルダに置くため、画像が変わって撮り直すとリンク先が変わる。古い世代が消せずに残っていても見逃さない。
 function Test-EvidenceLinks($GameDirs) {
     $problems = foreach ($gameDir in $GameDirs) {
-        $readme = Join-Path $gameDir.FullName 'evidence/README.md'
+        $evidence = Join-Path $gameDir.FullName 'evidence'
+        $readme = Join-Path $evidence 'README.md'
         if (-not (Test-Path $readme)) { continue }
+        $pointerPath = Join-Path $evidence 'current.json'
+        $current = if (Test-Path $pointerPath) { Get-Content $pointerPath -Raw | ConvertFrom-Json } else { [pscustomobject]@{ Generation = '(未公開)'; Run = '(未公開)' } }
         foreach ($match in [regex]::Matches((Get-Content $readme -Raw), '\]\((?!https?:|#)([^)\s#]+)')) {
-            $target = Join-Path (Split-Path $readme) $match.Groups[1].Value
-            if (-not (Test-Path -LiteralPath $target)) { "リンク先がない ($readme): $($match.Groups[1].Value)" }
+            $link = $match.Groups[1].Value
+            if (-not (Test-Path -LiteralPath (Join-Path $evidence $link))) { "リンク先がない ($readme): $link"; continue }
+            if ($link -match '^captures/([^/]+)/' -and $Matches[1] -ne $current.Generation) {
+                "公開中でない画像世代へのリンク ($readme): $link (公開中: $($current.Generation))"
+            }
+            if ($link -match '^runs/([^/]+)/' -and $Matches[1] -ne $current.Run) {
+                "公開中でない撮影記録へのリンク ($readme): $link (公開中: $($current.Run)。撮影記録は撮影ごとに変わるので current.json にリンクする)"
+            }
         }
     }
     if ($problems) {
@@ -243,7 +254,7 @@ function Show-Help {
   gui [NNN]                     Unity エディタで開く
   build [NNN]                   Windows 向けにビルド (games/NNN-*/Builds/Windows/)
   run [NNN]                     ビルド済みのゲームを起動
-  capture [NNN]                 ビルドを撮影モードで起動し、evidence/captures/<世代>/ にスクリーンショットを公開 (自動で終了)
+  capture [NNN]                 ビルドを撮影モードで起動し、証跡を evidence/ に公開 (画像は captures/、撮影記録は runs/。自動で終了)
   test                          全作品の Core / App テストを dotnet で実行 (高速、Unity 不要)
   test [NNN] -Unity [-Mode EditMode|PlayMode]
                                 Unity 上でテストを実行
@@ -292,10 +303,11 @@ switch ($Command) {
             throw "撮影が $CaptureTimeoutSeconds 秒で終わらないため打ち切りました。ログ: $log"
         }
         if ($process.ExitCode -ne 0) { throw "撮影に失敗しました (終了コード $($process.ExitCode))。ログ: $log" }
-        $generation = (Get-Content $pointer -Raw | ConvertFrom-Json).Generation
-        Write-Host "撮影しました: evidence/captures/$generation/"
+        $current = Get-Content $pointer -Raw | ConvertFrom-Json
+        $generation = $current.Generation
+        Write-Host "撮影しました: 画像 evidence/captures/$generation/、撮影記録 evidence/runs/$($current.Run)/manifest.json"
         if ($previous -and $previous -ne $generation) {
-            Write-Host "画像が変わり、世代が $previous から $generation になりました。evidence/README.md の画像リンクを更新してください (dev lint が切れたリンクを検出します)。" -ForegroundColor Yellow
+            Write-Host "画像が変わり、画像世代が $previous から $generation になりました。evidence/README.md の画像リンクを更新してください (dev lint が古いリンクを検出します)。" -ForegroundColor Yellow
         }
     }
     'test' {
