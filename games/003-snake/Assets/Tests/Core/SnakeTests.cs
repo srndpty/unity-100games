@@ -106,6 +106,9 @@ namespace Game.Core.Tests
         [TestCase(20, 16, 0, 8f)]
         [TestCase(20, 16, 12, 8f)]
         [TestCase(65536, 65536, 3, 8f)]
+        [TestCase(33, 20, 3, 8f)]
+        [TestCase(32, 21, 3, 8f)]
+        [TestCase(256, 256, 3, 8f)]
         [TestCase(20, 16, 3, 0f)]
         [TestCase(20, 16, 3, -1f)]
         [TestCase(20, 16, 3, 61f)]
@@ -122,7 +125,7 @@ namespace Game.Core.Tests
         public void ConfigBoundaries_AreAccepted()
         {
             new SnakeConfig { Width = 4, Height = 2, InitialLength = 3, StepsPerSecond = 60f }.Validate();
-            new SnakeConfig { Width = 256, Height = 256, StepsPerSecond = float.Epsilon }.Validate();
+            new SnakeConfig { Width = SnakeConfig.MaxWidth, Height = SnakeConfig.MaxHeight, StepsPerSecond = float.Epsilon }.Validate();
         }
 
         public static void AssertBody(SnakeState game, int initialLength)

@@ -22,11 +22,49 @@ namespace Game.Unity.Tests
             yield return SceneManager.LoadSceneAsync("Snake");
             _game = Object.FindAnyObjectByType<SnakeGame>();
             _game.ManualTicks = true;
+            _game.SendMessage("OnApplicationFocus", true);
             yield return null;
         }
 
         [TearDown]
         public void RestoreKeyboard() => _keyboard.Dispose();
+
+        [UnityTest]
+        public IEnumerator PauseKeyAndFocusLoss_InSameFrame_StayPausedUntilManualResume()
+        {
+            _game.Flow.Submit();
+            _game.Flow.RequestDirection(Direction.Up);
+            _keyboard.Hold(Key.P);
+            InputSystem.Update(); // 停止要求を先に立て、Updateより前にフォーカス喪失を届ける。
+            _game.SendMessage("OnApplicationFocus", false);
+            yield return null;
+            Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Paused));
+            Assert.That(_game.Flow.PendingTurns, Is.Zero);
+            var tick = _game.Flow.Game.TickCount;
+            _keyboard.Hold();
+            InputSystem.Update();
+            yield return _keyboard.Tap(Key.Escape); // フォーカスのない間の再開入力も無視。
+            Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Paused));
+            Assert.That(_game.Flow.Game.TickCount, Is.EqualTo(tick));
+            _game.SendMessage("OnApplicationFocus", true);
+            yield return null;
+            Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Paused));
+            yield return _keyboard.Tap(Key.P);
+            Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Playing));
+            Assert.That(_game.Flow.Game.TickCount, Is.EqualTo(tick));
+        }
+
+        [UnityTest]
+        public IEnumerator FocusLossBeforePauseKey_AlsoStaysPaused()
+        {
+            _game.Flow.Submit();
+            _game.SendMessage("OnApplicationFocus", false);
+            yield return _keyboard.Tap(Key.P);
+            Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Paused));
+            _game.SendMessage("OnApplicationFocus", true);
+            yield return _keyboard.Tap(Key.Escape);
+            Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Playing));
+        }
 
         [UnityTest]
         public IEnumerator Title_Start_Turn_Pause_Resume()

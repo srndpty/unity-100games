@@ -33,7 +33,7 @@ namespace Game.App.Tests
         [Test]
         public void MaximumFiniteTime_DoesNotOverflow_AndInvalidDirectionIsIgnored()
         {
-            SnakeFlow flow = new(new SnakeConfig { Width = 40 }, 1);
+            SnakeFlow flow = new(new SnakeConfig { Width = SnakeConfig.MaxWidth }, 1);
             flow.Submit();
             Assert.That(flow.RequestDirection((Direction)99), Is.False);
             flow.Advance(double.MaxValue);
@@ -43,7 +43,7 @@ namespace Game.App.Tests
         [Test]
         public void NonBinaryTickDuration_DoesNotDoubleCountRemainder()
         {
-            SnakeFlow flow = new(new SnakeConfig { Width = 40, StepsPerSecond = 10f }, 1);
+            SnakeFlow flow = new(new SnakeConfig { Width = SnakeConfig.MaxWidth, StepsPerSecond = 10f }, 1);
             flow.Submit();
             flow.Advance(1d);
             flow.Advance(.001d);
@@ -114,7 +114,7 @@ namespace Game.App.Tests
         [Test]
         public void LargeFrame_IsCapped_AndDoesNotCarryWholeTicks()
         {
-            SnakeFlow flow = new(new SnakeConfig { Width = 40 }, 4);
+            SnakeFlow flow = new(new SnakeConfig { Width = SnakeConfig.MaxWidth }, 4);
             flow.Submit();
             flow.Advance(100);
             Assert.That(flow.Game!.TickCount, Is.EqualTo(5));

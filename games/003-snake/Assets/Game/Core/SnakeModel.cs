@@ -28,6 +28,9 @@ namespace Game.Core
     [Serializable]
     public sealed class SnakeConfig
     {
+        // 体節ごとにSpriteRendererを使う描画方式で計測したサポート範囲。
+        public const int MaxWidth = 32;
+        public const int MaxHeight = 20;
         public int Width = 20;
         public int Height = 16;
         public int InitialLength = 3;
@@ -35,8 +38,8 @@ namespace Game.Core
 
         public void Validate()
         {
-            // 盤面の配列容量も明示的に制限する。初期胴体は中央から左へ伸ばす。
-            if (Width < 4 || Height < 2 || (long)Width * Height > 65536 ||
+            // Coreの配列容量だけでなく、Unityの描画・オブジェクト数の上限も保証する。
+            if (Width < 4 || Width > MaxWidth || Height < 2 || Height > MaxHeight ||
                 InitialLength < 2 || InitialLength > Width / 2 + 1 ||
                 !float.IsFinite(StepsPerSecond) || StepsPerSecond <= 0f || StepsPerSecond > 60f)
             {

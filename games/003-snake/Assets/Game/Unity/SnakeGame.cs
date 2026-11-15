@@ -29,6 +29,7 @@ namespace Game.Unity
         private bool _backRequested;
         private bool _pauseRequested;
         private bool _submitRequested;
+        private bool _hasFocus = true;
 
         public SnakeFlow Flow { get; private set; }
         public SnakeSettings Settings => _settings;
@@ -75,14 +76,14 @@ namespace Game.Unity
         {
             var action = new InputAction(name, InputActionType.Button);
             foreach (var binding in bindings) { action.AddBinding(binding); }
-            action.performed += _ => { if (!EvidenceCapture.IsRunning) { callback(); } };
+            action.performed += _ => { if (!EvidenceCapture.IsRunning && _hasFocus) { callback(); } };
             action.Enable();
             _actions.Add(action);
         }
 
         private void Update()
         {
-            if (!EvidenceCapture.IsRunning)
+            if (!EvidenceCapture.IsRunning && _hasFocus)
             {
                 if (_backRequested) { Flow.Back(); }
                 else if (_pauseRequested) { Flow.TogglePause(); }
@@ -96,6 +97,12 @@ namespace Game.Unity
 
         private void OnApplicationFocus(bool focus)
         {
+            _hasFocus = focus;
+            if (!focus)
+            {
+                // フォーカス喪失より前に届いた停止・開始操作を復帰へ持ち越さない。
+                _backRequested = _pauseRequested = _submitRequested = false;
+            }
             if (!focus && !EvidenceCapture.IsRunning && Flow != null && Flow.Screen == AppScreen.Playing)
             {
                 Flow.TogglePause();
