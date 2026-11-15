@@ -38,7 +38,7 @@ Thumbs.db
 .claude/settings.local.json
 tmp/
 
-# dev capture の一時フォルダ・退避フォルダ・ロック（通常は撮影の終わりに消える）
+# dev capture の一時フォルダ・ロック・ポインタの一時ファイル（通常は撮影の終わりに消える）
 /games/*/evidence/.staging-*/
-/games/*/evidence/.retired-*/
 /games/*/evidence/.publish.lock
+/games/*/evidence/current.json.tmp-*

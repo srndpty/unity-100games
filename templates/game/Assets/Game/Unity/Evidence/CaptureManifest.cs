@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Game.Unity.Evidence
 {
     /// <summary>
-    /// 証跡の記録（evidence/capture/manifest.json）。どのビルド・シード・設定で、どの時点を撮ったかと、各画像の SHA-256 を残す。
+    /// 証跡の記録（evidence/captures/&lt;世代&gt;/manifest.json）。どのビルド・シード・設定で、どの時点を撮ったかと、各画像の SHA-256 を残す。
     /// JsonUtility で書き出すため公開フィールドにしている。
     /// </summary>
     [Serializable]

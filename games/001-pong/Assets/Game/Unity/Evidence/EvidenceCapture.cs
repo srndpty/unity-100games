@@ -10,7 +10,7 @@ namespace Game.Unity.Evidence
     /// スクリーンショットを撮り、終了する（`dev capture NNN` から使う）。
     /// 撮影中は <see cref="IsRunning"/> が true になる。ゲーム側は乱数に <see cref="Seed"/> を使い、
     /// 実時間やプレイヤー入力では進めず台本に進行を任せ、音も鳴らさない。これで同じビルドなら毎回同じ画像になる。
-    /// 画像と manifest.json は一時フォルダに書き、全部撮れて検証できたときだけ <c>capture/</c> として公開する（<see cref="EvidencePublisher"/>）。
+    /// 画像と manifest.json は一時フォルダに書き、全部撮れて検証できたときだけ新しい世代として公開する（<see cref="EvidencePublisher"/>）。
     /// 失敗しても必ず終了し、終了コード 1 を返す。
     /// </summary>
     public static class EvidenceCapture
@@ -59,14 +59,14 @@ namespace Game.Unity.Evidence
                 };
                 await FindScenario().RunAsync(new CaptureContext(staging, manifest));
                 File.WriteAllText(Path.Combine(staging, EvidencePublisher.ManifestFileName), JsonUtility.ToJson(manifest, prettyPrint: true) + "\n");
-                var shots = manifest.Shots.Select(shot => (shot.File, shot.Sha256)).ToArray();
-                foreach (var warning in publisher.Publish(staging, shots))
+                var result = publisher.Publish(staging);
+                staging = null; // 世代フォルダになったので後始末しない
+                foreach (var warning in result.Warnings)
                 {
                     Debug.LogWarning($"[EvidenceCapture] {warning}");
                 }
 
-                staging = null; // 公開フォルダになったので後始末しない
-                Debug.Log($"[EvidenceCapture] 公開: {publisher.PublishedDirectory}");
+                Debug.Log($"[EvidenceCapture] 公開: 世代 {result.Generation}（前回: {result.PreviousGeneration ?? "なし"}）");
             }
             catch (Exception exception)
             {

@@ -56,7 +56,7 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 | `dev new 002` | 仕様書に対応する Unity プロジェクトを作成（`-Template 3d` で 3D URP） |
 | `dev gui 001` | Unity エディタで開く |
 | `dev build 001` / `dev run 001` | Windows ビルド／ビルドを起動 |
-| `dev capture 001` | ビルドを撮影モードで起動し、`evidence/capture/` にスクリーンショットを保存して自動終了 |
+| `dev capture 001` | ビルドを撮影モードで起動し、`evidence/captures/<世代>/` にスクリーンショットを公開して自動終了 |
 | `dev test` | 全作品の Core / App テスト（dotnet、高速） |
 | `dev test 001 -Unity [-Mode PlayMode]` | Unity 上でテスト（エディタを閉じた状態で実行） |
 | `dev lint` / `dev format` | `.meta` と空白整形の検証（コンパイル不要）／整形の適用（スタイル・アナライザーの自動修正を含む） |
@@ -87,7 +87,9 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - **証跡は `dev capture` で撮る。** 実ウィンドウにキー入力を送る方式は、作業中の画面と入力を奪う。各作品は `ICaptureScenario` を実装したコンポーネントをシーンに 1 つ置く。
   - 撮影中（`EvidenceCapture.IsRunning`）は乱数に `EvidenceCapture.Seed` を使い、実時間・プレイヤー入力では進めず、台本が Tick 単位で進める。同じビルドなら毎回同じ画像になる。
   - 撮影した画面は補間せず、その Tick の状態をそのまま描く。
-  - 画像と `manifest.json`（シード、設定、ビルド GUID、撮影 Tick、SHA-256）は撮影ごとの一時フォルダに書き、検証できたら `evidence/capture/` とフォルダ名の付け替えだけで入れ替える（`EvidencePublisher`）。ファイル単位でコピーしないので新旧が混ざらず、古いファイルも残らない。手書きの `evidence/README.md` は `capture/` の外に置く。
+  - 画像と `manifest.json`（シード、設定、ビルド GUID、撮影 Tick、SHA-256）は撮影ごとの一時フォルダに書く。`manifest.json` の内容と画像を照合してから、世代ごとの不変フォルダ `evidence/captures/<世代>/` へ移し、ポインタ `evidence/current.json` を原子的に置き換えて公開する（`EvidencePublisher`）。ポインタはどこで止まっても完全な世代を指し、指されていない世代は次の公開で消える。
+  - 世代名は画像の内容から決まる。同じ画像なら撮り直しても変わらないが、画像が変わったら `evidence/README.md` のリンクを新しい世代に直す（`dev lint` が切れたリンクを検出する）。
+  - 原子性を主張する処理は、各ファイル操作の途中に失敗を注入するテストで確かめる（`IEvidenceFileOps`）。
   - 失敗しても撮影プロセスは必ず終了コード 1 で終わる。`dev capture` 側も 120 秒で打ち切る。
 - **衝突回数などの実行時の上限は、設定の検証で保証する。** 上限を超えたら例外にする（fail-closed）だけでなく、検証を通った設定では超えないことを理屈とテスト（境界値と乱択）で確かめる。
 - **動く物体が途中で端に着く Tick は、着いた時点で止まったとして補間する。** 開始位置と（端で止めた）終了位置を単純に補間すると、端の近くで位置がずれる。

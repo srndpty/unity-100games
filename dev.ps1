@@ -128,7 +128,25 @@ function Invoke-WhitespaceFormat($GameDirs, [switch]$Verify) {
 function Invoke-Lint {
     $targets = @(Get-TargetGameDirs)
     Test-MetaFiles $targets
+    Test-EvidenceLinks $targets
     Invoke-WhitespaceFormat $targets -Verify
+}
+
+# evidence/README.md の相対リンク (画像など) の先が存在することを検証する。
+# 証跡は内容で決まる世代フォルダに置くため、画像が変わって撮り直すとリンク先が変わる。
+function Test-EvidenceLinks($GameDirs) {
+    $problems = foreach ($gameDir in $GameDirs) {
+        $readme = Join-Path $gameDir.FullName 'evidence/README.md'
+        if (-not (Test-Path $readme)) { continue }
+        foreach ($match in [regex]::Matches((Get-Content $readme -Raw), '\]\((?!https?:|#)([^)\s#]+)')) {
+            $target = Join-Path (Split-Path $readme) $match.Groups[1].Value
+            if (-not (Test-Path -LiteralPath $target)) { "リンク先がない ($readme): $($match.Groups[1].Value)" }
+        }
+    }
+    if ($problems) {
+        $problems | ForEach-Object { Write-Host $_ -ForegroundColor Red }
+        exit 1
+    }
 }
 
 function Invoke-Check {
@@ -225,11 +243,11 @@ function Show-Help {
   gui [NNN]                     Unity エディタで開く
   build [NNN]                   Windows 向けにビルド (games/NNN-*/Builds/Windows/)
   run [NNN]                     ビルド済みのゲームを起動
-  capture [NNN]                 ビルドを撮影モードで起動し、evidence/capture/ にスクリーンショットを保存 (自動で終了)
+  capture [NNN]                 ビルドを撮影モードで起動し、evidence/captures/<世代>/ にスクリーンショットを公開 (自動で終了)
   test                          全作品の Core / App テストを dotnet で実行 (高速、Unity 不要)
   test [NNN] -Unity [-Mode EditMode|PlayMode]
                                 Unity 上でテストを実行
-  lint [NNN] [-Staged]          .meta と空白整形の検証 (変更しない、コンパイル不要で速い)
+  lint [NNN] [-Staged]          .meta・証跡 README のリンク・空白整形の検証 (変更しない、コンパイル不要で速い)
   format                        コードを整形 (スタイル・アナライザーの自動修正を含む)
   check [NNN] [-Staged]         Core / App のビルド。型・コードスタイル・アナライザーを検査 (警告はエラー扱い)
                                 -Staged: git にステージした変更が影響する作品だけ (pre-commit 用)
@@ -260,8 +278,11 @@ switch ($Command) {
         if (-not (Test-Path $exe)) { throw "ビルドがありません。先に dev build を実行してください: $exe" }
         $evidence = Join-Path $gameDir.FullName 'evidence'
         $log = Join-Path $gameDir.FullName 'Logs/capture.log'
-        # ゲーム側の撮影台本 (ICaptureScenario) が画面を進めて撮影し、evidence/capture/ に一式を公開して自分で終了する。
-        # 撮影中はキー入力を無視する。ゲームが終了しないときに待ち続けないよう、時間で打ち切る。
+        # ゲーム側の撮影台本 (ICaptureScenario) が画面を進めて撮影し、evidence/captures/<世代>/ に一式を公開して
+        # evidence/current.json をその世代に切り替え、自分で終了する。撮影中はキー入力を無視する。
+        # ゲームが終了しないときに待ち続けないよう、時間で打ち切る。
+        $pointer = Join-Path $evidence 'current.json'
+        $previous = if (Test-Path $pointer) { (Get-Content $pointer -Raw | ConvertFrom-Json).Generation } else { $null }
         $process = Start-Process $exe -PassThru -ArgumentList @(
             '-capture', "`"$evidence`"", '-logFile', "`"$log`"",
             '-screen-fullscreen', '0', '-screen-width', '1280', '-screen-height', '720'
@@ -271,7 +292,11 @@ switch ($Command) {
             throw "撮影が $CaptureTimeoutSeconds 秒で終わらないため打ち切りました。ログ: $log"
         }
         if ($process.ExitCode -ne 0) { throw "撮影に失敗しました (終了コード $($process.ExitCode))。ログ: $log" }
-        Write-Host "撮影しました: $(Join-Path $evidence 'capture')"
+        $generation = (Get-Content $pointer -Raw | ConvertFrom-Json).Generation
+        Write-Host "撮影しました: evidence/captures/$generation/"
+        if ($previous -and $previous -ne $generation) {
+            Write-Host "画像が変わり、世代が $previous から $generation になりました。evidence/README.md の画像リンクを更新してください (dev lint が切れたリンクを検出します)。" -ForegroundColor Yellow
+        }
     }
     'test' {
         if ($Unity) {
