@@ -1,0 +1,50 @@
+{
+    "Product": "005-asteroids",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "41f9171a32dc43448a5da552c280ff38",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-15T18:49:10.8657927Z",
+    "Info": [
+        {
+            "Key": "settings",
+            "Value": "{\"WaveCount\":3,\"FirstWaveCount\":3,\"WaveIncrease\":1,\"Lives\":3,\"BulletLimit\":8,\"Acceleration\":8.0,\"MaxSpeed\":8.0,\"RotationDegrees\":240.0,\"BulletSpeed\":18.0,\"BulletSeconds\":1.2000000476837158,\"FireSeconds\":0.20000000298023224,\"LargeRadius\":1.2000000476837158,\"MediumRadius\":0.6499999761581421,\"SmallRadius\":0.3499999940395355,\"AsteroidMinSpeed\":1.2000000476837158,\"AsteroidMaxSpeed\":2.0,\"SplitSpeed\":0.800000011920929,\"RespawnSeconds\":1.0,\"TransitionSeconds\":1.0,\"InvincibleSeconds\":2.0}"
+        },
+        {
+            "Key": "replaySeed",
+            "Value": "2"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.png",
+            "Sha256": "132178272b18dfe08369e017594c17e73d2e38afff5558f9e35dba04aef6ff11",
+            "Note": "Tick 0"
+        },
+        {
+            "File": "02-combat.png",
+            "Sha256": "5deba765929ab3fe454f8c70b98b5523d5a1f0829a517e2dde90c6fb368ea839",
+            "Note": "Tick 1"
+        },
+        {
+            "File": "03-split.png",
+            "Sha256": "7f51e9e3b959a45dcd54a94c138c66eaa56b95511b162cab0e98aaa5d9c79bac",
+            "Note": "Tick 28"
+        },
+        {
+            "File": "04-wave-clear.png",
+            "Sha256": "2048db803e6975132be8efdd1552b57133732b05d3cb0c149c4583a15231c32a",
+            "Note": "Tick 419"
+        },
+        {
+            "File": "05-win.png",
+            "Sha256": "6849b8e32d7218bc7f949973d5be2d756499d2dbf836b12944e055bc56ea693e",
+            "Note": "Tick 1683"
+        },
+        {
+            "File": "06-loss.png",
+            "Sha256": "63ec309142dad3e79ae13a62c616943ed63d3dbd1e2b8154f20a372f8dc2c63a",
+            "Note": "Tick 7652"
+        }
+    ]
+}

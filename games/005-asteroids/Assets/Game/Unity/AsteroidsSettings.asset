@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a16be0212671b04293374bbb7691309, type: 3}
+  m_Name: AsteroidsSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.AsteroidsSettings
+  Game:
+    WaveCount: 3
+    FirstWaveCount: 3
+    WaveIncrease: 1
+    Lives: 3
+    BulletLimit: 8
+    Acceleration: 8
+    MaxSpeed: 8
+    RotationDegrees: 240
+    BulletSpeed: 18
+    BulletSeconds: 1.2
+    FireSeconds: 0.2
+    LargeRadius: 1.2
+    MediumRadius: 0.65
+    SmallRadius: 0.35
+    AsteroidMinSpeed: 1.2
+    AsteroidMaxSpeed: 2
+    SplitSpeed: 0.8
+    RespawnSeconds: 1
+    TransitionSeconds: 1
+    InvincibleSeconds: 2
+  Volume: 0.15

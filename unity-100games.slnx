@@ -23,4 +23,10 @@
     <Project Path="games/004-space-invaders/dotnet/Core.Tests/G004.Core.Tests.csproj" />
     <Project Path="games/004-space-invaders/dotnet/Core/G004.Core.csproj" />
   </Folder>
+  <Folder Name="/005-asteroids/">
+    <Project Path="games/005-asteroids/dotnet/App.Tests/G005.App.Tests.csproj" />
+    <Project Path="games/005-asteroids/dotnet/App/G005.App.csproj" />
+    <Project Path="games/005-asteroids/dotnet/Core.Tests/G005.Core.Tests.csproj" />
+    <Project Path="games/005-asteroids/dotnet/Core/G005.Core.csproj" />
+  </Folder>
 </Solution>
