@@ -102,6 +102,10 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - **設定値は有限かを検証する。** Inspector から無限大や NaN を入れられる。`float.IsFinite` で弾く。
 - **Core の設定クラスは公開フィールドで書く。** Unity のシリアライズのため。Core に限り CA1051 を無効化してある。
 - **乱数は自前の xorshift を使う。** `System.Random` は Mono と .NET で系列が一致する保証がなく、dotnet と Unity でテスト結果が変わりうる。
+- **再現性は同じ実行環境の中でだけ保証される。** Mono（Unity）と .NET（dotnet test）では浮動小数点（`MathF.Sin` など）の結果がわずかに違い、長いプレイでは軌道が分かれる（002 の自動プレイの全面クリアが 42,208 Tick と 45,935 Tick）。長い通しを確かめるテストは、どちらの環境でも成り立つ性質（決着する・上限内に収まる）を見て、特定の Tick 数や軌道を期待しない。自動プレイは周期的な往復に入らないよう、打ち方をシード付き乱数でばらつかせる。
+- **PlayMode テストを実行ごとのシードに依存させない。** シーンは実行のたびに別のシードでゲームを作るので、自動操縦の勝敗や偶然の出来事を待つテストは不安定になる。状態を直接作る、必ず起きる場面を使う、結果に合った表示かを確かめる、のどれかにする。
+- **自動操縦（操縦役）は App に置く。** 撮影台本・App テスト・PlayMode テストで共有できる（002 の `Autopilot`）。
+- **終了時に Unity のクラッシュハンドラがまれに出る（Unity 6000.6.9f1）。** スクリプトの終了処理が済んだ後、UnityPlayer 内のウィンドウメッセージ処理で落ちる。001・002 で同じ箇所、C# のフレームなし、再現せず。見かけたら `%TEMP%/<会社名>/<製品名>/Crashes/` の Player.log で同じ症状かを確かめる。
 - **非推奨 API に注意。** Unity 6.6 では次が警告（CS0618）になる。
   - `FindFirstObjectByType` → `FindAnyObjectByType`。`FindObjectsByType(FindObjectsSortMode)` → 引数なしの `FindObjectsByType<T>()`
   - `UIDocument` は新機能が入らない → `PanelRenderer` を使う。`rootVisualElement` はなく、`RegisterUIReloadCallback`（版番号付きの `VersionedUIReloadCallback`）で渡されるルート要素に UI をつなぐ。UXML のライブリロードでも再度呼ばれる
