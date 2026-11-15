@@ -76,11 +76,14 @@ namespace Game.App
             Current = default;
         }
 
-        /// <summary>実時間を進め、溜まった分だけ固定刻みでゲームを進める。<paramref name="move"/> は -1（左）〜 +1（右）。</summary>
+        /// <summary>
+        /// 実時間を進め、溜まった分だけ固定刻みでゲームを進める。<paramref name="move"/> は -1（左）〜 +1（右）。
+        /// 経過時間が正の有限値でなければ（0、負、NaN、無限大）何もしない。
+        /// </summary>
         public void Advance(double deltaSeconds, float move)
         {
             _frameEvents.Clear();
-            if (Screen != AppScreen.Playing || !(deltaSeconds > 0d))
+            if (Screen != AppScreen.Playing || !double.IsFinite(deltaSeconds) || deltaSeconds <= 0d)
             {
                 return;
             }

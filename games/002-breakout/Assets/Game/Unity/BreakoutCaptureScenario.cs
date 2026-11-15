@@ -30,6 +30,8 @@ namespace Game.Unity
             capture.Record("settings", JsonUtility.ToJson(game.Settings));
             capture.Record("autopilotSeed", AutopilotSeed.ToString());
 
+            // HUD は UXML の読み込み通知で作られるので、つながってから撮る。
+            await capture.WaitUntilAsync(() => game.Hud != null, timeoutSeconds: 10f);
             await capture.ShootAsync("title", "起動直後");
 
             flow.Submit();

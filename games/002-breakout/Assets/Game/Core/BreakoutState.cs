@@ -77,6 +77,7 @@ namespace Game.Core
 
         public int Lives { get; private set; }
 
+        /// <summary>得点。全ブロックを壊しても int に収まることを設定の検証で保証している。</summary>
         public int Score { get; private set; }
 
         /// <summary>ゲーム開始からの Tick 数。</summary>

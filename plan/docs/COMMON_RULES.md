@@ -26,6 +26,7 @@
 - C#、Unity Test Framework（EditMode/PlayMode）を標準。Input Systemを基本とする。
 - データ定義はScriptableObjectまたはJSON等を適材適所で採用。静的テスト容易性が低下しないようにする。
 - 配布物はまずWindows向けビルドを想定。別OS/モバイル/WebGLは題材ごとの追加課題。
+- 画面は横長固定（16:9 基準）。縦長・正方形の画面への対応や、過剰な画面比率の考慮はしない（横長の範囲でプレイ領域が切れなければよい）。
 - Prefab/Scene/Metaをテキストシリアライズし、Version Controlを有効化。
 
 ## 再現性と品質

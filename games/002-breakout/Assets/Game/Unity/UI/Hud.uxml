@@ -1,19 +1,25 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
   <Style src="Hud.uss" />
   <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
-    <ui:VisualElement class="side left" picking-mode="Ignore">
-      <ui:Label class="caption" text="SCORE" />
-      <ui:Label name="score" class="value" text="0" />
-      <ui:Label class="caption" text="LIVES" />
-      <ui:Label name="lives" class="value" text="3" />
-      <ui:Label class="caption" text="STAGE" />
-      <ui:Label name="stage" class="value" text="1 / 3" />
+    <ui:VisualElement name="info" class="panel info" picking-mode="Ignore">
+      <ui:VisualElement class="stat" picking-mode="Ignore">
+        <ui:Label class="caption" text="SCORE" />
+        <ui:Label name="score" class="value" text="0" />
+      </ui:VisualElement>
+      <ui:VisualElement class="stat" picking-mode="Ignore">
+        <ui:Label class="caption" text="LIVES" />
+        <ui:Label name="lives" class="value" text="3" />
+      </ui:VisualElement>
+      <ui:VisualElement class="stat" picking-mode="Ignore">
+        <ui:Label class="caption" text="STAGE" />
+        <ui:Label name="stage" class="value" text="1 / 3" />
+      </ui:VisualElement>
     </ui:VisualElement>
-    <ui:VisualElement class="side right" picking-mode="Ignore">
+    <ui:VisualElement name="effects" class="panel effects" picking-mode="Ignore">
       <ui:Label class="caption" text="POWER-UP" />
       <ui:Label name="pierce" class="effect pierce" text="PIERCE" />
       <ui:Label name="expand" class="effect expand" text="EXPAND" />
-      <ui:Label class="legend" text="Catch the falling capsule&#10;Red: pierce (8 s)&#10;Blue: wide paddle (10 s)&#10;Gray: needs 2 hits" />
+      <ui:Label name="legend" class="legend" text="Catch the falling capsule&#10;Red: pierce (8 s)&#10;Blue: wide paddle (10 s)&#10;Gray: needs 2 hits" />
     </ui:VisualElement>
     <ui:Label name="banner" class="banner" text="" />
     <ui:VisualElement name="overlay" class="overlay" picking-mode="Ignore">

@@ -1,26 +1,21 @@
+/* 位置と大きさ（left / top / width / height）は BreakoutHud が FieldFraming の結果から割合で決める。ここでは見た目だけ。 */
+
 .hud {
     flex-grow: 1;
     color: rgb(255, 255, 255);
 }
 
-.side {
+/* HUD の領域からはみ出した文字がフィールドに掛からないよう切り取る。 */
+.panel {
     position: absolute;
-    top: 80px;
-    width: 420px;
-}
-
-.left {
-    left: 60px;
-}
-
-.right {
-    right: 60px;
+    overflow: hidden;
+    padding: 40px 24px 0 24px;
 }
 
 .caption {
     font-size: 30px;
     color: rgb(150, 160, 180);
-    margin-top: 24px;
+    margin-top: 16px;
 }
 
 .value {
@@ -46,15 +41,43 @@
 .legend {
     font-size: 26px;
     color: rgb(170, 175, 190);
-    margin-top: 48px;
+    margin-top: 40px;
     white-space: normal;
+}
+
+/* 上部の帯に置くとき（正方形・縦長の画面）は、横に並べて小さくし、凡例はタイトル画面の説明に任せる。 */
+.hud--top .panel {
+    padding: 16px 24px 0 24px;
+}
+
+.hud--top .info {
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.hud--top .caption {
+    font-size: 24px;
+    margin-top: 0;
+}
+
+.hud--top .value {
+    font-size: 48px;
+}
+
+.hud--top .effect {
+    font-size: 32px;
+    margin-top: 4px;
+}
+
+.hud--top .legend {
+    display: none;
 }
 
 .banner {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 300px;
+    bottom: 28%;
     font-size: 48px;
     -unity-font-style: bold;
     -unity-text-align: middle-center;

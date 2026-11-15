@@ -38,6 +38,9 @@ namespace Game.Unity
         /// <summary>HUD がつながっているルート要素。UXML を読み込むまでは null。</summary>
         public VisualElement HudRoot => _hudRoot;
 
+        /// <summary>HUD の表示。UXML を読み込むまでは null。</summary>
+        public BreakoutHud Hud => _hud;
+
         private void Awake()
         {
             // 撮影は毎回同じゲームになるよう固定シードを使う。
@@ -109,9 +112,9 @@ namespace Game.Unity
 
         private void Render(BreakoutSnapshot snapshot, float alpha)
         {
-            FieldFraming.Fit(_camera, _settings.Game);
+            var framing = FieldFraming.Fit(_camera, _settings.Game);
             _field.Render(_flow.Game, snapshot, alpha);
-            _hud?.Render(_flow);
+            _hud?.Render(_flow, framing);
         }
 
         // UXML を読み込むたび（エディタで編集したときのライブリロードを含む）に、HUD を新しいルート要素へつなぎ直す。
@@ -126,6 +129,9 @@ namespace Game.Unity
             _hudVersion = version;
             _hudRoot = root;
             _hud = new BreakoutHud(root, _settings.Game);
+
+            // 次の Update を待たずに配置と表示を済ませ、UXML の初期状態（未配置のパネル）を 1 フレームも見せない。
+            _hud.Render(_flow, FieldFraming.Compute(_settings.Game, _camera.aspect));
         }
 
         // 画面遷移と発射の操作を処理し、パドルの左右入力を返す。

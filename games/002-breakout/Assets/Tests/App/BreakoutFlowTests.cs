@@ -120,6 +120,7 @@ namespace Game.App.Tests
         [TestCase(0d)]
         [TestCase(double.NaN)]
         [TestCase(double.NegativeInfinity)]
+        [TestCase(double.PositiveInfinity)]
         public void Advance_InvalidDelta_DoesNothing(double delta)
         {
             _flow.Submit();

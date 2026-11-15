@@ -10,18 +10,18 @@
 - パドルは自動の操縦役 [Autopilot](../Assets/Game/App/Autopilot.cs) が動かす（ボールを追い、ボールが上がっている間はカプセルを取りに行く）。
 - 画像は内容で決まる世代ごとの不変フォルダ `captures/<画像世代>/` に、撮影ごとの記録（ビルド GUID、日時、シード、設定値、撮影 Tick、各画像の SHA-256）は `runs/<撮影 ID>/manifest.json` に置き、公開中の組を [current.json](current.json) が指す。
 - 画像が変わったら、このファイルの画像リンクを新しい世代に直す（`dev lint` が、公開中でない世代へのリンクを検出する）。
-- 現在の画像世代は `fba3c3cb147a73a0`。最新の撮影記録は [current.json](current.json) の `Run` が指す `runs/<撮影 ID>/manifest.json`。
+- 現在の画像世代は `585cfd535bcedeeb`。最新の撮影記録は [current.json](current.json) の `Run` が指す `runs/<撮影 ID>/manifest.json`。
 
 | 画面 | 内容 |
 |---|---|
-| ![タイトル](captures/fba3c3cb147a73a0/title.png) | タイトル。勝利条件・残機と操作説明 |
-| ![発射待ち](captures/fba3c3cb147a73a0/serving.png) | 1 面の開始。ボールがパドルに乗り、発射の案内が出ている。赤・青がアイテムブロック |
-| ![プレイ中](captures/fba3c3cb147a73a0/playing.png) | 発射から 40 Tick。ボールが最初のブロックへ向かっている |
-| ![効果](captures/fba3c3cb147a73a0/power-up.png) | 貫通弾のカプセルを取って 30 Tick 後（1391 Tick）。右に残り時間、ボールが橙色になっている |
-| ![面クリア](captures/fba3c3cb147a73a0/stage-clear.png) | 1 面クリア（9141 Tick）。次の面までの待ち |
-| ![結果](captures/fba3c3cb147a73a0/result.png) | 3 面クリアで勝利（34434 Tick、2360 点、残機 3）。得点と再戦の案内 |
+| ![タイトル](captures/585cfd535bcedeeb/title.png) | タイトル。勝利条件・残機と操作説明 |
+| ![発射待ち](captures/585cfd535bcedeeb/serving.png) | 1 面の開始。ボールがパドルに乗り、発射の案内が出ている。赤・青がアイテムブロック |
+| ![プレイ中](captures/585cfd535bcedeeb/playing.png) | 発射から 40 Tick。ボールが最初のブロックへ向かっている |
+| ![効果](captures/585cfd535bcedeeb/power-up.png) | 貫通弾のカプセルを取って 30 Tick 後（1391 Tick）。右に残り時間、ボールが橙色になっている |
+| ![面クリア](captures/585cfd535bcedeeb/stage-clear.png) | 1 面クリア（9141 Tick）。次の面までの待ち |
+| ![結果](captures/585cfd535bcedeeb/result.png) | 3 面クリアで勝利（34434 Tick、2360 点、残機 3）。得点と再戦の案内 |
 
-画面比率（16:9・16:10・4:3・1:1・9:16）でフィールドと壁が画面内に収まることは、PlayMode テスト `FieldAndWalls_FitInsideViewport` で確認している。
+画面比率が変わっても HUD がフィールドに重ならないことは、PlayMode テスト（`FieldFramingTests`：21:9〜9:16 の 7 種類でフィールドが画面内かつ HUD の領域の外、`HudLayoutTests`：5 種類で HUD がその領域の中）で確認している。加えて、4:3（960×720）・1:1（800×800）・9:16（540×960）のウィンドウで撮影台本を流し、全画面を目で確認した（画像は保存していない）。4:3 までは HUD が左右の余白に、1:1 と 9:16 では上部の帯に並ぶ。
 
 ゲームオーバーの表示（`GAME OVER`、残機 0）と Enter での再戦は、PlayMode テスト `LosingAllLives_ShowsGameOver`、`GameEnd_ShowsResultMatchingOutcome_ThenEnterStartsNewGame` で確認している。
 
@@ -31,13 +31,15 @@
 |---|---|---|
 | 2026-11-15 | 初回実装 | クリア・ゲームオーバーとも最後まで遊べた。調整の指摘なし。ウィンドウを閉じた直後に Unity のクラッシュハンドラが一瞬出た（エンジン内の終了処理。作品 README の「未解決事項」） |
 
+コードレビュー対応（狭い画面での HUD の配置、合計得点の上限の検証、正の無限大の経過時間）は、自動テストと撮影で確認した。遊んだときの挙動に関わる変更は HUD の配置だけで、16:9 の見た目は位置が少し変わった程度。
+
 ## テスト結果
 
 | 種類 | 実行方法 | 結果 |
 |---|---|---|
-| Core / App | `dev test`（dotnet） | 110 / 110、18 / 18 成功 |
-| Core + App（EditMode） | `dev test 002 -Unity` | 128 / 128 成功 |
-| シーン・入力・描画・HUD・カメラ・証跡（PlayMode） | `dev test 002 -Unity -Mode PlayMode` | 23 / 23 成功 |
+| Core / App | `dev test`（dotnet） | 113 / 113、19 / 19 成功 |
+| Core + App（EditMode） | `dev test 002 -Unity` | 132 / 132 成功 |
+| シーン・入力・描画・HUD・カメラ・証跡（PlayMode） | `dev test 002 -Unity -Mode PlayMode` | 30 / 30 成功 |
 | lint / 型チェック | `dev lint`、`dev check` | 成功 |
 
 ## ビルド結果

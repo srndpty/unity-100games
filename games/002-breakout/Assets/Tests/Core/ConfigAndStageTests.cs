@@ -117,6 +117,39 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void Validate_RejectsScoresWhoseTotalOverflowsInt()
+        {
+            var config = TestStages.Config(".....NN.....");
+            config.NormalScore = int.MaxValue;
+
+            Assert.Throws<ArgumentException>(config.Validate);
+        }
+
+        [Test]
+        public void Validate_CountsEveryStageTowardsTotalScore()
+        {
+            var config = TestStages.Configs(new StageDefinition("H..........."), new StageDefinition("...........H"));
+            config.HardScore = (int.MaxValue / 2) + 1;
+
+            Assert.Throws<ArgumentException>(config.Validate);
+        }
+
+        [Test]
+        public void TotalScoreAtIntMaximum_IsAcceptedAndReachedWithoutOverflow()
+        {
+            // 真上の打球が x = 0 の継ぎ目で 2 個を壊す。合計がちょうど int.MaxValue。
+            var config = TestStages.Config(".....NP.....");
+            config.ItemScore = int.MaxValue - config.NormalScore;
+            Assert.DoesNotThrow(config.Validate);
+            var state = TestStages.NewState(config);
+
+            TestStages.RunUntil(state, s => s.IsOver);
+
+            Assert.That(state.Phase, Is.EqualTo(GamePhase.Won));
+            Assert.That(state.Score, Is.EqualTo(int.MaxValue));
+        }
+
+        [Test]
         public void Validate_MaxSpeedMustCoverEveryStageLaunchSpeed()
         {
             var config = new BreakoutConfig { MaxBallSpeed = 8f };

@@ -152,12 +152,19 @@ namespace Game.Core
             Require(Stages is { Length: >= 1 }, "面は 1 つ以上");
 
             var maxRows = 0;
+            var maxScore = 0L;
             for (var i = 0; i < Stages.Length; i++)
             {
-                maxRows = Math.Max(maxRows, StageParser.Parse(Stages[i], Columns, i).Rows);
+                var layout = StageParser.Parse(Stages[i], Columns, i);
+                maxRows = Math.Max(maxRows, layout.Rows);
+                foreach (var brick in layout.Bricks)
+                {
+                    maxScore += ScoreOf(brick.Kind);
+                }
             }
 
             Require(GridTop - (maxRows * BrickHeight) - PaddleTop >= BrickHeight, "最下段のブロックとパドルの間は 1 段以上空ける");
+            Require(maxScore <= int.MaxValue, "全ブロックを壊したときの合計得点が int の範囲に収まる");
             Require(MaxBallSpeed >= BallSpeed + (StageSpeedStep * (Stages.Length - 1)), "最高速度は各面の発射速度以上");
             Require(MaxBallSpeed * TickDuration < MaxTravelPerTick, "最高速度での 1 Tick の移動量は、ブロックの短辺からボールの大きさを引いた長さより短い");
         }
