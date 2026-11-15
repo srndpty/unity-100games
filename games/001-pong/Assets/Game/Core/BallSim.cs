@@ -158,7 +158,7 @@ namespace Game.Core
                 IsWall = isWall;
             }
 
-            public static Contact None => new Contact(float.MaxValue, null, false);
+            public static Contact None => new(float.MaxValue, null, false);
 
             public float Time { get; }
 
@@ -166,9 +166,9 @@ namespace Game.Core
 
             public bool IsWall { get; }
 
-            public static Contact Wall(float time) => new Contact(time, null, true);
+            public static Contact Wall(float time) => new(time, null, true);
 
-            public static Contact With(Paddle paddle, float time) => new Contact(time, paddle, false);
+            public static Contact With(Paddle paddle, float time) => new(time, paddle, false);
         }
     }
 }

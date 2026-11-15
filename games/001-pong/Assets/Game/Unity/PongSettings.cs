@@ -7,8 +7,8 @@ namespace Game.Unity
     [CreateAssetMenu(fileName = "PongSettings", menuName = "Game/Pong Settings")]
     public sealed class PongSettings : ScriptableObject
     {
-        [SerializeField] private PongConfig _match = new PongConfig();
-        [SerializeField] private CpuConfig _cpu = new CpuConfig();
+        [SerializeField] private PongConfig _match = new();
+        [SerializeField] private CpuConfig _cpu = new();
 
         public PongConfig Match => _match;
 

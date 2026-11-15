@@ -10,7 +10,7 @@ namespace Game.Core.Tests
         /// <summary>CPU 同士でも数分で決着する上限。これを超えたら進行が止まっているとみなす。</summary>
         public const int MaxTicksPerMatch = 60 * 60 * 30;
 
-        public static MatchState NewMatch(PongConfig? config = null) => new MatchState(config ?? new PongConfig(), Seed);
+        public static MatchState NewMatch(PongConfig? config = null) => new(config ?? new PongConfig(), Seed);
 
         /// <summary>サーブ待ちを抜けてボールが動き出すまで進める。</summary>
         public static void SkipServe(MatchState match)

@@ -19,11 +19,11 @@ namespace Game.Core
 
         public float Length => MathF.Sqrt((X * X) + (Y * Y));
 
-        public static Vec2 operator +(Vec2 a, Vec2 b) => new Vec2(a.X + b.X, a.Y + b.Y);
+        public static Vec2 operator +(Vec2 a, Vec2 b) => new(a.X + b.X, a.Y + b.Y);
 
-        public static Vec2 operator -(Vec2 a, Vec2 b) => new Vec2(a.X - b.X, a.Y - b.Y);
+        public static Vec2 operator -(Vec2 a, Vec2 b) => new(a.X - b.X, a.Y - b.Y);
 
-        public static Vec2 operator *(Vec2 v, float scale) => new Vec2(v.X * scale, v.Y * scale);
+        public static Vec2 operator *(Vec2 v, float scale) => new(v.X * scale, v.Y * scale);
 
         public static bool operator ==(Vec2 a, Vec2 b) => a.Equals(b);
 

@@ -68,7 +68,7 @@ namespace Game.Unity.Evidence
 
         private static ICaptureScenario FindScenario()
         {
-            var scenarios = UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None)
+            var scenarios = UnityEngine.Object.FindObjectsByType<MonoBehaviour>()
                 .OfType<ICaptureScenario>()
                 .ToArray();
             if (scenarios.Length != 1)

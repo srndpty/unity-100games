@@ -21,7 +21,7 @@ namespace Game.App
 
         private readonly PongConfig _config;
         private readonly CpuConfig _cpuConfig;
-        private readonly List<MatchEvent> _frameEvents = new List<MatchEvent>();
+        private readonly List<MatchEvent> _frameEvents = new();
         private int _nextSeed;
         private CpuController? _cpu;
         private double _accumulator;

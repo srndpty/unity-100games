@@ -101,7 +101,7 @@ namespace Game.Unity.Tests
 
             Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Result));
             yield return null;
-            var root = _game.GetComponent<UIDocument>().rootVisualElement;
+            var root = _game.HudRoot;
             var expected = _game.Flow.Match!.Winner == Side.Left ? "YOU WIN" : "CPU WINS";
             Assert.That(root.Q<VisualElement>("overlay").resolvedStyle.display, Is.EqualTo(DisplayStyle.Flex));
             Assert.That(root.Q<Label>("headline").text, Is.EqualTo(expected));

@@ -42,13 +42,13 @@ namespace Game.Unity.Editor
             camera.orthographicSize = 5f;
 
             var game = new GameObject(GameObjectName);
-            var document = game.AddComponent<UIDocument>();
-            document.panelSettings = panelSettings;
-            document.visualTreeAsset = hud;
+            var hudRenderer = game.AddComponent<PanelRenderer>();
+            hudRenderer.panelSettings = panelSettings;
+            hudRenderer.visualTreeAsset = hud;
             var pong = game.AddComponent<PongGame>();
             var serialized = new SerializedObject(pong);
             serialized.FindProperty("_settings").objectReferenceValue = settings;
-            serialized.FindProperty("_hudDocument").objectReferenceValue = document;
+            serialized.FindProperty("_hudRenderer").objectReferenceValue = hudRenderer;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             game.AddComponent<PongCaptureScenario>();
 

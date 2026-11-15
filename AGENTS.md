@@ -87,7 +87,13 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - **証跡は `dev capture` で撮る。** 実ウィンドウにキー入力を送る方式は、作業中の画面と入力を奪う。各作品は `ICaptureScenario` を実装したコンポーネントをシーンに 1 つ置き、撮影中（`EvidenceCapture.IsRunning`）はプレイヤー入力を読まない。
 - **Core の設定クラスは公開フィールドで書く。** Unity のシリアライズのため。Core に限り CA1051 を無効化してある。
 - **乱数は自前の xorshift を使う。** `System.Random` は Mono と .NET で系列が一致する保証がなく、dotnet と Unity でテスト結果が変わりうる。
-- **非推奨 API に注意。** `FindFirstObjectByType` は警告（CS0618）になる。`FindAnyObjectByType` を使う。
+- **非推奨 API に注意。** Unity 6.6 では次が警告（CS0618）になる。
+  - `FindFirstObjectByType` → `FindAnyObjectByType`。`FindObjectsByType(FindObjectsSortMode)` → 引数なしの `FindObjectsByType<T>()`
+  - `UIDocument` は新機能が入らない → `PanelRenderer` を使う。`rootVisualElement` はなく、`RegisterUIReloadCallback`（版番号付きの `VersionedUIReloadCallback`）で渡されるルート要素に UI をつなぐ。UXML のライブリロードでも再度呼ばれる
+- **IDE だけに出る Nullable の警告（CS8632）。** Unity が IDE 用に生成する csproj は csc.rsp の `-nullable:enable` を反映しない。雛形の `CsprojNullableSync`（`Editor/`）が生成時に `<Nullable>` を足す。反映されないときは Unity の Preferences > External Tools で「Regenerate project files」を押す。
+- **Unity 生成の csproj をリポジトリの slnx に入れない。** slnx は dotnet で検証する `dotnet/` の csproj だけを束ねる（生成 csproj は gitignore 対象で CI に存在しない）。
+- **エディタを開いたままでも `unity command` で操作できる。** `unity command editor invoke_menu`、`test run`、`build run`、`script eval` など。PlayMode テストを GUI エディタで流すときは `EditorUtility.audioMasterMute` で一時的に消音する。
+- **C# 9 の target-typed new を使う。** 型が明らかなら `new()`（IDE0090 を警告にしている）。
 
 ## 注意点
 
