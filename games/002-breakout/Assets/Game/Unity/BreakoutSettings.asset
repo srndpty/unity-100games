@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f035bf5582b200f4d929717cfa72e8f0, type: 3}
+  m_Name: BreakoutSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.BreakoutSettings
+  _game:
+    FieldWidth: 12
+    FieldHeight: 16
+    BrickWidth: 1
+    BrickHeight: 0.5
+    GridTopMargin: 1.5
+    PaddleWidth: 2
+    PaddleHeight: 0.3
+    PaddleInset: 1.2
+    PaddleSpeed: 12
+    BallSize: 0.25
+    BallSpeed: 7
+    StageSpeedStep: 0.75
+    SpeedIncreasePerBrick: 0.05
+    MaxBallSpeed: 11
+    MaxBounceAngleDegrees: 60
+    MaxServeAngleDegrees: 30
+    Lives: 3
+    TicksPerSecond: 60
+    StageClearDelayTicks: 90
+    PierceDurationTicks: 480
+    ExpandDurationTicks: 600
+    ExpandScale: 1.5
+    CapsuleWidth: 0.8
+    CapsuleHeight: 0.3
+    CapsuleSpeed: 3
+    NormalScore: 10
+    HardScore: 20
+    ItemScore: 30
+    Stages:
+    - Rows:
+      - NNNNNNNNNNNN
+      - NNNNNNNNNNNN
+      - NNNENNNNPNNN
+      - NNNNNNNNNNNN
+    - Rows:
+      - HHHHHHHHHHHH
+      - N.NN.NN.NN.N
+      - NNNPNNNNENNN
+      - HHHHHHHHHHHH
+      - NNNNNNNNNNNN
+    - Rows:
+      - HHHHHHHHHHHH
+      - H.NNNNNNNN.H
+      - H.NPNNNNEN.H
+      - H.NNHHHHNN.H
+      - H.NNNNNNNN.H
+      - HHHHH..HHHHH

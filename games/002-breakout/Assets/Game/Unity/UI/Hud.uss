@@ -1,0 +1,87 @@
+.hud {
+    flex-grow: 1;
+    color: rgb(255, 255, 255);
+}
+
+.side {
+    position: absolute;
+    top: 80px;
+    width: 420px;
+}
+
+.left {
+    left: 60px;
+}
+
+.right {
+    right: 60px;
+}
+
+.caption {
+    font-size: 30px;
+    color: rgb(150, 160, 180);
+    margin-top: 24px;
+}
+
+.value {
+    font-size: 64px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+}
+
+.effect {
+    font-size: 40px;
+    -unity-font-style: bold;
+    margin-top: 8px;
+}
+
+.pierce {
+    color: rgb(242, 77, 77);
+}
+
+.expand {
+    color: rgb(77, 128, 255);
+}
+
+.legend {
+    font-size: 26px;
+    color: rgb(170, 175, 190);
+    margin-top: 48px;
+    white-space: normal;
+}
+
+.banner {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 300px;
+    font-size: 48px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    color: rgb(255, 255, 255);
+}
+
+.overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.75);
+}
+
+.headline {
+    font-size: 120px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+    margin-bottom: 40px;
+}
+
+.message {
+    font-size: 36px;
+    -unity-text-align: middle-center;
+    white-space: normal;
+    color: rgb(220, 220, 220);
+}

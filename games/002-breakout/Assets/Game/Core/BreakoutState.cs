@@ -84,6 +84,8 @@ namespace Game.Core
 
         public bool IsOver => Phase is GamePhase.Won or GamePhase.Lost;
 
+        public BreakoutSnapshot Snapshot => new(Ball.Position, Ball.InPlay, Paddle.Motion, Paddle.HalfWidth);
+
         /// <summary>直前の <see cref="Tick"/>（またはゲーム開始）で起きた出来事。</summary>
         public IReadOnlyList<GameEvent> Events => _events;
 

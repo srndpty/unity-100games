@@ -13,15 +13,23 @@
 ## 起動手順
 
 ```
-dev gui 002      # エディタで開く
+dev gui 002      # エディタで開く（Assets/Scenes/Breakout.unity）
 dev build 002    # Windows ビルド
 dev run 002      # ビルドを起動
-dev capture 002  # 証跡を evidence/ に撮る（画像は captures/<画像世代>/、撮影記録は runs/）（ICaptureScenario の実装が必要）
+dev capture 002  # 証跡を evidence/ に撮る（画像は captures/<画像世代>/、撮影記録は runs/）（自動で終了）
 ```
+
+シーンは [BreakoutSceneBuilder](Assets/Game/Unity/Editor/BreakoutSceneBuilder.cs) が生成する。シーン構成を変えるときはこのスクリプトを直して再生成する（エディタのメニュー「Game > Rebuild Breakout Scene」、またはバッチで `unity run games/002-breakout -- -executeMethod Game.Unity.Editor.BreakoutSceneBuilder.Build`）。
 
 ## 操作
 
-（Playable で記入。予定：パドル左右 = A / D・← / →・左スティック・十字キー、発射・開始 = Enter / Space・South ボタン、タイトルへ戻る = Esc・East ボタン）
+| 操作 | キーボード | ゲームパッド |
+|---|---|---|
+| パドル左右 | A / D、← / → | 左スティック、十字キー |
+| 開始・発射・再戦 | Enter、Space | South ボタン |
+| タイトルへ戻る（タイトルでは終了） | Esc | East ボタン |
+
+画面の右に効果の残り時間と、ブロック・カプセルの色の意味（赤 = 貫通弾、青 = パドル拡張、灰 = 2 発）を出している。
 
 ## 採用ルール
 
@@ -43,33 +51,43 @@ dev capture 002  # 証跡を evidence/ に撮る（画像は captures/<画像世
 | 得点 | 通常 10 / 硬い 20 / アイテム 30（壊したときに加算） |
 | 再戦 | 結果画面からの再戦は、新しいシードで 1 面から始める独立したゲーム |
 
-パラメータは `BreakoutConfig`（Playable で設定アセットに出す）で調整できる。
+パラメータ（速度・効果時間・面データなど）は [BreakoutSettings.asset](Assets/Game/Unity/BreakoutSettings.asset) で調整できる。
 
 ## 設計上の選択
 
 | アセンブリ | 主なクラス | 責務 |
 |---|---|---|
 | `Game.Core` | `BreakoutState`、`CollisionResolver`、`EffectTimers`、`BrickField`、`StageParser`、`BreakoutConfig` | ルール。Unity 非依存で、dotnet でもテストする |
-| `Game.App` | （Playable で作成） | 画面遷移と固定刻みへの変換 |
-| `Game.Unity` | （Playable で作成） | 入力、描画、HUD、効果音 |
+| `Game.App` | `BreakoutFlow`、`Autopilot` | 画面遷移（タイトル → プレイ → 結果 → 再戦）と、実時間から固定刻み（60 Tick/秒）への変換。撮影とテスト用の自動操縦。Unity 非依存で、dotnet でもテストする |
+| `Game.Unity` | `BreakoutGame`、`FieldView`、`FieldFraming`、`BreakoutHud`、`BreakoutAudio` | 入力の読み取り、スプライト描画、画面比率に合わせたカメラ、UI Toolkit（PanelRenderer）の HUD、効果音 |
 
 - **衝突の優先順位は [CollisionResolver](Assets/Game/Core/CollisionResolver.cs) の 1 か所で決める。** 1 Tick の移動を線分として扱い（掃引判定）、壁・パドル・ブロックのうち最も早い接触を 1 つずつ処理する。同時刻なら「壁 → パドル → ブロック」、ブロック同士は接触位置が中心に近い方、同じ距離なら番号（左上から行優先）の小さい方。
 - **1 回の接触でダメージを受けるのは 1 個だけ。** 隣り合うブロックの継ぎ目に当たっても選ばれた 1 個だけが跳ね返して壊れ、跳ね返った後はもう一方へ向かっていないので二重には壊れない。隣に壊れていないブロックがある面（塊の内側の継ぎ目）は当たる面として扱わず、継ぎ目で横に跳ね返る不自然さを防ぐ。
 - **1 Tick の接触回数には上限（11 回）がある。** 設定の検証で、最高速度での 1 Tick の移動量を「ブロックの短辺 − ボールの大きさ」未満に抑えている。ブロックはマス目に揃い、左右の壁はマス目の端、上の壁・パドルはブロックから 1 段以上離す（これも検証する）ので、向かい合う面の間は 1 マス以上ある。すると 1 Tick に跳ね返るのは x・y 各 1 回まで、貫通で壊すのは触れうる 3 × 3 マスの 9 個までになる（`BreakoutConfig.MaxTravelPerTick` と `CollisionResolver.MaxContactsPerStep` の説明。確認は境界値テストと最高速度の乱択テスト）。
 - **効果の有効期間は [EffectTimers](Assets/Game/Core/EffectTimers.cs) が持つ。** 時間はすべて Tick で数え、発動した Tick には減らさないので、有効な Tick 数はちょうど効果時間になる。
-- **物理エンジンは使わない。** 衝突も含めて Core の自前計算。
+- **物理エンジンは使わない。** 衝突も含めて Core の自前計算で、Unity の 2D 物理には何も委譲していない。描画は Core の状態を写すだけ。
+- **発射の操作を取りこぼさない。** 決定操作はプレイ中なら発射の要求として次に進む Tick に渡す（そのフレームに Tick が進まなくても保持し、1 Tick で使い切る）。
+- **描画は Tick 間を補間する。** ボールとパドルは `BreakoutSnapshot.Interpolate` で補間し、パドルは衝突判定と同じ軌跡（壁に着いたらそこで止まる）で描く。発射待ちのボールはパドルと一緒に動く。カプセルは等速で落ちるので、補間係数の分だけ 1 Tick 前の位置へ戻して描く。ブロックは最新の Tick を描く。
+- **画面比率に依存しない。** カメラの大きさを毎フレーム画面の縦横比から決め、フィールドと壁が収まるようにする。フィールドは縦長なので、横長の画面では左右の余白に HUD を置く。
+- **証跡は撮影台本で撮る。** [BreakoutCaptureScenario](Assets/Game/Unity/BreakoutCaptureScenario.cs) がタイトル → 発射待ち → プレイ中 → 効果が有効な場面 → 面クリア → 結果を、固定シードと自動操縦で Tick 単位に進めて撮る。
+- **実行時に作ったリソースは破棄する。** テクスチャ・スプライト（`FieldView`）と効果音のクリップ（`BreakoutAudio`）は `BreakoutGame.OnDestroy` で破棄する。
+- **素材は作らない。** スプライトは実行時に生成した 1×1 の白テクスチャに色を付けたもの、効果音は実行時に合成した矩形波（振幅 0.05）。バッチ実行・撮影中は消音する。
 - **再現性。** 乱数は発射角にだけ使う xorshift。同じシードと入力列なら得点・Tick 数・ボール位置まで一致することをテストしている。ただし一致を保証するのは同じ実行環境の中だけで、Mono（Unity）と .NET（dotnet test）では浮動小数点の結果がわずかに違い、長いプレイでは軌道が分かれる（自動プレイの全面クリアは Unity で 42,208 Tick、dotnet で 45,935 Tick）。
 
 ## テスト
 
 | 種類 | 場所 | 実行 | 件数 |
 |---|---|---|---:|
-| Core（EditMode / dotnet） | `Assets/Tests/Core/` | `dev test`（CI でも実行）、`dev test 002 -Unity` | 106 |
+| Core（EditMode / dotnet） | `Assets/Tests/Core/` | `dev test`（CI でも実行）、`dev test 002 -Unity` | 110 |
+| App（EditMode / dotnet） | `Assets/Tests/App/` | `dev test`（CI でも実行）、`dev test 002 -Unity` | 18 |
+| シーン・入力・描画・HUD・カメラ・証跡（PlayMode） | `Assets/Tests/Unity/` | `dev test 002 -Unity -Mode PlayMode` | 23 |
 
 - 題材固有：隣接ブロックの継ぎ目に当たっても 1 個だけ壊れる（真ん中・片寄り・硬いブロック・斜めの角）／貫通中はブロックで反射しない（壁・パドルでは反射する）／全破壊で面クリアが一度だけ（最後の 2 個を貫通で同じ Tick に壊す場合を含む）
 - 効果：有効な Tick 数がちょうど効果時間、取り直しで残りが最大に戻る、2 種が独立、ミスで一括解除、壁際の拡張で押し戻す
 - 状態遷移・負例：発射待ち → 進行 → ミス → 発射待ち、残機 0 でゲームオーバー、3 面目クリアで勝利、終了後の入力は無視、発射中の発射ボタンは無視、非数の入力、不正な面データ・設定値（NaN・無限大・範囲外・最高速度の境界）
 - 再現性・通し：同じシードと入力列で結果が一致、自動プレイで既定の 3 面をすべてクリア、最高速度・乱数の面での接触回数の上限とめり込みなし（40 シード × 3000 Tick）
+- App：タイトル・結果では時間が進まない、決定操作はプレイ中なら発射（再スタートしない）、Tick の進まないフレームで押した発射を取りこぼさない／持ち越さない、固定刻みと処理落ち時の上限、不正な経過時間、再戦は次のシード、3 ゲーム目をシードと入力列だけで全 Tick 再現
+- PlayMode：実シーンで Enter で開始・Space で発射・Esc で戻る、D でパドルが動き発射待ちのボールが付いてくる、指定 Tick の状態を補間せずに描く、壊れたブロックが消える、効果の残り時間と貫通中のボールの色、勝敗に合った結果表示と再戦、残機 0 で `GAME OVER`、5 種類の画面比率でフィールドが収まる、バッチ実行では消音
 
 ## 未実装範囲
 

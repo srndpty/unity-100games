@@ -1,0 +1,54 @@
+{
+    "Product": "002-breakout",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "f4a5a8f3e2e54d548418351121acd1cb",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-15T13:30:00.6235593Z",
+    "Info": [
+        {
+            "Key": "settings",
+            "Value": "{\"_game\":{\"FieldWidth\":12.0,\"FieldHeight\":16.0,\"BrickWidth\":1.0,\"BrickHeight\":0.5,\"GridTopMargin\":1.5,\"PaddleWidth\":2.0,\"PaddleHeight\":0.30000001192092896,\"PaddleInset\":1.2000000476837158,\"PaddleSpeed\":12.0,\"BallSize\":0.25,\"BallSpeed\":7.0,\"StageSpeedStep\":0.75,\"SpeedIncreasePerBrick\":0.05000000074505806,\"MaxBallSpeed\":11.0,\"MaxBounceAngleDegrees\":60.0,\"MaxServeAngleDegrees\":30.0,\"Lives\":3,\"TicksPerSecond\":60,\"StageClearDelayTicks\":90,\"PierceDurationTicks\":480,\"ExpandDurationTicks\":600,\"ExpandScale\":1.5,\"CapsuleWidth\":0.800000011920929,\"CapsuleHeight\":0.30000001192092896,\"CapsuleSpeed\":3.0,\"NormalScore\":10,\"HardScore\":20,\"ItemScore\":30,\"Stages\":[{\"Rows\":[\"NNNNNNNNNNNN\",\"NNNNNNNNNNNN\",\"NNNENNNNPNNN\",\"NNNNNNNNNNNN\"]},{\"Rows\":[\"HHHHHHHHHHHH\",\"N.NN.NN.NN.N\",\"NNNPNNNNENNN\",\"HHHHHHHHHHHH\",\"NNNNNNNNNNNN\"]},{\"Rows\":[\"HHHHHHHHHHHH\",\"H.NNNNNNNN.H\",\"H.NPNNNNEN.H\",\"H.NNHHHHNN.H\",\"H.NNNNNNNN.H\",\"HHHHH..HHHHH\"]}]}}"
+        },
+        {
+            "Key": "autopilotSeed",
+            "Value": "5"
+        },
+        {
+            "Key": "gameSeed",
+            "Value": "1"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "title.png",
+            "Sha256": "67189fcfc66d4515fcfcd61b9a7863b4e048d1d6bf7972c76fb9c3aac32fb781",
+            "Note": "起動直後"
+        },
+        {
+            "File": "serving.png",
+            "Sha256": "a28789a2f559120c059fdf323791aee9fe84aa65b00c1f619d5b4df5164e484d",
+            "Note": "tick=0"
+        },
+        {
+            "File": "playing.png",
+            "Sha256": "6470a95940a7e5230e6c8e5cf8022db45e1885db97af4f85c8fb7269004056f9",
+            "Note": "tick=40"
+        },
+        {
+            "File": "power-up.png",
+            "Sha256": "85b4806b76e8939bea06acd707f25b444c6e371ea5cddbbb854f67529ab2b64b",
+            "Note": "tick=1391, pierce=450, expand=0"
+        },
+        {
+            "File": "stage-clear.png",
+            "Sha256": "bc636d2ced13d53dab22aa2bc877f4a778755cfcbd4848dc022e0b0a174c5011",
+            "Note": "tick=9141, stage=1"
+        },
+        {
+            "File": "result.png",
+            "Sha256": "7b20d628830c7a3b1ec9d2b65e74a70dab91d7c07e4577ebc0e7312f506229e5",
+            "Note": "tick=34434, phase=Won, score=2360"
+        }
+    ]
+}
