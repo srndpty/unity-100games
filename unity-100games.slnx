@@ -5,4 +5,10 @@
     <Project Path="games/001-pong/dotnet/Core.Tests/G001.Core.Tests.csproj" />
     <Project Path="games/001-pong/dotnet/Core/G001.Core.csproj" />
   </Folder>
+  <Folder Name="/002-breakout/">
+    <Project Path="games/002-breakout/dotnet/App.Tests/G002.App.Tests.csproj" />
+    <Project Path="games/002-breakout/dotnet/App/G002.App.csproj" />
+    <Project Path="games/002-breakout/dotnet/Core.Tests/G002.Core.Tests.csproj" />
+    <Project Path="games/002-breakout/dotnet/Core/G002.Core.csproj" />
+  </Folder>
 </Solution>
