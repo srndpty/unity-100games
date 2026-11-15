@@ -1,0 +1,50 @@
+{
+    "Product": "SKY HOPPER",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "969eafb9023049c88a40a01800e28ef5",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-15T20:34:53.6205042Z",
+    "Info": [
+        {
+            "Key": "settings",
+            "Value": "{\"Game\":{\"BirdRadius\":0.30000001192092896,\"Gravity\":-18.0,\"FlapSpeed\":6.0,\"TerminalSpeed\":10.0,\"PipeWidth\":1.399999976158142,\"Spacing\":6.0,\"Speed\":4.0,\"SpeedIncrease\":0.30000001192092896,\"Gap\":4.5,\"GapDecrease\":0.20000000298023224,\"WallMargin\":0.800000011920929,\"MaxCenterChange\":2.0,\"PointsPerLevel\":5,\"MaxLevel\":5},\"Volume\":0.15000000596046448}"
+        },
+        {
+            "Key": "replaySeed",
+            "Value": "2"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.png",
+            "Sha256": "c09dc14305a3ba0d09c46f799d84bc7c41b2928b9b34429579e4f7dd403583ea",
+            "Note": "Tick 0"
+        },
+        {
+            "File": "02-ready.png",
+            "Sha256": "d12a16bd9b60f096a9bcce5a507f62cd9e7e65d9d3799e8354c2bfe202492775",
+            "Note": "Tick 0"
+        },
+        {
+            "File": "03-flight.png",
+            "Sha256": "7d03442f030368105f9ab739d275a18e859c65ffe0ac614842344a12ef961fb2",
+            "Note": "Tick 91"
+        },
+        {
+            "File": "04-level-cap.png",
+            "Sha256": "13304772f9863eef17172a45cb8be7e4a360e08372729f5770862cf37c8a4d4f",
+            "Note": "Tick 2109"
+        },
+        {
+            "File": "05-result.png",
+            "Sha256": "2caca8f86c36799b3a9cde11625b41e4ba35149475a9667c5c8f5c276b9fb3b2",
+            "Note": "Tick 2153"
+        },
+        {
+            "File": "06-replay.png",
+            "Sha256": "eb107490c1d20f11114aa206b4921aee104ae7da433be59dcbe50bce09f6a704",
+            "Note": "Tick 0"
+        }
+    ]
+}
