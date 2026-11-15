@@ -8,6 +8,9 @@ namespace Game.Core
         private readonly float _speed;
         private readonly float _limit;
 
+        // この Tick で入力が求めた移動量（端で止まる前の値）。
+        private float _requestedDelta;
+
         public Paddle(PongConfig config, Side side)
         {
             Side = side;
@@ -38,7 +41,8 @@ namespace Game.Core
         public void Move(float input, float deltaTime)
         {
             PreviousY = Y;
-            Y = Clamp(Y + (SanitizeInput(input) * _speed * deltaTime));
+            _requestedDelta = SanitizeInput(input) * _speed * deltaTime;
+            Y = YAt(1f);
         }
 
         /// <summary>瞬間移動させる（Tick 中の移動として扱わない）。</summary>
@@ -46,10 +50,14 @@ namespace Game.Core
         {
             Y = Clamp(y);
             PreviousY = Y;
+            _requestedDelta = 0f;
         }
 
-        /// <summary>Tick 中の時刻 <paramref name="fraction"/>（0 = 開始、1 = 終了）での y。Tick 内は等速で動いたとみなす。</summary>
-        public float YAt(float fraction) => PreviousY + ((Y - PreviousY) * fraction);
+        /// <summary>
+        /// Tick 中の時刻 <paramref name="fraction"/>（0 = 開始、1 = 終了）での y。Tick 内は等速で動き、
+        /// 途中でコートの端に着いたらそこで止まったとみなす（端で止まる Tick も、止まるまでは等速）。
+        /// </summary>
+        public float YAt(float fraction) => Clamp(PreviousY + (_requestedDelta * fraction));
 
         private float Clamp(float y) => Math.Clamp(y, -_limit, _limit);
 

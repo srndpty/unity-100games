@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Security.Cryptography;
 using UnityEngine;
 
 namespace Game.Unity.Evidence
@@ -37,7 +36,7 @@ namespace Game.Unity.Evidence
                 var file = name + ".png";
                 var png = texture.EncodeToPNG();
                 File.WriteAllBytes(Path.Combine(_directory, file), png);
-                _manifest.Shots.Add(new CaptureManifest.Shot { File = file, Sha256 = Sha256(png), Note = note });
+                _manifest.Shots.Add(new CaptureManifest.Shot { File = file, Sha256 = EvidencePublisher.Sha256Of(png), Note = note });
                 Debug.Log($"[EvidenceCapture] 撮影: {file}（{note}）");
             }
             finally
@@ -59,12 +58,6 @@ namespace Game.Unity.Evidence
 
                 await Awaitable.NextFrameAsync();
             }
-        }
-
-        private static string Sha256(byte[] data)
-        {
-            using var sha = SHA256.Create();
-            return BitConverter.ToString(sha.ComputeHash(data)).Replace("-", string.Empty).ToLowerInvariant();
         }
     }
 }

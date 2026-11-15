@@ -165,12 +165,35 @@ namespace Game.Core.Tests
         }
 
         [Test]
-        public void TooFastBallForTickRate_IsRejected()
+        public void BallFasterThanPaddleGapPerTick_IsRejected()
         {
-            // 既定のパドル高 1.6 に対し、1 Tick（1/10 秒）で 1 進む速度は上限（高さの半分）を超える。
-            var config = new PongConfig { TicksPerSecond = 10, MaxBallSpeed = 10f };
+            // コート幅 4 だと左右のパドル面の間隔は 2.3。1 Tick に約 11.7 進むと、中央で水平に往復して 1 Tick に 5 回当たりうる。
+            var config = new PongConfig
+            {
+                FieldWidth = 4f,
+                FieldHeight = 100f,
+                PaddleHeight = 30f,
+                ServeSpeed = 700f,
+                MaxBallSpeed = 700f,
+                MaxServeAngleDegrees = 0f,
+                SpeedIncreasePerHit = 0f,
+            };
 
+            Assert.That(config.MaxTravelPerTick, Is.EqualTo(2.3f).Within(1e-4f));
             Assert.Throws<ArgumentException>(() => new MatchState(config, TestCourt.Seed));
+        }
+
+        [Test]
+        public void MaxTravelPerTick_IsExclusiveUpperBound()
+        {
+            var config = new PongConfig();
+            var limitSpeed = config.MaxTravelPerTick * config.TicksPerSecond;
+
+            config.MaxBallSpeed = limitSpeed * 0.999f;
+            Assert.DoesNotThrow(() => config.Validate(), "上限のわずかに下は受け入れる");
+
+            config.MaxBallSpeed = limitSpeed;
+            Assert.Throws<ArgumentException>(() => config.Validate(), "上限ちょうどは拒否する");
         }
 
         // 誰も動かずに最初の得点が入るまで進め、失点した側を返す。

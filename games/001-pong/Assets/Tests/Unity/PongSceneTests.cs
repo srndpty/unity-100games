@@ -49,6 +49,22 @@ namespace Game.Unity.Tests
         }
 
         [UnityTest]
+        public IEnumerator AdvanceTicks_DrawsExactlyThatTick()
+        {
+            yield return null;
+            _game.Flow.Submit();
+
+            _game.AdvanceTicks(100); // サーブ（60 Tick）後、ボールが飛んでいる途中
+
+            var current = _game.Flow.Current;
+            Assert.That(_game.Flow.Match!.Ticks, Is.EqualTo(100));
+            Assert.That(current.BallInPlay, Is.True);
+            var ball = _game.transform.Find("Ball").localPosition;
+            Assert.That(ball.x, Is.EqualTo(current.Ball.X), "1 Tick 前との補間ではなく、100 Tick 目の位置を描く");
+            Assert.That(ball.y, Is.EqualTo(current.Ball.Y));
+        }
+
+        [UnityTest]
         public IEnumerator EnterKey_StartsMatch_EscapeReturnsToTitle()
         {
             yield return _keyboard.Tap(Key.Enter);

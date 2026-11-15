@@ -56,13 +56,15 @@ namespace Game.Unity
 
         private void Update()
         {
-            if (!EvidenceCapture.IsRunning)
+            if (EvidenceCapture.IsRunning)
             {
-                var move = ReadPlayerInput();
-                Advance(Time.deltaTime, move);
+                Render(_flow.Current);
+                return;
             }
 
-            Render();
+            var move = ReadPlayerInput();
+            Advance(Time.deltaTime, move);
+            Render(MatchSnapshot.Interpolate(_flow.Previous, _flow.Current, _flow.Alpha));
         }
 
         private void OnDestroy()
@@ -72,7 +74,10 @@ namespace Game.Unity
             _audio.Dispose();
         }
 
-        /// <summary>撮影台本から使う。プレイヤー入力なしで、ちょうど指定した Tick 数だけ進めて描画する。</summary>
+        /// <summary>
+        /// 撮影台本から使う。プレイヤー入力なしで、ちょうど指定した Tick 数だけ進めて描画する。
+        /// 証跡は「その Tick の状態」を写すため、Tick 間の補間はせず最新の Tick（<see cref="PongFlow.Current"/>）を描く。
+        /// </summary>
         public void AdvanceTicks(int ticks)
         {
             for (var i = 0; i < ticks && _flow.Screen == AppScreen.Playing; i++)
@@ -80,7 +85,7 @@ namespace Game.Unity
                 Advance(_settings.Match.TickDuration, 0f);
             }
 
-            Render();
+            Render(_flow.Current);
         }
 
         private void Advance(double deltaSeconds, float move)
@@ -92,10 +97,9 @@ namespace Game.Unity
             }
         }
 
-        private void Render()
+        private void Render(MatchSnapshot snapshot)
         {
             CourtFraming.Fit(_camera, _settings.Match);
-            var snapshot = MatchSnapshot.Interpolate(_flow.Previous, _flow.Current, _flow.Alpha);
             var showBall = _flow.Match is { Phase: not MatchPhase.Finished };
             _court.Render(snapshot, showBall);
             _hud?.Render(_flow);

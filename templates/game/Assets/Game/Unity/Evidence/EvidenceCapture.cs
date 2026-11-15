@@ -6,11 +6,12 @@ using UnityEngine;
 namespace Game.Unity.Evidence
 {
     /// <summary>
-    /// 起動引数 <c>-capture &lt;出力先フォルダ&gt;</c> があるとき、シーン上の <see cref="ICaptureScenario"/> を実行して
+    /// 起動引数 <c>-capture &lt;evidence フォルダ&gt;</c> があるとき、シーン上の <see cref="ICaptureScenario"/> を実行して
     /// スクリーンショットを撮り、終了する（`dev capture NNN` から使う）。
     /// 撮影中は <see cref="IsRunning"/> が true になる。ゲーム側は乱数に <see cref="Seed"/> を使い、
     /// 実時間やプレイヤー入力では進めず台本に進行を任せ、音も鳴らさない。これで同じビルドなら毎回同じ画像になる。
-    /// 画像と manifest.json は一時フォルダに書き、全部撮れたときだけ出力先へ移す（途中で失敗しても新旧が混ざらない）。
+    /// 画像と manifest.json は一時フォルダに書き、全部撮れて検証できたときだけ <c>capture/</c> として公開する（<see cref="EvidencePublisher"/>）。
+    /// 失敗しても必ず終了し、終了コード 1 を返す。
     /// </summary>
     public static class EvidenceCapture
     {
@@ -18,7 +19,6 @@ namespace Game.Unity.Evidence
         public const int Seed = 1;
 
         private const string Argument = "-capture";
-        private const string ManifestFile = "manifest.json";
 
         // 撮影しない通常起動では null。
         // 起動引数は実行中に変わらないので一度だけ読む。Awake からも参照できるよう、シーン読み込みの前後に依存しない形にする。
@@ -38,18 +38,16 @@ namespace Game.Unity.Evidence
             _ = RunAsync(Path.GetFullPath(OutputDirectory));
         }
 
+        // どこで失敗しても必ず Application.Quit まで到達させる（dev capture が終了を待ち続けないように）。
         private static async Awaitable RunAsync(string directory)
         {
-            var staging = directory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + ".staging";
             var exitCode = 0;
+            string staging = null;
             try
             {
-                if (Directory.Exists(staging))
-                {
-                    Directory.Delete(staging, recursive: true);
-                }
-
-                Directory.CreateDirectory(staging);
+                Directory.CreateDirectory(directory);
+                var publisher = new EvidencePublisher(directory);
+                staging = publisher.CreateStaging();
                 var manifest = new CaptureManifest
                 {
                     Product = Application.productName,
@@ -60,32 +58,45 @@ namespace Game.Unity.Evidence
                     CapturedAtUtc = DateTime.UtcNow.ToString("O"),
                 };
                 await FindScenario().RunAsync(new CaptureContext(staging, manifest));
-                File.WriteAllText(Path.Combine(staging, ManifestFile), JsonUtility.ToJson(manifest, prettyPrint: true) + "\n");
-                Commit(staging, directory);
-                Debug.Log($"[EvidenceCapture] 保存: {directory}");
+                File.WriteAllText(Path.Combine(staging, EvidencePublisher.ManifestFileName), JsonUtility.ToJson(manifest, prettyPrint: true) + "\n");
+                var shots = manifest.Shots.Select(shot => (shot.File, shot.Sha256)).ToArray();
+                foreach (var warning in publisher.Publish(staging, shots))
+                {
+                    Debug.LogWarning($"[EvidenceCapture] {warning}");
+                }
+
+                staging = null; // 公開フォルダになったので後始末しない
+                Debug.Log($"[EvidenceCapture] 公開: {publisher.PublishedDirectory}");
             }
             catch (Exception exception)
             {
                 Debug.LogException(exception);
                 exitCode = 1;
             }
-            finally
+
+            if (staging != null && !TryDeleteDirectory(staging))
             {
-                if (Directory.Exists(staging))
-                {
-                    Directory.Delete(staging, recursive: true);
-                }
+                exitCode = 1;
             }
 
             Application.Quit(exitCode);
         }
 
-        private static void Commit(string staging, string directory)
+        private static bool TryDeleteDirectory(string path)
         {
-            Directory.CreateDirectory(directory);
-            foreach (var file in Directory.GetFiles(staging))
+            try
             {
-                File.Copy(file, Path.Combine(directory, Path.GetFileName(file)), overwrite: true);
+                if (Directory.Exists(path))
+                {
+                    Directory.Delete(path, recursive: true);
+                }
+
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"[EvidenceCapture] 一時フォルダを消せませんでした: {path}: {exception.Message}");
+                return false;
             }
         }
 

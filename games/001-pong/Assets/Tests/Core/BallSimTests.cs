@@ -167,6 +167,20 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void PaddleReachingCourtEdge_StopsThereWithinTheTick()
+        {
+            // 上限は 3.7。3.625 から上へ動くと、Tick の半分で上限に着いて止まる（線形補間なら 3.6625）。
+            // y = 2.76 のボールは、止まったパドル（3.7）には届かない。
+            Assert.That(CrossLeftFaceWhileMoving(fromY: 3.625f, input: 1f, ballY: 2.76f, crossFraction: 0.5f), Is.False);
+            Assert.That(_left.YAt(0.5f), Is.EqualTo(3.7f).Within(Tolerance));
+            Assert.That(_left.YAt(0.25f), Is.EqualTo(3.6625f).Within(Tolerance), "端に着くまでは等速");
+
+            // 下限でも同じ。
+            Assert.That(CrossLeftFaceWhileMoving(fromY: -3.625f, input: -1f, ballY: -2.76f, crossFraction: 0.5f), Is.False);
+            Assert.That(_left.YAt(0.5f), Is.EqualTo(-3.7f).Within(Tolerance));
+        }
+
+        [Test]
         public void PaddleRightAfterReversing_StartsFromWhereThePreviousTickEnded()
         {
             _left.SetY(0f);
@@ -187,6 +201,44 @@ namespace Game.Core.Tests
 
             Assert.That(LaunchAcrossLeftFace(ballY: 0.075f, crossFraction: 0.5f), Is.True);
             Assert.That(_ball.Velocity.Y, Is.EqualTo(0f).Within(Tolerance));
+        }
+
+        [Test]
+        public void AcceptedConfigAtSpeedLimit_NeverExceedsThreeContactsPerTick()
+        {
+            // 狭いコート（パドル面の間隔 2.3、壁の間隔 2.75）で、受け入れられる上限ぎりぎりの速度にする。
+            var config = new PongConfig { FieldWidth = 4f, FieldHeight = 3f, PaddleHeight = 2f, ServeSpeed = 7f };
+            config.MaxBallSpeed = config.MaxTravelPerTick * config.TicksPerSecond * 0.999f;
+            config.Validate();
+            var left = new Paddle(config, Side.Left);
+            var right = new Paddle(config, Side.Right);
+            var ball = new BallSim(config);
+            var events = new List<MatchEvent>();
+            var random = new SeededRandom(2024);
+            var halfX = (config.FieldWidth / 2f) - config.PaddleInset;
+            var halfY = (config.FieldHeight / 2f) - ball.HalfSize;
+            var maxContacts = 0;
+
+            // パドルの間の任意の位置から、上限速度で任意の向きに打ち出し、パドルも無作為に動かす。
+            for (var trial = 0; trial < 500; trial++)
+            {
+                left.SetY(random.Range(-1f, 1f));
+                right.SetY(random.Range(-1f, 1f));
+                var angle = random.Range(-MathF.PI, MathF.PI);
+                var velocity = new Vec2(MathF.Cos(angle), MathF.Sin(angle)) * config.MaxBallSpeed;
+                ball.Launch(new Vec2(random.Range(-halfX, halfX), random.Range(-halfY, halfY)), velocity);
+                for (var tick = 0; tick < 200 && ball.GoalReached() is null; tick++)
+                {
+                    left.Move(random.Range(-1f, 1f), config.TickDuration);
+                    right.Move(random.Range(-1f, 1f), config.TickDuration);
+                    events.Clear();
+                    ball.Step(config.TickDuration, left, right, events);
+                    maxContacts = Math.Max(maxContacts, events.Count);
+                }
+            }
+
+            Assert.That(maxContacts, Is.LessThanOrEqualTo(3));
+            Assert.That(maxContacts, Is.GreaterThanOrEqualTo(2), "高速で複数回の接触が実際に起きている（検証として意味がある）");
         }
 
         // 左パドルを fromY から input の向きに 1 Tick 動かしながら、ボールを Tick 中の crossFraction の時刻に面へ届かせる。当たったら true。

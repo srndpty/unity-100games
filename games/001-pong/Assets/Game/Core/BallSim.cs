@@ -45,7 +45,8 @@ namespace Game.Core
 
         /// <summary>
         /// 1 Tick 進める。パドルはこの Tick の移動（<see cref="Paddle.PreviousY"/> → <see cref="Paddle.Y"/>）を済ませておくこと。
-        /// 接触が <see cref="MaxContactsPerStep"/> 回を超えたら、時間を取りこぼさないよう例外にする（設定の検証で起きない範囲に抑えている）。
+        /// 接触が <see cref="MaxContactsPerStep"/> 回を超えたら、時間を取りこぼさないよう例外にする。
+        /// 検証済みの設定（<see cref="PongConfig.MaxTravelPerTick"/>）では 1 Tick の接触は最大 3 回なので起きない。
         /// </summary>
         public void Step(float deltaTime, Paddle left, Paddle right, ICollection<MatchEvent> events)
         {

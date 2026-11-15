@@ -54,8 +54,24 @@ namespace Game.Core
             Require(TicksPerSecond >= 1, "Tick レートは 1 以上");
             Require(ServeDelayTicks >= 1, "サーブ待ちは 1 Tick 以上");
 
-            // 1 Tick で動ける距離を抑え、1 Tick 内の接触回数（BallSim の上限）に余裕を持たせる。
-            Require(MaxBallSpeed * TickDuration < PaddleHeight / 2f, "最高速度での 1 Tick の移動量はパドルの高さの半分未満");
+            Require(MaxBallSpeed * TickDuration < MaxTravelPerTick, "最高速度での 1 Tick の移動量は、上下の壁の間隔と左右のパドル面の間隔より短い");
+        }
+
+        /// <summary>
+        /// 1 Tick にボールが動いてよい距離の上限（これ未満であること）。上下の壁の接触面の間隔と、左右のパドルの接触面の間隔の短い方。
+        /// これ未満なら 1 Tick の接触は最大 3 回（壁 → パドル → 同じ壁）に収まる。
+        /// 理由：横向きを変えるのはパドルだけなので、同じパドルに続けて当たるには反対のパドルを経由する（横に間隔ぶん動く）。
+        /// 縦向きは壁とパドルが変えるので、パドルを挟まずに壁へ 2 回当たるには反対の壁を経由する（縦に間隔ぶん動く）。
+        /// 4 回の接触には、このどちらかが必ず含まれる。
+        /// </summary>
+        public float MaxTravelPerTick
+        {
+            get
+            {
+                var wallGap = FieldHeight - BallSize;
+                var paddleGap = 2f * (MathF.Abs(PaddleX(Side.Right)) - (PaddleWidth / 2f) - (BallSize / 2f));
+                return MathF.Min(wallGap, paddleGap);
+            }
         }
 
         private static bool AllFinite(params float[] values) => Array.TrueForAll(values, float.IsFinite);

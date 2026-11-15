@@ -2,9 +2,9 @@
     "Product": "001-pong",
     "Version": "1.0",
     "UnityVersion": "6000.6.9f1",
-    "BuildGuid": "1c33a1b2e50b4da09733a333f72aa9fb",
+    "BuildGuid": "ea7ef46c0e99458dacafa93e60a06300",
     "Seed": 1,
-    "CapturedAtUtc": "2026-11-15T08:43:51.7916764Z",
+    "CapturedAtUtc": "2026-11-15T09:38:55.5994743Z",
     "Info": [
         {
             "Key": "settings",
@@ -23,7 +23,7 @@
         },
         {
             "File": "playing.png",
-            "Sha256": "0e23ba95b80cb28f2a0ce99b8db5020477b45bfeba74eece4d8ad11e592718c1",
+            "Sha256": "fe19d6d57dc9efc180735765b2228d35c872b3549c217e6411e11fe469e3fa95",
             "Note": "tick=100"
         },
         {

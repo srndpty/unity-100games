@@ -31,6 +31,7 @@ $GamesDir = Join-Path $RepoRoot 'games'
 $Solution = Join-Path $RepoRoot 'unity-100games.slnx'
 $BuildTarget = 'StandaloneWindows64'
 $GeneratedDirs = 'Library', 'Temp', 'Logs', 'obj', 'Builds'
+$CaptureTimeoutSeconds = 120
 
 # 外部コマンドを実行し、失敗したらその終了コードで即終了する。
 # `--option` 形式の引数をそのまま渡すため、param ブロックを使わず $args で受ける。
@@ -177,7 +178,7 @@ function Show-Help {
   gui [NNN]                     Unity エディタで開く
   build [NNN]                   Windows 向けにビルド (games/NNN-*/Builds/Windows/)
   run [NNN]                     ビルド済みのゲームを起動
-  capture [NNN]                 ビルドを撮影モードで起動し、evidence/ にスクリーンショットを保存 (自動で終了)
+  capture [NNN]                 ビルドを撮影モードで起動し、evidence/capture/ にスクリーンショットを保存 (自動で終了)
   test                          全作品の Core / App テストを dotnet で実行 (高速、Unity 不要)
   test [NNN] -Unity [-Mode EditMode|PlayMode]
                                 Unity 上でテストを実行
@@ -211,13 +212,18 @@ switch ($Command) {
         if (-not (Test-Path $exe)) { throw "ビルドがありません。先に dev build を実行してください: $exe" }
         $evidence = Join-Path $gameDir.FullName 'evidence'
         $log = Join-Path $gameDir.FullName 'Logs/capture.log'
-        # ゲーム側の撮影台本 (ICaptureScenario) が画面を進めて撮影し、自分で終了する。撮影中はキー入力を無視する。
-        $process = Start-Process $exe -PassThru -Wait -ArgumentList @(
+        # ゲーム側の撮影台本 (ICaptureScenario) が画面を進めて撮影し、evidence/capture/ に一式を公開して自分で終了する。
+        # 撮影中はキー入力を無視する。ゲームが終了しないときに待ち続けないよう、時間で打ち切る。
+        $process = Start-Process $exe -PassThru -ArgumentList @(
             '-capture', "`"$evidence`"", '-logFile', "`"$log`"",
             '-screen-fullscreen', '0', '-screen-width', '1280', '-screen-height', '720'
         )
+        if (-not $process.WaitForExit($CaptureTimeoutSeconds * 1000)) {
+            $process.Kill()
+            throw "撮影が $CaptureTimeoutSeconds 秒で終わらないため打ち切りました。ログ: $log"
+        }
         if ($process.ExitCode -ne 0) { throw "撮影に失敗しました (終了コード $($process.ExitCode))。ログ: $log" }
-        Write-Host "撮影しました: $evidence"
+        Write-Host "撮影しました: $(Join-Path $evidence 'capture')"
     }
     'test' {
         if ($Unity) {

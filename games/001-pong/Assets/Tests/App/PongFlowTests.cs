@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Game.Core;
 using NUnit.Framework;
 
@@ -112,30 +113,41 @@ namespace Game.App.Tests
         [Test]
         public void NthRematch_CanBeReproducedFromItsSeedAndInputsAlone()
         {
-            // 3 試合続けて遊び、各試合のシードとプレイヤー入力列を記録する。
-            var played = new List<(int Seed, List<float> Inputs, MatchState Match)>();
+            // 3 試合続けて遊び、各試合のシードとプレイヤー入力列、Tick ごとの状態と出来事を記録する。
+            var played = new List<(int Seed, List<float> Inputs, List<MatchSnapshot> Snapshots, List<MatchEvent[]> Events, MatchState Match)>();
             var random = new SeededRandom(7);
             for (var match = 0; match < 3; match++)
             {
                 _flow.Submit();
                 var inputs = new List<float>();
+                var snapshots = new List<MatchSnapshot>();
+                var events = new List<MatchEvent[]>();
                 for (var frame = 0; frame < 60 * 60 * 30 && _flow.Screen == AppScreen.Playing; frame++)
                 {
                     var input = random.Range(-1f, 1f);
-                    _flow.Advance(_config.TickDuration, input);
+                    _flow.Advance(_config.TickDuration, input); // ちょうど 1 Tick 進む
                     inputs.Add(input);
+                    snapshots.Add(_flow.Current);
+                    events.Add(_flow.FrameEvents.ToArray());
                 }
 
                 Assert.That(_flow.Screen, Is.EqualTo(AppScreen.Result));
-                played.Add((_flow.MatchSeed, inputs, _flow.Match!));
+                played.Add((_flow.MatchSeed, inputs, snapshots, events, _flow.Match!));
             }
 
-            // 3 試合目を、前の試合を一切流さずに単独で再現する。
-            var (seed, recorded, original) = played[2];
+            // 3 試合目を、前の試合を一切流さずに単独で再現し、全 Tick の位置と出来事を比べる。
+            var (seed, recorded, recordedSnapshots, recordedEvents, original) = played[2];
             var replay = new SeededMatch(_config, new CpuConfig(), seed);
-            foreach (var input in recorded)
+            for (var tick = 0; tick < recorded.Count; tick++)
             {
-                replay.Tick(input);
+                replay.Tick(recorded[tick]);
+                var expected = recordedSnapshots[tick];
+                var actual = replay.State.Snapshot;
+                Assert.That(actual.Ball, Is.EqualTo(expected.Ball), $"Tick {tick + 1} のボール位置");
+                Assert.That(actual.BallInPlay, Is.EqualTo(expected.BallInPlay), $"Tick {tick + 1} のボール状態");
+                Assert.That(actual.LeftY, Is.EqualTo(expected.LeftY), $"Tick {tick + 1} の左パドル");
+                Assert.That(actual.RightY, Is.EqualTo(expected.RightY), $"Tick {tick + 1} の右パドル");
+                Assert.That(replay.State.Events, Is.EqualTo(recordedEvents[tick]), $"Tick {tick + 1} の出来事");
             }
 
             Assert.That(replay.State.Winner, Is.EqualTo(original.Winner));
