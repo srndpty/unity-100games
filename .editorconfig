@@ -42,6 +42,8 @@ dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
 dotnet_style_readonly_field = true:warning
 
 # 命名: 定数は PascalCase、それ以外の private フィールドは _camelCase（定数の規則を先に評価させる）
+# 命名規則の severity はエディタ向けで、ビルド（dev check）で検査させるには IDE1006 自体の severity も要る
+dotnet_diagnostic.IDE1006.severity = warning
 dotnet_naming_rule.constants_pascal.symbols = constants
 dotnet_naming_rule.constants_pascal.style = pascal_case
 dotnet_naming_rule.constants_pascal.severity = warning

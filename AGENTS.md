@@ -59,8 +59,8 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 | `dev capture 001` | ビルドを撮影モードで起動し、`evidence/capture/` にスクリーンショットを保存して自動終了 |
 | `dev test` | 全作品の Core / App テスト（dotnet、高速） |
 | `dev test 001 -Unity [-Mode PlayMode]` | Unity 上でテスト（エディタを閉じた状態で実行） |
-| `dev lint` / `dev format` | 整形・アナライザー・`.meta` の検証／整形の適用 |
-| `dev check` | Core / App の型チェック |
+| `dev lint` / `dev format` | `.meta` と空白整形の検証（コンパイル不要）／整形の適用（スタイル・アナライザーの自動修正を含む） |
+| `dev check` | Core / App のビルド。型・コードスタイル（IDE*）・アナライザー（CA*）を警告＝エラーで検査 |
 | `dev clean [001]` | 生成物の削除 |
 
 変更後は `dev lint`、`dev check`、`dev test` を通す。Unity 層を触ったら `dev test NNN -Unity` も通す。
@@ -110,4 +110,5 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 
 - `Assets/` にファイルを追加・移動・削除したら `.meta` も一緒にコミットする。新規ファイルの `.meta` は Unity を一度起動すれば生成される（`dev test NNN -Unity` でよい）。
 - `Library/` などの生成物はコミットしない。
-- pre-commit で lint と型チェック、pre-push で Core / App テストが走る。`--no-verify` で回避しない。
+- pre-commit で lint と check が `-Staged`（ステージした変更が影響する作品だけ。共通設定の変更なら全作品）で、pre-push で Core / App テストが走る。`--no-verify` で回避しない。
+- コードスタイルの規則を `.editorconfig` に足すときは、ビルドで検査されることを確かめる。命名規則（IDE1006）のように `dotnet_diagnostic.<ID>.severity` を別に書かないとビルドで検査されないものがある。

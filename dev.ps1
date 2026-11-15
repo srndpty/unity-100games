@@ -11,7 +11,9 @@ param(
     # test -Unity: EditMode または PlayMode
     [ValidateSet('EditMode', 'PlayMode')][string]$Mode = 'EditMode',
     # new: 2d または 3d (URP テンプレート)
-    [ValidateSet('2d', '3d')][string]$Template = '2d'
+    [ValidateSet('2d', '3d')][string]$Template = '2d',
+    # lint / check: git にステージした変更が影響する作品だけを対象にする (pre-commit 用)
+    [switch]$Staged
 )
 
 # 本体は PowerShell 7 前提。Windows PowerShell 5.1 から呼ばれた場合は pwsh で実行し直す。
@@ -19,6 +21,7 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
     $forward = @($Command)
     if ($Game) { $forward += $Game }
     if ($Unity) { $forward += '-Unity' }
+    if ($Staged) { $forward += '-Staged' }
     & pwsh -NoProfile -File $PSCommandPath @forward -Mode $Mode -Template $Template
     exit $LASTEXITCODE
 }
@@ -32,6 +35,8 @@ $Solution = Join-Path $RepoRoot 'unity-100games.slnx'
 $BuildTarget = 'StandaloneWindows64'
 $GeneratedDirs = 'Library', 'Temp', 'Logs', 'obj', 'Builds'
 $CaptureTimeoutSeconds = 120
+# 変更されると全作品の検証結果が変わりうる共通ファイル (-Staged でもこれらが含まれれば全作品を対象にする)
+$SharedPathPattern = '^(build/|\.editorconfig$|global\.json$|unity-100games\.slnx$|dev\.ps1$)'
 
 # 外部コマンドを実行し、失敗したらその終了コードで即終了する。
 # `--option` 形式の引数をそのまま渡すため、param ブロックを使わず $args で受ける。
@@ -74,9 +79,23 @@ function Get-BuildExe($GameDir) {
     Join-Path $GameDir.FullName "Builds/Windows/$($GameDir.Name).exe"
 }
 
+# lint / check の対象作品。-Staged ならステージした変更が影響する作品だけ (共通ファイルの変更なら全作品)、
+# 番号指定ならその作品、どちらもなければ全作品。
+function Get-TargetGameDirs {
+    if ($Staged) {
+        $files = @(git -C $RepoRoot diff --cached --name-only)
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        if ($files -match $SharedPathPattern) { return Get-GameDirs }
+        $names = @($files | ForEach-Object { if ($_ -match '^games/(\d{3}-[^/]+)/') { $Matches[1] } } | Sort-Object -Unique)
+        return @(Get-GameDirs | Where-Object Name -In $names)
+    }
+    if ($Game) { return @(Find-GameDir) }
+    Get-GameDirs
+}
+
 # Assets 配下の全ファイル/フォルダに .meta があり、孤立した .meta がないことを検証する。
-function Test-MetaFiles {
-    $problems = foreach ($gameDir in Get-GameDirs) {
+function Test-MetaFiles($GameDirs) {
+    $problems = foreach ($gameDir in $GameDirs) {
         $assets = Join-Path $gameDir.FullName 'Assets'
         foreach ($item in Get-ChildItem $assets -Recurse -Force) {
             if ($item.Extension -eq '.meta') {
@@ -94,13 +113,41 @@ function Test-MetaFiles {
     }
 }
 
-function Invoke-Format([switch]$Verify) {
+# 作品の Assets 配下の .cs 全体 (Unity 層・PlayMode テストを含む) の空白整形を、1 回の起動でまとめて行う。
+# コンパイル不要なので速い。
+function Invoke-WhitespaceFormat($GameDirs, [switch]$Verify) {
+    if (-not $GameDirs) { return }
+    [string[]]$includes = $GameDirs | ForEach-Object { "$($_.Name)/Assets/" }
     [string[]]$verifyArgs = if ($Verify) { '--verify-no-changes' } else { @() }
-    Invoke-Native dotnet format $Solution @verifyArgs
-    # Unity 層とその PlayMode テストは dotnet のプロジェクトに含まれないため、空白整形のみ適用する。
-    foreach ($gameDir in Get-GameDirs) {
-        Invoke-Native dotnet format whitespace (Join-Path $gameDir.FullName 'Assets') --folder @verifyArgs
+    Invoke-Native dotnet format whitespace $GamesDir --folder --include @includes @verifyArgs
+}
+
+# lint はコンパイルしない検査 (.meta と空白) だけを行う。
+# コードスタイル (IDE*) とアナライザー (CA*) は、check の dotnet build が EnforceCodeStyleInBuild と
+# TreatWarningsAsErrors で同じ規則を検査するため、ここでは重ねない (dotnet format でのコンパイルが二重になり遅い)。
+function Invoke-Lint {
+    $targets = @(Get-TargetGameDirs)
+    Test-MetaFiles $targets
+    Invoke-WhitespaceFormat $targets -Verify
+}
+
+function Invoke-Check {
+    if (-not $Staged -and -not $Game) {
+        Invoke-Native dotnet build $Solution
+        return
     }
+    # 対象作品のテストプロジェクトをビルドすれば、参照している Core / App も一緒にビルドされる。
+    foreach ($gameDir in Get-TargetGameDirs) {
+        foreach ($project in Get-ChildItem (Join-Path $gameDir.FullName 'dotnet') -Recurse -Filter '*.Tests.csproj') {
+            Invoke-Native dotnet build $project.FullName
+        }
+    }
+}
+
+# 整形の適用。スタイル・アナライザーの自動修正もかけるため、こちらは dotnet format をソリューション全体に使う。
+function Invoke-Format {
+    Invoke-Native dotnet format $Solution
+    Invoke-WhitespaceFormat (Get-GameDirs)
 }
 
 function Invoke-New {
@@ -182,9 +229,10 @@ function Show-Help {
   test                          全作品の Core / App テストを dotnet で実行 (高速、Unity 不要)
   test [NNN] -Unity [-Mode EditMode|PlayMode]
                                 Unity 上でテストを実行
-  lint                          整形・アナライザー・.meta の検証 (変更しない)
-  format                        コードを整形
-  check                         全作品の Core / App を型チェック (警告はエラー扱い)
+  lint [NNN] [-Staged]          .meta と空白整形の検証 (変更しない、コンパイル不要で速い)
+  format                        コードを整形 (スタイル・アナライザーの自動修正を含む)
+  check [NNN] [-Staged]         Core / App のビルド。型・コードスタイル・アナライザーを検査 (警告はエラー扱い)
+                                -Staged: git にステージした変更が影響する作品だけ (pre-commit 用)
   clean [NNN]                   生成物 (Library, Builds, bin, obj など) を削除。番号省略時は全作品
   help                          このヘルプ
 
@@ -235,12 +283,9 @@ switch ($Command) {
             Invoke-Native dotnet test $Solution
         }
     }
-    'lint' {
-        Test-MetaFiles
-        Invoke-Format -Verify
-    }
+    'lint' { Invoke-Lint }
     'format' { Invoke-Format }
-    'check' { Invoke-Native dotnet build $Solution }
+    'check' { Invoke-Check }
     'clean' { Invoke-Clean }
     default {
         Show-Help
