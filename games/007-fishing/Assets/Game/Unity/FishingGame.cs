@@ -95,7 +95,7 @@ namespace Game.Unity
         {
             if (Flow == null) { return; }
             _camera.orthographicSize = Mathf.Max(8, 14f / _camera.aspect); _camera.transform.position = new Vector3(0, 0, -10);
-            _view.Render(Flow.Game, Flow.Selected, _settings.Game, _space != null && _space.IsPressed());
+            _view.Render(Flow.Game, Flow.Selected, _settings.Game);
             RenderHud();
         }
         private void OnHud(PanelRenderer renderer, VisualElement root, int version)

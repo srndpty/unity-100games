@@ -1,0 +1,58 @@
+{
+    "Product": "SKY HOPPER",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "969eafb9023049c88a40a01800e28ef5",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-15T20:34:53.6205042Z",
+    "Info": [
+        {
+            "Key": "settings",
+            "Value": "{\"Game\":{\"BirdRadius\":0.30000001192092896,\"Gravity\":-18.0,\"FlapSpeed\":6.0,\"TerminalSpeed\":10.0,\"PipeWidth\":1.399999976158142,\"Spacing\":6.0,\"Speed\":4.0,\"SpeedIncrease\":0.30000001192092896,\"Gap\":4.5,\"GapDecrease\":0.20000000298023224,\"WallMargin\":0.800000011920929,\"MaxCenterChange\":2.0,\"PointsPerLevel\":5,\"MaxLevel\":5},\"Volume\":0.15000000596046448}"
+        },
+        {
+            "Key": "replaySeed",
+            "Value": "2"
+        },
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "imageConversion",
+            "Value": "PNG to JPEG; source generation=ebc290700d9a57ee; source run=20261115T203456Z-b07709c0; convertedAtUtc=2026-11-17T18:14:27.6502838Z; original capture/build metadata retained"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "aae6463fea526d87cffa2e75f1497527ec69f0120e494c4a3896de2c1b0f57cb",
+            "Note": "Tick 0"
+        },
+        {
+            "File": "02-ready.jpg",
+            "Sha256": "6050aae2689c59793f6aabf20ac5039572c64c3d0c0350a135b815b100e463d8",
+            "Note": "Tick 0"
+        },
+        {
+            "File": "03-flight.jpg",
+            "Sha256": "1d5b0943f795559fee36c2ff8747c28eef7cb14e2df342ef9a6aee3ca543f21e",
+            "Note": "Tick 91"
+        },
+        {
+            "File": "04-level-cap.jpg",
+            "Sha256": "457e1128518a5f2a6b1ef47b87476d525db12d9da84a61d3ffb1240e8bc98ba1",
+            "Note": "Tick 2109"
+        },
+        {
+            "File": "05-result.jpg",
+            "Sha256": "ec9c9aa758f616a1de90f6ae09535acc7877ecd67dbf0ae08ef84a6cba8e0ae9",
+            "Note": "Tick 2153"
+        },
+        {
+            "File": "06-replay.jpg",
+            "Sha256": "94436835c943f18caa01c00f0d59b46791e59a043ef6618126ce9b7d7d75dd00",
+            "Note": "Tick 0"
+        }
+    ]
+}

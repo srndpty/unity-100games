@@ -54,7 +54,7 @@ namespace Game.Unity.Editor
 
             var stage = (GameObject)PrefabUtility.InstantiatePrefab(FishingArtBuilder.LoadStage(settings.Game));
             var view = stage.GetComponent<FishingView>();
-            view.Render(null, Game.Core.FishKind.Crucian, settings.Game, false);
+            view.Render(null, Game.Core.FishKind.Crucian, settings.Game);
             var game = new GameObject(GameObjectName);
             var hudRenderer = game.AddComponent<PanelRenderer>();
             hudRenderer.panelSettings = panelSettings;

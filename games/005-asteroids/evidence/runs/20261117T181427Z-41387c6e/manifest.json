@@ -1,0 +1,58 @@
+{
+    "Product": "005-asteroids",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "41f9171a32dc43448a5da552c280ff38",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-15T18:49:10.8657927Z",
+    "Info": [
+        {
+            "Key": "settings",
+            "Value": "{\"WaveCount\":3,\"FirstWaveCount\":3,\"WaveIncrease\":1,\"Lives\":3,\"BulletLimit\":8,\"Acceleration\":8.0,\"MaxSpeed\":8.0,\"RotationDegrees\":240.0,\"BulletSpeed\":18.0,\"BulletSeconds\":1.2000000476837158,\"FireSeconds\":0.20000000298023224,\"LargeRadius\":1.2000000476837158,\"MediumRadius\":0.6499999761581421,\"SmallRadius\":0.3499999940395355,\"AsteroidMinSpeed\":1.2000000476837158,\"AsteroidMaxSpeed\":2.0,\"SplitSpeed\":0.800000011920929,\"RespawnSeconds\":1.0,\"TransitionSeconds\":1.0,\"InvincibleSeconds\":2.0}"
+        },
+        {
+            "Key": "replaySeed",
+            "Value": "2"
+        },
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "imageConversion",
+            "Value": "PNG to JPEG; source generation=5204675a0b7255eb; source run=20261115T184912Z-135eafc6; convertedAtUtc=2026-11-17T18:14:27.3547354Z; original capture/build metadata retained"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "caba8c683884c010dc7fc4cf11b014cfaddd99f060d90103051094de80bbecbd",
+            "Note": "Tick 0"
+        },
+        {
+            "File": "02-combat.jpg",
+            "Sha256": "c02cfdd19f69005b6f0b4ed80f2ccdc674c3fa139015b8839bc3fce90c47d82d",
+            "Note": "Tick 1"
+        },
+        {
+            "File": "03-split.jpg",
+            "Sha256": "7951011f3e47bd7e50d3048969fd58d3b1006be2c0b861d75e5a641ad349b311",
+            "Note": "Tick 28"
+        },
+        {
+            "File": "04-wave-clear.jpg",
+            "Sha256": "ddc0d83768ea74a011797eb99a783792feed935c0d72f6db9ed85ae0b97f9de8",
+            "Note": "Tick 419"
+        },
+        {
+            "File": "05-win.jpg",
+            "Sha256": "21459ad2692557337f9e249fffb965c8fdbf81392970d70230104c7574295569",
+            "Note": "Tick 1683"
+        },
+        {
+            "File": "06-loss.jpg",
+            "Sha256": "58adf53032296155a18c5dc2bd5410c86773e81f529f01c141f9c62770c7d822",
+            "Note": "Tick 7652"
+        }
+    ]
+}

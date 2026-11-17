@@ -6,11 +6,21 @@ namespace Game.Unity
 {
     public sealed class FishingView : MonoBehaviour
     {
+        private const float LeaderLength = .2f;
         [SerializeField] private SpriteRenderer _fish;
         [SerializeField] private Sprite[] _fishSprites;
         [SerializeField] private Transform _angler;
+        [SerializeField] private Transform _anglerRig;
+        [SerializeField] private Sprite _standingSprite;
+        [SerializeField] private Sprite _struggleSprite;
         [SerializeField] private Transform _rodHand;
         [SerializeField] private Transform _rodTip;
+        [SerializeField] private Transform _struggleHand;
+        [SerializeField] private Transform _struggleTip;
+        [SerializeField] private float _struggleHorizontal = .065f;
+        [SerializeField] private float _struggleVertical = .018f;
+        [SerializeField] private float _struggleDegrees = 1.2f;
+        [SerializeField] private float _struggleFrequency = 3.2f;
         [SerializeField] private SpriteRenderer _float;
         [SerializeField] private SpriteRenderer _bait;
         [SerializeField] private LineRenderer _rod;
@@ -22,17 +32,31 @@ namespace Game.Unity
         public Vector2 FishMouth => _fish.transform.position;
         public Vector2 BaitPosition => _bait.transform.position;
         public Transform Angler => _angler;
+        public Transform AnglerRig => _anglerRig;
+        public Vector3 GripPosition { get; private set; }
+        public Vector3 RodTipPosition { get; private set; }
+        public LineRenderer FishingLine => _line;
+        public Sprite AnglerSprite => _angler.GetComponent<SpriteRenderer>().sprite;
+        public bool UnderwaterLineVisible => _underLine.enabled;
         public float SurfaceY => _surfaceY;
-        public void Render(FishingState game, FishKind selected, FishingConfig config, bool reeling)
+        public void Render(FishingState game, FishKind selected, FishingConfig config)
         {
             var kind = game?.Kind ?? selected;
             var profile = Array.Find(config.Fish, fish => fish.Kind == kind);
             var tick = (float)(game?.TickCount ?? 0);
             var phaseTick = game?.PhaseTick ?? 0;
             var phase = game?.Phase ?? FishingPhase.Roaming;
+            var struggling = phase == FishingPhase.Fighting || phase == FishingPhase.Landing;
+            var strength = phase == FishingPhase.Fighting ? (.4f + (float)game.Tension * .006f) * (game.Action == FishAction.Run ? 1 : .45f) : 0;
+            var sway = Mathf.Sin(phaseTick * Mathf.PI * 2 * _struggleFrequency / FishingConfig.TickRate) * strength;
+            _anglerRig.localPosition = new Vector3(sway * _struggleHorizontal, Mathf.Abs(sway) * _struggleVertical, 0);
+            _anglerRig.localRotation = Quaternion.Euler(0, 0, sway * _struggleDegrees);
+            _angler.GetComponent<SpriteRenderer>().sprite = struggling ? _struggleSprite : _standingSprite;
+            GripPosition = (struggling ? _struggleHand : _rodHand).position;
+            RodTipPosition = (struggling ? _struggleTip : _rodTip).position;
             var targetX = _shoreX + profile.Distance * .48f;
             var home = new Vector2(targetX + 1, _surfaceY - 2.3f - (int)kind * .8f);
-            var target = new Vector2(targetX, _surfaceY - .16f);
+            var target = new Vector2(targetX, _surfaceY + .04f - LeaderLength);
             var patrol = Patrol(home, tick);
             var mouth = patrol;
             var angle = 0f;
@@ -75,15 +99,19 @@ namespace Game.Unity
             if (phase == FishingPhase.Casting)
             {
                 var t = phaseTick / (float)FishingConfig.Ticks(config.CastSeconds);
-                floating = Vector2.Lerp(_rodHand.position, floating, t) + Vector2.up * (Mathf.Sin(t * Mathf.PI) * 2);
+                floating = Vector2.Lerp(GripPosition, floating, t) + Vector2.up * (Mathf.Sin(t * Mathf.PI) * 2);
             }
             var attached = phase == FishingPhase.Biting || phase == FishingPhase.Fighting || phase == FishingPhase.Landing || phase == FishingPhase.Caught;
-            var bait = attached ? mouth : new Vector2(floating.x, floating.y - .2f);
+            var bait = attached ? mouth : new Vector2(floating.x, floating.y - LeaderLength);
+            var tip = (Vector2)RodTipPosition;
+            var hand = (Vector2)GripPosition;
+            var hooked = phase == FishingPhase.Fighting || phase == FishingPhase.Landing || phase == FishingPhase.Caught;
+            var lineDirection = (tip - bait).normalized;
+            if (hooked) { floating = bait + lineDirection * LeaderLength; }
             _float.transform.position = floating; _bait.transform.position = bait;
+            _float.transform.rotation = Quaternion.Euler(0, 0, hooked ? Mathf.Atan2(lineDirection.y, lineDirection.x) * Mathf.Rad2Deg - 90 : 0);
             _bait.enabled = phase != FishingPhase.Escaped;
             _float.enabled = phase != FishingPhase.Landing && phase != FishingPhase.Caught;
-            var tip = (Vector2)_rodTip.position;
-            var hand = (Vector2)_rodHand.position;
             var bend = phase == FishingPhase.Fighting ? (float)game.Tension / 100 : 0;
             _rod.positionCount = 9;
             for (var i = 0; i < 9; i++)
@@ -92,19 +120,18 @@ namespace Game.Unity
                 point.y += Mathf.Sin(t * Mathf.PI) * (.15f + bend * .35f);
                 _rod.SetPosition(i, new Vector3(point.x, point.y, 0));
             }
-            Segment(_line, tip, phase == FishingPhase.Landing || phase == FishingPhase.Caught ? bait : floating);
-            _underLine.enabled = attached && _float.enabled;
+            Segment(_line, tip, hooked ? bait : floating);
+            _underLine.enabled = !hooked && attached && _float.enabled;
             Segment(_underLine, floating, bait);
-            _ripple.enabled = phase != FishingPhase.Casting && phase != FishingPhase.Landing && phase != FishingPhase.Caught;
+            _ripple.enabled = phase != FishingPhase.Casting && phase != FishingPhase.Landing && phase != FishingPhase.Caught
+                && (!hooked || Mathf.Abs(floating.y - _surfaceY) < .1f);
             _ripple.positionCount = 25;
             var radius = phase == FishingPhase.Biting ? .65f + Mathf.Sin(phaseTick * .3f) * .1f : .3f;
             for (var i = 0; i < 25; i++)
             {
                 var theta = i / 24f * Mathf.PI * 2;
-                _ripple.SetPosition(i, new Vector3(targetX + Mathf.Cos(theta) * radius, _surfaceY + Mathf.Sin(theta) * .08f, 0));
+                _ripple.SetPosition(i, new Vector3(floating.x + Mathf.Cos(theta) * radius, _surfaceY + Mathf.Sin(theta) * .08f, 0));
             }
-            // 人物はPrefabの配置を保ち、巻き取り時の竿の曲がりで力を表す。
-            _ = reeling;
         }
         private static Vector2 Patrol(Vector2 home, float tick)
             => home + new Vector2(Mathf.Sin(tick * .035f) * 1.4f, Mathf.Sin(tick * .057f) * .45f);

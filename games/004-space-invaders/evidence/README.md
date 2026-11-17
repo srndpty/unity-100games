@@ -10,11 +10,11 @@
 
 | 場面 | 画像 | 撮影時点 |
 |---|---|---|
-| タイトル・操作説明 | ![タイトル](captures/08de7e85e3c29970/01-title.png) | Tick 0 |
-| 敵との交戦・盾の損傷 | ![交戦](captures/08de7e85e3c29970/02-combat.png) | Tick 600 |
-| Wave1全滅・次Wave待ち | ![Waveクリア](captures/08de7e85e3c29970/03-wave-clear.png) | Tick 1667 |
-| 3Wave勝利・9,600点 | ![勝利](captures/08de7e85e3c29970/04-win.png) | Tick 4531 |
-| 再戦後の敗北・残機0 | ![敗北](captures/08de7e85e3c29970/05-loss.png) | Tick 7578 |
+| タイトル・操作説明 | ![タイトル](captures/5ac7099f6d4e54c3/01-title.jpg) | Tick 0 |
+| 敵との交戦・盾の損傷 | ![交戦](captures/5ac7099f6d4e54c3/02-combat.jpg) | Tick 600 |
+| Wave1全滅・次Wave待ち | ![Waveクリア](captures/5ac7099f6d4e54c3/03-wave-clear.jpg) | Tick 1667 |
+| 3Wave勝利・9,600点 | ![勝利](captures/5ac7099f6d4e54c3/04-win.jpg) | Tick 4531 |
+| 再戦後の敗北・残機0 | ![敗北](captures/5ac7099f6d4e54c3/05-loss.jpg) | Tick 7578 |
 
 全5場面を目視し、文字の可読性・プレイ領域の収まり・状態と表示の整合を確認した。最終ビルドを2回撮影し、画像世代が一致することを確認した。横長16:10・16:9・21:9のカメラの収まりはPlayModeテストで確認している。
 
@@ -53,3 +53,9 @@
 ## 人間による確認
 
 2026-11-16、ユーザーから実際のゲーム起動・動作確認OKと完了承認を受領した。追加の調整指示はなし。調整値は `Assets/Game/Unity/InvadersSettings.asset`。
+
+## 2026-11-18 画像形式の標準化
+
+JPEG品質85・元の解像度を標準とする。既存PNGを新しい画像世代として再エンコードした。ゲームの再撮影ではなく、元の撮影日時・ビルドGUID・設定・Tickを保持している。変換履歴はmanifestのInfoに記録した。画像合計は0.22MBから0.20MBになった。
+
+共通撮影形式変更後のUnity再検証：EditMode 46/46、PlayMode 18/18成功（JPEG保存・復号・公開の追加テストを含む）。

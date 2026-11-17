@@ -67,6 +67,33 @@ namespace Game.Unity.Tests
         }
 
         [Test]
+        public void JpegFrame_IsPublishedWithEncodedHash_AndDecodesAtOriginalSize()
+        {
+            var staging = _publisher.CreateStaging();
+            var manifest = new CaptureManifest();
+            var context = new CaptureContext(staging, manifest);
+            var image = new Texture2D(128, 64, TextureFormat.RGB24, false);
+            var decoded = new Texture2D(2, 2);
+            try
+            {
+                var pixels = Enumerable.Range(0, 128 * 64).Select(i => i % 128 < 64 ? Color.red : Color.blue).ToArray();
+                image.SetPixels(pixels); image.Apply(); context.SaveFrame(image, "frame", "Tick 10");
+                var shot = manifest.Shots.Single(); var bytes = File.ReadAllBytes(Path.Combine(staging, shot.File));
+                Assert.That(shot.File, Is.EqualTo("frame.jpg"));
+                Assert.That(bytes[0], Is.EqualTo(0xff)); Assert.That(bytes[1], Is.EqualTo(0xd8));
+                Assert.That(shot.Sha256, Is.EqualTo(EvidencePublisher.Sha256Of(bytes)));
+                Assert.That(manifest.Info.Single(entry => entry.Key == "imageEncoding").Value, Is.EqualTo("JPEG (quality 85)"));
+                Assert.That(decoded.LoadImage(bytes), Is.True);
+                Assert.That(decoded.width, Is.EqualTo(128)); Assert.That(decoded.height, Is.EqualTo(64));
+                Assert.That(decoded.GetPixel(16, 32).r, Is.GreaterThan(.9f));
+                Assert.That(decoded.GetPixel(112, 32).b, Is.GreaterThan(.9f));
+                File.WriteAllText(Path.Combine(staging, EvidencePublisher.ManifestFileName), JsonUtility.ToJson(manifest));
+                _publisher.Publish(staging); Assert.DoesNotThrow(() => _publisher.VerifyCurrent());
+            }
+            finally { UnityEngine.Object.DestroyImmediate(image); UnityEngine.Object.DestroyImmediate(decoded); }
+        }
+
+        [Test]
         public void ExistingGenerationWhoseContentDoesNotMatchItsName_IsNotReused()
         {
             // 手作業のコピーなどで、B の世代名のフォルダに別の画像（A）が入ってしまった状態。

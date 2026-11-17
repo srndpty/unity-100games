@@ -88,6 +88,48 @@ namespace Game.Unity.Tests
             _game.Render(); Assert.That(Vector2.Distance(view.FishMouth, view.BaitPosition), Is.LessThan(.001f));
             yield return null;
         }
+        [UnityTest]
+        public IEnumerator Fight_LineIsStraight_AndFixedFloatStaysNearFish()
+        {
+            _game.Flow.Submit(); _game.Flow.Cast();
+            while (_game.Flow.Game.Phase != FishingPhase.Fighting) { Autopilot.Step(_game.Flow); }
+            for (var i = 0; i < 40; i++) { Autopilot.Step(_game.Flow); }
+            _game.Render(); var view = Object.FindAnyObjectByType<FishingView>();
+            var line = view.FishingLine;
+            Assert.That(line.positionCount, Is.EqualTo(2)); Assert.That(view.UnderwaterLineVisible, Is.False);
+            Assert.That(Vector3.Distance(line.GetPosition(0), view.RodTipPosition), Is.LessThan(.001f));
+            Assert.That(Vector2.Distance(line.GetPosition(1), view.FishMouth), Is.LessThan(.001f));
+            var floating = view.transform.Find("Float").position;
+            var segment = (Vector2)line.GetPosition(1) - (Vector2)line.GetPosition(0);
+            var offset = (Vector2)floating - (Vector2)line.GetPosition(0);
+            Assert.That(Mathf.Abs(segment.x * offset.y - segment.y * offset.x), Is.LessThan(.001f));
+            Assert.That(Vector2.Distance(floating, view.FishMouth), Is.EqualTo(.2f).Within(.001f));
+            Assert.That(floating.y, Is.LessThan(view.SurfaceY));
+            for (var i = 0; i < 40; i++) { Autopilot.Step(_game.Flow); }
+            _game.Render(); floating = view.transform.Find("Float").position;
+            Assert.That(Vector2.Distance(floating, view.FishMouth), Is.EqualTo(.2f).Within(.001f));
+            yield return null;
+        }
+        [UnityTest]
+        public IEnumerator Fight_ChangesPose_AndMovesWholeRigDeterministically()
+        {
+            var view = Object.FindAnyObjectByType<FishingView>(); var standing = view.AnglerSprite;
+            _game.Flow.Submit(); _game.Flow.Cast();
+            while (_game.Flow.Game.Phase != FishingPhase.Fighting) { Autopilot.Step(_game.Flow); }
+            _game.Render(); Assert.That(view.AnglerSprite, Is.Not.SameAs(standing));
+            var rig = view.AnglerRig; var origin = rig.localPosition;
+            var bodyLocal = view.Angler.localPosition;
+            for (var i = 0; i < 4; i++) { Autopilot.Step(_game.Flow); }
+            _game.Render(); Assert.That(Vector3.Distance(origin, rig.localPosition), Is.GreaterThan(.001f));
+            Assert.That(view.Angler.localPosition, Is.EqualTo(bodyLocal));
+            Assert.That(rig.Find("StruggleHand").position, Is.EqualTo(view.GripPosition));
+            Assert.That(rig.Find("StruggleTip").position, Is.EqualTo(view.RodTipPosition));
+            var position = rig.localPosition; var rotation = rig.localRotation;
+            _game.Flow.TogglePause(); _game.Flow.Advance(1); _game.Render();
+            Assert.That(rig.localPosition, Is.EqualTo(position)); Assert.That(rig.localRotation, Is.EqualTo(rotation));
+            _game.Flow.Back(); _game.Render(); Assert.That(view.AnglerSprite, Is.SameAs(standing));
+            Assert.That(rig.localPosition, Is.EqualTo(Vector3.zero)); yield return null;
+        }
         private IEnumerator Click(string name)
         {
             var button = _game.HudRoot.Q<Button>(name); var point = button.worldBound.center;
@@ -162,9 +204,9 @@ namespace Game.Unity.Tests
             var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Unity/Art/FishingStage.prefab");
             Assert.That(prefab, Is.Not.Null);
             Assert.That(prefab.GetComponentsInChildren<SpriteRenderer>().Length, Is.GreaterThanOrEqualTo(5));
-            Assert.That(prefab.transform.Find("Angler"), Is.Not.Null);
-            Assert.That(prefab.transform.Find("RodHand"), Is.Not.Null);
-            Assert.That(prefab.transform.Find("RodTip"), Is.Not.Null);
+            Assert.That(prefab.transform.Find("AnglerAnchor/AnglerRig/Angler"), Is.Not.Null);
+            Assert.That(prefab.transform.Find("AnglerAnchor/AnglerRig/RodHand"), Is.Not.Null);
+            Assert.That(prefab.transform.Find("AnglerAnchor/AnglerRig/RodTip"), Is.Not.Null);
             foreach (var renderer in prefab.GetComponentsInChildren<SpriteRenderer>())
             { Assert.That(UnityEditor.AssetDatabase.Contains(renderer.sprite), Is.True); }
         }

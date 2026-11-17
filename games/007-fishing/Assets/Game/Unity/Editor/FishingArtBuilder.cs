@@ -25,12 +25,54 @@ namespace Game.Unity.Editor
             finally { PrefabUtility.UnloadPrefabContents(stage); }
             FishingSceneBuilder.Build();
         }
+        [MenuItem("Game/Update Fishing Angler Rig")]
+        public static void UpdateAnglerRig()
+        {
+            ImportSingle("AnglerStruggle.png", new Vector2(.5f, 0));
+            var importer = (TextureImporter)AssetImporter.GetAtPath(Art + "AnglerStruggle.png");
+            var texture = Load<Texture2D>("AnglerStruggle.png");
+            importer.spritePixelsPerUnit = texture.height / Load<Sprite>("Angler.png").bounds.size.y;
+            importer.SaveAndReimport();
+            var stage = PrefabUtility.LoadPrefabContents(PrefabPath);
+            try
+            {
+                ConfigureAngler(stage);
+                stage.GetComponent<FishingView>().Render(null, FishKind.Crucian, new FishingConfig());
+                PrefabUtility.SaveAsPrefabAsset(stage, PrefabPath);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(stage); }
+            FishingSceneBuilder.Build();
+        }
+        private static void ConfigureAngler(GameObject stage)
+        {
+            var angler = stage.GetComponentsInChildren<SpriteRenderer>().Single(renderer => renderer.name == "Angler");
+            var anchor = stage.transform.Find("AnglerAnchor");
+            Transform rig;
+            if (anchor == null)
+            {
+                anchor = Anchor(stage.transform, "AnglerAnchor", angler.transform.localPosition);
+                rig = Anchor(anchor, "AnglerRig", Vector2.zero);
+                angler.transform.SetParent(rig, true);
+                stage.transform.Find("RodHand").SetParent(rig, true);
+                stage.transform.Find("RodTip").SetParent(rig, true);
+                stage.transform.Find("Rod").SetParent(rig, true);
+                Anchor(rig, "StruggleHand", new Vector2(.46f, 3.15f));
+                Anchor(rig, "StruggleTip", new Vector2(2.35f, 4.68f));
+            }
+            else { rig = anchor.Find("AnglerRig"); }
+            var serialized = new SerializedObject(stage.GetComponent<FishingView>());
+            Assign(serialized, "_anglerRig", rig); Assign(serialized, "_standingSprite", Load<Sprite>("Angler.png"));
+            Assign(serialized, "_struggleSprite", Load<Sprite>("AnglerStruggle.png"));
+            Assign(serialized, "_struggleHand", rig.Find("StruggleHand")); Assign(serialized, "_struggleTip", rig.Find("StruggleTip"));
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
         public static GameObject LoadStage(FishingConfig config)
         {
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
             if (prefab != null) { return prefab; }
             ImportSingle("Lakeside.jpg", new Vector2(.5f, .5f));
             ImportSingle("Angler.png", new Vector2(.5f, 0));
+            ImportSingle("AnglerStruggle.png", new Vector2(.5f, 0));
             ImportFish();
             CreateDisc();
             var material = new Material(Shader.Find("Sprites/Default"));
@@ -69,7 +111,8 @@ namespace Game.Unity.Editor
                 var array = serialized.FindProperty("_fishSprites"); array.arraySize = 3;
                 for (var i = 0; i < 3; i++) { array.GetArrayElementAtIndex(i).objectReferenceValue = fishSprites[i]; }
                 serialized.ApplyModifiedPropertiesWithoutUndo();
-                view.Render(null, FishKind.Crucian, config, false);
+                ConfigureAngler(root);
+                view.Render(null, FishKind.Crucian, config);
                 return PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             }
             finally { UnityEngine.Object.DestroyImmediate(root); }

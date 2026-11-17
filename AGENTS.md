@@ -86,6 +86,8 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - **`unity test` はバッチ実行（`Application.isBatchMode` が true）。** エディタを開いたままだと実行できないので、人間が遊ぶときは `dev run` を使う。
 - **音は控えめに。** 既定の音量は小さくし、`AudioPolicy.ShouldMute`（バッチ実行・証跡撮影）のときは消音する。矩形波は振幅 0.05 程度で十分に聞こえる。
 - **証跡は `dev capture` で撮る。** 実ウィンドウにキー入力を送る方式は、作業中の画面と入力を奪う。各作品は `ICaptureScenario` を実装したコンポーネントをシーンに 1 つ置く。
+  - 保存形式は **JPEG（`.jpg`）、品質85** を標準とする。解像度は撮影したまま保ち、圧縮後のバイト列をSHA-256で検証する。画面証跡に透過は不要。スプライトなど透過が必要な制作素材のPNGとは区別する。
+  - 既存証跡の形式を変えるときも公開中の世代を直接書き換えない。`build/ConvertEvidenceToJpeg.cs`をUnity CLIの`script run`で実行し、元の撮影日時・ビルド情報と変換履歴を保持して新しい世代として公開する。
   - 撮影中（`EvidenceCapture.IsRunning`）は乱数に `EvidenceCapture.Seed` を使い、実時間・プレイヤー入力では進めず、台本が Tick 単位で進める。同じビルドなら毎回同じ画像になる。
   - 撮影した画面は補間せず、その Tick の状態をそのまま描く。
   - 画像と `manifest.json`（シード、設定、ビルド GUID、撮影日時、撮影 Tick、SHA-256）は撮影ごとの一時フォルダに書き、`manifest.json` の内容と画像を照合してから公開する（`EvidencePublisher`）。

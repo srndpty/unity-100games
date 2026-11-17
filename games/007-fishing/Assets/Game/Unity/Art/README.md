@@ -4,12 +4,19 @@
 
 - `Lakeside.jpg`：湖畔・桟橋・水中の背景。
 - `Angler.png`：右向きの釣り人。竿・糸はLineRendererで接続する。
+- `AnglerStruggle.png`：同じ人物の踏ん張り姿勢。ファイトと取り込み中に切り替える。元の人物画像を参照して組み込みimagegenで編集し、アルファを保持した。
 - `FishAtlas.png`：上からコブナ・スズキ・コイ。
 - `Disc.png`：ウキ・餌用の小円。エディタースクリプトで生成する単純形状。
 
 `FishingStage.prefab`は編集用の正。Sceneビュー／Prefabモードで人物・竿の持ち手・竿先・描画物の配置を調整できる。シーン再生成は既存Prefabを読み、上書きしない。魚・ウキ・糸の実行時位置はFishingViewが状態から更新する。
 
+人物の配置は`AnglerAnchor`、踏ん張りの動きはその子`AnglerRig`で分離する。人物・通常／踏ん張り用の持ち手と竿先・竿本体は同じRigに属し、糸の始点も毎Tickその竿先へ追従する。Rigの揺れ幅・周波数・角度はPrefabのFishingViewで調整する。
+
 ## 生成プロンプト（原文）
+
+### 踏ん張り姿勢（Angler.pngを参照した編集）
+
+Use case: identity-preserve. Asset type: second animation pose sprite for a 2D side-view fishing game. Image 1 is the edit target and exact identity/style/costume reference. Keep the same adult angler, face, straw hat, cream shirt, rust vest, sage trousers, brown boots, right-facing side view, full body, same canvas dimensions and character scale. Change only the pose and facial expression: he is now fighting a strong fish, knees bent in a convincing braced stance, hips lowered slightly, torso leaning BACK to the LEFT, both hands gripping together in front near chest height, elbows pulled back, determined strained expression, planted boots. Keep the boot soles at the same baseline as the original and make the hands clearly visible so a separately drawn fishing rod can attach. No fishing rod, no line, no fish, no background, no floor, no cast shadow or glow outside the character. Genuine clean transparent alpha background. Preserve the painterly shading and palette exactly. No text, labels, border or watermark.
 
 ### 背景
 

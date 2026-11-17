@@ -24,7 +24,9 @@ namespace Game.Unity
             game.Render(); await capture.ShootAsync("02b-approach", "Tick " + game.Flow.Game.TickCount);
             while (game.Flow.Game.Phase != FishingPhase.Biting) { game.Flow.StepOneTick(); }
             game.Render(); await capture.ShootAsync("03-bite", "Tick " + game.Flow.Game.TickCount);
-            for (var i = 0; i < 90; i++) { Autopilot.Step(game.Flow); }
+            for (var i = 0; i < 13; i++) { Autopilot.Step(game.Flow); }
+            game.Render(); await capture.ShootAsync("03a-hooked", "Tick " + game.Flow.Game.TickCount);
+            for (var i = 0; i < 77; i++) { Autopilot.Step(game.Flow); }
             game.Render(); await capture.ShootAsync("04-fight", "Tick " + game.Flow.Game.TickCount);
             for (var kind = 0; kind < 3; kind++)
             {
