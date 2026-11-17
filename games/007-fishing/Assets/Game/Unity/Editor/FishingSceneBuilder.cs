@@ -41,7 +41,7 @@ namespace Game.Unity.Editor
 
             foreach (var root in scene.GetRootGameObjects())
             {
-                if (root.name == GameObjectName)
+                if (root.name == GameObjectName || root.name == "FishingStage")
                 {
                     Object.DestroyImmediate(root);
                 }
@@ -52,6 +52,9 @@ namespace Game.Unity.Editor
             camera.backgroundColor = new Color(.035f, .10f, .15f);
             camera.orthographic = true;
 
+            var stage = (GameObject)PrefabUtility.InstantiatePrefab(FishingArtBuilder.LoadStage(settings.Game));
+            var view = stage.GetComponent<FishingView>();
+            view.Render(null, Game.Core.FishKind.Crucian, settings.Game, false);
             var game = new GameObject(GameObjectName);
             var hudRenderer = game.AddComponent<PanelRenderer>();
             hudRenderer.panelSettings = panelSettings;
@@ -61,6 +64,9 @@ namespace Game.Unity.Editor
             serialized.FindProperty("_settings").objectReferenceValue = settings;
             serialized.FindProperty("_hudRenderer").objectReferenceValue = hudRenderer;
             serialized.FindProperty("_camera").objectReferenceValue = camera;
+            serialized.FindProperty("_view").objectReferenceValue = view;
+            camera.orthographicSize = 8;
+            camera.transform.position = new Vector3(0, 0, -10);
             serialized.ApplyModifiedPropertiesWithoutUndo();
             game.AddComponent<FishingCaptureScenario>();
 

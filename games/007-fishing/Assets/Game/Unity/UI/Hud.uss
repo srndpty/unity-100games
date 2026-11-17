@@ -25,3 +25,10 @@ Button { width: 290px; height: 48px; margin: 5px; font-size: 22px; background-co
 .points Button { width: 220px; }
 Button:hover { background-color: rgb(59, 112, 88); }
 Button.selected { background-color: rgb(116, 93, 49); border-color: rgb(243, 210, 142); }
+
+.brand, .collection { background-color: rgba(12, 39, 37, .88); padding: 9px 15px; border-radius: 6px; }
+.hint { background-color: rgba(12, 39, 37, .88); padding: 10px; }
+.status { background-color: rgba(12, 39, 37, .88); padding: 12px; border-radius: 8px; font-size: 32px; }
+.points Button { height: 64px; }
+
+.status { left: 550px; top: 155px; width: 800px; }

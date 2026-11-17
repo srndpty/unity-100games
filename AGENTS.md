@@ -79,6 +79,7 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 作品を作る中で踏んだ落とし穴。新しい知見はここに追記する。
 
 - **シーンはエディタスクリプトで生成する。** 手で編集せず `Editor/` の生成スクリプトを正とし、`unity run games/NNN -- -executeMethod <型>.Build` で再生成する（`-quit` は CLI の予約語で渡せない）。
+- **描画物はプレイ前からSceneビューで見える構成にする。** 背景・人物・主要オブジェクトはインポート済みスプライトとPrefabとして保存し、実行時に全てを生成する構成は小さな試作にとどめる。HUDはPanelRenderer、世界の描画はSpriteRendererなどで分ける。配置調整用のPrefabを正とし、シーン生成スクリプトは既存Prefabの調整を上書きせず組み立てる（007）。
 - **シーンを開いてからアセットを読む。** `EditorSceneManager.OpenScene` は未使用アセットをアンロードするので、先に読んだアセットへの参照が切れて fileID 0 で保存される。
 - **PlayMode テストで `InputTestFixture` を使わない。** 入力システムを初期化し直すため `InputSystem.actions`（プロジェクト全体の Input Actions）が null になる。`TestKeyboard` で仮想デバイスに状態イベントを送る。
 - **バッチ実行ではゲームビューにフォーカスがなく、入力が捨てられる。** `TestKeyboard` は使用中だけ `InputSettings` でフォーカスを無視させている。

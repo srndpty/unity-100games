@@ -55,8 +55,38 @@ namespace Game.Unity.Tests
         {
             yield return Click("submit"); Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Select));
             yield return Click("point2"); Assert.That(_game.Flow.Selected, Is.EqualTo(FishKind.Carp));
-            yield return Click("cast"); _game.Flow.StepOneTick();
+            Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Playing));
+            Assert.That(_game.HudRoot.Q<Button>("cast"), Is.Null);
+            _game.Flow.StepOneTick();
             Assert.That(_game.Flow.Game.Phase, Is.EqualTo(FishingPhase.Casting));
+        }
+        [UnityTest]
+        public IEnumerator HeldHook_ReelsOnFirstFightTick_WithoutRelease()
+        {
+            yield return _keyboard.Tap(Key.Enter); yield return _keyboard.Tap(Key.Space);
+            while (_game.Flow.Game.Phase != FishingPhase.Biting) { _game.Flow.StepOneTick(); }
+            _keyboard.Hold(Key.Space); yield return null; _game.Flow.StepOneTick();
+            var tension = _game.Flow.Game.Tension;
+            yield return null; _game.Flow.StepOneTick();
+            Assert.That(_game.Flow.Game.Tension, Is.GreaterThan(tension));
+            Assert.That(_game.Flow.Game.Phase, Is.EqualTo(FishingPhase.Fighting));
+        }
+        [UnityTest]
+        public IEnumerator Fish_PatrolsApproachesAndBitesActualSurfaceBait()
+        {
+            var view = Object.FindAnyObjectByType<FishingView>();
+            _game.Flow.Submit(); _game.Flow.Cast();
+            while (_game.Flow.Game.Phase != FishingPhase.Roaming) { _game.Flow.StepOneTick(); }
+            _game.Render(); var start = view.FishMouth;
+            for (var i = 0; i < 20; i++) { _game.Flow.StepOneTick(); }
+            _game.Render(); Assert.That(Vector2.Distance(start, view.FishMouth), Is.GreaterThan(.2f));
+            while (_game.Flow.Game.Phase != FishingPhase.Biting) { _game.Flow.StepOneTick(); }
+            _game.Render(); Assert.That(Vector2.Distance(view.FishMouth, view.BaitPosition), Is.LessThan(.001f));
+            Assert.That(view.FishMouth.y, Is.EqualTo(view.SurfaceY - .16f).Within(.001));
+            Assert.That(view.Angler.position.y, Is.GreaterThan(view.SurfaceY));
+            _game.Flow.SetInput(false, false); _game.Flow.SetInput(true, true); _game.Flow.StepOneTick();
+            _game.Render(); Assert.That(Vector2.Distance(view.FishMouth, view.BaitPosition), Is.LessThan(.001f));
+            yield return null;
         }
         private IEnumerator Click(string name)
         {
@@ -126,14 +156,30 @@ namespace Game.Unity.Tests
             }
             camera.aspect = original; yield return null;
         }
-        [UnityTest]
-        public IEnumerator Reload_ReleasesOwnedResources_AndKeepsFixedRendererCount()
+        [Test]
+        public void SavedStagePrefab_HasVisibleSpritesAndEditableAnchors()
         {
-            var count = _game.GetComponentsInChildren<SpriteRenderer>().Length;
-            var sprite = _game.GetComponentInChildren<SpriteRenderer>().sprite; var texture = sprite.texture;
+            var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Unity/Art/FishingStage.prefab");
+            Assert.That(prefab, Is.Not.Null);
+            Assert.That(prefab.GetComponentsInChildren<SpriteRenderer>().Length, Is.GreaterThanOrEqualTo(5));
+            Assert.That(prefab.transform.Find("Angler"), Is.Not.Null);
+            Assert.That(prefab.transform.Find("RodHand"), Is.Not.Null);
+            Assert.That(prefab.transform.Find("RodTip"), Is.Not.Null);
+            foreach (var renderer in prefab.GetComponentsInChildren<SpriteRenderer>())
+            { Assert.That(UnityEditor.AssetDatabase.Contains(renderer.sprite), Is.True); }
+        }
+        [UnityTest]
+        public IEnumerator Reload_KeepsImportedSpritesAndFixedRendererCount()
+        {
+            var stage = Object.FindAnyObjectByType<FishingView>();
+            var count = stage.GetComponentsInChildren<SpriteRenderer>().Length;
+            var sprite = stage.GetComponentInChildren<SpriteRenderer>().sprite;
+            var path = UnityEditor.AssetDatabase.GetAssetPath(sprite);
             yield return SceneManager.LoadSceneAsync("Fishing"); yield return null; yield return null;
-            Assert.That(sprite == null, Is.True); Assert.That(texture == null, Is.True);
-            var game = Object.FindAnyObjectByType<FishingGame>(); Assert.That(game.GetComponentsInChildren<SpriteRenderer>().Length, Is.EqualTo(count));
+            var reloaded = Object.FindAnyObjectByType<FishingView>();
+            Assert.That(path, Is.Not.Empty);
+            Assert.That(UnityEditor.AssetDatabase.GetAssetPath(reloaded.GetComponentInChildren<SpriteRenderer>().sprite), Is.EqualTo(path));
+            Assert.That(reloaded.GetComponentsInChildren<SpriteRenderer>().Length, Is.EqualTo(count));
         }
     }
 }

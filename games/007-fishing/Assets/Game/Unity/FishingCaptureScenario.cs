@@ -16,6 +16,12 @@ namespace Game.Unity
             game.Render(); await capture.ShootAsync("01-title", "開始前");
             game.Flow.Submit(); game.Render(); await capture.ShootAsync("02-points", "ポイント選択");
             game.Flow.Cast();
+            while (game.Flow.Game.Phase != FishingPhase.Roaming) { game.Flow.StepOneTick(); }
+            for (var i = 0; i < 20; i++) { game.Flow.StepOneTick(); }
+            game.Render(); await capture.ShootAsync("02a-roaming", "Tick " + game.Flow.Game.TickCount);
+            while (game.Flow.Game.Phase != FishingPhase.Approaching) { game.Flow.StepOneTick(); }
+            for (var i = 0; i < FishingConfig.Ticks(game.Settings.Game.ApproachSeconds) / 2; i++) { game.Flow.StepOneTick(); }
+            game.Render(); await capture.ShootAsync("02b-approach", "Tick " + game.Flow.Game.TickCount);
             while (game.Flow.Game.Phase != FishingPhase.Biting) { game.Flow.StepOneTick(); }
             game.Render(); await capture.ShootAsync("03-bite", "Tick " + game.Flow.Game.TickCount);
             for (var i = 0; i < 90; i++) { Autopilot.Step(game.Flow); }

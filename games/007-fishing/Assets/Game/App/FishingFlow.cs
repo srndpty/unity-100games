@@ -87,9 +87,7 @@ namespace Game.App
         public void StepOneTick()
         {
             if (!_focus || Screen != AppScreen.Playing) { return; }
-            var phase = Game!.Phase;
-            Game.Step(new FishingCommand(_hook, _reel)); _hook = false;
-            if (phase != Game.Phase && Game.Phase == FishingPhase.Fighting) { ResetInput(); }
+            Game!.Step(new FishingCommand(_hook, _reel)); _hook = false;
             if (!Game.Finished) { return; }
             if (Game.Phase == FishingPhase.Caught)
             { var index = (int)Game.Kind; if (_catches[index] < int.MaxValue) { _catches[index]++; } }

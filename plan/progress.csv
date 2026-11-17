@@ -5,7 +5,7 @@ No,タイトル,難易度,Phase,仕様書,状態,着手日,完了日,実装時�
 4,Space Invaders,1,1,games/004-space-invaders.md,完了,2026-11-16,2026-11-16,,Core 37/37・App 9/9・EditMode 46/46・PlayMode 17/17,Windows成功,レビューP2-1・P2-2・P3-1対応済み（敵と盾の接触時系列・残機設定表示・隣接float境界）。全自動検証・Windowsビルド・証跡5枚・撮影再現・最大設定負荷計測成功。2026-11-16にユーザーのゲーム起動・動作確認OKと完了承認を受領
 5,Asteroids,2,1,games/005-asteroids.md,完了,2026-11-16,2026-11-16,,Core 37/37・App 9/9・EditMode 46/46・PlayMode 18/18,Windows成功,全自動検証・証跡6枚・撮影再現・最大32惑星16弾のCPU負荷計測成功。レビュー推奨の両物体ラップ衝突・Tick途中の分裂位置テストを追加。2026-11-16にユーザーのゲーム起動・動作確認OKと完了承認を受領
 6,Flappy Bird,1,1,games/006-flappy-bird.md,完了,2026-11-16,2026-11-18,,Core 25/25・App 13/13・EditMode 38/38・PlayMode 21/21,Windows成功,全自動検証・証跡6枚・同一ビルド撮影再現・最大8組59描画物のCPU負荷計測成功。2026-11-18にユーザーの完了承認を受領
-7,釣り,3,1,games/007-fishing.md,検証待ち,2026-11-18,,,Core 26/26・App 10/10・EditMode 36/36・PlayMode 17/17,Windows成功,全自動検証・証跡8枚・同一ビルド撮影再現成功。3種×20シードの捕獲と強引な操作による失敗を検証。人間のアタリ・操作感・難易度・音量・再投の確認待ち
+7,釣り,3,1,games/007-fishing.md,実装中,2026-11-18,,,Core 26/26・App 10/10・EditMode 36/36・PlayMode 17/17,Windows成功,プレイ調整中：クリック即決定・合わせから長押し巻き・遊泳と水面への食いつき・人物と生成スプライト・編集可能なStage Prefabを実装。UnityテストとWindowsビルドを再検証中
 8,Frogger,2,1,games/008-frogger.md,未着手,,,,,,
 9,Pac-Man,3,1,games/009-pacman.md,未着手,,,,,,
 10,マインスイーパー,2,1,games/010-minesweeper.md,未着手,,,,,,

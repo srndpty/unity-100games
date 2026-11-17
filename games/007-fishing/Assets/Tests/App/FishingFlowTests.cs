@@ -52,13 +52,13 @@ namespace Game.App.Tests
             flow.SetFocus(true); flow.TogglePause(); flow.StepOneTick(); Assert.That(flow.Game!.Phase, Is.EqualTo(FishingPhase.Casting));
         }
         [Test]
-        public void HeldInput_IsBlockedAcrossCastAndHook()
+        public void HeldInput_IsBlockedAcrossCast_ButContinuesAfterHook()
         {
             var flow = Start(); flow.SetInput(true, true); flow.StepOneTick(); Assert.That(flow.Game!.Finished, Is.False);
             while (flow.Game.Phase != FishingPhase.Biting) { flow.StepOneTick(); }
             flow.SetInput(false, false); flow.SetInput(true, true); flow.StepOneTick();
             var tension = flow.Game.Tension; flow.SetInput(false, true); flow.StepOneTick();
-            Assert.That(flow.Game.Tension, Is.LessThan(tension));
+            Assert.That(flow.Game.Tension, Is.GreaterThan(tension));
         }
         [Test]
         public void Time_SmallFractionsAndLargeDelta_RespectTickBudget()

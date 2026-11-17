@@ -29,7 +29,6 @@
                     <ui:Button name="point1" text="中層 / スズキ" />
                     <ui:Button name="point2" text="深場 / コイ" />
                 </ui:VisualElement>
-                <ui:Button name="cast" text="投げる / SPACE" />
                 <ui:Button name="submit" text="はじめる / ENTER" />
                 <ui:Button name="resume" text="再開 / P" />
                 <ui:Button name="back" text="タイトルへ" />

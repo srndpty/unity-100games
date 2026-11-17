@@ -32,6 +32,7 @@ namespace Game.Core
         public FishKind Kind { get; }
         public int Seed { get; }
         public long TickCount { get; private set; }
+        public int PhaseTick { get; private set; }
         public FishingPhase Phase { get; private set; }
         public FishAction Action { get; private set; }
         public EscapeReason Reason { get; private set; }
@@ -45,7 +46,14 @@ namespace Game.Core
         public void Step(FishingCommand command)
         {
             if (Finished) { return; }
+            var phase = Phase;
             TickCount++;
+            PhaseTick++;
+            AdvancePhase(command);
+            if (Phase != phase) { PhaseTick = 0; }
+        }
+        private void AdvancePhase(FishingCommand command)
+        {
             if (Phase == FishingPhase.Fighting) { Fight(command.Reel); return; }
             if (Phase == FishingPhase.Landing)
             { if (--_remaining <= 0) { Phase = FishingPhase.Caught; } return; }

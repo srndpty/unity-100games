@@ -1,8 +1,14 @@
 {
   "name": "Game.Unity.Editor",
   "rootNamespace": "Game.Unity.Editor",
-  "references": ["Game.Core", "Game.Unity"],
-  "includePlatforms": ["Editor"],
+  "references": [
+    "Game.Core",
+    "Game.Unity",
+    "Unity.2D.Sprite.Editor"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
   "overrideReferences": false,
