@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29e0b703fb2ad2945a5db4600877d152, type: 3}
+  m_Name: FishingSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.FishingSettings
+  Game:
+    CastSeconds: 0.5
+    WaitMin: 2
+    WaitMax: 4
+    ApproachSeconds: 0.5
+    BiteSeconds: 1
+    LandingSeconds: 0.8
+    TurnMin: 0.5
+    TurnMax: 1
+    BreakSeconds: 0.75
+    SlackSeconds: 1.5
+    InitialTension: 40
+    ReelTension: 38
+    PullTension: 18
+    ReleaseTension: 32
+    ReelSpeed: 2.4
+    FishSpeed: 1.2
+    Fatigue: 5
+    ReelFatigue: 5
+    Fish:
+    - Kind: 0
+      Distance: 10
+      Stamina: 60
+      Pull: 0.8
+      RunMin: 1
+      RunMax: 2
+      RestMin: 2
+      RestMax: 3
+    - Kind: 1
+      Distance: 16
+      Stamina: 90
+      Pull: 1.1
+      RunMin: 2
+      RunMax: 3
+      RestMin: 1
+      RestMax: 2
+    - Kind: 2
+      Distance: 22
+      Stamina: 120
+      Pull: 1.4
+      RunMin: 3
+      RunMax: 4
+      RestMin: 1
+      RestMax: 2
+  Volume: 0.15
