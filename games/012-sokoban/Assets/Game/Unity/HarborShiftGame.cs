@@ -67,6 +67,7 @@ namespace Game.Unity
             Submit,
             Back,
             Select,
+            Quit,
         }
 
         public HarborFlow Flow { get; private set; }
@@ -159,6 +160,7 @@ namespace Game.Unity
                 case IntentKind.Submit: Flow.Submit(); break;
                 case IntentKind.Back: Flow.Back(); break;
                 case IntentKind.Select: Flow.SelectLevel(intent.Level); break;
+                case IntentKind.Quit: QuitHandler(); break;
             }
         }
 
@@ -254,7 +256,7 @@ namespace Game.Unity
             _undoButton.clicked += () => Request(new Intent(IntentKind.Undo));
             _restartButton.clicked += () => Request(new Intent(IntentKind.Restart));
             _backButton.clicked += () => Request(new Intent(IntentKind.Back));
-            _quitButton.clicked += () => { if (AcceptInput()) { QuitHandler(); } };
+            _quitButton.clicked += () => Request(new Intent(IntentKind.Quit));
             _levelButtons = new Button[Flow.LevelCount];
             for (var i = 0; i < _levelButtons.Length; i++)
             {

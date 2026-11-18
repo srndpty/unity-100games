@@ -540,6 +540,25 @@ namespace Game.Unity.Tests
         }
 
         [UnityTest]
+        public IEnumerator QuitClickThatRestoresFocus_IsDiscarded_ButTheNextClickWorks()
+        {
+            var calls = 0;
+            _game.QuitHandler = () => calls++;
+            yield return null;
+            yield return null;
+            _game.SendMessage("OnApplicationFocus", false);
+            yield return null;
+            _game.SendMessage("OnApplicationFocus", true);
+            SendClick(_game.HudRoot.Q<Button>("quit"));
+            yield return null;
+            yield return null;
+            Assert.That(calls, Is.Zero, "復帰のクリックでは終了しない");
+
+            yield return ClickButton("quit");
+            Assert.That(calls, Is.EqualTo(1));
+        }
+
+        [UnityTest]
         public IEnumerator HeldKey_DoesNotRepeatAfterFocusReturns()
         {
             yield return StartLevel(OpenLevel);

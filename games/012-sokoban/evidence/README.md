@@ -10,13 +10,13 @@
 | dev check | 成功（全作品、警告0・エラー0） |
 | dev test | 成功（全作品）。012 Core 94/94、App 42/42 |
 | Unity EditMode | 136/136（Core/App、Mono） |
-| Unity PlayMode | 43/43（実シーン27、共通証跡公開16） |
+| Unity PlayMode | 44/44（実シーン28、共通証跡公開16） |
 | Windowsビルド | 成功、StandaloneWindows64 |
 | ビルド起動 | dev captureで起動・全場面撮影・正常終了 |
 | 証跡 | JPEG品質85、9枚 |
 | 撮影再現 | 同一ビルドを2回撮影し、画像世代e9302e389bb64b99が一致 |
 
-Build GUID：`43b2c22cd81c479081b7ad9091eeae4b`。公開ポインタは[current.json](current.json)、実行記録は[manifest.json](runs/20261118T185758Z-93970097/manifest.json)。このゲームは乱数を使わないので、マニフェストのシードは結果に影響しない。
+Build GUID：`3aadf100cf184dd5ba9ddd1040defc3f`。公開ポインタは[current.json](current.json)、実行記録は[manifest.json](runs/20261118T193039Z-88e05671/manifest.json)。このゲームは乱数を使わないので、マニフェストのシードは結果に影響しない。
 
 全10問は、Coreテストで解答手順を再生してクリアできることを確認している。
 

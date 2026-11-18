@@ -81,7 +81,7 @@ unity run games/012-sokoban -- -executeMethod Game.Unity.Editor.HarborShiftScene
 | Core | `Assets/Tests/Core/` | 94 | `dev test` |
 | App | `Assets/Tests/App/` | 42 | `dev test` |
 | EditMode（Core/App を Mono で実行） | 同上 | 136 | `dev test 012 -Unity` |
-| PlayMode（実シーン27、共通証跡16） | `Assets/Tests/Unity/` | 43 | `dev test 012 -Unity -Mode PlayMode` |
+| PlayMode（実シーン28、共通証跡16） | `Assets/Tests/Unity/` | 44 | `dev test 012 -Unity -Mode PlayMode` |
 
 結果と画面証跡は [evidence/README.md](evidence/README.md) に記録している。
 
