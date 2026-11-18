@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace Game.Unity.Evidence
@@ -18,9 +19,10 @@ namespace Game.Unity.Evidence
     /// </list>
     /// <para>
     /// 公開の手順（<see cref="Publish"/>）：一時フォルダの manifest と画像を照合 → 実行記録を新しい撮影フォルダへ移す →
-    /// 画像を新しい世代フォルダへ移す（同じ世代があれば検算して使い回す）→ ポインタを置き換える → 指されていない世代・撮影記録・残骸を消す。
+    /// 画像を新しい世代フォルダへ移す（同じ世代があれば検算して使い回す）→ README更新があれば参照先を検証して原子的に置き換える → ポインタを置き換える → ポインタとREADMEの双方から参照されない世代・撮影記録・残骸を消す。
     /// ポインタを置き換えるまでは公開中のものに触れず、古いものは置き換えた後に消すので、操作と操作の間のどこで止まっても
-    /// ポインタは検証済みで完全な組を指す。残るのは指されていないもの（ゴミ）だけで、次の公開で片付く。
+    /// ポインタは検証済みで完全な組を指す。READMEとポインタの置換は別操作なので、中断時は異なる世代を参照し得るが、双方のリンク先を保持する。
+    /// 再実行で参照を揃え、参照されなくなったものは次の公開で片付く。電源断を含む永続性は保証しない。
     /// 公開の間はロックファイルを排他で開き、別の撮影の公開と重ならないようにする。
     /// </para>
     /// </summary>
@@ -71,40 +73,96 @@ namespace Game.Unity.Evidence
 
         /// <summary>
         /// 一時フォルダの一式（画像と manifest.json）を検証して公開する。成功すると一時フォルダはなくなる。
-        /// 失敗したら例外を投げ、公開中のものは変わらない（一時フォルダが残っていれば後始末は呼び出し側）。
+        /// 失敗したら例外を投げる。ポインタ置換後の失敗では新しい組が公開済みの場合があるが、参照先の完全性を保つ。
+        /// 一時フォルダが残っていれば後始末は呼び出し側。
         /// </summary>
-        public PublishResult Publish(string staging)
+        public PublishResult Publish(string staging) => Publish(staging, null);
+
+        /// <summary>
+        /// READMEの更新を伴う公開。新画像を配置した後、READMEを原子的に置き換えてからポインタを切り替える。
+        /// 途中停止でREADMEが新世代、ポインタが旧世代になっても、双方の参照先を保持する。
+        /// </summary>
+        public PublishResult Publish(string staging, Func<EvidencePointer, string> prepareReadme)
         {
             var manifest = Verify(staging);
             var generation = GenerationIdOf(manifest);
             var run = $"{DateTime.UtcNow:yyyyMMdd'T'HHmmss'Z'}-{Guid.NewGuid().ToString("N").Substring(0, 8)}";
-
             using var publishLock = AcquireLock();
             var previous = Current;
-            Directory.CreateDirectory(GenerationsDirectory);
-            Directory.CreateDirectory(RunsDirectory);
-
-            // 実行記録を新しい撮影フォルダへ。これで一時フォルダには画像だけが残る。
-            var runDirectory = Path.Combine(RunsDirectory, run);
-            _ops.CreateDirectory(runDirectory);
-            _ops.MoveFile(Path.Combine(staging, ManifestFileName), RunManifestPath(run));
-
-            var target = GenerationDirectory(generation);
-            if (Directory.Exists(target))
+            var pointer = new EvidencePointer { Generation = generation, Run = run };
+            var readme = prepareReadme?.Invoke(pointer);
+            var readmePath = Path.Combine(_evidenceDirectory, "README.md");
+            string readmeTemp = null;
+            string pointerTemp = null;
+            try
             {
-                VerifyGeneration(target); // 同じ画像の世代を使い回す。名前と中身が合わなければ公開しない
-                _ops.DeleteDirectory(staging);
+                if (readme != null)
+                {
+                    VerifyReadmeLinks(readme, pointer, staging);
+                    readmeTemp = readmePath + ".tmp-" + Guid.NewGuid().ToString("N");
+                    _ops.WriteFile(readmeTemp, readme);
+                }
+                Directory.CreateDirectory(GenerationsDirectory);
+                Directory.CreateDirectory(RunsDirectory);
+                var runDirectory = Path.Combine(RunsDirectory, run);
+                _ops.CreateDirectory(runDirectory);
+                _ops.MoveFile(Path.Combine(staging, ManifestFileName), RunManifestPath(run));
+                var target = GenerationDirectory(generation);
+                if (Directory.Exists(target))
+                {
+                    VerifyGeneration(target);
+                    _ops.DeleteDirectory(staging);
+                }
+                else { _ops.MoveDirectory(staging, target); }
+                if (readme != null)
+                {
+                    VerifyReadmeLinks(readme);
+                    _ops.ReplaceFile(readmeTemp, readmePath);
+                }
+                pointerTemp = PointerPath + ".tmp-" + Guid.NewGuid().ToString("N");
+                _ops.WriteFile(pointerTemp, JsonUtility.ToJson(pointer, prettyPrint: true) + "\n");
+                _ops.ReplaceFile(pointerTemp, PointerPath);
+                VerifyCurrent();
+                if (readme != null) { VerifyReadmeLinks(); }
+                return new PublishResult(generation, run, previous, RemoveUnreferenced(generation, run));
             }
-            else
+            finally { RemoveTemporaryFile(readmeTemp); RemoveTemporaryFile(pointerTemp); }
+        }
+
+        /// <summary>READMEのローカルリンクがすべて実在することを確認する。</summary>
+        public void VerifyReadmeLinks()
+        {
+            var readme = Path.Combine(_evidenceDirectory, "README.md");
+            if (File.Exists(readme)) { VerifyReadmeLinks(File.ReadAllText(readme)); }
+        }
+
+        private void VerifyReadmeLinks(string contents, EvidencePointer prepared = null, string staging = null)
+        {
+            foreach (var link in LocalLinks(contents))
             {
-                _ops.MoveDirectory(staging, target);
+                var path = Path.GetFullPath(Path.Combine(_evidenceDirectory, link));
+                if (prepared != null)
+                {
+                    var future = Path.GetFullPath(GenerationDirectory(prepared.Generation)) + Path.DirectorySeparatorChar;
+                    if (path.StartsWith(future, StringComparison.OrdinalIgnoreCase))
+                    { path = Path.Combine(staging, path.Substring(future.Length)); }
+                    else if (string.Equals(path, Path.GetFullPath(RunManifestPath(prepared.Run)), StringComparison.OrdinalIgnoreCase))
+                    { path = Path.Combine(staging, ManifestFileName); }
+                }
+                if (!File.Exists(path) && !Directory.Exists(path))
+                { throw new InvalidOperationException("READMEのリンク先がありません: " + link); }
             }
+        }
 
-            var pointerTemp = PointerPath + ".tmp-" + Guid.NewGuid().ToString("N");
-            _ops.WriteFile(pointerTemp, JsonUtility.ToJson(new EvidencePointer { Generation = generation, Run = run }, prettyPrint: true) + "\n");
-            _ops.ReplaceFile(pointerTemp, PointerPath);
+        private static IEnumerable<string> LocalLinks(string contents) =>
+            Regex.Matches(contents, @"\]\((?!https?:|#)([^)\s#]+)").Cast<Match>().Select(match => match.Groups[1].Value);
 
-            return new PublishResult(generation, run, previous, RemoveUnreferenced(generation, run));
+        private static void RemoveTemporaryFile(string path)
+        {
+            if (path == null) { return; }
+            try { if (File.Exists(path)) { File.Delete(path); } }
+            catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException)
+            { Debug.LogWarning("一時ファイルを消せませんでした: " + path + ": " + exception.Message); }
         }
 
         /// <summary>
@@ -242,12 +300,29 @@ namespace Game.Unity.Evidence
                 }
             }
 
-            foreach (var directory in Directory.GetDirectories(GenerationsDirectory).Where(path => !NameIs(path, generation)))
+            // README自体を永続的な参照として扱う。README更新後・ポインタ切り替え前に停止しても、新世代を消さない。
+            var readme = Path.Combine(_evidenceDirectory, "README.md");
+            string[] links;
+            try { links = File.Exists(readme) ? LocalLinks(File.ReadAllText(readme)).ToArray() : Array.Empty<string>(); }
+            catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException)
+            {
+                warnings.Add("READMEの参照を読めないため旧世代を保持しました: " + exception.Message);
+                return warnings;
+            }
+            bool Linked(string path) => links.Any(link =>
+            {
+                var target = Path.GetFullPath(Path.Combine(_evidenceDirectory, link));
+                var directory = Path.GetFullPath(path);
+                return target.StartsWith(directory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(target, directory, StringComparison.OrdinalIgnoreCase);
+            });
+
+            foreach (var directory in Directory.GetDirectories(GenerationsDirectory).Where(path => !NameIs(path, generation) && !Linked(path)))
             {
                 TryRemove(directory, () => _ops.DeleteDirectory(directory));
             }
 
-            foreach (var directory in Directory.GetDirectories(RunsDirectory).Where(path => !NameIs(path, run)))
+            foreach (var directory in Directory.GetDirectories(RunsDirectory).Where(path => !NameIs(path, run) && !Linked(path)))
             {
                 TryRemove(directory, () => _ops.DeleteDirectory(directory));
             }

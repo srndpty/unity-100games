@@ -22,39 +22,16 @@ public static class ConvertEvidenceToJpeg
             if (!File.Exists(Path.Combine(evidence, EvidencePublisher.PointerFileName))) { continue; }
             var publisher = new EvidencePublisher(evidence);
             var manifest = publisher.VerifyCurrent();
+            publisher.VerifyReadmeLinks();
             var previous = publisher.Current;
             if (manifest.Shots.All(shot => shot.File.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase))) { continue; }
             var sourceShots = manifest.Shots.ToArray();
             var sourceDirectory = publisher.GenerationDirectory(previous.Generation);
             var before = sourceShots.Sum(shot => new FileInfo(Path.Combine(sourceDirectory, shot.File)).Length);
-            var staging = publisher.CreateStaging();
-            manifest.Shots.Clear();
-            var context = new CaptureContext(staging, manifest);
-            context.Record("imageConversion", "PNG to JPEG; source generation=" + previous.Generation + "; source run=" + previous.Run
-                + "; convertedAtUtc=" + DateTime.UtcNow.ToString("O") + "; original capture/build metadata retained");
-            foreach (var shot in sourceShots)
-            {
-                var texture = new Texture2D(2, 2, TextureFormat.RGB24, false);
-                try
-                {
-                    if (!texture.LoadImage(File.ReadAllBytes(Path.Combine(sourceDirectory, shot.File))))
-                    { throw new InvalidOperationException("画像を読み込めません: " + shot.File); }
-                    context.SaveFrame(texture, Path.GetFileNameWithoutExtension(shot.File), shot.Note);
-                }
-                finally { UnityEngine.Object.DestroyImmediate(texture); }
-            }
-            File.WriteAllText(Path.Combine(staging, EvidencePublisher.ManifestFileName), JsonUtility.ToJson(manifest, true) + "\n");
-            var published = publisher.Publish(staging);
+            var published = EvidenceJpegMigration.Convert(evidence);
             publisher.VerifyCurrent();
+            publisher.VerifyReadmeLinks();
             var after = Directory.GetFiles(publisher.GenerationDirectory(published.Generation)).Sum(file => new FileInfo(file).Length);
-            var readme = Path.Combine(evidence, "README.md");
-            if (File.Exists(readme))
-            {
-                var text = File.ReadAllText(readme).Replace("captures/" + previous.Generation + "/", "captures/" + published.Generation + "/")
-                    .Replace("runs/" + previous.Run + "/", "runs/" + published.Run + "/");
-                foreach (var shot in sourceShots) { text = text.Replace(shot.File, Path.GetFileNameWithoutExtension(shot.File) + ".jpg"); }
-                File.WriteAllText(readme, text);
-            }
             results.Add(new { game = Path.GetFileName(game), generation = published.Generation, run = published.Run, images = sourceShots.Length, beforeBytes = before, afterBytes = after });
         }
         return results;

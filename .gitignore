@@ -9,6 +9,8 @@
 /games/*/MemoryCaptures/
 /games/*/Recordings/
 /games/*/CodeCoverage/
+/games/*/Assets/_Recovery/
+/games/*/Assets/_Recovery.meta
 /games/*/.vscode/
 /games/*/.utmp/
 # Unity が生成する IDE 用プロジェクト (dotnet/ 配下の csproj は管理対象)
@@ -42,3 +44,4 @@ tmp/
 /games/*/evidence/.staging-*/
 /games/*/evidence/.publish.lock
 /games/*/evidence/current.json.tmp-*
+/games/*/evidence/README.md.tmp-*

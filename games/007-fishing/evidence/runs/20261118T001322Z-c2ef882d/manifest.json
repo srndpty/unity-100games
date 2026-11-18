@@ -2,9 +2,9 @@
     "Product": "STILLWATER",
     "Version": "1.0",
     "UnityVersion": "6000.6.9f1",
-    "BuildGuid": "9b1b0dcb4eb849659c604d42a04a95ac",
+    "BuildGuid": "232461da7cfe437ab8aa2dc4e3516b56",
     "Seed": 1,
-    "CapturedAtUtc": "2026-11-17T18:20:09.8585214Z",
+    "CapturedAtUtc": "2026-11-18T00:13:21.1043495Z",
     "Info": [
         {
             "Key": "imageEncoding",
@@ -18,57 +18,57 @@
     "Shots": [
         {
             "File": "01-title.jpg",
-            "Sha256": "4ac15f1987092c0c6d770e31f76d7de0db714f2fb0eea1837aedcdbcad2af48a",
+            "Sha256": "64c3e64902eea38d304199a004d8bc465938c50e91b98beaf2b0d127312642bd",
             "Note": "開始前"
         },
         {
             "File": "02-points.jpg",
-            "Sha256": "0b24171924f848b3a85efc0c2917b6ee79f754524fc8fbb58f74ba1d140cdfd5",
+            "Sha256": "5679e33dc72a433896de155f328b8fd812ded99f20172d00e76bef2aeedb7cc4",
             "Note": "ポイント選択"
         },
         {
             "File": "02a-roaming.jpg",
-            "Sha256": "01373bff9afdaaef9571e4b19e4504bb5c093aa03f86a16a89eb789e927ec95c",
+            "Sha256": "dd8d174cdf13a67764d322ccfc87c2c5a933bf6a463a9fa57516c2e0543a175d",
             "Note": "Tick 50"
         },
         {
             "File": "02b-approach.jpg",
-            "Sha256": "9caa81a3c0e49228225e2863162e17b89f49e576a9ee68d53b088411970a2e9f",
+            "Sha256": "54bc17acb7e33de0be20fe8d1a86e5365137bbde385fd16ca65582fd346c1069",
             "Note": "Tick 190"
         },
         {
             "File": "03-bite.jpg",
-            "Sha256": "6b21f94d75973d25f8b6b13a2b44e3199871885ccc60fed931d518e2b6298253",
+            "Sha256": "da8d6243b3d3873746be8774d345548423a69a42ad54844617fc28bdc5ceeec2",
             "Note": "Tick 205"
         },
         {
             "File": "03a-hooked.jpg",
-            "Sha256": "0f0f3450735ca3c294f0f56d09bd7533fae1b6672965423bf3668360e183aa33",
+            "Sha256": "b5c15861bb81a81f17a3673e6265f34fdbab8ab28607dbf761dd4f2b4317b7d4",
             "Note": "Tick 218"
         },
         {
             "File": "04-fight.jpg",
-            "Sha256": "43ad98403c8e6e087015ea2556b76ddd9dab9bca411d575836b42dfef337263f",
+            "Sha256": "a7c9f4d4142e3fbe867261212ea153969b90de1fe188eb391c288775eb4e1799",
             "Note": "Tick 295"
         },
         {
             "File": "05-catch-0.jpg",
-            "Sha256": "d67bec781e48ef41b68d25a7a0360e412fcd1f16097d6e948e8af4e7ba1e7b1a",
+            "Sha256": "667159f0cc084f9017cdfdea174afe676c151712e40a4ca60d6b0b89bed9f6b4",
             "Note": "Tick 671"
         },
         {
             "File": "05-catch-1.jpg",
-            "Sha256": "82379b489c0fc529b6a0b8fa9b4d812f56decae7f68f7cb1afb75cfdab1a6728",
+            "Sha256": "8a92d8ae34e25aa3c8c5113bab756516e8638fb02f066659a3df7e1292e55dba",
             "Note": "Tick 1188"
         },
         {
             "File": "05-catch-2.jpg",
-            "Sha256": "509c38620790dd59f9a3d29d0071930e8952a02fa6efa2817a8e8f39bd8fcf1f",
+            "Sha256": "8c0cd608b578e42c3352dafa7eecc758c3b849857b0d03b6ee2a75cb412c31fa",
             "Note": "Tick 1874"
         },
         {
             "File": "08-broken-line.jpg",
-            "Sha256": "b432ebe01b75ccee6605beff704f6fc2adf469af606f6351f98843102670419a",
+            "Sha256": "25803cbe6a5047dd3c45c77065f543d6e35276896b7f39964f23d93170fd7a8a",
             "Note": "Tick 493"
         }
     ]

@@ -209,6 +209,129 @@ namespace Game.Unity.Tests
             Assert.That(_publisher.Current.Run, Is.EqualTo(published.Run));
         }
 
+        [Test]
+        public void Migration_SuccessUpdatesReadmeBeforeRemovingOldGeneration()
+        {
+            var old = StartPngEvidence(_evidence);
+            var migrated = EvidenceJpegMigration.Convert(_evidence);
+            Assert.That(_publisher.VerifyCurrent().BuildGuid, Is.EqualTo("original-build"));
+            Assert.That(_publisher.VerifyCurrent().CapturedAtUtc, Is.EqualTo("2026-11-15T00:00:00Z"));
+            _publisher.VerifyReadmeLinks();
+            Assert.That(File.ReadAllText(Path.Combine(_evidence, "README.md")), Does.Contain("title.jpg"));
+            Assert.That(Directory.Exists(_publisher.GenerationDirectory(old.Generation)), Is.False);
+            Assert.That(Names(Directory.GetDirectories(_publisher.RunsDirectory)), Is.EqualTo(new[] { migrated.Run }));
+            Assert.That(EvidenceJpegMigration.Convert(_evidence), Is.Null, "JPEGを繰り返し再圧縮しない");
+            AssertNoMigrationTemps(_evidence);
+        }
+
+        [Test]
+        public void Migration_EncoderFailureCleansPartialStagingAndKeepsOldLinks()
+        {
+            var old = StartPngEvidence(_evidence);
+            Assert.Throws<IOException>(() => EvidenceJpegMigration.Convert(_evidence, convertFrame: (context, source, shot) =>
+            {
+                var texture = new Texture2D(2, 2);
+                try { texture.LoadImage(File.ReadAllBytes(source)); context.SaveFrame(texture, "partial", shot.Note); }
+                finally { UnityEngine.Object.DestroyImmediate(texture); }
+                throw new IOException("encode failure");
+            }));
+            Assert.That(_publisher.Current.Run, Is.EqualTo(old.Run));
+            _publisher.VerifyCurrent(); _publisher.VerifyReadmeLinks(); AssertNoMigrationTemps(_evidence);
+        }
+
+        [TestCase("images")]
+        [TestCase("README.md")]
+        [TestCase("current.json")]
+        public void Migration_FailureKeepsCurrentAndAllReadmeLinks_AndRetryFinishes(string target)
+        {
+            var old = StartPngEvidence(_evidence);
+            Assert.Throws<IOException>(() => EvidenceJpegMigration.Convert(_evidence, new FailingMigrationOps(target)));
+            Assert.That(_publisher.Current.Run, Is.EqualTo(old.Run));
+            _publisher.VerifyCurrent(); _publisher.VerifyReadmeLinks(); AssertNoMigrationTemps(_evidence);
+            if (target == "README.md")
+            { Assert.That(Directory.GetDirectories(_publisher.GenerationsDirectory).Length, Is.EqualTo(2), "JPEG配置後のREADME置換に失敗した"); }
+            var migrated = EvidenceJpegMigration.Convert(_evidence);
+            _publisher.VerifyCurrent(); _publisher.VerifyReadmeLinks(); AssertNoMigrationTemps(_evidence);
+            Assert.That(Names(Directory.GetDirectories(_publisher.GenerationsDirectory)), Is.EqualTo(new[] { migrated.Generation }));
+            Assert.That(Names(Directory.GetDirectories(_publisher.RunsDirectory)), Is.EqualTo(new[] { migrated.Run }));
+        }
+
+        [Test]
+        public void InterruptedMigration_ReadmeReferencesAreProtectedByNextOrdinaryPublish()
+        {
+            StartPngEvidence(_evidence);
+            Assert.Throws<IOException>(() => EvidenceJpegMigration.Convert(_evidence, new FailingMigrationOps("current.json")));
+            var readme = File.ReadAllText(Path.Combine(_evidence, "README.md"));
+            Publish(_publisher, SetB, "later-capture");
+            Assert.That(File.ReadAllText(Path.Combine(_evidence, "README.md")), Is.EqualTo(readme));
+            _publisher.VerifyCurrent(); _publisher.VerifyReadmeLinks();
+        }
+
+        [Test]
+        public void Migration_FailureAtEveryPublishingOperation_KeepsCurrentAndReadmeComplete()
+        {
+            StartPngEvidence(_evidence);
+            var counter = new FaultyOps(int.MaxValue);
+            EvidenceJpegMigration.Convert(_evidence, counter);
+            Assert.That(counter.Calls, Is.GreaterThanOrEqualTo(9));
+            for (var failAt = 0; failAt < counter.Calls; failAt++)
+            {
+                var evidence = NewEvidenceDirectory();
+                try
+                {
+                    StartPngEvidence(evidence);
+                    var faulty = new FaultyOps(failAt);
+                    try { EvidenceJpegMigration.Convert(evidence, faulty); }
+                    catch (IOException exception) when (exception.Message == FaultyOps.Message) { }
+                    Assert.That(faulty.Failed, Is.True, "操作 " + failAt);
+                    var publisher = new EvidencePublisher(evidence);
+                    publisher.VerifyCurrent(); publisher.VerifyReadmeLinks(); AssertNoMigrationTemps(evidence);
+                }
+                finally { Directory.Delete(evidence, recursive: true); }
+            }
+        }
+
+        private static PublishResult StartPngEvidence(string evidence)
+        {
+            var publisher = new EvidencePublisher(evidence); var staging = publisher.CreateStaging();
+            var image = new Texture2D(16, 16, TextureFormat.RGB24, false);
+            byte[] bytes;
+            try { image.SetPixels(Enumerable.Repeat(Color.green, 256).ToArray()); image.Apply(); bytes = image.EncodeToPNG(); }
+            finally { UnityEngine.Object.DestroyImmediate(image); }
+            File.WriteAllBytes(Path.Combine(staging, "title.png"), bytes);
+            var manifest = new CaptureManifest { BuildGuid = "original-build", CapturedAtUtc = "2026-11-15T00:00:00Z" };
+            manifest.Shots.Add(new CaptureManifest.Shot { File = "title.png", Sha256 = EvidencePublisher.Sha256Of(bytes), Note = "Tick 10" });
+            WriteManifest(staging, manifest); var published = publisher.Publish(staging);
+            File.WriteAllText(Path.Combine(evidence, "README.md"), $"[画面](captures/{published.Generation}/title.png)\n[記録](runs/{published.Run}/manifest.json)\n");
+            return published;
+        }
+
+        private static void AssertNoMigrationTemps(string evidence)
+        {
+            Assert.That(Directory.GetDirectories(evidence, ".staging-*"), Is.Empty);
+            Assert.That(Directory.GetFiles(evidence, "*.tmp-*"), Is.Empty);
+        }
+
+        private sealed class FailingMigrationOps : IEvidenceFileOps
+        {
+            private readonly string _target;
+            public FailingMigrationOps(string target) { _target = target; }
+            public void CreateDirectory(string path) => EvidenceFileOps.Instance.CreateDirectory(path);
+            public void MoveDirectory(string source, string destination)
+            {
+                if (_target == "images") { throw new IOException("publish failure"); }
+                EvidenceFileOps.Instance.MoveDirectory(source, destination);
+            }
+            public void MoveFile(string source, string destination) => EvidenceFileOps.Instance.MoveFile(source, destination);
+            public void WriteFile(string path, string contents) => EvidenceFileOps.Instance.WriteFile(path, contents);
+            public void ReplaceFile(string source, string destination)
+            {
+                if (Path.GetFileName(destination) == _target) { throw new IOException("replace failure: " + _target); }
+                EvidenceFileOps.Instance.ReplaceFile(source, destination);
+            }
+            public void DeleteDirectory(string path) => EvidenceFileOps.Instance.DeleteDirectory(path);
+        }
+
         private static int CountOperations((string File, string Content)[] newSet)
         {
             var evidence = NewEvidenceDirectory();
