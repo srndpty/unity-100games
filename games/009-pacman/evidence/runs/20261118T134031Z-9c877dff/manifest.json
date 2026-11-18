@@ -1,0 +1,69 @@
+{
+    "Product": "NIBBLE MAZE",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "25419a943780487ea5a2b79f89251c1f",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-18T13:40:30.4071718Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Game\":{\"PlayerSpeed\":75,\"CatSpeed\":70,\"FrightenedSpeed\":45,\"ReturningSpeed\":140,\"LeavingSpeed\":40,\"ContactRadius\":270,\"Lives\":3,\"ReadyTicks\":120,\"DyingTicks\":90,\"PowerTicks\":420,\"DotScore\":10,\"PowerScore\":50,\"CatScores\":[200,400,800,1600],\"ModeTicks\":[420,1200,420,1200,300],\"ReleaseTicks\":[0,120,300,540],\"AmbushLookahead\":4,\"PincerLookahead\":2,\"ShyRadius\":8},\"Volume\":0.11999999731779099}"
+        },
+        {
+            "Key": "08-clear",
+            "Value": "猫を止めた設定で撮影"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "c741797c6af56ded4219ee17900252a297ffbf9ffe4196e6cae8b28f780e2858",
+            "Note": "Tick 0"
+        },
+        {
+            "File": "02-ready.jpg",
+            "Sha256": "cb6e99623ac4523884e89463175f4318e7490367070d4e4c73bae4ee0ca3f858",
+            "Note": "Tick 1"
+        },
+        {
+            "File": "03-chase.jpg",
+            "Sha256": "ab6db92af1625c460e99a57510c13884fc4502f9c1ee1f56b95f6d7aedcd1e91",
+            "Note": "Tick 960"
+        },
+        {
+            "File": "04-frightened.jpg",
+            "Sha256": "569eee2b2cda050593284e046ecf3e7a09893fc3ba88ad61241c95d0b0404fc3",
+            "Note": "Tick 1120"
+        },
+        {
+            "File": "05-returning.jpg",
+            "Sha256": "743c4d9e3ee61e053d54ba602c7302ba85d296881fd5aa0a76497c630c040f4b",
+            "Note": "Tick 1487"
+        },
+        {
+            "File": "06-miss.jpg",
+            "Sha256": "c2306463f6258288f8ca3fb1b1b6b17b2292184f4d03a50d79808a19e48ca9dc",
+            "Note": "Tick 1628"
+        },
+        {
+            "File": "07-game-over.jpg",
+            "Sha256": "823bf7c73a8387c53453686e6e8e3766db65b95e1e6b4581c4957281646f6cb1",
+            "Note": "Tick 3258"
+        },
+        {
+            "File": "08-clear.jpg",
+            "Sha256": "df99f6853e7b402e162a4bba953221807dcb2a0e3854363de46a36176ecd4b56",
+            "Note": "Tick 29896"
+        },
+        {
+            "File": "09-replay.jpg",
+            "Sha256": "cb6e99623ac4523884e89463175f4318e7490367070d4e4c73bae4ee0ca3f858",
+            "Note": "Tick 1"
+        }
+    ]
+}

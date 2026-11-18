@@ -1,0 +1,21 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:VisualElement class="bar" picking-mode="Ignore">
+            <ui:Label name="score" class="stat" picking-mode="Ignore" />
+            <ui:Label name="lives" class="stat" picking-mode="Ignore" />
+            <ui:Label name="pellets" class="stat" picking-mode="Ignore" />
+            <ui:Label name="status" class="status" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:VisualElement name="overlay" class="overlay">
+            <ui:VisualElement class="card">
+                <ui:Label name="headline" text="NIBBLE MAZE" class="headline" />
+                <ui:Label name="message" class="message" />
+                <ui:Button name="submit" text="はじめる / Enter" />
+                <ui:Button name="resume" text="つづける" />
+                <ui:Button name="back" text="タイトルへ" />
+                <ui:Button name="quit" text="終了" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

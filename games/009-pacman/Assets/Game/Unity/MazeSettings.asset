@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2b02e5c24ab11b49bbcd83e8f1784d4, type: 3}
+  m_Name: MazeSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.MazeSettings
+  Game:
+    PlayerSpeed: 75
+    CatSpeed: 70
+    FrightenedSpeed: 45
+    ReturningSpeed: 140
+    LeavingSpeed: 40
+    ContactRadius: 270
+    Lives: 3
+    ReadyTicks: 120
+    DyingTicks: 90
+    PowerTicks: 420
+    DotScore: 10
+    PowerScore: 50
+    CatScores: c8000000900100002003000040060000i
+    ModeTicks: a4010000b0040000a4010000b00400002c010000i
+    ReleaseTicks: 00000000780000002c0100001c020000i
+    AmbushLookahead: 4
+    PincerLookahead: 2
+    ShyRadius: 8
+  Volume: 0.12
