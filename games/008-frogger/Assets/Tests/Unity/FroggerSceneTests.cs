@@ -175,26 +175,52 @@ namespace Game.Unity.Tests
             camera.aspect = original; yield return null;
         }
         [UnityTest]
+        public IEnumerator TitleRender_DoesNotAllocateAndUsesCurrentSettings()
+        {
+            var config = _game.Settings.Game.Copy();
+            for (var i = 0; i < 100; i++) { _game.View.Render(null, config); }
+            var before = System.GC.GetAllocatedBytesForCurrentThread();
+            for (var i = 0; i < 100; i++) { _game.View.Render(null, config); }
+            var allocated = System.GC.GetAllocatedBytesForCurrentThread() - before;
+            Assert.That(allocated, Is.Zero, "タイトル描画で管理ヒープを確保しない");
+            config.Lanes[0].Phase = 3;
+            _game.View.Render(null, config);
+            var car = _game.View.transform.Find("Lane0Object0");
+            Assert.That(car.localPosition.x, Is.EqualTo((float)config.Lanes[0].PositionAt(0, 0) - 5.5f));
+            Assert.That(_game.View.FrogPosition, Is.EqualTo(new Vector3(0, -4, 0)));
+            _game.Render(); yield return null;
+        }
+        [UnityTest]
         public IEnumerator MaximumSettings_ProfileCpuRenderAndObjectCount()
         {
-            var original = _game.Settings.Game; var maximum = original.Copy();
+            var maximum = _game.Settings.Game.Copy();
             foreach (var lane in maximum.Lanes) { lane.Speed = lane.Speed < 0 ? -12 : 12; lane.Width = 3.5f; }
-            maximum.FrogRadius = .4f; maximum.Validate();
-            var samples = new double[1000]; var timer = new Stopwatch(); var state = new FroggerState(maximum);
-            try
+            maximum.FrogRadius = .4f;
+            // 川では最後の丸太で支持される位相にし、探索4回を通す。
+            maximum.Lanes[3].Phase = 12; maximum.Validate();
+            foreach (var row in new[] { 0, 1, 5 })
             {
-                _game.Settings.Game = maximum;
-                for (var i = 0; i < 100; i++) { state.Step(); _game.View.Render(state, maximum); }
+                var template = new FroggerState(maximum);
+                // 道路は最大幅・半幅では必ず衝突するため、ゲーム用APIを増やさずテスト内で場面を作る。
+                typeof(FroggerState).GetProperty(nameof(FroggerState.Row)).SetValue(template, row);
+                var states = new FroggerState[1100];
+                for (var i = 0; i < states.Length; i++) { states[i] = template.Copy(); }
+                var samples = new double[1000]; var timer = new Stopwatch();
+                for (var i = 0; i < 100; i++) { states[i].Step(); _game.View.Render(states[i], maximum); }
                 for (var i = 0; i < samples.Length; i++)
                 {
+                    var state = states[i + 100];
+                    Assert.That(state.Result, Is.EqualTo(RoundResult.Playing));
                     timer.Restart(); state.Step(); _game.View.Render(state, maximum); timer.Stop(); samples[i] = timer.Elapsed.TotalMilliseconds;
+                    Assert.That(state.TickCount, Is.EqualTo(1));
+                    Assert.That(state.Result, Is.EqualTo(row == 1 ? RoundResult.CarHit : RoundResult.Playing));
+                    if (row == 5) { Assert.That(state.SupportId, Is.EqualTo(3)); }
                 }
                 System.Array.Sort(samples);
-                UnityEngine.Debug.Log($"[FroggerPerformance] CPU step+render p50={samples[500]:F4}ms p95={samples[950]:F4}ms; sprites=26; objects=24; samples=1000; {SystemInfo.processorType}; {Screen.width}x{Screen.height}; {Application.unityVersion}");
+                UnityEngine.Debug.Log($"[FroggerPerformance] row={row}; CPU step+render p50={samples[500]:F4}ms p95={samples[950]:F4}ms; sprites=26; objects=24; samples=1000; setup excluded; {SystemInfo.processorType}; {Screen.width}x{Screen.height}; {Application.unityVersion}");
                 Assert.That(_game.View.ObjectCount, Is.EqualTo(24)); Assert.That(_game.View.GetComponentsInChildren<SpriteRenderer>().Length, Is.EqualTo(26));
             }
-            finally { _game.Settings.Game = original; _game.Render(); }
-            yield return null;
+            _game.Render(); yield return null;
         }
     }
 }

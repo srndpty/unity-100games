@@ -2,9 +2,9 @@
     "Product": "LITTLE CROSSING",
     "Version": "1.0",
     "UnityVersion": "6000.6.9f1",
-    "BuildGuid": "fd192429e52e46b7a4b21f24a304ecf9",
+    "BuildGuid": "5b5baa8722dd4937bd32c32695821e9a",
     "Seed": 1,
-    "CapturedAtUtc": "2026-11-18T01:08:55.9648491Z",
+    "CapturedAtUtc": "2026-11-18T04:15:40.3598564Z",
     "Info": [
         {
             "Key": "imageEncoding",
@@ -18,42 +18,42 @@
     "Shots": [
         {
             "File": "01-title.jpg",
-            "Sha256": "120a78342ffb436bfd4338f3b99d2d4d6396e5291d67f82c2f3c70b106b503d2",
+            "Sha256": "28ce00edca31c08f869eb103a312507a87b5f14d5c0d7b743e7a9f941030454d",
             "Note": "Tick 0"
         },
         {
             "File": "02-road.jpg",
-            "Sha256": "d5b5c3072166fd0a730330d79433d37fa872bbf9a1fc0ecedf4884a7d86197c9",
+            "Sha256": "89b0c74cea21babde081a6e69959606096de34e71c1c248fd4e09eecfdba98fa",
             "Note": "Tick 20"
         },
         {
             "File": "03-log.jpg",
-            "Sha256": "0dc6ca0fd5c7abc02d6d9675ea5189ab168fa543c73b9acd40b13b9a45569868",
+            "Sha256": "37301f195df5c0533f871da6f5f3338d47deb0d1ff7ddadd121425f87591214b",
             "Note": "Tick 40"
         },
         {
             "File": "04-clear.jpg",
-            "Sha256": "bc39d11dae5d72c2f929fa425cfbaf060268049751906b510c112a1a80fd41c8",
+            "Sha256": "64f1c62e8eeb92715f386a0d3bd1727b3123cdcf7355901a106d928fb1c86d72",
             "Note": "Tick 56"
         },
         {
             "File": "05-car-hit.jpg",
-            "Sha256": "14bada98f103ae0ce05d7a851fd17d948eae966ee6bce5bb11ba3c392e8768c6",
+            "Sha256": "15300f176f8e210466082790fd344541f08c73f06d7b6aa077f3e4506dbde0c5",
             "Note": "Tick 38"
         },
         {
             "File": "06-water.jpg",
-            "Sha256": "114a432ee1a9ddcef7bc1752c350d79aaf88901559b3522a4c1d6f3ebfaa60ad",
+            "Sha256": "aa297f9b312ab543d80d2828296bc4e40d556b0b76d91e8e50d6536be422cf31",
             "Note": "Tick 6"
         },
         {
             "File": "07-carried-out.jpg",
-            "Sha256": "3714b376f5b45ec651b06749390f2c5e612e6f9ecd6b8ade2a249911ed84b9b8",
+            "Sha256": "96be932d5010b54de08f2574ee496fdae3736b55cd75a06307f9b6fc925111e3",
             "Note": "Tick 455"
         },
         {
             "File": "08-replay.jpg",
-            "Sha256": "6a39eaa28340586d4d16f770448ca10b0494f72969bf5789a517d380ce02a2d2",
+            "Sha256": "c4eb5ea8530680cbe20fe9cc07438b63112c76781d2dd780d94ab375c7e43703",
             "Note": "Tick 0"
         }
     ]

@@ -10,6 +10,13 @@ namespace Game.Core
         public float Phase;
         public LaneConfig(float speed, float width, float phase) { Speed = speed; Width = width; Phase = phase; }
         public LaneConfig Copy() => new(Speed, Width, Phase);
+        public double PositionAt(int id, long tick)
+        {
+            if (id < 0 || id >= FroggerConfig.ObjectsPerLane) { throw new ArgumentOutOfRangeException(nameof(id)); }
+            if (tick < 0) { throw new ArgumentOutOfRangeException(nameof(tick)); }
+            var value = Phase + id * 4 + Speed * (tick / (double)FroggerConfig.TickRate);
+            return value - Math.Floor(value / FroggerConfig.Period) * FroggerConfig.Period - 2.5;
+        }
     }
 
     [Serializable]

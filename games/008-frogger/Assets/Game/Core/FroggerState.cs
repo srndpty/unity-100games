@@ -29,8 +29,7 @@ namespace Game.Core
         {
             if (lane < 0 || lane >= 6 || id < 0 || id >= FroggerConfig.ObjectsPerLane)
             { throw new ArgumentOutOfRangeException(nameof(lane)); }
-            var value = _config.Lanes[lane].Phase + id * 4 + _config.Lanes[lane].Speed * (TickCount / (double)FroggerConfig.TickRate);
-            return value - Math.Floor(value / FroggerConfig.Period) * FroggerConfig.Period - 2.5;
+            return _config.Lanes[lane].PositionAt(id, TickCount);
         }
         public void Step(MoveDirection direction = MoveDirection.None)
         {
