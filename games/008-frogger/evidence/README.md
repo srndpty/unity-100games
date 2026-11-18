@@ -16,7 +16,7 @@
 | 証跡 | 1280×720、JPEG品質85、8枚。全画像を目視確認 |
 | 撮影再現 | 同一ビルドを2回撮影し、画像世代98e53d9a33792f95が一致 |
 
-Build GUID：`5b5baa8722dd4937bd32c32695821e9a`。公開ポインタは[current.json](current.json)、実行記録は[manifest.json](runs/20261118T041541Z-068d6d2e/manifest.json)。SHA-256は保存したJPEGに対して照合した。乱数は使用しない（共通撮影基盤のSeed欄は1）。
+Build GUID：`b844c32d6f9a43ac9939aaa3f3a455ba`。公開ポインタは[current.json](current.json)、実行記録はポインタの `Run` が指す `runs/<撮影 ID>/manifest.json`。SHA-256は保存したJPEGに対して照合した。乱数は使用しない（共通撮影基盤のSeed欄は1）。
 
 Unityのビルドログにライセンスクライアントの署名検証警告が出たが、エディタは継続し、ビルドとPlayerの撮影起動は成功した。ゲーム側のコンパイルエラーはない。
 

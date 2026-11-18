@@ -62,10 +62,10 @@ dev gui 009
 | Unity | `MazeGame`（入力・HUD・音）、`MazeView`（描画）、`MazeSettings`（設定アセット）、シーンと素材の生成、撮影台本 |
 
 - **整数のみで計算する。** 1マス=600単位、速度は0.1マス/秒単位、時間はTick（60Hz）。Monoと.NETで結果が一致する。
-- **1Tickを4つの部分ステップに分ける。** 各ステップで自機移動→餌の取得→勝利判定→猫の移動→接触判定の順に処理し、すれ違いと接触の順序を正しく扱う。同じ部分ステップで複数の猫に触れたら、危険な猫を優先してミスにする。
+- **1Tickを4つの部分ステップに分ける。** 各ステップで自機移動→餌の取得→勝利判定→猫の移動→接触判定の順に処理し、すれ違いと接触の順序を正しく扱う。接触は部分ステップ内の軌跡どうしの最短距離で判定する（`MotionPath`）ので、斜めのかすり接触も見逃さない。同じ部分ステップで複数の猫に触れたら、危険な猫を優先してミスにする。
 - **設定の検証で上限を保証する。** 速度は最大20マス/秒、判定半径は0.2〜0.75マス。壁越しの接触とすり抜けが起きない範囲に収めている。
 - **物理エンジンは使わない。** 移動と接触はすべてCoreで計算する。
-- **終了時はプロセスを直接終える。** Unity 6000.6.9f1でタイトルバーの✖を押すとUnity本体の終了処理でクラッシュするため、`WindowsQuitWorkaround` で回避している。
+- **終了を1フレーム遅らせる。** Unity 6000.6.9f1でタイトルバーの✖を押すとUnity本体の終了処理でクラッシュするため、`WindowsQuitWorkaround` が終了要求を次のフレームへ送る。通常の終了処理はすべて動く。
 
 設定アセットは `Assets/Game/Unity/MazeSettings.asset`。速度・時間・得点・残機・音量を調整できる。迷路とシーンの生成：
 
@@ -73,15 +73,15 @@ dev gui 009
 unity run games/009-pacman -- -executeMethod Game.Unity.Editor.MazeSceneBuilder.Build
 ```
 
-素材は `MazeArtGenerator` が図形から描き出したPNG。配置の正は `Art/MazeStage.prefab` で、再生成は既存のファイルとPrefabを上書きしない。
+素材は `MazeArtGenerator` が図形から描き出したPNG。配置の正は `Art/MazeStage.prefab` で、再生成は既存のファイル、そのインポート設定、Prefabを上書きしない。
 
 ## テスト
 
 | 種類 | 場所 | 件数 | 実行方法 |
 |---|---|---:|---|
-| Core | `Assets/Tests/Core/` | 48 | `dev test` |
+| Core | `Assets/Tests/Core/` | 57 | `dev test` |
 | App | `Assets/Tests/App/` | 25 | `dev test` |
-| EditMode（Core/AppをMonoで実行） | 同上 | 73 | `dev test 009 -Unity` |
+| EditMode（Core/AppをMonoで実行） | 同上 | 82 | `dev test 009 -Unity` |
 | PlayMode（実シーン12、共通証跡16） | `Assets/Tests/Unity/` | 28 | `dev test 009 -Unity -Mode PlayMode` |
 
 結果と画面証跡は [evidence/README.md](evidence/README.md) に記録している。

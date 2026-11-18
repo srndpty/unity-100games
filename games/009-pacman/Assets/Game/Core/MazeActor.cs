@@ -10,6 +10,8 @@ namespace Game.Core
     {
         public const int UnitsPerCell = 600;
 
+        private readonly MotionPath _motion = new();
+
         public MazeActor(int cell, Direction heading)
         {
             Reset(cell, heading);
@@ -53,6 +55,22 @@ namespace Game.Core
             arrived = true;
             return units - remaining;
         }
+
+        /// <summary>部分ステップの軌跡の記録を始める。</summary>
+        public void BeginMotion(MazeGraph graph, int budget) => _motion.Begin(WorldX(graph), WorldY(graph), budget);
+
+        /// <summary><see cref="Advance"/> と同じように進み、進んだ分を軌跡に記録する。</summary>
+        public int AdvanceInMotion(MazeGraph graph, int units, out bool arrived)
+        {
+            var heading = Heading;
+            var left = Advance(graph, units, out arrived);
+            _motion.Add(heading.Dx(), heading.Dy(), units - left);
+            return left;
+        }
+
+        /// <summary>直前の部分ステップの軌跡どうしが、途中を含めて半径以内に近づいたか。</summary>
+        public bool TouchedDuringMotion(MazeActor other, MazeGraph graph, int radius) =>
+            _motion.Touches(other._motion, graph.Width * UnitsPerCell, radius);
 
         /// <summary>
         /// その場で反転する。マスの途中なら来た辺を戻る。

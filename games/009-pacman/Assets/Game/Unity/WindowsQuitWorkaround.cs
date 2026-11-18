@@ -1,40 +1,48 @@
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
-using System;
-using System.Runtime.InteropServices;
 using Game.Unity.Evidence;
 using UnityEngine;
 
 namespace Game.Unity
 {
     /// <summary>
-    /// Unity 6000.6.9f1 の Windows Player は、タイトルバーの閉じるボタンで終了すると、
-    /// エンジンの後始末中に届いたウィンドウメッセージの処理で UnityPlayer.dll 内がクラッシュする。
-    /// C# の終了処理が済んだ時点でプロセスを終え、問題の後始末を通らないようにする。
-    /// 証跡撮影は終了コードを返す必要があるので、通常の終了処理に任せる。
+    /// Unity 6000.6.9f1 の Windows Player は、タイトルバーの閉じるボタンの処理の流れのまま終了すると、
+    /// エンジンの後始末の途中で UnityPlayer.dll 内がクラッシュする。
+    /// 終了要求をいったん取り消し、次のフレームで終了し直す。終了処理は通常どおりすべて動く。
+    /// Unity を更新すると無効になるので、再現しなければこのファイルを消す。
     /// </summary>
     internal static class WindowsQuitWorkaround
     {
+        private const string AffectedVersion = "6000.6.9f1";
+
+        private static bool _quitDeferred;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Install()
         {
-            if (!EvidenceCapture.IsRunning)
+            if (Application.unityVersion == AffectedVersion && !EvidenceCapture.IsRunning)
             {
-                Application.quitting += ExitProcess;
+                Application.wantsToQuit += DeferQuit;
             }
         }
 
-        private static void ExitProcess()
+        private static bool DeferQuit()
         {
-            PlayerPrefs.Save();
-            TerminateProcess(GetCurrentProcess(), 0);
+            if (_quitDeferred)
+            {
+                return true;
+            }
+
+            _quitDeferred = true;
+            Application.runInBackground = true; // 非アクティブのままでも次のフレームへ進める
+            _ = QuitNextFrameAsync();
+            return false;
         }
 
-        [DllImport("kernel32.dll")]
-        private static extern IntPtr GetCurrentProcess();
-
-        [DllImport("kernel32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool TerminateProcess(IntPtr process, uint exitCode);
+        private static async Awaitable QuitNextFrameAsync()
+        {
+            await Awaitable.NextFrameAsync();
+            Application.Quit();
+        }
     }
 }
 #endif

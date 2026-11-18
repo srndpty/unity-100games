@@ -67,15 +67,20 @@ namespace Game.Unity
             var dying = game != null && game.Phase == GamePhase.Dying;
             var scale = dying ? Mathf.Clamp01((float)game.PhaseTicksLeft / dyingTicks) : 1f;
             var caught = dying || game?.Phase == GamePhase.GameOver;
-            foreach (var renderer in new[] { _mouse, _mouseWrap })
-            {
-                renderer.flipX = heading == Direction.Left;
-                renderer.transform.localRotation = Quaternion.Euler(0, 0, heading == Direction.Up ? 90 : heading == Direction.Down ? -90 : 0);
-                renderer.transform.localScale = new Vector3(scale, scale, 1);
-                renderer.color = caught ? new Color(1, .55f, .55f) : Color.white;
-            }
-
+            var rotation = Quaternion.Euler(0, 0, heading == Direction.Up ? 90 : heading == Direction.Down ? -90 : 0);
+            var size = new Vector3(scale, scale, 1);
+            var tint = caught ? new Color(1, .55f, .55f) : Color.white;
+            ApplyMouseLook(_mouse, heading, rotation, size, tint);
+            ApplyMouseLook(_mouseWrap, heading, rotation, size, tint);
             Place(_mouse, _mouseWrap, position);
+        }
+
+        private static void ApplyMouseLook(SpriteRenderer renderer, Direction heading, Quaternion rotation, Vector3 size, Color tint)
+        {
+            renderer.flipX = heading == Direction.Left;
+            renderer.transform.localRotation = rotation;
+            renderer.transform.localScale = size;
+            renderer.color = tint;
         }
 
         private void RenderCat(MazeGameState game, int index)

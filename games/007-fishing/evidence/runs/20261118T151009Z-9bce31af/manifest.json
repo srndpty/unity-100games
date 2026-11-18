@@ -1,0 +1,75 @@
+{
+    "Product": "STILLWATER",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "3f49cc6c6f384f3594cbed05f83a0736",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-18T15:10:07.8222305Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Game\":{\"CastSeconds\":0.5,\"WaitMin\":2.0,\"WaitMax\":4.0,\"ApproachSeconds\":0.5,\"BiteSeconds\":1.0,\"LandingSeconds\":0.800000011920929,\"TurnMin\":0.5,\"TurnMax\":1.0,\"BreakSeconds\":0.75,\"SlackSeconds\":1.5,\"InitialTension\":40.0,\"ReelTension\":38.0,\"PullTension\":18.0,\"ReleaseTension\":32.0,\"ReelSpeed\":2.4000000953674316,\"FishSpeed\":1.2000000476837158,\"Fatigue\":5.0,\"ReelFatigue\":5.0,\"Fish\":[{\"Kind\":0,\"Distance\":10.0,\"Stamina\":60.0,\"Pull\":0.800000011920929,\"RunMin\":1.0,\"RunMax\":2.0,\"RestMin\":2.0,\"RestMax\":3.0},{\"Kind\":1,\"Distance\":16.0,\"Stamina\":90.0,\"Pull\":1.100000023841858,\"RunMin\":2.0,\"RunMax\":3.0,\"RestMin\":1.0,\"RestMax\":2.0},{\"Kind\":2,\"Distance\":22.0,\"Stamina\":120.0,\"Pull\":1.399999976158142,\"RunMin\":3.0,\"RunMax\":4.0,\"RestMin\":1.0,\"RestMax\":2.0}]},\"Volume\":0.15000000596046448}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "4ac15f1987092c0c6d770e31f76d7de0db714f2fb0eea1837aedcdbcad2af48a",
+            "Note": "開始前"
+        },
+        {
+            "File": "02-points.jpg",
+            "Sha256": "0b24171924f848b3a85efc0c2917b6ee79f754524fc8fbb58f74ba1d140cdfd5",
+            "Note": "ポイント選択"
+        },
+        {
+            "File": "02a-roaming.jpg",
+            "Sha256": "01373bff9afdaaef9571e4b19e4504bb5c093aa03f86a16a89eb789e927ec95c",
+            "Note": "Tick 50"
+        },
+        {
+            "File": "02b-approach.jpg",
+            "Sha256": "9caa81a3c0e49228225e2863162e17b89f49e576a9ee68d53b088411970a2e9f",
+            "Note": "Tick 190"
+        },
+        {
+            "File": "03-bite.jpg",
+            "Sha256": "6b21f94d75973d25f8b6b13a2b44e3199871885ccc60fed931d518e2b6298253",
+            "Note": "Tick 205"
+        },
+        {
+            "File": "03a-hooked.jpg",
+            "Sha256": "0f0f3450735ca3c294f0f56d09bd7533fae1b6672965423bf3668360e183aa33",
+            "Note": "Tick 218"
+        },
+        {
+            "File": "04-fight.jpg",
+            "Sha256": "43ad98403c8e6e087015ea2556b76ddd9dab9bca411d575836b42dfef337263f",
+            "Note": "Tick 295"
+        },
+        {
+            "File": "05-catch-0.jpg",
+            "Sha256": "d67bec781e48ef41b68d25a7a0360e412fcd1f16097d6e948e8af4e7ba1e7b1a",
+            "Note": "Tick 671"
+        },
+        {
+            "File": "05-catch-1.jpg",
+            "Sha256": "82379b489c0fc529b6a0b8fa9b4d812f56decae7f68f7cb1afb75cfdab1a6728",
+            "Note": "Tick 1188"
+        },
+        {
+            "File": "05-catch-2.jpg",
+            "Sha256": "509c38620790dd59f9a3d29d0071930e8952a02fa6efa2817a8e8f39bd8fcf1f",
+            "Note": "Tick 1874"
+        },
+        {
+            "File": "08-broken-line.jpg",
+            "Sha256": "b432ebe01b75ccee6605beff704f6fc2adf469af606f6351f98843102670419a",
+            "Note": "Tick 493"
+        }
+    ]
+}

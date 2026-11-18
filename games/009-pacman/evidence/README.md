@@ -8,16 +8,17 @@
 |---|---|
 | dev lint | 成功（全作品） |
 | dev check | 成功（全作品、警告0・エラー0） |
-| dev test | 成功（全作品）。009 Core 48/48、App 25/25 |
-| Unity EditMode | 73/73（Core/App、Mono） |
+| dev test | 成功（全作品）。009 Core 57/57、App 25/25 |
+| Unity EditMode | 82/82（Core/App、Mono） |
 | Unity PlayMode | 28/28（実シーン12、共通証跡公開16） |
 | Windowsビルド | 成功、StandaloneWindows64 |
 | ビルド起動 | dev captureで起動・全場面撮影・正常終了 |
-| ✖ボタンでの終了 | 対策前は実クリック2回中2回クラッシュ、対策後は10回中0回（終了コード0） |
+| ✖ボタンでの終了 | 実クリックで対策前は8回中8回クラッシュ、対策後は15回中0回（終了コード0）。`OnDestroy` とエンジンの終了処理まで動くことをログで確認 |
+| スクリプトからの終了 | `Application.Quit` で5回中0回クラッシュ（終了コード0） |
 | 証跡 | JPEG品質85、9枚 |
 | 撮影再現 | 同一ビルドを2回撮影し、画像世代d82de6d940ccf58cが一致 |
 
-Build GUID：`25419a943780487ea5a2b79f89251c1f`。公開ポインタは[current.json](current.json)、実行記録は[manifest.json](runs/20261118T134031Z-9c877dff/manifest.json)。撮影は試合ごとにシード1から順に使う。
+Build GUID：`9158e2588f4c4c07a4b61e1227e33296`。公開ポインタは[current.json](current.json)、実行記録は[manifest.json](runs/20261118T142406Z-033957ab/manifest.json)。撮影は試合ごとにシード1から順に使う。
 
 クリア場面（08）は、猫を止めた設定で撮影している。Unityのビルドログにライセンスクライアントの検証メッセージが出たが、ビルドとPlayerの撮影起動は成功した。
 

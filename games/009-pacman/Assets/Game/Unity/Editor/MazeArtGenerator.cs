@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Game.Core;
 using UnityEditor;
@@ -21,33 +22,33 @@ namespace Game.Unity.Editor
         public static void GenerateIfMissing()
         {
             Directory.CreateDirectory(ArtRoot);
-            Save("Board.png", DrawBoard, BoardCellPixels);
-            Save("Mouse.png", () => Paint(Mouse), SpriteSize);
-            Save("CatTora.png", () => Paint((x, y) => Cat(x, y, new Color(.93f, .58f, .2f), Tora)), SpriteSize);
-            Save("CatMike.png", () => Paint((x, y) => Cat(x, y, new Color(.97f, .93f, .84f), Mike)), SpriteSize);
-            Save("CatKuro.png", () => Paint((x, y) => Cat(x, y, new Color(.27f, .25f, .33f), null, new Color(.98f, .85f, .3f))), SpriteSize);
-            Save("CatShiro.png", () => Paint((x, y) => Cat(x, y, new Color(.8f, .9f, .98f), null, new Color(.25f, .5f, .9f))), SpriteSize);
-            Save("CatDazed.png", () => Paint(Dazed), SpriteSize);
-            Save("CatReturning.png", () => Paint(Returning), SpriteSize);
-            Save("Dot.png", () => Paint((x, y) => Disc(x, y, 0, 0, .9f) ? new Color(.96f, .82f, .55f) : _clear), SpriteSize);
-            Save("Power.png", () => Paint(Berry), SpriteSize);
-            Save("Marker.png", () => Paint(Marker), SpriteSize);
-            Save("Mask.png", () => Paint((x, y) => Color.white), SpriteSize);
+            var created = new List<(string Path, int PixelsPerUnit)>();
+            Save(created, "Board.png", DrawBoard, BoardCellPixels);
+            Save(created, "Mouse.png", () => Paint(Mouse), SpriteSize);
+            Save(created, "CatTora.png", () => Paint((x, y) => Cat(x, y, new Color(.93f, .58f, .2f), Tora)), SpriteSize);
+            Save(created, "CatMike.png", () => Paint((x, y) => Cat(x, y, new Color(.97f, .93f, .84f), Mike)), SpriteSize);
+            Save(created, "CatKuro.png", () => Paint((x, y) => Cat(x, y, new Color(.27f, .25f, .33f), null, new Color(.98f, .85f, .3f))), SpriteSize);
+            Save(created, "CatShiro.png", () => Paint((x, y) => Cat(x, y, new Color(.8f, .9f, .98f), null, new Color(.25f, .5f, .9f))), SpriteSize);
+            Save(created, "CatDazed.png", () => Paint(Dazed), SpriteSize);
+            Save(created, "CatReturning.png", () => Paint(Returning), SpriteSize);
+            Save(created, "Dot.png", () => Paint((x, y) => Disc(x, y, 0, 0, .9f) ? new Color(.96f, .82f, .55f) : _clear), SpriteSize);
+            Save(created, "Power.png", () => Paint(Berry), SpriteSize);
+            Save(created, "Marker.png", () => Paint(Marker), SpriteSize);
+            Save(created, "Mask.png", () => Paint((x, y) => Color.white), SpriteSize);
             AssetDatabase.Refresh();
-            foreach (var file in Directory.GetFiles(ArtRoot, "*.png"))
-            {
-                var name = Path.GetFileName(file);
-                Import(ArtRoot + name, name == "Board.png" ? BoardCellPixels : SpriteSize);
-            }
+
+            // 既存の素材のインポート設定は調整を保つため触らない。
+            foreach (var (path, pixelsPerUnit) in created) { Import(path, pixelsPerUnit); }
         }
 
-        private static void Save(string file, Func<Texture2D> draw, int unused)
+        private static void Save(List<(string Path, int PixelsPerUnit)> created, string file, Func<Texture2D> draw, int pixelsPerUnit)
         {
             var path = ArtRoot + file;
             if (File.Exists(path)) { return; }
             var texture = draw();
             File.WriteAllBytes(path, texture.EncodeToPNG());
             Object.DestroyImmediate(texture);
+            created.Add((path, pixelsPerUnit));
         }
 
         private static void Import(string path, int pixelsPerUnit)

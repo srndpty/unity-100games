@@ -23,21 +23,21 @@ PlayModeは実シーンへTestKeyboardで入力し、UIクリック、合わせ�
 
 ## 公開画像
 
-公開中の組は[current.json](current.json)が指す。実行記録は[runs/20261118T001322Z-c2ef882d/manifest.json](runs/20261118T001322Z-c2ef882d/manifest.json)。シード1、Unity 6000.6.9f1、1200×720。日時はmanifestではUTC、検証日は日本時間。
+公開中の組は[current.json](current.json)が指す。実行記録はポインタの `Run` が指す `runs/<撮影 ID>/manifest.json`。シード1、Unity 6000.6.9f1、1280×720。日時はmanifestではUTC、検証日は日本時間。
 
 | 場面 | 画像 |
 |---|---|
-| タイトル・操作説明 | [01-title.jpg](captures/36e4947f990972a1/01-title.jpg) |
-| ポイント選択 | [02-points.jpg](captures/36e4947f990972a1/02-points.jpg) |
-| 待機中の遊泳 | [02a-roaming.jpg](captures/36e4947f990972a1/02a-roaming.jpg) |
-| 水面の餌へ接近 | [02b-approach.jpg](captures/36e4947f990972a1/02b-approach.jpg) |
-| アタリ | [03-bite.jpg](captures/36e4947f990972a1/03-bite.jpg) |
-| ヒット直後の踏ん張り姿勢・直線の糸 | [03a-hooked.jpg](captures/36e4947f990972a1/03a-hooked.jpg) |
-| ファイト・張力・スタミナ | [04-fight.jpg](captures/36e4947f990972a1/04-fight.jpg) |
-| コブナ捕獲 | [05-catch-0.jpg](captures/36e4947f990972a1/05-catch-0.jpg) |
-| スズキ捕獲 | [05-catch-1.jpg](captures/36e4947f990972a1/05-catch-1.jpg) |
-| コイ捕獲・3種達成 | [05-catch-2.jpg](captures/36e4947f990972a1/05-catch-2.jpg) |
-| 糸切れの結果 | [08-broken-line.jpg](captures/36e4947f990972a1/08-broken-line.jpg) |
+| タイトル・操作説明 | [01-title.jpg](captures/68e58d079f819c79/01-title.jpg) |
+| ポイント選択 | [02-points.jpg](captures/68e58d079f819c79/02-points.jpg) |
+| 待機中の遊泳 | [02a-roaming.jpg](captures/68e58d079f819c79/02a-roaming.jpg) |
+| 水面の餌へ接近 | [02b-approach.jpg](captures/68e58d079f819c79/02b-approach.jpg) |
+| アタリ | [03-bite.jpg](captures/68e58d079f819c79/03-bite.jpg) |
+| ヒット直後の踏ん張り姿勢・直線の糸 | [03a-hooked.jpg](captures/68e58d079f819c79/03a-hooked.jpg) |
+| ファイト・張力・スタミナ | [04-fight.jpg](captures/68e58d079f819c79/04-fight.jpg) |
+| コブナ捕獲 | [05-catch-0.jpg](captures/68e58d079f819c79/05-catch-0.jpg) |
+| スズキ捕獲 | [05-catch-1.jpg](captures/68e58d079f819c79/05-catch-1.jpg) |
+| コイ捕獲・3種達成 | [05-catch-2.jpg](captures/68e58d079f819c79/05-catch-2.jpg) |
+| 糸切れの結果 | [08-broken-line.jpg](captures/68e58d079f819c79/08-broken-line.jpg) |
 
 ## 確認待ち・既知事項
 
@@ -64,4 +64,4 @@ READMEの更新内容を公開前に準備し、stagingの画像・manifestへ�
 
 復旧用のAssets/_RecoveryはGit管理から除外し、ローカルのバックアップは保持した。キャプチャはJPEG品質85を継続し、単色主体ではPNGより増える場合があることを共通ルールに明記した。制作素材の形式は別に選ぶ。
 
-レビュー対応後の最終Windowsビルドは警告0・エラー0。2回の撮影で画像世代36e4947f990972a1が一致し、11枚すべて同じSHA-256で公開された。
+レビュー対応後の最終Windowsビルドは警告0・エラー0。2回の撮影で画像世代68e58d079f819c79が一致し、11枚すべて同じSHA-256で公開された。

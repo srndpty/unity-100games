@@ -6,7 +6,7 @@
 
 `dev capture 004`で1280×720のWindowsビルドを起動し、シード1・60HzのTick駆動で撮影した。Appの操縦役で3Waveを攻略し、その後シード2の新しい試合を無操作で進めて敗北を撮る。撮影中は実時間とプレイヤー入力で進めない。
 
-画像世代は `08de7e85e3c29970`。[current.json](current.json) の `Run` が指す撮影記録に、ビルドGUID・Unity版・シード・設定・撮影日時・各画像のTickとSHA-256を保存する。
+画像世代は `5ac7099f6d4e54c3`。[current.json](current.json) の `Run` が指す撮影記録に、ビルドGUID・Unity版・シード・設定・撮影日時・各画像のTickとSHA-256を保存する。
 
 | 場面 | 画像 | 撮影時点 |
 |---|---|---|

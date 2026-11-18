@@ -232,10 +232,11 @@ namespace Game.Core
 
         private void MovePlayer(int units)
         {
+            Player.BeginMotion(Graph, units);
             while (units > 0)
             {
                 if (Player.Progress == 0 && !ChooseHeading()) { return; }
-                units = Player.Advance(Graph, units, out var arrived);
+                units = Player.AdvanceInMotion(Graph, units, out var arrived);
                 if (!arrived) { continue; }
                 Eat(Player.Cell);
                 if (Phase != GamePhase.Active) { return; }
@@ -294,7 +295,12 @@ namespace Game.Core
         private void MoveCats(int substep)
         {
             var world = World();
-            foreach (var cat in _cats) { cat.Move(world, Share(SpeedOf(cat), substep)); }
+            foreach (var cat in _cats)
+            {
+                var units = Share(SpeedOf(cat), substep);
+                cat.Actor.BeginMotion(Graph, units);
+                cat.Move(world, units);
+            }
         }
 
         private int SpeedOf(CatState cat)
@@ -312,12 +318,12 @@ namespace Game.Core
         private CatWorld World() =>
             new(Graph, _random, IsChase, Graph.Point(Player.Cell), Player.Heading, Graph.Point(_cats[0].Actor.Cell));
 
-        // 同じ部分ステップで複数の猫に触れたら、危険な猫を優先してミスにする。
+        // 部分ステップの途中のかすり接触も拾う。同じ部分ステップで複数の猫に触れたら、危険な猫を優先してミスにする。
         private void ResolveContacts()
         {
             foreach (var cat in _cats)
             {
-                if (cat.IsDangerous && Player.Touches(cat.Actor, Graph, _config.ContactRadius))
+                if (cat.IsDangerous && Player.TouchedDuringMotion(cat.Actor, Graph, _config.ContactRadius))
                 {
                     Miss();
                     return;
@@ -326,7 +332,7 @@ namespace Game.Core
 
             foreach (var cat in _cats)
             {
-                if (cat.Mode != CatMode.Frightened || !Player.Touches(cat.Actor, Graph, _config.ContactRadius)) { continue; }
+                if (cat.Mode != CatMode.Frightened || !Player.TouchedDuringMotion(cat.Actor, Graph, _config.ContactRadius)) { continue; }
                 cat.Capture();
                 Score += _config.CatScores[Math.Min(_captureChain, _config.CatScores.Length - 1)];
                 _captureChain++;

@@ -1,0 +1,53 @@
+{
+    "Product": "003-snake",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "9e0648e3e3214274b658dd6f65a0be05",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-18T14:51:03.3724882Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "rules",
+            "Value": "fixed speed, 2 buffered turns, full board wins"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Width\":20,\"Height\":16,\"InitialLength\":3,\"StepsPerSecond\":8.0}"
+        },
+        {
+            "Key": "replaySeed",
+            "Value": "2"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "befc576b086c822d2a6305d1829e116892dc8b3477ceb3e1ecce4f89fcbee98a",
+            "Note": "Title / Tick 0"
+        },
+        {
+            "File": "02-growth.jpg",
+            "Sha256": "6cc8ef710f532f638bbbd5cbce4403cd410c0d2fac87df43f95507e77e82b10b",
+            "Note": "Tick 3321"
+        },
+        {
+            "File": "03-paused.jpg",
+            "Sha256": "c144284af7fefb5d63b0a4e1daeaf0f85c06c15fffd1887aed23bc2bc53f8232",
+            "Note": "Tick 3321"
+        },
+        {
+            "File": "04-win.jpg",
+            "Sha256": "05175c721deda921619772afaa9df4db8b67350bccd97772793429ceb28d0faf",
+            "Note": "Tick 24639"
+        },
+        {
+            "File": "05-loss.jpg",
+            "Sha256": "1f2d4abfc742c96b3d48ed373354b9fb07933cb1a43996b59ed5508a6e470f8c",
+            "Note": "Tick 10"
+        }
+    ]
+}

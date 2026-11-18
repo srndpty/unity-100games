@@ -117,7 +117,7 @@ namespace Game.Core
         {
             while (units > 0 && Mode != CatMode.InHouse)
             {
-                units = Actor.Advance(world.Graph, units, out var arrived);
+                units = Actor.AdvanceInMotion(world.Graph, units, out var arrived);
                 if (arrived) { OnArrive(world); }
             }
         }
