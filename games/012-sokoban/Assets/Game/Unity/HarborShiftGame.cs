@@ -32,6 +32,23 @@ namespace Game.Unity
         private int _shownPreview = -1;
         private VisualElement _root;
         private int _version = -1;
+        private Label _headlineLabel;
+        private Label _levelLabel;
+        private Label _movesLabel;
+        private Label _pushesLabel;
+        private Label _bestLabel;
+        private Label _messageLabel;
+        private VisualElement _statsPanel;
+        private VisualElement _levelsPanel;
+        private Button[] _levelButtons;
+        private Button _submitButton;
+        private Button _undoButton;
+        private Button _restartButton;
+        private Button _backButton;
+        private Button _quitButton;
+
+        // HUD の表示を決める値。変わったときだけ描き直す。
+        private (AppScreen Screen, int Level, int Moves, int Pushes, int Cleared, int? Best)? _shownHud;
         private Font _font;
         private AudioSource _audio;
         private AudioClip _stepSound;
@@ -219,18 +236,35 @@ namespace Game.Unity
             _root = root;
             _version = version;
             root.style.unityFont = _font;
-            root.Q<Button>("submit").clicked += () => Request(new Intent(IntentKind.Submit));
-            root.Q<Button>("undo").clicked += () => Request(new Intent(IntentKind.Undo));
-            root.Q<Button>("restart").clicked += () => Request(new Intent(IntentKind.Restart));
-            root.Q<Button>("back").clicked += () => Request(new Intent(IntentKind.Back));
-            root.Q<Button>("quit").clicked += () => { if (AcceptInput()) { QuitHandler(); } };
-            for (var i = 0; i < Flow.LevelCount; i++)
+            _headlineLabel = root.Q<Label>("headline");
+            _levelLabel = root.Q<Label>("level");
+            _movesLabel = root.Q<Label>("moves");
+            _pushesLabel = root.Q<Label>("pushes");
+            _bestLabel = root.Q<Label>("best");
+            _messageLabel = root.Q<Label>("message");
+            _statsPanel = root.Q("stats");
+            _levelsPanel = root.Q("levels");
+            _submitButton = root.Q<Button>("submit");
+            _undoButton = root.Q<Button>("undo");
+            _restartButton = root.Q<Button>("restart");
+            _backButton = root.Q<Button>("back");
+            _quitButton = root.Q<Button>("quit");
+
+            _submitButton.clicked += () => Request(new Intent(IntentKind.Submit));
+            _undoButton.clicked += () => Request(new Intent(IntentKind.Undo));
+            _restartButton.clicked += () => Request(new Intent(IntentKind.Restart));
+            _backButton.clicked += () => Request(new Intent(IntentKind.Back));
+            _quitButton.clicked += () => { if (AcceptInput()) { QuitHandler(); } };
+            _levelButtons = new Button[Flow.LevelCount];
+            for (var i = 0; i < _levelButtons.Length; i++)
             {
                 var level = i;
-                root.Q<Button>("level-" + level).clicked += () => Request(new Intent(IntentKind.Select, level));
+                _levelButtons[i] = root.Q<Button>("level-" + level);
+                _levelButtons[i].clicked += () => Request(new Intent(IntentKind.Select, level));
             }
 
             root.Query<Button>().ForEach(button => button.focusable = false);
+            _shownHud = null;
             RenderHud();
         }
 
@@ -241,36 +275,39 @@ namespace Game.Unity
             var game = Flow.Game;
             var level = Flow.SelectedLevel;
             var best = Flow.Records.BestMoves(level);
-            _root.Q<Label>("headline").text = Headline(screen);
-            _root.Q<Label>("level").text = screen == AppScreen.Title ? string.Empty : $"第{level + 1}問  {LevelCatalog.Names[level]}";
-            _root.Q<Label>("moves").text = "手数  " + (game?.MoveCount ?? 0);
-            _root.Q<Label>("pushes").text = "押した数  " + (game?.PushCount ?? 0);
-            _root.Q<Label>("best").text = "最少  " + (best?.ToString() ?? "-");
-            _root.Q<Label>("message").text = Message(screen, game);
+            var moves = game?.MoveCount ?? 0;
+            var pushes = game?.PushCount ?? 0;
+            var state = (screen, level, moves, pushes, Flow.Records.ClearedCount, best);
+            if (_shownHud.HasValue && _shownHud.Value.Equals(state)) { return; }
+            _shownHud = state;
 
-            _root.Q("stats").style.display = Display(screen != AppScreen.Title);
-            _root.Q("levels").style.display = Display(screen == AppScreen.LevelSelect);
-            for (var i = 0; i < Flow.LevelCount; i++)
+            _headlineLabel.text = Headline(screen);
+            _levelLabel.text = screen == AppScreen.Title ? string.Empty : $"第{level + 1}問  {LevelCatalog.Names[level]}";
+            _movesLabel.text = "手数  " + moves;
+            _pushesLabel.text = "押した数  " + pushes;
+            _bestLabel.text = "最少  " + (best?.ToString() ?? "-");
+            _messageLabel.text = Message(screen, game);
+
+            _statsPanel.style.display = Display(screen != AppScreen.Title);
+            _levelsPanel.style.display = Display(screen == AppScreen.LevelSelect);
+            for (var i = 0; i < _levelButtons.Length; i++)
             {
-                var button = _root.Q<Button>("level-" + i);
+                var button = _levelButtons[i];
                 var cleared = Flow.Records.IsCleared(i);
                 button.text = cleared ? (i + 1) + " 済" : (i + 1).ToString();
                 button.EnableInClassList("level--selected", i == level);
                 button.EnableInClassList("level--cleared", cleared);
             }
 
-            var submit = _root.Q<Button>("submit");
-            submit.style.display = Display(screen != AppScreen.Playing);
-            submit.text = SubmitText(screen);
-            _root.Q<Button>("undo").style.display = Display(screen == AppScreen.Playing);
-            var restart = _root.Q<Button>("restart");
-            restart.style.display = Display(screen == AppScreen.Playing || screen == AppScreen.Cleared);
-            restart.text = screen == AppScreen.Cleared ? "もう一度  /  R" : "やり直し  /  R";
-            var back = _root.Q<Button>("back");
+            _submitButton.style.display = Display(screen != AppScreen.Playing);
+            _submitButton.text = SubmitText(screen);
+            _undoButton.style.display = Display(screen == AppScreen.Playing);
+            _restartButton.style.display = Display(screen == AppScreen.Playing || screen == AppScreen.Cleared);
+            _restartButton.text = screen == AppScreen.Cleared ? "もう一度  /  R" : "やり直し  /  R";
             // 最終問のクリア後は決定ボタンが面選択へ戻るので、同じ行き先のボタンを並べない。
-            back.style.display = Display(screen != AppScreen.Title && (screen != AppScreen.Cleared || Flow.HasNextLevel));
-            back.text = screen == AppScreen.LevelSelect ? "タイトルへ  /  Esc" : "面選択へ  /  Esc";
-            _root.Q<Button>("quit").style.display = Display(screen == AppScreen.Title);
+            _backButton.style.display = Display(screen != AppScreen.Title && (screen != AppScreen.Cleared || Flow.HasNextLevel));
+            _backButton.text = screen == AppScreen.LevelSelect ? "タイトルへ  /  Esc" : "面選択へ  /  Esc";
+            _quitButton.style.display = Display(screen == AppScreen.Title);
         }
 
         private string Headline(AppScreen screen) => screen switch

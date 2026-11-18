@@ -60,6 +60,7 @@ dev capture 012  # 証跡を evidence/ に撮る
 - **全問がクリアできることは解答手順の再生で確かめる。** 解答はテスト側にだけ持ち、ゲーム本体に解答機能はない。
 - **操作は押した順に処理する。** 移動・取り消し・やり直しを1本の列に入れ、同じフレームでも順序が入れ替わらないようにしている。
 - **押しっぱなしを次の画面へ持ち越さない。** 画面が変わるかフォーカスを失うと長押しを解除し、キーを押し直すまで動かない。
+- **長押しの待ち時間はキーを押した後から数える。** 押したフレームの経過時間には押す前の時間が含まれるので、処理落ちしても1回の押下は1手にとどめる。
 - **状態は即時に確定し、演出は表示だけにする。** 演出中の入力も捨てずに処理する。
 - **物理エンジンは使わない。** ターン制で、ルールは時間に依存しない。
 
@@ -77,10 +78,10 @@ unity run games/012-sokoban -- -executeMethod Game.Unity.Editor.HarborShiftScene
 
 | 種類 | 場所 | 件数 | 実行方法 |
 |---|---|---:|---|
-| Core | `Assets/Tests/Core/` | 93 | `dev test` |
-| App | `Assets/Tests/App/` | 38 | `dev test` |
-| EditMode（Core/App を Mono で実行） | 同上 | 131 | `dev test 012 -Unity` |
-| PlayMode（実シーン26、共通証跡16） | `Assets/Tests/Unity/` | 42 | `dev test 012 -Unity -Mode PlayMode` |
+| Core | `Assets/Tests/Core/` | 94 | `dev test` |
+| App | `Assets/Tests/App/` | 42 | `dev test` |
+| EditMode（Core/App を Mono で実行） | 同上 | 136 | `dev test 012 -Unity` |
+| PlayMode（実シーン27、共通証跡16） | `Assets/Tests/Unity/` | 43 | `dev test 012 -Unity -Mode PlayMode` |
 
 結果と画面証跡は [evidence/README.md](evidence/README.md) に記録している。
 

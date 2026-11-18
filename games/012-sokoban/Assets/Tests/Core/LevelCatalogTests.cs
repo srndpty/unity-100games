@@ -81,6 +81,24 @@ namespace Game.Core.Tests
             Assert.That(boxes.Last(), Is.EqualTo(4));
         }
 
+        [Test]
+        public void PublicLists_CannotBeWrittenThroughACast()
+        {
+            var map = LevelCatalog.Maps[0];
+            AssertReadOnly(map.Initial.Boxes, new Cell(0, 0));
+            AssertReadOnly(new SokobanGame(map).Board.Boxes, new Cell(0, 0));
+            AssertReadOnly(map.Goals, new Cell(0, 0));
+            AssertReadOnly(LevelCatalog.Maps, map);
+            AssertReadOnly(LevelCatalog.Names, "書き換え");
+        }
+
+        private static void AssertReadOnly<T>(IReadOnlyList<T> list, T value)
+        {
+            Assert.That(list, Is.Not.InstanceOf<T[]>());
+            Assert.That(list, Is.Not.InstanceOf<List<T>>());
+            Assert.Throws<System.NotSupportedException>(() => ((IList<T>)list)[0] = value);
+        }
+
         private static string Describe(LevelMap map)
         {
             var cells = new List<string>();

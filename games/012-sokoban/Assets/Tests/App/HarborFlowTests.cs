@@ -9,6 +9,8 @@ namespace Game.App.Tests
     {
         private const float Delay = .2f;
         private const float Interval = .1f;
+        private const float Frame = .016f;
+        private const float LongFrame = Delay + .05f;
 
         // 右へ2回押すとクリアできる面。
         private static readonly string[] _quickLevel =
@@ -34,6 +36,13 @@ namespace Game.App.Tests
             Assert.That(flow.SelectLevel(level), Is.True);
             flow.TakeEvents();
             return flow;
+        }
+
+        // キーを押したフレームの Tick を済ませてから、リピートに十分な時間を進める。
+        private static void ElapseRepeat(HarborFlow flow)
+        {
+            flow.Tick(Frame);
+            flow.Tick(Delay + 1f);
         }
 
         private static void Clear(HarborFlow flow)
@@ -275,18 +284,74 @@ namespace Game.App.Tests
         public void PressDirection_MovesOnceThenRepeatsAfterTheDelay()
         {
             var flow = Playing();
-            flow.PressDirection(Direction.Up);
+            flow.PressDirection(Direction.Right);
+            flow.Tick(Frame);
             Assert.That(flow.Game!.MoveCount, Is.EqualTo(1));
 
             flow.Tick(Delay * .9f);
             Assert.That(flow.Game.MoveCount, Is.EqualTo(1), "開始遅延の間は動かない");
 
             flow.Tick(Delay * .2f);
-            Assert.That(flow.Game.MoveCount, Is.EqualTo(1), "壁に当たる手は数えない");
-            flow.PressDirection(Direction.Left);
             Assert.That(flow.Game.MoveCount, Is.EqualTo(2));
-            flow.Tick(Delay + .01f);
-            Assert.That(flow.Game.MoveCount, Is.EqualTo(2), "壁まで進んだら止まる");
+        }
+
+        [Test]
+        public void PressDirection_InALongFrameMovesOnlyOnce()
+        {
+            var flow = new HarborFlow(LevelCatalog.Maps, .22f, .11f);
+            flow.Submit();
+            flow.Submit();
+
+            flow.PressDirection(Direction.Right);
+            flow.Tick(.25f);
+
+            Assert.That(flow.Game!.MoveCount, Is.EqualTo(1), "押す前の経過時間でリピートしない");
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Playing));
+
+            flow.Tick(.25f);
+            Assert.That(flow.Game.MoveCount, Is.EqualTo(2), "押した後に所定の時間が過ぎたらリピートする");
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Cleared));
+        }
+
+        [Test]
+        public void Repeater_SwitchingKeysInALongFrameRestartsTheDelay()
+        {
+            var repeater = new MoveRepeater(Delay, Interval);
+            repeater.Press(Direction.Up);
+            repeater.Tick(Frame);
+
+            repeater.Press(Direction.Left);
+            Assert.That(repeater.Tick(LongFrame), Is.Null);
+            Assert.That(repeater.Tick(Delay - .01f), Is.Null);
+            Assert.That(repeater.Tick(.02f), Is.EqualTo(Direction.Left));
+        }
+
+        [Test]
+        public void Repeater_ReleasingTheLatestKeyInALongFrameRestartsTheDelay()
+        {
+            var repeater = new MoveRepeater(Delay, Interval);
+            repeater.Press(Direction.Up);
+            repeater.Press(Direction.Left);
+            repeater.Tick(Frame);
+
+            repeater.Release(Direction.Left);
+            Assert.That(repeater.Tick(LongFrame), Is.Null);
+            Assert.That(repeater.Tick(Delay - .01f), Is.Null);
+            Assert.That(repeater.Tick(.02f), Is.EqualTo(Direction.Up));
+        }
+
+        [Test]
+        public void Repeater_ReleasingAnOlderKeyKeepsTheDelayRunning()
+        {
+            var repeater = new MoveRepeater(Delay, Interval);
+            repeater.Press(Direction.Up);
+            repeater.Press(Direction.Left);
+            repeater.Tick(Frame);
+            Assert.That(repeater.Tick(Delay - .01f), Is.Null);
+
+            repeater.Release(Direction.Up);
+
+            Assert.That(repeater.Tick(.02f), Is.EqualTo(Direction.Left));
         }
 
         [Test]
@@ -294,6 +359,7 @@ namespace Game.App.Tests
         {
             var repeater = new MoveRepeater(Delay, Interval);
             repeater.Press(Direction.Up);
+            repeater.Tick(Frame);
             Assert.That(repeater.Tick(Delay - .01f), Is.Null);
             Assert.That(repeater.Tick(.02f), Is.EqualTo(Direction.Up));
             Assert.That(repeater.Tick(Interval - .01f), Is.Null);
@@ -305,6 +371,7 @@ namespace Game.App.Tests
         {
             var repeater = new MoveRepeater(Delay, Interval);
             repeater.Press(Direction.Up);
+            repeater.Tick(Frame);
             Assert.That(repeater.Tick(10f), Is.EqualTo(Direction.Up));
             Assert.That(repeater.Tick(.001f), Is.Null, "処理落ちの分をまとめて進めない");
         }
@@ -315,9 +382,11 @@ namespace Game.App.Tests
             var repeater = new MoveRepeater(Delay, Interval);
             repeater.Press(Direction.Up);
             repeater.Press(Direction.Left);
+            repeater.Tick(Frame);
             Assert.That(repeater.Tick(Delay + .01f), Is.EqualTo(Direction.Left));
 
             repeater.Release(Direction.Left);
+            repeater.Tick(Frame);
             Assert.That(repeater.Tick(Delay - .01f), Is.Null, "残ったキーは開始遅延からやり直す");
             Assert.That(repeater.Tick(.02f), Is.EqualTo(Direction.Up));
 
@@ -333,8 +402,10 @@ namespace Game.App.Tests
         {
             var repeater = new MoveRepeater(Delay, Interval);
             repeater.Press(Direction.Up);
+            repeater.Tick(Frame);
             Assert.That(repeater.Tick(delta), Is.Null);
             Assert.That(repeater.Tick(Delay - .01f), Is.Null, "不正な時間で残り時間が変わらない");
+            Assert.That(repeater.Tick(.02f), Is.EqualTo(Direction.Up));
         }
 
         [Test]
@@ -346,7 +417,7 @@ namespace Game.App.Tests
             flow.Submit();
             var selected = flow.SelectedLevel;
 
-            flow.Tick(Delay + 1f);
+            ElapseRepeat(flow);
 
             Assert.That(flow.Game!.MoveCount, Is.Zero, "面選択で押していたキーで動かない");
             Assert.That(flow.SelectedLevel, Is.EqualTo(selected));
@@ -361,7 +432,7 @@ namespace Game.App.Tests
             Assert.That(flow.Screen, Is.EqualTo(AppScreen.Cleared));
             flow.Submit();
 
-            flow.Tick(Delay + 1f);
+            ElapseRepeat(flow);
 
             Assert.That(flow.Game!.MoveCount, Is.Zero, "次の面へキーの押しっぱなしを持ち越さない");
         }
@@ -391,7 +462,7 @@ namespace Game.App.Tests
             flow.SetFocus(false);
             flow.Tick(Delay + 1f);
             flow.SetFocus(true);
-            flow.Tick(Delay + 1f);
+            ElapseRepeat(flow);
             Assert.That(flow.Game!.MoveCount, Is.EqualTo(1));
         }
 

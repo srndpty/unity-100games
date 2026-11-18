@@ -31,7 +31,7 @@ namespace Game.Core
                 }
             }
 
-            Goals = goalCells;
+            Goals = goalCells.AsReadOnly();
         }
 
         public int Width { get; }

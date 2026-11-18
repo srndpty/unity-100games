@@ -12,6 +12,7 @@ namespace Game.Core
         {
             if (boxes == null) { throw new ArgumentNullException(nameof(boxes)); }
             _boxes = new List<Cell>(boxes).ToArray();
+            Boxes = Array.AsReadOnly(_boxes);
             Player = player;
 
             var seen = new HashSet<Cell>();
@@ -23,7 +24,7 @@ namespace Game.Core
         }
 
         public Cell Player { get; }
-        public IReadOnlyList<Cell> Boxes => _boxes;
+        public IReadOnlyList<Cell> Boxes { get; }
 
         public bool HasBox(Cell cell) => Array.IndexOf(_boxes, cell) >= 0;
 

@@ -8,15 +8,15 @@
 |---|---|
 | dev lint | 成功（全作品） |
 | dev check | 成功（全作品、警告0・エラー0） |
-| dev test | 成功（全作品）。012 Core 93/93、App 38/38 |
-| Unity EditMode | 131/131（Core/App、Mono） |
-| Unity PlayMode | 42/42（実シーン26、共通証跡公開16） |
+| dev test | 成功（全作品）。012 Core 94/94、App 42/42 |
+| Unity EditMode | 136/136（Core/App、Mono） |
+| Unity PlayMode | 43/43（実シーン27、共通証跡公開16） |
 | Windowsビルド | 成功、StandaloneWindows64 |
 | ビルド起動 | dev captureで起動・全場面撮影・正常終了 |
 | 証跡 | JPEG品質85、9枚 |
-| 撮影再現 | 同一ビルドを2回撮影し、画像世代d08e1a830b469842が一致 |
+| 撮影再現 | 同一ビルドを2回撮影し、画像世代e9302e389bb64b99が一致 |
 
-Build GUID：`3f9caec6ca2c49aab359b67276edaef9`。公開ポインタは[current.json](current.json)、実行記録は[manifest.json](runs/20261118T181814Z-57425308/manifest.json)。このゲームは乱数を使わないので、マニフェストのシードは結果に影響しない。
+Build GUID：`43b2c22cd81c479081b7ad9091eeae4b`。公開ポインタは[current.json](current.json)、実行記録は[manifest.json](runs/20261118T185758Z-93970097/manifest.json)。このゲームは乱数を使わないので、マニフェストのシードは結果に影響しない。
 
 全10問は、Coreテストで解答手順を再生してクリアできることを確認している。
 
@@ -28,49 +28,49 @@ Unityのビルドログにライセンスクライアントの検証メッセー
 
 ### タイトル
 
-![タイトル](captures/d08e1a830b469842/01-title.jpg)
+![タイトル](captures/e9302e389bb64b99/01-title.jpg)
 
 ### 面選択
 
 カーソルの位置の面を盤面に表示する。
 
-![面選択](captures/d08e1a830b469842/02-select.jpg)
+![面選択](captures/e9302e389bb64b99/02-select.jpg)
 
 ### プレイ開始
 
-![プレイ開始](captures/d08e1a830b469842/03-start.jpg)
+![プレイ開始](captures/e9302e389bb64b99/03-start.jpg)
 
 ### 箱押し
 
 目標に載った箱は緑色になり、チェック印が付く。
 
-![箱押し](captures/d08e1a830b469842/04-push.jpg)
+![箱押し](captures/e9302e389bb64b99/04-push.jpg)
 
 ### 1手戻す
 
 直前の押しを取り消し、箱が目標から離れた場面。
 
-![1手戻す](captures/d08e1a830b469842/05-undo.jpg)
+![1手戻す](captures/e9302e389bb64b99/05-undo.jpg)
 
 ### やり直し
 
 初期盤面へ戻り、手数と押した数も0になる。
 
-![やり直し](captures/d08e1a830b469842/06-restart.jpg)
+![やり直し](captures/e9302e389bb64b99/06-restart.jpg)
 
 ### クリア
 
-![クリア](captures/d08e1a830b469842/07-cleared.jpg)
+![クリア](captures/e9302e389bb64b99/07-cleared.jpg)
 
 ### 全問クリア
 
 第2問から第9問はクリア記録だけを用意し、第1問と最終問は解答手順を実際に再生して撮影した。
 
-![全問クリア](captures/d08e1a830b469842/08-all-clear.jpg)
+![全問クリア](captures/e9302e389bb64b99/08-all-clear.jpg)
 
 ### 再プレイ
 
-![再プレイ](captures/d08e1a830b469842/09-replay.jpg)
+![再プレイ](captures/e9302e389bb64b99/09-replay.jpg)
 
 ## 人間の確認
 

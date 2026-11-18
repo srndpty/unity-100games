@@ -134,6 +134,22 @@ namespace Game.Unity.Tests
         }
 
         [UnityTest]
+        public IEnumerator Hud_IsRewrittenOnlyWhenItsStateChanges()
+        {
+            const string marker = "書き換え検出";
+            yield return StartLevel(OpenLevel);
+            var moves = _game.HudRoot.Q<Label>("moves");
+            moves.text = marker;
+            yield return null;
+            yield return null;
+            Assert.That(moves.text, Is.EqualTo(marker), "状態が同じなら描き直さない");
+
+            Flow.Move(Direction.Up);
+            yield return null;
+            Assert.That(moves.text, Does.Contain("1"), "手数が変わったら描き直す");
+        }
+
+        [UnityTest]
         public IEnumerator Keyboard_PlaysFromTitleToTheNextLevel()
         {
             yield return _keyboard.Tap(Key.Enter);

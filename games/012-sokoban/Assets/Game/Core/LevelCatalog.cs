@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Game.Core
@@ -114,11 +115,9 @@ namespace Game.Core
             },
         };
 
-        private static readonly LevelMap[] _maps = ParseAll();
-
-        public static int Count => _maps.Length;
-        public static IReadOnlyList<LevelMap> Maps => _maps;
-        public static IReadOnlyList<string> Names => _names;
+        public static int Count => Maps.Count;
+        public static IReadOnlyList<LevelMap> Maps { get; } = Array.AsReadOnly(ParseAll());
+        public static IReadOnlyList<string> Names { get; } = Array.AsReadOnly(_names);
 
         private static LevelMap[] ParseAll()
         {
