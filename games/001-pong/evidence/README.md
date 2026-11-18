@@ -14,9 +14,9 @@
 
 | 画面 | 内容 |
 |---|---|
-| ![タイトル](captures/6e7ff08af5a2abbf/title.png) | タイトル。操作説明と勝利条件 |
-| ![試合中](captures/6e7ff08af5a2abbf/playing.png) | 試合開始から 100 Tick。サーブされたボールが左へ飛んでいる |
-| ![結果](captures/6e7ff08af5a2abbf/result.png) | 決着（1268 Tick、1-5）後の結果。勝者・スコア・再戦の案内 |
+| ![タイトル](captures/7b7a6a107bf3261a/title.jpg) | タイトル。操作説明と勝利条件 |
+| ![試合中](captures/7b7a6a107bf3261a/playing.jpg) | 試合開始から 100 Tick。サーブされたボールが左へ飛んでいる |
+| ![結果](captures/7b7a6a107bf3261a/result.jpg) | 決着（1268 Tick、1-5）後の結果。勝者・スコア・再戦の案内 |
 
 4:3（960×720）のウィンドウでも撮影し、コートとパドルが画面内に収まることを目で確認した（画像は保存していない）。
 
@@ -47,3 +47,11 @@
 - `dev build 001` 成功（約 20 秒、出力 約 100 MB）
 - ビルドログに `[Licensing::Module] LicensingClient has failed validation; ignoring` が出るが、ビルドと起動には影響しない
 - Player.log に、URP の未使用ポストプロセス用シェーダ（Bloom、被写界深度など）がビルドから除外された旨の警告が起動時に出る。ポストプロセスは使っていないため影響なし
+
+## 2026-11-18 画像形式の標準化
+
+JPEG品質85・元の解像度を標準とする。既存PNGを新しい画像世代として再エンコードした。ゲームの再撮影ではなく、元の撮影日時・ビルドGUID・設定・Tickを保持している。変換履歴はmanifestのInfoに記録した。画像合計は0.09MBから0.10MBになった。
+
+共通撮影形式変更後のUnity再検証：EditMode 57/57、PlayMode 21/21成功（JPEG保存・復号・公開の追加テストを含む）。
+
+2026-11-18の移行基盤レビュー対応後、Unity EditMode 57/57、PlayMode 28/28成功。JPEG生成・公開・README更新・ポインタ更新の失敗注入、再実行とREADME参照の保護を追加検証した（共通基盤16ケース）。証跡画像はJPEG品質85を継続する。

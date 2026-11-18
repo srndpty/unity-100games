@@ -35,4 +35,10 @@
     <Project Path="games/006-flappy-bird/dotnet/Core.Tests/G006.Core.Tests.csproj" />
     <Project Path="games/006-flappy-bird/dotnet/Core/G006.Core.csproj" />
   </Folder>
+  <Folder Name="/007-fishing/">
+    <Project Path="games/007-fishing/dotnet/App.Tests/G007.App.Tests.csproj" />
+    <Project Path="games/007-fishing/dotnet/App/G007.App.csproj" />
+    <Project Path="games/007-fishing/dotnet/Core.Tests/G007.Core.Tests.csproj" />
+    <Project Path="games/007-fishing/dotnet/Core/G007.Core.csproj" />
+  </Folder>
 </Solution>

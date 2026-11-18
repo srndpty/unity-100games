@@ -36,3 +36,5 @@ dev capture {{NNN}}  # 証跡を evidence/ に撮る（画像は captures/<画�
 ## 未実装範囲
 
 （仕様書の Out of scope と、削った機能）
+
+証跡画像はJPEG（`.jpg`）、品質85を標準とし、保存したJPEGのSHA-256をマニフェストに記録する。

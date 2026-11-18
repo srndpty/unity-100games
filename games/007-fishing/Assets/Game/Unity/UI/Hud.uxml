@@ -1,0 +1,39 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:Label text="007 / STILLWATER" class="brand" picking-mode="Ignore" />
+        <ui:Label name="collection" class="collection" picking-mode="Ignore" />
+        <ui:VisualElement name="instruments" class="instruments" picking-mode="Ignore">
+            <ui:Label name="fishname" class="fishname" picking-mode="Ignore" />
+            <ui:Label name="action" class="action" picking-mode="Ignore" />
+            <ui:Label name="tension-label" picking-mode="Ignore" />
+            <ui:VisualElement class="track" picking-mode="Ignore">
+                <ui:VisualElement class="low-band" picking-mode="Ignore" />
+                <ui:VisualElement class="high-band" picking-mode="Ignore" />
+                <ui:VisualElement name="needle" class="needle" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label name="warning" class="warning" picking-mode="Ignore" />
+            <ui:Label name="stamina-label" picking-mode="Ignore" />
+            <ui:ProgressBar name="stamina" />
+            <ui:Label name="distance" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:Label name="status" class="status" picking-mode="Ignore" />
+        <ui:Label name="hint" class="hint" picking-mode="Ignore" />
+        <ui:VisualElement name="overlay" class="overlay">
+            <ui:VisualElement class="card">
+                <ui:Label text="水の下の動きを読む" class="eyebrow" />
+                <ui:Label name="headline" text="STILLWATER" class="headline" />
+                <ui:Label name="message" class="message" />
+                <ui:VisualElement name="points" class="points">
+                    <ui:Button name="point0" text="浅場 / コブナ" />
+                    <ui:Button name="point1" text="中層 / スズキ" />
+                    <ui:Button name="point2" text="深場 / コイ" />
+                </ui:VisualElement>
+                <ui:Button name="submit" text="はじめる / ENTER" />
+                <ui:Button name="resume" text="再開 / P" />
+                <ui:Button name="back" text="タイトルへ" />
+                <ui:Button name="quit" text="終了" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

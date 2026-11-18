@@ -1,0 +1,62 @@
+{
+    "Product": "002-breakout",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "0a14ce01b5a44289abe862c342f3a68f",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-15T14:23:55.4117765Z",
+    "Info": [
+        {
+            "Key": "settings",
+            "Value": "{\"_game\":{\"FieldWidth\":12.0,\"FieldHeight\":16.0,\"BrickWidth\":1.0,\"BrickHeight\":0.5,\"GridTopMargin\":1.5,\"PaddleWidth\":2.0,\"PaddleHeight\":0.30000001192092896,\"PaddleInset\":1.2000000476837158,\"PaddleSpeed\":12.0,\"BallSize\":0.25,\"BallSpeed\":7.0,\"StageSpeedStep\":0.75,\"SpeedIncreasePerBrick\":0.05000000074505806,\"MaxBallSpeed\":11.0,\"MaxBounceAngleDegrees\":60.0,\"MaxServeAngleDegrees\":30.0,\"Lives\":3,\"TicksPerSecond\":60,\"StageClearDelayTicks\":90,\"PierceDurationTicks\":480,\"ExpandDurationTicks\":600,\"ExpandScale\":1.5,\"CapsuleWidth\":0.800000011920929,\"CapsuleHeight\":0.30000001192092896,\"CapsuleSpeed\":3.0,\"NormalScore\":10,\"HardScore\":20,\"ItemScore\":30,\"Stages\":[{\"Rows\":[\"NNNNNNNNNNNN\",\"NNNNNNNNNNNN\",\"NNNENNNNPNNN\",\"NNNNNNNNNNNN\"]},{\"Rows\":[\"HHHHHHHHHHHH\",\"N.NN.NN.NN.N\",\"NNNPNNNNENNN\",\"HHHHHHHHHHHH\",\"NNNNNNNNNNNN\"]},{\"Rows\":[\"HHHHHHHHHHHH\",\"H.NNNNNNNN.H\",\"H.NPNNNNEN.H\",\"H.NNHHHHNN.H\",\"H.NNNNNNNN.H\",\"HHHHH..HHHHH\"]}]}}"
+        },
+        {
+            "Key": "autopilotSeed",
+            "Value": "5"
+        },
+        {
+            "Key": "gameSeed",
+            "Value": "1"
+        },
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "imageConversion",
+            "Value": "PNG to JPEG; source generation=585cfd535bcedeeb; source run=20261115T142356Z-ac4d0976; convertedAtUtc=2026-11-17T18:14:26.5793630Z; original capture/build metadata retained"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "title.jpg",
+            "Sha256": "4a17d739e803f7c383913d97de8342446e53d5ccf3c14fc79dbfc1006d8d7678",
+            "Note": "起動直後"
+        },
+        {
+            "File": "serving.jpg",
+            "Sha256": "124c38ff4ebb154d482cb8f47002e58ca4206318cb71bc5dd71a4ae18e38dabe",
+            "Note": "tick=0"
+        },
+        {
+            "File": "playing.jpg",
+            "Sha256": "f48e92618f8252a23b56810fb8994dc41f2c64457bee8a8b1776d538a4981e24",
+            "Note": "tick=40"
+        },
+        {
+            "File": "power-up.jpg",
+            "Sha256": "3d63d2f463b2a062cbda16e7f2d77e3b3963f8b0979ea1dcb7097e1d807c2042",
+            "Note": "tick=1391, pierce=450, expand=0"
+        },
+        {
+            "File": "stage-clear.jpg",
+            "Sha256": "596453b33dabb1c7c3ec451e24854fc36d3f99b8decff252f201d8bb7f38af25",
+            "Note": "tick=9141, stage=1"
+        },
+        {
+            "File": "result.jpg",
+            "Sha256": "a7fcd9c7e66dc9b1aa14503d610f1d53895106e53595c618dd74c7bbed12d3ab",
+            "Note": "tick=34434, phase=Won, score=2360"
+        }
+    ]
+}

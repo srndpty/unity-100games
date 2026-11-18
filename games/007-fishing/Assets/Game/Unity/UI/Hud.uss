@@ -1,0 +1,34 @@
+.hud { position: absolute; width: 100%; height: 100%; color: rgb(231, 241, 222); font-size: 22px; }
+.brand { position: absolute; left: 42px; top: 25px; font-size: 25px; letter-spacing: 4px; color: rgb(235, 208, 153); }
+.collection { position: absolute; right: 42px; top: 25px; font-size: 21px; }
+.instruments { position: absolute; right: 42px; top: 115px; width: 310px; padding: 22px; background-color: rgba(12, 39, 41, .94); border-radius: 12px; border-width: 1px; border-color: rgb(86, 122, 111); }
+.fishname { font-size: 30px; color: rgb(245, 210, 140); }
+.action { font-size: 25px; margin-top: 12px; margin-bottom: 18px; }
+.track { height: 20px; background-color: rgb(89, 158, 126); margin-top: 10px; margin-bottom: 8px; }
+.low-band { position: absolute; left: 0; width: 10%; height: 100%; background-color: rgb(206, 143, 79); }
+.high-band { position: absolute; right: 0; width: 20%; height: 100%; background-color: rgb(204, 97, 79); }
+.needle { position: absolute; top: -4px; width: 4px; height: 28px; background-color: white; }
+.warning { height: 52px; font-size: 19px; white-space: normal; color: rgb(255, 201, 125); }
+ProgressBar { margin-top: 6px; margin-bottom: 18px; height: 26px; }
+.unity-progress-bar__background { background-color: rgb(26, 57, 54); }
+.unity-progress-bar__progress { background-color: rgb(164, 198, 139); }
+.unity-progress-bar__title { color: rgb(10, 30, 28); -unity-font-style: bold; }
+.hint { position: absolute; bottom: 30px; width: 100%; -unity-text-align: middle-center; font-size: 22px; color: rgb(211, 228, 208); }
+.status { position: absolute; left: 140px; top: 180px; width: 1000px; -unity-text-align: middle-center; font-size: 40px; white-space: normal; color: rgb(255, 226, 164); }
+.overlay { position: absolute; width: 100%; height: 100%; align-items: center; justify-content: center; background-color: rgba(8, 26, 30, .55); }
+.card { width: 800px; padding: 28px; align-items: center; background-color: rgb(17, 46, 47); border-radius: 15px; border-width: 1px; border-color: rgb(99, 135, 115); }
+.eyebrow { font-size: 19px; color: rgb(148, 194, 166); letter-spacing: 4px; }
+.headline { font-size: 55px; color: rgb(244, 211, 150); margin-top: 10px; }
+.message { font-size: 22px; white-space: normal; -unity-text-align: middle-center; margin-top: 12px; margin-bottom: 14px; }
+.points { flex-direction: row; margin-bottom: 10px; }
+Button { width: 290px; height: 48px; margin: 5px; font-size: 22px; background-color: rgb(36, 79, 70); color: rgb(236, 242, 217); border-radius: 6px; border-width: 1px; border-color: rgb(105, 144, 115); }
+.points Button { width: 220px; }
+Button:hover { background-color: rgb(59, 112, 88); }
+Button.selected { background-color: rgb(116, 93, 49); border-color: rgb(243, 210, 142); }
+
+.brand, .collection { background-color: rgba(12, 39, 37, .88); padding: 9px 15px; border-radius: 6px; }
+.hint { background-color: rgba(12, 39, 37, .88); padding: 10px; }
+.status { background-color: rgba(12, 39, 37, .88); padding: 12px; border-radius: 8px; font-size: 32px; }
+.points Button { height: 64px; }
+
+.status { left: 550px; top: 155px; width: 800px; }

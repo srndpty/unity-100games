@@ -27,12 +27,12 @@ PlayModeのUIクリック検証は、仮想マウスの座標が実際のボタ�
 
 | 状態 | Tick | 画像 |
 |---|---:|---|
-| タイトル・操作案内 | 0 | [タイトル](captures/ebc290700d9a57ee/01-title.png) |
-| 最初の上昇を待つ | 0 | [開始待ち](captures/ebc290700d9a57ee/02-ready.png) |
-| 飛行中 | 91 | [飛行](captures/ebc290700d9a57ee/03-flight.png) |
-| 25点・難易度上限 | 2109 | [レベル5](captures/ebc290700d9a57ee/04-level-cap.png) |
-| 衝突・結果 | 2153 | [結果](captures/ebc290700d9a57ee/05-result.png) |
-| 別シードで再挑戦 | 0 | [再挑戦](captures/ebc290700d9a57ee/06-replay.png) |
+| タイトル・操作案内 | 0 | [タイトル](captures/c63dd4f0000da973/01-title.jpg) |
+| 最初の上昇を待つ | 0 | [開始待ち](captures/c63dd4f0000da973/02-ready.jpg) |
+| 飛行中 | 91 | [飛行](captures/c63dd4f0000da973/03-flight.jpg) |
+| 25点・難易度上限 | 2109 | [レベル5](captures/c63dd4f0000da973/04-level-cap.jpg) |
+| 衝突・結果 | 2153 | [結果](captures/c63dd4f0000da973/05-result.jpg) |
+| 別シードで再挑戦 | 0 | [再挑戦](captures/c63dd4f0000da973/06-replay.jpg) |
 
 6枚を目視し、操作案内・得点・障害物・結果・再挑戦の表示を確認した。Tick数は今回の撮影の記録であり、他の実行環境の期待値には使わない。
 
@@ -41,3 +41,11 @@ PlayModeのUIクリック検証は、仮想マウスの座標が実際のボタ�
 `dev run 006`で上昇の感触、操作説明、難易度、音量、マウスでのボタン操作、即時再挑戦を確認してもらう。ゲーム側の既知の未解決不具合はない。
 
 ビルド時にライセンスクライアントの署名検証警告、撮影の終了時にComputeBuffer解放・D3D12リソースの警告が出た。ビルド・撮影はいずれも成功した。ゲーム側ではComputeBufferを生成しておらず、所有するSprite・Texture2D・AudioClipの破棄はシーン再読み込みテストで確認している。
+
+## 2026-11-18 画像形式の標準化
+
+JPEG品質85・元の解像度を標準とする。既存PNGを新しい画像世代として再エンコードした。ゲームの再撮影ではなく、元の撮影日時・ビルドGUID・設定・Tickを保持している。変換履歴はmanifestのInfoに記録した。画像合計は0.35MBから0.27MBになった。
+
+共通撮影形式変更後のUnity再検証：EditMode 38/38、PlayMode 22/22成功（JPEG保存・復号・公開の追加テストを含む）。
+
+2026-11-18の移行基盤レビュー対応後、Unity EditMode 38/38、PlayMode 29/29成功。JPEG生成・公開・README更新・ポインタ更新の失敗注入、再実行とREADME参照の保護を追加検証した（共通基盤16ケース）。証跡画像はJPEG品質85を継続する。

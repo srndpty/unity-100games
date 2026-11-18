@@ -1,0 +1,53 @@
+{
+    "Product": "004-space-invaders",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "7a40b55bdc3a4f1d98a9978c219988ef",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-15T18:17:38.4490655Z",
+    "Info": [
+        {
+            "Key": "settings",
+            "Value": "{\"Columns\":8,\"Rows\":4,\"Lives\":3,\"PlayerBulletLimit\":3,\"EnemyBulletLimit\":12,\"PlayerSpeed\":8.0,\"PlayerBulletSpeed\":20.0,\"EnemyBulletSpeed\":6.0,\"FormationSpeed\":1.0,\"WaveSpeedIncrease\":0.3499999940395355,\"Descent\":0.5,\"PlayerFireSeconds\":0.25,\"EnemyFireSeconds\":0.8999999761581421,\"WaveFireMultiplier\":0.800000011920929,\"TransitionSeconds\":1.0,\"RespawnSeconds\":1.0,\"InvincibleSeconds\":1.0}"
+        },
+        {
+            "Key": "replaySeed",
+            "Value": "2"
+        },
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "imageConversion",
+            "Value": "PNG to JPEG; source generation=08de7e85e3c29970; source run=20261115T181740Z-d51983c4; convertedAtUtc=2026-11-17T18:14:27.0996310Z; original capture/build metadata retained"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "5b54f0c75dbee751d3d8feaac1ac697bf63cf86630f92fca20b65a9df8aa9bf5",
+            "Note": "Tick 0"
+        },
+        {
+            "File": "02-combat.jpg",
+            "Sha256": "74f0a10bb256c9acc8a00a65200a28924418319f84a664ebfdd6acce0920db9a",
+            "Note": "Tick 600"
+        },
+        {
+            "File": "03-wave-clear.jpg",
+            "Sha256": "95af952a78f7c523b16014ad0b9e93a4ca7196f9a68790176c3d56746436e0c1",
+            "Note": "Tick 1667"
+        },
+        {
+            "File": "04-win.jpg",
+            "Sha256": "aec82424dfb3a2addd7f59fff98a0da105eaf4e4d7d8e46db5df5f6ccfcd6698",
+            "Note": "Tick 4531"
+        },
+        {
+            "File": "05-loss.jpg",
+            "Sha256": "b78bf490dc5488472735badd196e0f4c1cd6185cc22f9010034c5978cff025b9",
+            "Note": "Tick 7578"
+        }
+    ]
+}

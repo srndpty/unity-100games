@@ -182,7 +182,8 @@ function Invoke-Format {
 function Invoke-New {
     if (-not $Game) { throw '作品番号を指定してください (例: dev new 001)。' }
     $number = Format-GameNumber $Game
-    $spec = Get-ChildItem (Join-Path $RepoRoot 'plan/games') -Filter "$number-*.md"
+    $entry = Import-Csv (Join-Path $RepoRoot 'plan/progress.csv') | Where-Object { [int]$_.No -eq [int]$number }
+    $spec = if ($entry) { Get-Item (Join-Path $RepoRoot "plan/$($entry.仕様書)") } else { $null }
     if (-not $spec) { throw "plan/games/$number-*.md が見つかりません。" }
     $gameId = $spec.BaseName
     $gameDir = Join-Path $GamesDir $gameId

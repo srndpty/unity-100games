@@ -14,12 +14,12 @@
 
 | 画面 | 内容 |
 |---|---|
-| ![タイトル](captures/585cfd535bcedeeb/title.png) | タイトル。勝利条件・残機と操作説明 |
-| ![発射待ち](captures/585cfd535bcedeeb/serving.png) | 1 面の開始。ボールがパドルに乗り、発射の案内が出ている。赤・青がアイテムブロック |
-| ![プレイ中](captures/585cfd535bcedeeb/playing.png) | 発射から 40 Tick。ボールが最初のブロックへ向かっている |
-| ![効果](captures/585cfd535bcedeeb/power-up.png) | 貫通弾のカプセルを取って 30 Tick 後（1391 Tick）。右に残り時間、ボールが橙色になっている |
-| ![面クリア](captures/585cfd535bcedeeb/stage-clear.png) | 1 面クリア（9141 Tick）。次の面までの待ち |
-| ![結果](captures/585cfd535bcedeeb/result.png) | 3 面クリアで勝利（34434 Tick、2360 点、残機 3）。得点と再戦の案内 |
+| ![タイトル](captures/45a4b56d9bd0837f/title.jpg) | タイトル。勝利条件・残機と操作説明 |
+| ![発射待ち](captures/45a4b56d9bd0837f/serving.jpg) | 1 面の開始。ボールがパドルに乗り、発射の案内が出ている。赤・青がアイテムブロック |
+| ![プレイ中](captures/45a4b56d9bd0837f/playing.jpg) | 発射から 40 Tick。ボールが最初のブロックへ向かっている |
+| ![効果](captures/45a4b56d9bd0837f/power-up.jpg) | 貫通弾のカプセルを取って 30 Tick 後（1391 Tick）。右に残り時間、ボールが橙色になっている |
+| ![面クリア](captures/45a4b56d9bd0837f/stage-clear.jpg) | 1 面クリア（9141 Tick）。次の面までの待ち |
+| ![結果](captures/45a4b56d9bd0837f/result.jpg) | 3 面クリアで勝利（34434 Tick、2360 点、残機 3）。得点と再戦の案内 |
 
 画面比率が変わっても HUD がフィールドに重ならないことは、PlayMode テスト（`FieldFramingTests`：21:9〜9:16 の 7 種類でフィールドが画面内かつ HUD の領域の外、`HudLayoutTests`：5 種類で HUD がその領域の中）で確認している。加えて、4:3（960×720）・1:1（800×800）・9:16（540×960）のウィンドウで撮影台本を流し、全画面を目で確認した（画像は保存していない）。4:3 までは HUD が左右の余白に、1:1 と 9:16 では上部の帯に並ぶ。
 
@@ -48,3 +48,11 @@
 
 - `dev build 002` 成功（出力 約 100 MB）
 - ビルドログに `[Licensing::Module] LicensingClient has failed validation; ignoring` が出るが、ビルドと起動には影響しない（001 と同じ）
+
+## 2026-11-18 画像形式の標準化
+
+JPEG品質85・元の解像度を標準とする。既存PNGを新しい画像世代として再エンコードした。ゲームの再撮影ではなく、元の撮影日時・ビルドGUID・設定・Tickを保持している。変換履歴はmanifestのInfoに記録した。画像合計は0.36MBから0.30MBになった。
+
+共通撮影形式変更後のUnity再検証：EditMode 136/136、PlayMode 31/31成功（JPEG保存・復号・公開の追加テストを含む）。
+
+2026-11-18の移行基盤レビュー対応後、Unity EditMode 136/136、PlayMode 38/38成功。JPEG生成・公開・README更新・ポインタ更新の失敗注入、再実行とREADME参照の保護を追加検証した（共通基盤16ケース）。証跡画像はJPEG品質85を継続する。
