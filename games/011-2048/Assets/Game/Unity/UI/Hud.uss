@@ -1,0 +1,10 @@
+.hud { position: absolute; width: 100%; height: 100%; color: rgb(238, 226, 208); }
+.panel { position: absolute; left: 58%; right: 3%; top: 7%; bottom: 7%; padding: 36px; background-color: rgb(34, 27, 24); border-radius: 18px; border-width: 1px; border-color: rgb(136, 84, 48); }
+.headline { font-size: 64px; -unity-font-style: bold; color: rgb(255, 176, 84); }
+.stats { flex-direction: row; justify-content: space-between; margin-top: 18px; margin-bottom: 18px; padding-top: 14px; padding-bottom: 14px; border-top-width: 1px; border-bottom-width: 1px; border-color: rgb(136, 84, 48); }
+.stat { font-size: 32px; -unity-font-style: bold; color: rgb(250, 228, 190); }
+.message { flex-grow: 1; font-size: 28px; white-space: normal; }
+.buttons { align-items: stretch; }
+Button { height: 62px; margin: 8px 0 0 0; font-size: 27px; color: rgb(255, 244, 228); background-color: rgb(136, 66, 30); border-color: rgb(196, 112, 58); border-width: 1px; border-radius: 8px; }
+Button:hover { background-color: rgb(162, 80, 36); }
+Button:active { background-color: rgb(188, 96, 44); }

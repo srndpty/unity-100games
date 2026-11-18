@@ -59,4 +59,10 @@
     <Project Path="games/010-minesweeper/dotnet/Core.Tests/G010.Core.Tests.csproj" />
     <Project Path="games/010-minesweeper/dotnet/Core/G010.Core.csproj" />
   </Folder>
+  <Folder Name="/011-2048/">
+    <Project Path="games/011-2048/dotnet/App.Tests/G011.App.Tests.csproj" />
+    <Project Path="games/011-2048/dotnet/App/G011.App.csproj" />
+    <Project Path="games/011-2048/dotnet/Core.Tests/G011.Core.Tests.csproj" />
+    <Project Path="games/011-2048/dotnet/Core/G011.Core.csproj" />
+  </Folder>
 </Solution>
