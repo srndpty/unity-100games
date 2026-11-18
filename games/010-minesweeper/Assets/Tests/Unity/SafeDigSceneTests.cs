@@ -92,6 +92,111 @@ namespace Game.Unity.Tests
             Assert.That(Game.Phase, Is.EqualTo(GamePhase.Lost));
         }
 
+        // バッチ実行ではUIイベントが配送されないので、実際の座標でボタンに当たることを確かめてから送る。
+        private IEnumerator ClickButton(string name)
+        {
+            yield return null;
+            yield return null;
+            var button = _game.HudRoot.Q<Button>(name);
+            var panelPoint = button.worldBound.center;
+            var panel = _game.HudRoot.panel;
+            var rootSize = panel.visualTree.worldBound.size;
+            var point = new Vector2(panelPoint.x / rootSize.x * Screen.width, Screen.height - (panelPoint.y / rootSize.y * Screen.height));
+            Assert.That(panel.Pick(RuntimePanelUtils.ScreenToPanel(panel, new Vector2(point.x, Screen.height - point.y))), Is.SameAs(button));
+
+            SetMouse(point);
+            yield return null;
+            SetMouse(point, MouseButton.Left);
+            yield return null;
+            using (var down = PointerDownEvent.GetPooled(new Event { type = EventType.MouseDown, mousePosition = panelPoint, button = 0 }))
+            {
+                down.target = button;
+                button.SendEvent(down);
+            }
+
+            using (var up = PointerUpEvent.GetPooled(new Event { type = EventType.MouseUp, mousePosition = panelPoint, button = 0 }))
+            {
+                up.target = button;
+                button.SendEvent(up);
+            }
+
+            SetMouse(point);
+            yield return null;
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator SubmitButton_StartsWithoutDigging()
+        {
+            yield return ClickButton("submit");
+            Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Playing));
+            Assert.That(Game.Phase, Is.EqualTo(GamePhase.Ready));
+            Assert.That(Game.FlagCount, Is.Zero);
+        }
+
+        [UnityTest]
+        public IEnumerator RetryButton_MakesNewGameWithoutDigging()
+        {
+            yield return StartMatch();
+            PlayToLose();
+            var lost = Game;
+            yield return ClickButton("submit");
+            Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Playing));
+            Assert.That(Game, Is.Not.SameAs(lost));
+            Assert.That(Game.Phase, Is.EqualTo(GamePhase.Ready));
+        }
+
+        [UnityTest]
+        public IEnumerator BackButton_ReturnsToTitle()
+        {
+            yield return StartMatch();
+            yield return ClickButton("back");
+            Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Title));
+            Assert.That(Game, Is.Null);
+        }
+
+        [UnityTest]
+        public IEnumerator QuitButton_RequestsQuitOnce()
+        {
+            var requests = 0;
+            _game.QuitHandler = () => requests++;
+            yield return ClickButton("quit");
+            Assert.That(requests, Is.EqualTo(1));
+        }
+
+        [UnityTest]
+        public IEnumerator Rematch_InSameFrame_UsesDifferentSeed()
+        {
+            _game.Flow.Submit();
+            var first = Game.Seed;
+            _game.Flow.Back();
+            _game.Flow.Submit();
+            Assert.That(Game.Seed, Is.Not.EqualTo(first));
+            yield return null;
+        }
+
+        [TestCase(4, 4, 1)]
+        [TestCase(32, 32, 40)]
+        [TestCase(32, 4, 40)]
+        [TestCase(4, 32, 40)]
+        [TestCase(16, 15, 40)]
+        public void Settings_RejectBoardSizesOtherThanSupported(int width, int height, int mines)
+        {
+            var settings = ScriptableObject.CreateInstance<SafeDigSettings>();
+            settings.Board = new BoardConfig { Width = width, Height = height, MineCount = mines };
+            Assert.Throws<ArgumentOutOfRangeException>(settings.Validate);
+            Object.DestroyImmediate(settings);
+        }
+
+        [Test]
+        public void Settings_AcceptSupportedBoardWithAdjustedMines()
+        {
+            var settings = ScriptableObject.CreateInstance<SafeDigSettings>();
+            settings.Board = new BoardConfig { Width = SafeDigSettings.BoardWidth, Height = SafeDigSettings.BoardHeight, MineCount = 60 };
+            Assert.DoesNotThrow(settings.Validate);
+            Object.DestroyImmediate(settings);
+        }
+
         [UnityTest]
         public IEnumerator Scene_ShowsBoardAndInstructionsBeforePlay()
         {

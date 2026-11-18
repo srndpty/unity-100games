@@ -58,7 +58,9 @@ dev capture 010  # 証跡を evidence/ に撮る
 - **ウィンドウを選び直すクリックでは掘らない。** フォーカス喪失中の操作と、復帰直後のフレームの操作を捨てる。
 - **物理エンジンは使わない。** ターン制で、時間にも依存しない。
 
-設定アセットは `Assets/Game/Unity/SafeDigSettings.asset`。爆弾の数と音量を調整できる。盤面の大きさを変えるときは `Art/SafeDigStage.prefab` を消してシーンを再生成する。
+設定アセットは `Assets/Game/Unity/SafeDigSettings.asset`。爆弾の数と音量を調整できる。**盤面は16×16固定**で、画面の配置もこの大きさ専用のため、他の大きさは `SafeDigSettings.Validate` が拒否する。Core の `BoardConfig` が4〜32を受け付けるのは、ルールの境界値を検証するため。
+
+シーンの再生成：
 
 ```
 unity run games/010-minesweeper -- -executeMethod Game.Unity.Editor.SafeDigSceneBuilder.Build
@@ -73,7 +75,7 @@ unity run games/010-minesweeper -- -executeMethod Game.Unity.Editor.SafeDigScene
 | Core | `Assets/Tests/Core/` | 48 | `dev test` |
 | App | `Assets/Tests/App/` | 12 | `dev test` |
 | EditMode（Core/App を Mono で実行） | 同上 | 60 | `dev test 010 -Unity` |
-| PlayMode（実シーン17、共通証跡16） | `Assets/Tests/Unity/` | 33 | `dev test 010 -Unity -Mode PlayMode` |
+| PlayMode（実シーン28、共通証跡16） | `Assets/Tests/Unity/` | 44 | `dev test 010 -Unity -Mode PlayMode` |
 
 結果と画面証跡は [evidence/README.md](evidence/README.md) に記録している。
 

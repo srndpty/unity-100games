@@ -27,7 +27,8 @@ namespace Game.Unity
         private bool _backRequested;
         private bool _hasFocus = true;
         private int _focusRestoredFrame = -2;
-        private int _captureMatch;
+        private int _baseSeed;
+        private int _matchIndex;
         private VisualElement _root;
         private int _version = -1;
         private Font _font;
@@ -45,6 +46,9 @@ namespace Game.Unity
         public Camera ViewCamera => _camera;
         public VisualElement HudRoot => _root;
 
+        /// <summary>終了ボタンの処理。エディタでは Application.Quit が働かないので、テストが差し替えて確かめる。</summary>
+        public Action QuitHandler { get; set; } = Application.Quit;
+
         private void Awake()
         {
             _settings.Validate();
@@ -53,6 +57,7 @@ namespace Game.Unity
                 throw new InvalidOperationException("Stage Prefab のセル数が盤面設定と一致しません。");
             }
 
+            _baseSeed = Environment.TickCount;
             Flow = new MinesweeperFlow(_settings.Board, NextSeed);
             _audio = GetComponent<AudioSource>();
             _audio.playOnAwake = false;
@@ -75,8 +80,9 @@ namespace Game.Unity
             Render();
         }
 
-        // 撮影中は試合ごとに決まったシードを使い、同じビルドなら同じ画像になるようにする。
-        private int NextSeed() => EvidenceCapture.IsRunning ? EvidenceCapture.Seed + _captureMatch++ : Environment.TickCount;
+        // 起動時のシードから試合ごとに1ずつ進め、短い間隔で再戦しても同じ盤面にしない。
+        // 撮影中は決まったシードから始め、同じビルドなら同じ画像になるようにする。
+        private int NextSeed() => unchecked((EvidenceCapture.IsRunning ? EvidenceCapture.Seed : _baseSeed) + _matchIndex++);
 
         private bool AcceptInput() => _hasFocus && !EvidenceCapture.IsRunning;
 
@@ -169,7 +175,7 @@ namespace Game.Unity
             root.style.unityFont = _font;
             root.Q<Button>("submit").clicked += () => { if (AcceptInput()) { _submitRequested = true; } };
             root.Q<Button>("back").clicked += () => { if (AcceptInput()) { _backRequested = true; } };
-            root.Q<Button>("quit").clicked += () => { if (AcceptInput()) { Application.Quit(); } };
+            root.Q<Button>("quit").clicked += () => { if (AcceptInput()) { QuitHandler(); } };
             root.Query<Button>().ForEach(button => button.focusable = false);
             RenderHud();
         }
