@@ -96,6 +96,6 @@ dev build 007
 dev capture 007
 ```
 
-結果と画像は[evidence/README.md](evidence/README.md)へ記録する。人間によるアタリの分かりやすさ・巻く／緩める判断・魚種の差・難易度・音量・再投の確認を待って完了とする。
+結果と画像は[evidence/README.md](evidence/README.md)へ記録する。2026-11-18に人間の完了承認を受領。
 
 仕様書のOut of scopeは変更しない。オープンワールド水域、精密流体シミュレーション、大量アセット・追加ステージ・製品化要素は対象外。
