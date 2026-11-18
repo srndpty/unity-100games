@@ -41,4 +41,10 @@
     <Project Path="games/007-fishing/dotnet/Core.Tests/G007.Core.Tests.csproj" />
     <Project Path="games/007-fishing/dotnet/Core/G007.Core.csproj" />
   </Folder>
+  <Folder Name="/008-frogger/">
+    <Project Path="games/008-frogger/dotnet/App.Tests/G008.App.Tests.csproj" />
+    <Project Path="games/008-frogger/dotnet/App/G008.App.csproj" />
+    <Project Path="games/008-frogger/dotnet/Core.Tests/G008.Core.Tests.csproj" />
+    <Project Path="games/008-frogger/dotnet/Core/G008.Core.csproj" />
+  </Folder>
 </Solution>

@@ -1,0 +1,25 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:VisualElement class="brand" picking-mode="Ignore">
+            <ui:Label text="008 / LITTLE CROSSING" class="eyebrow" picking-mode="Ignore" />
+            <ui:Label text="向こう岸へ" class="brand-title" picking-mode="Ignore" />
+            <ui:Label text="あせらず、一歩ずつ。" class="tagline" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:VisualElement class="guide" picking-mode="Ignore">
+            <ui:Label name="progress" class="progress" picking-mode="Ignore" />
+            <ui:Label name="instructions" text="方向キー / WASD&#10;1押しで1マス&#10;&#10;車をよける&#10;丸太に乗る&#10;端の前に飛び移る&#10;&#10;P / Esc：停止" class="hint" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:VisualElement name="overlay" class="overlay">
+            <ui:VisualElement class="card">
+                <ui:Label text="LITTLE CROSSING" class="eyebrow" />
+                <ui:Label name="headline" text="向こう岸へ" class="headline" />
+                <ui:Label name="message" class="message" />
+                <ui:Button name="submit" text="はじめる / Enter" />
+                <ui:Button name="resume" text="つづける" />
+                <ui:Button name="back" text="タイトルへ" />
+                <ui:Button name="quit" text="終了" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
