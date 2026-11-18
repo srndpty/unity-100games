@@ -53,4 +53,10 @@
     <Project Path="games/009-pacman/dotnet/Core.Tests/G009.Core.Tests.csproj" />
     <Project Path="games/009-pacman/dotnet/Core/G009.Core.csproj" />
   </Folder>
+  <Folder Name="/010-minesweeper/">
+    <Project Path="games/010-minesweeper/dotnet/App.Tests/G010.App.Tests.csproj" />
+    <Project Path="games/010-minesweeper/dotnet/App/G010.App.csproj" />
+    <Project Path="games/010-minesweeper/dotnet/Core.Tests/G010.Core.Tests.csproj" />
+    <Project Path="games/010-minesweeper/dotnet/Core/G010.Core.csproj" />
+  </Folder>
 </Solution>

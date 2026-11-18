@@ -1,0 +1,55 @@
+{
+    "Product": "SAFE DIG",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "1482d92afdc849c0a333ea96164836e8",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-18T16:28:53.5483410Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Board\":{\"Width\":16,\"Height\":16,\"MineCount\":40},\"Volume\":0.11999999731779099}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "932f5633f80b8a76c160674a0073225e9f670debd2c826d1c1a5048b1ede4608",
+            "Note": "タイトル"
+        },
+        {
+            "File": "02-ready.jpg",
+            "Sha256": "e101f892bd59c5030d852ab251ee19bc1ebd730fd90ef48b2c26474bb7c14698",
+            "Note": "シード 1、未発掘 216、旗 0"
+        },
+        {
+            "File": "03-cascade.jpg",
+            "Sha256": "accea787a67aba78c8c107b54c0ffa5133e0d88ccd438049bec30984d7eb6bdd",
+            "Note": "シード 1、未発掘 184、旗 0"
+        },
+        {
+            "File": "04-flags.jpg",
+            "Sha256": "b222439b54509e156d7c2d77c7ba6ae0472ad3ee868c3cfbf8b392e988e0f415",
+            "Note": "シード 1、未発掘 119、旗 6"
+        },
+        {
+            "File": "05-lost.jpg",
+            "Sha256": "83fd4faca2b192edbe8647a2462bf3b0a11cea312270181decb44eba094a5512",
+            "Note": "シード 1、未発掘 119、旗 7"
+        },
+        {
+            "File": "06-won.jpg",
+            "Sha256": "f1c89d4b9e15c8346a413aba014ea90190765f8a2a34bd1339724faeb2c6059c",
+            "Note": "シード 2、未発掘 0、旗 0"
+        },
+        {
+            "File": "07-replay.jpg",
+            "Sha256": "4c5bc64c376ab432b91356eb6e97687482a8b8fee4e6375654d34e3b93a996a5",
+            "Note": "シード 3、未発掘 120、旗 0"
+        }
+    ]
+}
