@@ -34,8 +34,14 @@ namespace Game.Core
             _traveled += units;
         }
 
-        /// <summary>同じ時間を動く2つの軌跡が、途中を含めて半径以内に近づくか。x は周期 <paramref name="span"/> で周回する。</summary>
-        public bool Touches(MotionPath other, int span, int radius)
+        /// <summary>全体の移動量を、実際に進んだ分だけに縮める。途中で区切った軌跡の時間を合わせるために使う。</summary>
+        public void ShortenTo(int budget) => _budget = budget;
+
+        /// <summary>
+        /// 同じ時間を動く2つの軌跡が、途中を含めて半径以内に近づくか。x は周期 <paramref name="span"/> で周回する。
+        /// <paramref name="includeEnd"/> が false なら、終了の瞬間にだけ起きる接触は数えない。
+        /// </summary>
+        public bool Touches(MotionPath other, int span, int radius, bool includeEnd = true)
         {
             var mine = 0;
             var theirs = 0;
@@ -50,7 +56,7 @@ namespace Game.Core
                 for (var copy = -1; copy <= 1; copy++)
                 {
                     var rx = a.BaseX - b.BaseX + ((long)copy * span);
-                    if (ComesWithin(rx, a.BaseY - b.BaseY, a.VelocityX - b.VelocityX, a.VelocityY - b.VelocityY, from, to, radius)) { return true; }
+                    if (ComesWithin(rx, a.BaseY - b.BaseY, a.VelocityX - b.VelocityX, a.VelocityY - b.VelocityY, from, to, radius, includeEnd || !to.IsEnd)) { return true; }
                 }
 
                 if (to.IsEnd) { return false; }
@@ -70,10 +76,11 @@ namespace Game.Core
             return new LegState(current.BaseX, current.BaseY, current.Dx * _budget, current.Dy * _budget);
         }
 
-        private static bool ComesWithin(long rx, long ry, long vx, long vy, Moment from, Moment to, int radius)
+        // 区間の終わりを含めないときは、終わりでちょうど半径の場合だけ接触にしない（半径より内側なら、その少し前から接触している）。
+        private static bool ComesWithin(long rx, long ry, long vx, long vy, Moment from, Moment to, int radius, bool includeTo)
         {
             long limit = radius * (long)radius;
-            if (IsWithinAt(rx, ry, vx, vy, from, limit) || IsWithinAt(rx, ry, vx, vy, to, limit)) { return true; }
+            if (IsWithinAt(rx, ry, vx, vy, from, limit, inclusive: true) || IsWithinAt(rx, ry, vx, vy, to, limit, includeTo)) { return true; }
 
             var speedSquared = (vx * vx) + (vy * vy);
             if (speedSquared == 0) { return false; }
@@ -85,11 +92,13 @@ namespace Game.Core
             return cross * cross <= limit * speedSquared;
         }
 
-        private static bool IsWithinAt(long rx, long ry, long vx, long vy, Moment moment, long limit)
+        private static bool IsWithinAt(long rx, long ry, long vx, long vy, Moment moment, long limit, bool inclusive)
         {
             var x = (rx * moment.Denominator) + (vx * moment.Numerator);
             var y = (ry * moment.Denominator) + (vy * moment.Numerator);
-            return (x * x) + (y * y) <= limit * moment.Denominator * moment.Denominator;
+            var distance = (x * x) + (y * y);
+            var scaledLimit = limit * moment.Denominator * moment.Denominator;
+            return inclusive ? distance <= scaledLimit : distance < scaledLimit;
         }
 
         private readonly struct Leg

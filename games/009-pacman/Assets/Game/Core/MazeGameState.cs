@@ -192,10 +192,32 @@ namespace Game.Core
             AdvanceClocks();
             for (var substep = 0; substep < MazeGameConfig.SubstepsPerTick && Phase == GamePhase.Active; substep++)
             {
-                MovePlayer(Share(_config.PlayerSpeed, substep));
+                StepSubstep(substep);
+            }
+        }
+
+        // 餌に着いた時刻で部分ステップを区切り、取得より前の接触を取得前の状態で解決する。
+        // 取得と同じ瞬間の接触は取得を優先するので、区切りの瞬間の接触は取得の後で判定する。
+        private void StepSubstep(int substep)
+        {
+            var budget = Share(_config.PlayerSpeed, substep);
+            var duration = Math.Max(budget, 1);
+            var elapsed = 0;
+            while (true)
+            {
+                var left = budget - elapsed;
+                Player.BeginMotion(Graph, left);
+                var used = MovePlayerUntilPellet(left, out var reachedPellet);
+                if (reachedPellet) { Player.ShortenMotion(used); }
+
+                var end = reachedPellet ? elapsed + used : duration;
+                MoveCats(substep, elapsed, end, duration);
+                ResolveContacts(includeEnd: !reachedPellet);
+                if (!reachedPellet || Phase != GamePhase.Active) { return; }
+
+                Eat(Player.Cell);
                 if (Phase != GamePhase.Active) { return; }
-                MoveCats(substep);
-                ResolveContacts();
+                elapsed = end;
             }
         }
 
@@ -230,17 +252,19 @@ namespace Game.Core
         private static int Share(int speed, int substep) =>
             (speed * (substep + 1) / MazeGameConfig.SubstepsPerTick) - (speed * substep / MazeGameConfig.SubstepsPerTick);
 
-        private void MovePlayer(int units)
+        // 餌のあるマスに着いたらそこで止まる。戻り値は実際に進んだ移動量。
+        private int MovePlayerUntilPellet(int units, out bool reachedPellet)
         {
-            Player.BeginMotion(Graph, units);
-            while (units > 0)
+            reachedPellet = false;
+            var left = units;
+            while (left > 0 && !reachedPellet)
             {
-                if (Player.Progress == 0 && !ChooseHeading()) { return; }
-                units = Player.AdvanceInMotion(Graph, units, out var arrived);
-                if (!arrived) { continue; }
-                Eat(Player.Cell);
-                if (Phase != GamePhase.Active) { return; }
+                if (Player.Progress == 0 && !ChooseHeading()) { break; }
+                left = Player.AdvanceInMotion(Graph, left, out var arrived);
+                reachedPellet = arrived && _pellets[Player.Cell] != Pellet.None;
             }
+
+            return units - left;
         }
 
         private bool ChooseHeading()
@@ -292,12 +316,14 @@ namespace Game.Core
             foreach (var cat in _cats) { cat.Frighten(Graph); }
         }
 
-        private void MoveCats(int substep)
+        // 部分ステップのうち from〜to（全体 duration）の時間だけ猫を動かす。
+        private void MoveCats(int substep, int from, int to, int duration)
         {
             var world = World();
             foreach (var cat in _cats)
             {
-                var units = Share(SpeedOf(cat), substep);
+                var share = Share(SpeedOf(cat), substep);
+                var units = (share * to / duration) - (share * from / duration);
                 cat.Actor.BeginMotion(Graph, units);
                 cat.Move(world, units);
             }
@@ -319,11 +345,11 @@ namespace Game.Core
             new(Graph, _random, IsChase, Graph.Point(Player.Cell), Player.Heading, Graph.Point(_cats[0].Actor.Cell));
 
         // 部分ステップの途中のかすり接触も拾う。同じ部分ステップで複数の猫に触れたら、危険な猫を優先してミスにする。
-        private void ResolveContacts()
+        private void ResolveContacts(bool includeEnd)
         {
             foreach (var cat in _cats)
             {
-                if (cat.IsDangerous && Player.TouchedDuringMotion(cat.Actor, Graph, _config.ContactRadius))
+                if (cat.IsDangerous && Player.TouchedDuringMotion(cat.Actor, Graph, _config.ContactRadius, includeEnd))
                 {
                     Miss();
                     return;
@@ -332,7 +358,7 @@ namespace Game.Core
 
             foreach (var cat in _cats)
             {
-                if (cat.Mode != CatMode.Frightened || !Player.TouchedDuringMotion(cat.Actor, Graph, _config.ContactRadius)) { continue; }
+                if (cat.Mode != CatMode.Frightened || !Player.TouchedDuringMotion(cat.Actor, Graph, _config.ContactRadius, includeEnd)) { continue; }
                 cat.Capture();
                 Score += _config.CatScores[Math.Min(_captureChain, _config.CatScores.Length - 1)];
                 _captureChain++;

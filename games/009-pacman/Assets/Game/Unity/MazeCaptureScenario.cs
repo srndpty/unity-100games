@@ -9,7 +9,7 @@ namespace Game.Unity
     /// <summary>証跡の台本。実時間と入力を使わず、Tick 単位で場面を作って撮る。</summary>
     public sealed class MazeCaptureScenario : MonoBehaviour, ICaptureScenario
     {
-        private const int MaxTicks = 40000;
+        private const int MaxTicks = 200000; // ほぼ動かない猫のそばの餌は、猫が離れるまで取れないことがある
         private MazeGame _game;
         private Autopilot _pilot;
 

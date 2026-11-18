@@ -60,6 +60,26 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void OpenEnd_IgnoresContactOnlyAtTheFinalInstant()
+        {
+            var moving = Straight(1000, 1000, 1, 0, 50);
+            var atEnd = Still(1050 + Radius, 1000);
+            Assert.That(moving.Touches(atEnd, Span, Radius), Is.True);
+            Assert.That(moving.Touches(atEnd, Span, Radius, includeEnd: false), Is.False);
+        }
+
+        [Test]
+        public void OpenEnd_KeepsContactThatStartsEarlier()
+        {
+            var moving = Straight(1000, 1000, 1, 0, 50);
+            var inside = Still(1049 + Radius, 1000);
+            Assert.That(moving.Touches(inside, Span, Radius, includeEnd: false), Is.True);
+
+            var passing = Still(1025, 1000 + Radius);
+            Assert.That(moving.Touches(passing, Span, Radius, includeEnd: false), Is.True, "途中で最接近する");
+        }
+
+        [Test]
         public void Parallel_NeverTouches()
         {
             var upper = Straight(1000, 1000, 1, 0, 50);

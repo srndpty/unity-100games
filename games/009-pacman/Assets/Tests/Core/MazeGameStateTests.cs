@@ -346,6 +346,65 @@ namespace Game.Core.Tests
             Assert.That(game.Lives, Is.EqualTo(config.Lives));
         }
 
+        /// <summary>自機は3Tickで (13,4) の餌へ着く。判定半径120ならその瞬間にトラとの距離がちょうど半径になる。</summary>
+        private static MazeGameState ContactRace(int contactRadius, char pellet, bool keepAnotherPellet)
+        {
+            var config = new MazeGameConfig
+            {
+                ReadyTicks = 1,
+                PlayerSpeed = 200,
+                CatSpeed = 160,
+                ContactRadius = contactRadius,
+                ReleaseTicks = new[] { 0, Never, Never, Never },
+                ModeTicks = Array.Empty<int>(),
+            };
+            var rows = MazeLayout.CopyDefaultRows();
+            for (var y = 0; y < rows.Length; y++) { rows[y] = rows[y].Replace('.', ' ').Replace('o', ' '); }
+            rows[10] = rows[10].Replace('P', ' ');
+            rows[4] = rows[4].Remove(12, 2).Insert(12, "P" + pellet);
+            if (keepAnotherPellet) { rows[1] = rows[1].Remove(1, 1).Insert(1, "."); }
+            var game = new MazeGameState(config, 1, new MazeLayout(rows));
+            StartActive(game);
+            return game;
+        }
+
+        [Test]
+        public void LastPellet_DoesNotWin_WhenContactHappensBeforeReachingIt()
+        {
+            var game = ContactRace(130, '.', keepAnotherPellet: false);
+            Steps(game, 3, Direction.Right);
+
+            Assert.That(game.Phase, Is.EqualTo(GamePhase.Dying));
+            Assert.That(game.Lives, Is.EqualTo(new MazeGameConfig().Lives - 1));
+            Assert.That(game.PelletsRemaining, Is.EqualTo(1), "接触の時点ではまだ餌に届いていない");
+            Assert.That(game.Events & GameEvents.Won, Is.EqualTo(GameEvents.None));
+        }
+
+        [Test]
+        public void Power_DoesNotSaveThePlayer_WhenContactHappensBeforeReachingIt()
+        {
+            var game = ContactRace(130, 'o', keepAnotherPellet: true);
+            Steps(game, 3, Direction.Right);
+
+            Assert.That(game.Phase, Is.EqualTo(GamePhase.Dying));
+            Assert.That(game.Events & GameEvents.PowerEaten, Is.EqualTo(GameEvents.None));
+            Assert.That(game.Events & GameEvents.CatCaptured, Is.EqualTo(GameEvents.None));
+            Assert.That(game.PowerTicksLeft, Is.Zero);
+            Assert.That(game.Cat(0).Mode, Is.EqualTo(CatMode.Roaming));
+        }
+
+        [Test]
+        public void Power_CapturesTheCat_WhenContactHappensAtTheSameInstant()
+        {
+            var game = ContactRace(120, 'o', keepAnotherPellet: true);
+            Steps(game, 3, Direction.Right);
+
+            Assert.That(game.Phase, Is.EqualTo(GamePhase.Active));
+            Assert.That(game.Events & GameEvents.PowerEaten, Is.EqualTo(GameEvents.PowerEaten));
+            Assert.That(game.Events & GameEvents.CatCaptured, Is.EqualTo(GameEvents.CatCaptured));
+            Assert.That(game.Cat(0).Mode, Is.EqualTo(CatMode.Returning));
+        }
+
         [Test]
         public void FinishedGame_IgnoresFurtherSteps()
         {
