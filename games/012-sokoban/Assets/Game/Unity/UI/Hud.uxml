@@ -1,0 +1,34 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:VisualElement name="panel" class="panel">
+            <ui:Label name="headline" text="HARBOR SHIFT" class="headline" />
+            <ui:Label name="level" class="level-name" />
+            <ui:VisualElement name="stats" class="stats">
+                <ui:Label name="moves" class="stat" />
+                <ui:Label name="pushes" class="stat" />
+                <ui:Label name="best" class="stat" />
+            </ui:VisualElement>
+            <ui:Label name="message" class="message" />
+            <ui:VisualElement name="levels" class="levels">
+                <ui:Button name="level-0" class="level" />
+                <ui:Button name="level-1" class="level" />
+                <ui:Button name="level-2" class="level" />
+                <ui:Button name="level-3" class="level" />
+                <ui:Button name="level-4" class="level" />
+                <ui:Button name="level-5" class="level" />
+                <ui:Button name="level-6" class="level" />
+                <ui:Button name="level-7" class="level" />
+                <ui:Button name="level-8" class="level" />
+                <ui:Button name="level-9" class="level" />
+            </ui:VisualElement>
+            <ui:VisualElement class="buttons">
+                <ui:Button name="submit" text="はじめる / Enter" />
+                <ui:Button name="undo" text="1手戻す  /  Z" />
+                <ui:Button name="restart" text="やり直し / R" />
+                <ui:Button name="back" text="面選択へ / Esc" />
+                <ui:Button name="quit" text="終了" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

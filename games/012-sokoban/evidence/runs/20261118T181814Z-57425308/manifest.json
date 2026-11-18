@@ -1,0 +1,69 @@
+{
+    "Product": "HARBOR SHIFT",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "3f9caec6ca2c49aab359b67276edaef9",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-18T18:18:12.9410416Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"SlideSeconds\":0.07000000029802322,\"RepeatDelay\":0.2199999988079071,\"RepeatInterval\":0.10999999940395355,\"Volume\":0.11999999731779099}"
+        },
+        {
+            "Key": "random",
+            "Value": "このゲームは乱数を使わない"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "48029508f70d42c2bbbd12d49c444ad92e60762cdc6e04a201aed91c85d40e9e",
+            "Note": "タイトル"
+        },
+        {
+            "File": "02-select.jpg",
+            "Sha256": "703285863a8b3672c380646131a4b24b87e215f5e20d49fc672f3f2e339df565",
+            "Note": "第3問、手数 0、押した数 0"
+        },
+        {
+            "File": "03-start.jpg",
+            "Sha256": "32be9df0207c5f95be30c6155ca3df715a12f6388f40885b87269bfaae8b138c",
+            "Note": "第3問、手数 0、押した数 0"
+        },
+        {
+            "File": "04-push.jpg",
+            "Sha256": "d8b812813438fa8b5b13522b6273890d9f9b9cc77a2140cef0d025c3a9225999",
+            "Note": "第3問、手数 5、押した数 1"
+        },
+        {
+            "File": "05-undo.jpg",
+            "Sha256": "981a706412c65ef7b8594dc35e9e6e68d06986e3cf36ef263782bfc7d41dd7fc",
+            "Note": "第3問、手数 4、押した数 0"
+        },
+        {
+            "File": "06-restart.jpg",
+            "Sha256": "32be9df0207c5f95be30c6155ca3df715a12f6388f40885b87269bfaae8b138c",
+            "Note": "第3問、手数 0、押した数 0"
+        },
+        {
+            "File": "07-cleared.jpg",
+            "Sha256": "f7e25ab345976d5c109562b2fc516969759d187441732a816668f4d884462746",
+            "Note": "第1問、手数 2、押した数 2"
+        },
+        {
+            "File": "08-all-clear.jpg",
+            "Sha256": "106c97498795a65aee83fdfff1f688535eb06971376d853d2bb80c12370fd960",
+            "Note": "第10問、手数 81、押した数 28"
+        },
+        {
+            "File": "09-replay.jpg",
+            "Sha256": "41aeb2194e76ebbe3a888cbd59ef731f7bbc1bfcdc00a003eadfc3662adc03cd",
+            "Note": "第10問、手数 0、押した数 0"
+        }
+    ]
+}
