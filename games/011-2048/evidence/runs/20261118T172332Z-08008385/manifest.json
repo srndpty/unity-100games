@@ -1,0 +1,55 @@
+{
+    "Product": "TWIN FORGE",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "f8d859b94be04b40a6fc72f058cb75ac",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-18T17:23:31.3079776Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"FourChancePercent\":10},\"SlideSeconds\":0.09000000357627869,\"PopSeconds\":0.10999999940395355,\"Volume\":0.11999999731779099}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "76c5a4d24b5bc22a6cff94fa142fa3e81d573072404efd3a9b768c6e3e35f124",
+            "Note": "タイトル"
+        },
+        {
+            "File": "02-start.jpg",
+            "Sha256": "1b703fb0947d8f8d3b6018fd132bc7048c787f021e96dab589af68f6cc379e3d",
+            "Note": "シード 1、スコア 0、手数 0"
+        },
+        {
+            "File": "03-midgame.jpg",
+            "Sha256": "999b7292c1b21bff11fa18d40782939c1c2f4cb7d4646cddce979f1cc187e637",
+            "Note": "シード 1、スコア 192、手数 30"
+        },
+        {
+            "File": "04-merge.jpg",
+            "Sha256": "50ae450caf2b87bc2a71c04690bb2cf31403a7fffe180ab57f47efd7656b9e82",
+            "Note": "シード 2、スコア 128、手数 1"
+        },
+        {
+            "File": "05-won.jpg",
+            "Sha256": "075ed65db0dedb59bf3f364d473658bc916595d1ef23deb87f9152a08c5f1e03",
+            "Note": "シード 3、スコア 2048、手数 1"
+        },
+        {
+            "File": "06-lost.jpg",
+            "Sha256": "e4e2918e92b1e2cb01e34bdd9c0af1c0a59ad25e566b44c535e2a65ac95e3ec0",
+            "Note": "シード 4、スコア 4、手数 1"
+        },
+        {
+            "File": "07-replay.jpg",
+            "Sha256": "41fb6a78a1a334047f4d5915acce4e17b0fe61357023e5f90f0c718753fd5f8b",
+            "Note": "シード 5、スコア 0、手数 1"
+        }
+    ]
+}
