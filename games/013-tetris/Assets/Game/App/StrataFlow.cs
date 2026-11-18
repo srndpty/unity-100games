@@ -169,6 +169,7 @@ namespace Game.App
 
             // 小さい時間の加算でも Tick を取りこぼさないよう、累積の丸め誤差を補償する。
             var elapsed = seconds * StrataConfig.TickRate;
+            if (!double.IsFinite(elapsed)) { elapsed = MaxTicksPerFrame; }
             var whole = Math.Floor(elapsed);
             var increment = Math.Min(whole, MaxTicksPerFrame) + (elapsed - whole) - _timeError;
             var total = _elapsedTicks + increment;

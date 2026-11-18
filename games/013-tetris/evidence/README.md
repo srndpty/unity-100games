@@ -1,6 +1,6 @@
 # 013 検証記録
 
-2026-11-19実施。人間の動作確認は未実施（検証待ち）。
+2026-11-19実施。同日に人間の完了承認を受領。
 
 ## 自動検証
 
@@ -8,15 +8,15 @@
 |---|---|
 | dev lint | 成功（全作品） |
 | dev check | 成功（全作品、警告0・エラー0） |
-| dev test | 成功（全作品）。013 Core 80/80、App 48/48 |
-| Unity EditMode | 128/128（Core/App、Mono） |
+| dev test | 成功（全作品）。013 Core 80/80、App 49/49 |
+| Unity EditMode | 129/129（Core/App、Mono） |
 | Unity PlayMode | 35/35（実シーン19、共通証跡公開16） |
 | Windowsビルド | 成功、StandaloneWindows64 |
 | ビルド起動 | dev captureで起動・全場面撮影・正常終了 |
 | 証跡 | JPEG品質85、9枚 |
 | 撮影再現 | 同一ビルドを2回撮影し、画像世代e8f32410a1a454e5が一致 |
 
-Build GUID：`97c217a7300142589b06c3a25491b792`。シード：1。公開ポインタは[current.json](current.json)、実行記録は[manifest.json](runs/20261118T200328Z-f946af33/manifest.json)。
+Build GUID：`5f47131b33154224b14bf54db650f830`。シード：1。公開ポインタは[current.json](current.json)、実行記録は[manifest.json](runs/20261118T203631Z-9a63b2d7/manifest.json)。
 
 同じシードと入力列の最終盤面は、固定のハッシュ値と照合するテストが dotnet（.NET）と Unity EditMode（Mono）の両方で通っている。
 
@@ -68,4 +68,4 @@ Unityのビルドログにライセンスクライアントの検証メッセー
 
 ## 人間の確認
 
-未実施。`dev run 013` で空盤面から敗北まで遊び、速度・操作感・音量を確認する。
+2026-11-19に完了承認を受領。

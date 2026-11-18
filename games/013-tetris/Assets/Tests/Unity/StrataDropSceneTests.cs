@@ -14,6 +14,9 @@ namespace Game.Unity.Tests
     public sealed class StrataDropSceneTests
     {
         private const float WaitLimitSeconds = 5f;
+
+        // 長押しの開始遅延（10 Tick）より長く待つ。
+        private const float ReleaseSettleSeconds = .3f;
         private const int MaxPieces = 400;
 
         private TestKeyboard _keyboard;
@@ -162,15 +165,27 @@ namespace Game.Unity.Tests
         }
 
         [UnityTest]
-        public IEnumerator HeldKey_RepeatsUntilTheWall()
+        public IEnumerator HeldKey_RepeatsAndStopsWhenReleased()
         {
             yield return Begin();
+
+            // 離した後も壁まで余裕があるよう、右へ寄せてから左へ長押しする。
+            yield return _keyboard.Tap(Key.RightArrow);
+            yield return _keyboard.Tap(Key.RightArrow);
+            var startX = Active.X;
+
             _keyboard.Hold(Key.LeftArrow);
             var deadline = Time.realtimeSinceStartup + WaitLimitSeconds;
-            while (Game.Apply(GameCommand.MoveLeft) && Time.realtimeSinceStartup < deadline) { yield return null; }
+            while (Active.X > startX - 2 && Time.realtimeSinceStartup < deadline) { yield return null; }
+            Assert.That(Active.X, Is.LessThanOrEqualTo(startX - 2));
+
             _keyboard.Hold();
             yield return null;
-            Assert.That(Game.Apply(GameCommand.MoveLeft), Is.False);
+            yield return null;
+            var releasedX = Active.X;
+            var settle = Time.realtimeSinceStartup + ReleaseSettleSeconds;
+            while (Time.realtimeSinceStartup < settle) { yield return null; }
+            Assert.That(Active.X, Is.EqualTo(releasedX));
         }
 
         [UnityTest]

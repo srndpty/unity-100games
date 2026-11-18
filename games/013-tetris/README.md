@@ -90,8 +90,8 @@ unity run games/013-tetris -- -executeMethod Game.Unity.Editor.StrataDropSceneBu
 | 種類 | 場所 | 件数 | 実行方法 |
 |---|---|---:|---|
 | Core | `Assets/Tests/Core/` | 80 | `dev test` |
-| App | `Assets/Tests/App/` | 48 | `dev test` |
-| EditMode（Core/App を Mono で実行） | 同上 | 128 | `dev test 013 -Unity` |
+| App | `Assets/Tests/App/` | 49 | `dev test` |
+| EditMode（Core/App を Mono で実行） | 同上 | 129 | `dev test 013 -Unity` |
 | PlayMode（実シーン19、共通証跡16） | `Assets/Tests/Unity/` | 35 | `dev test 013 -Unity -Mode PlayMode` |
 
 結果と画面証跡は [evidence/README.md](evidence/README.md) に記録している。

@@ -366,6 +366,18 @@ namespace Game.App.Tests
             Assert.That(flow.Game!.TickCount, Is.EqualTo(StrataFlow.MaxTicksPerFrame));
         }
 
+        [Test]
+        public void TimeThatOverflowsWhenConvertedToTicksIsCappedAndTimingRecovers()
+        {
+            var flow = Started();
+
+            flow.Advance(double.MaxValue);
+            Assert.That(flow.Game!.TickCount, Is.EqualTo(StrataFlow.MaxTicksPerFrame));
+
+            for (var i = 0; i < 60; i++) { flow.Advance(1d / 60d); }
+            Assert.That(flow.Game!.TickCount, Is.EqualTo(StrataFlow.MaxTicksPerFrame + 60));
+        }
+
         [TestCase(0d)]
         [TestCase(-1d)]
         [TestCase(double.NaN)]
