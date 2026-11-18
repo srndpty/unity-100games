@@ -65,4 +65,10 @@
     <Project Path="games/011-2048/dotnet/Core.Tests/G011.Core.Tests.csproj" />
     <Project Path="games/011-2048/dotnet/Core/G011.Core.csproj" />
   </Folder>
+  <Folder Name="/012-sokoban/">
+    <Project Path="games/012-sokoban/dotnet/App.Tests/G012.App.Tests.csproj" />
+    <Project Path="games/012-sokoban/dotnet/App/G012.App.csproj" />
+    <Project Path="games/012-sokoban/dotnet/Core.Tests/G012.Core.Tests.csproj" />
+    <Project Path="games/012-sokoban/dotnet/Core/G012.Core.csproj" />
+  </Folder>
 </Solution>
