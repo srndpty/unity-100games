@@ -10,7 +10,7 @@
 - プレイヤーのパドルは動かさないので CPU が勝つ。
 - 画像は内容で決まる世代ごとの不変フォルダ `captures/<画像世代>/` に、撮影ごとの記録（ビルド GUID、日時、シード、設定値、撮影 Tick、各画像の SHA-256）は `runs/<撮影 ID>/manifest.json` に置き、公開中の組を [current.json](current.json) が指す。
 - 画像世代は画像の内容から決まるので、同じ画像なら撮り直してもリンクは変わらない（撮影記録は撮影ごとに新しくなる）。画像が変わったら、このファイルの画像リンクを新しい世代に直す（`dev lint` が、公開中でない世代へのリンクを検出する）。
-- 現在の画像世代は `6e7ff08af5a2abbf`。最新の撮影記録は [current.json](current.json) の `Run` が指す `runs/<撮影 ID>/manifest.json`。
+- 現在の画像世代は `7b7a6a107bf3261a`。最新の撮影記録は [current.json](current.json) の `Run` が指す `runs/<撮影 ID>/manifest.json`。
 
 | 画面 | 内容 |
 |---|---|
