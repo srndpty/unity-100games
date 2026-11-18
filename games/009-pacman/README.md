@@ -92,5 +92,4 @@ unity run games/009-pacman -- -executeMethod Game.Unity.Editor.MazeSceneBuilder.
 
 ## 未解決事項
 
-- 難易度・速度・音量は人間のプレイ確認で調整する。
 - 通常設定で操縦役が全面クリアすることは保証していない。自動テストで確かめているのは、通常設定で必ず決着することと、猫を止めた設定でクリアできること。
