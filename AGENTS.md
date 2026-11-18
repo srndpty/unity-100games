@@ -16,6 +16,7 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 |---|---|
 | `plan/` | 100題材の仕様書。着手前に `plan/games/NNN-*.md`、[共通ルール](plan/docs/COMMON_RULES.md)、[ワークフロー](plan/docs/WORKFLOW.md) を読む |
 | `plan/progress.csv` | 進捗台帳。1本完了ごとに更新する |
+| `plan/TODO.md` | 作品をまたぐ課題や、完了済みの作品の未対応の問題 |
 | `games/NNN-name/` | 各作品の Unity プロジェクト |
 | `templates/game/` | `dev new` が新規作品に展開する雛形 |
 | `build/*.props` | Core / App を dotnet で検証するための共通 MSBuild 設定（`GameLayer` で層を指定） |
