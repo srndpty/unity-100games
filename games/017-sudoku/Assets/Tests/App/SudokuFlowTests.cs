@@ -383,18 +383,99 @@ namespace Game.App.Tests
         }
 
         [Test]
-        public void AdvanceIsCappedAndRejectsBadValues()
+        public void LowFrameRateCountsTheFullTime()
+        {
+            var flow = EasyFlow();
+            for (var i = 0; i < 10; i++) { flow.Advance(0.1); }
+            Assert.That(flow.ElapsedTicks, Is.EqualTo(60), "10 FPS で 1 秒");
+            flow.Advance(0.5);
+            Assert.That(flow.ElapsedTicks, Is.EqualTo(90), "0.5 秒の処理落ちも 1 回で数える");
+        }
+
+        [Test]
+        public void LongStallCountsTheFullTime()
         {
             var flow = EasyFlow();
             flow.Advance(10);
-            Assert.That(flow.ElapsedTicks, Is.EqualTo(SudokuFlow.MaxTicksPerFrame));
+            Assert.That(flow.ElapsedTicks, Is.EqualTo(600));
+            flow.Advance(3600);
+            Assert.That(flow.ElapsedTicks, Is.EqualTo(600 + 3600 * SudokuFlow.TickRate));
+        }
+
+        [Test]
+        public void PausedTimeIsNotCounted()
+        {
+            var flow = EasyFlow();
+            flow.Advance(1);
+            flow.TogglePause();
+            flow.Advance(30);
+            flow.SetFocus(false);
+            flow.Advance(30);
+            flow.SetFocus(true);
+            flow.Submit();
+            flow.Advance(1);
+            Assert.That(flow.ElapsedTicks, Is.EqualTo(120));
+        }
+
+        [Test]
+        public void BadValuesAreIgnoredAndHugeValuesSaturate()
+        {
+            var flow = EasyFlow();
+            flow.Advance(1);
             flow.Advance(double.NaN);
             flow.Advance(double.PositiveInfinity);
+            flow.Advance(double.NegativeInfinity);
             flow.Advance(-1);
             flow.Advance(0);
-            Assert.That(flow.ElapsedTicks, Is.EqualTo(SudokuFlow.MaxTicksPerFrame), "有限でない値と 0 以下は無視する");
+            Assert.That(flow.ElapsedTicks, Is.EqualTo(60), "有限でない値と 0 以下は無視する");
+
             flow.Advance(double.MaxValue);
-            Assert.That(flow.ElapsedTicks, Is.EqualTo(SudokuFlow.MaxTicksPerFrame * 2), "Tick に直すと桁あふれする値も 1 フレームの上限まで");
+            Assert.That(flow.ElapsedTicks, Is.EqualTo(SudokuFlow.MaxElapsedTicks), "Tick に直すと桁あふれする値は上限で止まる");
+            flow.Advance(1);
+            Assert.That(flow.ElapsedTicks, Is.EqualTo(SudokuFlow.MaxElapsedTicks));
+        }
+
+        [Test]
+        public void ElapsedTimeStopsAtTheMaximum()
+        {
+            var flow = EasyFlow();
+            flow.Advance((SudokuFlow.MaxElapsedTicks - 30) / (double)SudokuFlow.TickRate);
+            Assert.That(flow.ElapsedTicks, Is.EqualTo(SudokuFlow.MaxElapsedTicks - 30));
+            flow.Advance(1);
+            Assert.That(flow.ElapsedTicks, Is.EqualTo(SudokuFlow.MaxElapsedTicks));
+            flow.StepTick();
+            Assert.That(flow.ElapsedTicks, Is.EqualTo(SudokuFlow.MaxElapsedTicks));
+        }
+
+        [Test]
+        public void MovingTheSelectionClearsTheConflictNotice()
+        {
+            var flow = EasyFlow();
+            Click(flow, Cell02);
+            flow.InputDigit(5);
+            Assert.That(flow.Notice, Is.EqualTo(Notice.Conflict));
+            flow.MoveCursor(0, 1);
+            Assert.That(flow.Notice, Is.EqualTo(Notice.None), "キーで選び直すと消える");
+            Assert.That(flow.ConflictCell, Is.EqualTo(-1));
+
+            Click(flow, Cell02);
+            flow.InputDigit(5);
+            Click(flow, Board.Cell(1, 1));
+            Assert.That(flow.Notice, Is.EqualTo(Notice.None), "クリックで選び直すと消える");
+            Assert.That(flow.ConflictCell, Is.EqualTo(-1));
+        }
+
+        [Test]
+        public void MovingTheSelectionKeepsOtherNotices()
+        {
+            var flow = EasyFlow();
+            flow.RequestHint();
+            flow.MoveCursor(1, 0);
+            Assert.That(flow.Notice, Is.EqualTo(Notice.HintDeduced));
+            Click(flow, 0);
+            flow.InputDigit(1);
+            flow.MoveCursor(1, 0);
+            Assert.That(flow.Notice, Is.EqualTo(Notice.Given));
         }
 
         [Test]

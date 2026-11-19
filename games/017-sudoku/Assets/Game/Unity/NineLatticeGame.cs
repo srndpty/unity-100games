@@ -163,7 +163,8 @@ namespace Game.Unity
             if (AcceptInput() && Time.frameCount > _focusRestoredFrame + 1)
             {
                 foreach (var intent in _intents) { Apply(intent); }
-                Flow.Advance(Time.deltaTime);
+                // 経過時間は遊んだ時間の計測なので、maximumDeltaTime で切られる deltaTime ではなく実時間を渡す。
+                Flow.Advance(Time.unscaledDeltaTime);
             }
 
             _intents.Clear();

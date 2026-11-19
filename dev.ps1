@@ -36,9 +36,9 @@ $BuildTarget = 'StandaloneWindows64'
 $GeneratedDirs = 'Library', 'Temp', 'Logs', 'obj', 'Builds'
 $CaptureTimeoutSeconds = 120
 # 変更されると全作品の検証結果が変わりうる共通ファイル (-Staged でもこれらが含まれれば全作品を対象にする)
-$SharedPathPattern = '^(build/|\.editorconfig$|global\.json$|dev\.ps1$)'
-# ソリューションは作品ごとの Folder / Project 行の追加・削除だけなら、その作品だけに影響する
-$SolutionPath = 'unity-100games.slnx'
+# ソリューションは壊れていないか・参照先が正しいかをソリューション全体のビルドでしか確かめられないので、ここに含める。
+# slnx が変わるのは実質 `dev new` だけなので、作品の作成直後に最小コミットしておけば、以降のコミットはその作品だけの検査になる。
+$SharedPathPattern = '^(build/|\.editorconfig$|global\.json$|unity-100games\.slnx$|dev\.ps1$)'
 
 # 外部コマンドを実行し、失敗したらその終了コードで即終了する。
 # `--option` 形式の引数をそのまま渡すため、param ブロックを使わず $args で受ける。
@@ -88,35 +88,35 @@ function Get-TargetGameDirs {
         $files = @(git -C $RepoRoot diff --cached --name-only)
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         if ($files -match $SharedPathPattern) { return Get-GameDirs }
-        $names = @($files | ForEach-Object { if ($_ -match '^games/(\d{3}-[^/]+)/') { $Matches[1] } })
-        if ($files -contains $SolutionPath) {
-            $solutionGames = Get-StagedSolutionGames
-            if ($null -eq $solutionGames) { return Get-GameDirs }
-            $names += $solutionGames
-        }
-        $names = @($names | Sort-Object -Unique)
+        $names = @($files | ForEach-Object { if ($_ -match '^games/(\d{3}-[^/]+)/') { $Matches[1] } } | Sort-Object -Unique)
         return @(Get-GameDirs | Where-Object Name -In $names)
     }
     if ($Game) { return @(Find-GameDir) }
     Get-GameDirs
 }
 
-# ステージしたソリューションの変更が、作品ごとの Folder / Project 行（と Folder の閉じタグ）の追加・削除だけなら、その作品名の一覧。
-# それ以外の行が変わっていれば、全作品に影響しうるので $null。
-function Get-StagedSolutionGames {
-    $diff = @(git -C $RepoRoot diff --cached -U0 -- $SolutionPath)
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    $names = [Collections.Generic.List[string]]::new()
-    foreach ($line in $diff) {
-        if ($line -notmatch '^[+-]' -or $line -match '^(\+\+\+|---) ') { continue }
-        $body = $line.Substring(1).Trim()
-        if ($body -match '^<Folder Name="/(\d{3}-[^/"]+)/">$') { $names.Add($Matches[1]); continue }
-        if ($body -match '^<Project Path="games/(\d{3}-[^/"]+)/[^"]+" />$') { $names.Add($Matches[1]); continue }
-        if ($body -eq '</Folder>') { continue }
-        return $null
+# ソリューションの登録と、各作品の dotnet/ にある csproj を照合する。
+# 構文の誤り・存在しないパス・重複・登録漏れ（ビルドは通るが CI がその作品を検証しなくなる）を検出する。
+function Test-SolutionProjects {
+    $problems = @()
+    try { [xml]$solution = Get-Content $Solution -Raw }
+    catch {
+        Write-Host "ソリューションを読めない ($Solution): $($_.Exception.Message)" -ForegroundColor Red
+        exit 1
     }
-    # 空でも配列のまま返す（パイプラインで $null に展開されないように）。
-    , $names.ToArray()
+    $registered = @($solution.SelectNodes('//Project') | ForEach-Object { $_.GetAttribute('Path') -replace '\\', '/' })
+    $problems += $registered | Group-Object | Where-Object Count -gt 1 | ForEach-Object { "ソリューションに重複して登録: $($_.Name)" }
+    $problems += $registered | Where-Object { -not (Test-Path -LiteralPath (Join-Path $RepoRoot $_)) } | ForEach-Object { "ソリューションに登録されているが存在しない: $_" }
+    $expected = foreach ($gameDir in Get-GameDirs) {
+        $dotnet = Join-Path $gameDir.FullName 'dotnet'
+        if (-not (Test-Path $dotnet)) { continue }
+        Get-ChildItem $dotnet -Recurse -Filter '*.csproj' | ForEach-Object { [IO.Path]::GetRelativePath($RepoRoot, $_.FullName) -replace '\\', '/' }
+    }
+    $problems += $expected | Where-Object { $_ -notin $registered } | ForEach-Object { "ソリューションに登録されていない: $_ (dotnet sln unity-100games.slnx add で登録する)" }
+    if ($problems) {
+        $problems | ForEach-Object { Write-Host $_ -ForegroundColor Red }
+        exit 1
+    }
 }
 
 # Assets 配下の全ファイル/フォルダに .meta があり、孤立した .meta がないことを検証する。
@@ -153,6 +153,7 @@ function Invoke-WhitespaceFormat($GameDirs, [switch]$Verify) {
 # TreatWarningsAsErrors で同じ規則を検査するため、ここでは重ねない (dotnet format でのコンパイルが二重になり遅い)。
 function Invoke-Lint {
     $targets = @(Get-TargetGameDirs)
+    Test-SolutionProjects
     Test-MetaFiles $targets
     Test-EvidenceLinks $targets
     Invoke-WhitespaceFormat $targets -Verify

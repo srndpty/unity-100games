@@ -58,7 +58,6 @@ namespace Game.App
     public sealed class SudokuFlow
     {
         public const int TickRate = 60;
-        public const int MaxTicksPerFrame = 5;
 
         /// <summary>経過時間の上限（99 時間 59 分 59 秒）。表示の桁と int の範囲に収める。</summary>
         public const int MaxElapsedTicks = (99 * 3600 + 59 * 60 + 59) * TickRate;
@@ -179,13 +178,19 @@ namespace Game.App
         public void PointerDown(double column, double row)
         {
             if (!AcceptOperation()) { return; }
-            if (CellCursor.CellAt(column, row) is int cell) { Cursor.MoveTo(cell); }
+            if (CellCursor.CellAt(column, row) is int cell)
+            {
+                Cursor.MoveTo(cell);
+                ClearConflict();
+            }
         }
 
         /// <summary>選ぶマスを動かす。下と右が正。</summary>
         public void MoveCursor(int dx, int dy)
         {
-            if (AcceptOperation()) { Cursor.Move(dx, dy); }
+            if (!AcceptOperation()) { return; }
+            Cursor.Move(dx, dy);
+            ClearConflict();
         }
 
         /// <summary>数字キー。候補モードなら候補を付け外しし、そうでなければ置く。</summary>
@@ -255,23 +260,28 @@ namespace Game.App
             ResetTime();
         }
 
-        /// <summary>実時間を進める。処理落ちしても 1 回で進める Tick 数には上限がある。</summary>
+        /// <summary>
+        /// 実時間を経過時間に積算する。この Tick はゲームの進行ではなく遊んだ時間の計測なので、
+        /// 処理落ちや長い停止の分も 1 回の上限なしで数え、<see cref="MaxElapsedTicks"/> で止める。
+        /// </summary>
         public void Advance(double seconds)
         {
             if (Screen != AppScreen.Playing || !double.IsFinite(seconds) || seconds <= 0) { return; }
+            var elapsed = seconds * TickRate;
+            if (!double.IsFinite(elapsed) || ElapsedTicks + elapsed >= MaxElapsedTicks)
+            {
+                ElapsedTicks = MaxElapsedTicks;
+                return;
+            }
 
             // 小さい時間の加算でも Tick を取りこぼさないよう、累積の丸め誤差を補償する。
-            var elapsed = seconds * TickRate;
-            if (!double.IsFinite(elapsed)) { elapsed = MaxTicksPerFrame; }
-            var whole = Math.Floor(elapsed);
-            var increment = Math.Min(whole, MaxTicksPerFrame) + (elapsed - whole) - _timeError;
+            var increment = elapsed - _timeError;
             var total = _elapsedTicks + increment;
             _timeError = (total - _elapsedTicks) - increment;
             _elapsedTicks = total;
             var accounted = Math.Floor(total);
-            var count = (int)Math.Min(MaxTicksPerFrame, accounted - _accountedTicks);
+            ElapsedTicks = (int)Math.Min(MaxElapsedTicks, ElapsedTicks + (accounted - _accountedTicks));
             _accountedTicks = accounted;
-            for (var i = 0; i < count; i++) { StepTick(); }
         }
 
         /// <summary>1 Tick 進める。プレイ中でなければ何もしない。</summary>
@@ -298,6 +308,15 @@ namespace Game.App
             ConflictCell = -1;
             LastHint = null;
             _events |= events;
+        }
+
+        // 重複の案内は、拒否したマスと選んでいるマスの位置関係（同じ行・列・ブロック）で文が決まる。
+        // 選ぶマスが変わると説明が食い違うので、マスを選び直したら消す。
+        private void ClearConflict()
+        {
+            if (Notice != Notice.Conflict) { return; }
+            Notice = Notice.None;
+            ConflictCell = -1;
         }
 
         private void Reject(MoveVerdict verdict)
