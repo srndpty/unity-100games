@@ -1,0 +1,33 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:VisualElement name="stats" class="stats" picking-mode="Ignore">
+            <ui:Label text="SEVEN LANTERNS" class="brand" />
+            <ui:VisualElement class="stat-row" picking-mode="Ignore">
+                <ui:Label name="moves" text="手数  0" class="stat" />
+                <ui:Label name="time" text="時間  00:00" class="stat" />
+            </ui:VisualElement>
+            <ui:VisualElement class="info-row" picking-mode="Ignore">
+                <ui:Label name="foundation" text="組札  0 / 52" class="mode" />
+                <ui:Label name="mode" text="1 枚めくり" class="mode" />
+            </ui:VisualElement>
+            <ui:Label name="status" class="status" />
+            <ui:VisualElement class="tool-row" picking-mode="Ignore">
+                <ui:Button name="undo" text="1 手戻す  /  Z" class="tool" />
+                <ui:Button name="pause" text="一時停止  /  Esc" class="tool" />
+            </ui:VisualElement>
+            <ui:Label name="controls" class="controls" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:VisualElement name="overlay" class="overlay">
+            <ui:Label name="headline" text="SEVEN LANTERNS" class="headline" />
+            <ui:Label name="message" class="message" />
+            <ui:VisualElement class="buttons">
+                <ui:Button name="submit" text="はじめる  /  Enter" />
+                <ui:Button name="restart" text="配り直す  /  R" />
+                <ui:Button name="resign" text="あきらめる  /  A" />
+                <ui:Button name="title" text="タイトルへ  /  T" />
+                <ui:Button name="quit" text="終了" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
