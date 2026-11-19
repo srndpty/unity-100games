@@ -1,0 +1,69 @@
+{
+    "Product": "STRATA DROP",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "2781593283774be9908a415253fc3fd7",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-19T01:07:06.5774742Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"GravityTicks\":[48,40,33,27,22,18,14,11,9,7,5,4,3,2,1],\"SoftDropTicks\":2,\"LockDelayTicks\":30,\"MaxLockResets\":15,\"LineClearTicks\":18,\"LinesPerLevel\":10,\"LineScores\":[100,300,500,800],\"SoftDropScore\":1,\"HardDropScore\":2},\"RepeatDelayTicks\":10,\"RepeatIntervalTicks\":2,\"Volume\":0.11999999731779099}"
+        },
+        {
+            "Key": "seed",
+            "Value": "1"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "31ba95cd93490a77868a108620c4fd1b5c4de6794280818f11d10b46188a21d4",
+            "Note": "タイトル"
+        },
+        {
+            "File": "02-start.jpg",
+            "Sha256": "3b922674a59eeb1965565d49766bbe5b5bfa77a792d4679de2025d2baccdc8d8",
+            "Note": "Tick 0、スコア 0、ライン 0、レベル 1"
+        },
+        {
+            "File": "03-playing.jpg",
+            "Sha256": "da0a792aa7aa7160166f7ca54cf9899856e06dc7256ee1dee666c55f8033f6af",
+            "Note": "Tick 58、スコア 558、ライン 1、レベル 1"
+        },
+        {
+            "File": "04-hold.jpg",
+            "Sha256": "fda7ca28104c643dd01fc78b417219c580d6ac057126616665d4ee45b7d897a1",
+            "Note": "Tick 58、スコア 558、ライン 1、レベル 1"
+        },
+        {
+            "File": "05-clearing.jpg",
+            "Sha256": "696563cf69025fcff1089a37e5b842d3d82252d11793a7d4008318aa8ebe3df0",
+            "Note": "Tick 62、スコア 770、ライン 2、レベル 1"
+        },
+        {
+            "File": "06-cleared.jpg",
+            "Sha256": "de90567675b8de23f2b0adbc290da6ca75b2795e0209cd8158494368bf120416",
+            "Note": "Tick 76、スコア 770、ライン 2、レベル 1"
+        },
+        {
+            "File": "07-paused.jpg",
+            "Sha256": "2b14a0afa08dfd1959fc4a71ff9b7343282852033bb73c273c7a229783858137",
+            "Note": "Tick 76、スコア 770、ライン 2、レベル 1"
+        },
+        {
+            "File": "08-result.jpg",
+            "Sha256": "30d593b8ea394f337c626ee5e987138f094fd64891f4a67cdace993679d7a077",
+            "Note": "Tick 76、スコア 860、ライン 2、レベル 1"
+        },
+        {
+            "File": "09-replay.jpg",
+            "Sha256": "e9e379b4d731daec0a036467e923338d5923b14e6c4be45b686c1f7bd290e5dc",
+            "Note": "Tick 0、スコア 0、ライン 0、レベル 1"
+        }
+    ]
+}

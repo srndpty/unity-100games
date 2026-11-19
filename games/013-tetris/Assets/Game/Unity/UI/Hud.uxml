@@ -1,0 +1,33 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:VisualElement class="column column--left" picking-mode="Ignore">
+            <ui:Label text="ホールド" class="column-title" />
+            <ui:VisualElement class="hold-space" picking-mode="Ignore" />
+            <ui:VisualElement name="stats" class="stats" picking-mode="Ignore">
+                <ui:Label text="スコア" class="stat-name" />
+                <ui:Label name="score" text="0" class="stat-value" />
+                <ui:Label text="ライン" class="stat-name" />
+                <ui:Label name="lines" text="0" class="stat-value" />
+                <ui:Label text="レベル" class="stat-name" />
+                <ui:Label name="level" text="1" class="stat-value" />
+                <ui:Label text="最高スコア" class="stat-name" />
+                <ui:Label name="best" text="0" class="stat-value" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="column column--right" picking-mode="Ignore">
+            <ui:Label text="次の鉱石" class="column-title" />
+        </ui:VisualElement>
+        <ui:Label name="controls" class="controls" picking-mode="Ignore" />
+        <ui:VisualElement name="overlay" class="overlay">
+            <ui:Label name="headline" text="STRATA DROP" class="headline" />
+            <ui:Label name="message" class="message" />
+            <ui:VisualElement class="buttons">
+                <ui:Button name="submit" text="はじめる  /  Enter" />
+                <ui:Button name="restart" text="やり直す  /  R" />
+                <ui:Button name="title" text="タイトルへ  /  T" />
+                <ui:Button name="quit" text="終了" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
