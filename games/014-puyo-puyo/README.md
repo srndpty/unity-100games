@@ -94,9 +94,9 @@ unity run games/014-puyo-puyo -- -executeMethod Game.Unity.Editor.SporeBloomScen
 
 | 種類 | 場所 | 件数 | 実行方法 |
 |---|---|---:|---|
-| Core | `Assets/Tests/Core/` | 86 | `dev test` |
+| Core | `Assets/Tests/Core/` | 87 | `dev test` |
 | App | `Assets/Tests/App/` | 47 | `dev test` |
-| EditMode（Core/App を Mono で実行） | 同上 | 133 | `dev test 014 -Unity` |
+| EditMode（Core/App を Mono で実行） | 同上 | 134 | `dev test 014 -Unity` |
 | PlayMode（実シーン21、共通証跡16） | `Assets/Tests/Unity/` | 37 | `dev test 014 -Unity -Mode PlayMode` |
 
 結果と画面証跡は [evidence/README.md](evidence/README.md) に記録している。

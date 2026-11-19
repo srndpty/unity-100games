@@ -8,15 +8,15 @@
 |---|---|
 | dev lint | 成功（全作品） |
 | dev check | 成功（全作品、警告0・エラー0） |
-| dev test | 成功（全作品）。014 Core 86/86、App 47/47 |
-| Unity EditMode | 133/133（Core/App、Mono） |
+| dev test | 成功（全作品）。014 Core 87/87、App 47/47 |
+| Unity EditMode | 134/134（Core/App、Mono） |
 | Unity PlayMode | 37/37（実シーン21、共通証跡公開16） |
 | Windowsビルド | 成功、StandaloneWindows64 |
 | ビルド起動 | dev captureで起動・全場面撮影・正常終了 |
 | 証跡 | JPEG品質85、11枚 |
-| 撮影再現 | 同一ビルドを2回撮影し、画像世代861e6587f065edfeが一致。CPUの操作列の修正後に再ビルドして撮影した画像も同じ世代 |
+| 撮影再現 | 同一ビルドを2回撮影し、画像世代861e6587f065edfeが一致。レビュー対応後に再ビルドして撮影した画像も同じ世代 |
 
-Build GUID：`93b84b90ea57447ebb7ce59edc6db839`。シード：1。公開ポインタは[current.json](current.json)、実行記録は[manifest.json](runs/20261119T033551Z-6f5a2aa3/manifest.json)。
+Build GUID：`104e03170101494aa9277fe7b1cf0450`。シード：1。公開ポインタは[current.json](current.json)、実行記録は[manifest.json](runs/20261119T035003Z-e89bf326/manifest.json)。
 
 同じシードと入力列の最終盤面は、固定のハッシュ値と照合するテストが dotnet（.NET）と Unity EditMode（Mono）の両方で通っている。
 

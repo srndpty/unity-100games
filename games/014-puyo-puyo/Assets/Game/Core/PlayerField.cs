@@ -295,7 +295,7 @@ namespace Game.Core
             MaxChain = Math.Max(MaxChain, Chain);
             var score = ScoreRules.ChainScore(_config, Chain, groups);
             Score += score;
-            _outgoing += _meter.Attack(score);
+            _outgoing = GarbageMeter.AddCapped(_outgoing, _meter.Attack(score));
             PoppingGroups = groups;
             _events |= FieldEvents.Popped;
             Enter(FieldPhase.Popping, _config.PopTicks);

@@ -38,6 +38,31 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void 連鎖の攻撃量の合計は桁あふれせず上限で止まる()
+        {
+            var config = InstantConfig();
+            config.ScorePerSpore = 10000;
+            config.ColorBonus = 10000;
+            config.ChainBonuses = new[] { 10000 };
+            config.GarbageRate = 1;
+            var board = Parse(
+                "P.....",
+                "P.....",
+                "P.....",
+                "M.....",
+                "M....T",
+                "M....T",
+                "M.E..T",
+                "P.E..T");
+            var field = NewField(config, board, EmberPair);
+
+            Drop(field);
+
+            Assert.That(field.MaxChain, Is.EqualTo(2));
+            Assert.That(field.TakeOutgoing(), Is.EqualTo(int.MaxValue));
+        }
+
+        [Test]
         public void 着弾は上限までで残りは予告に残る()
         {
             var meter = new GarbageMeter(70);
