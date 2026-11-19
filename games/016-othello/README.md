@@ -1,4 +1,4 @@
-# 016. オセロ — DUSK & DAWN（仮称）
+# 016. オセロ — DUSK & DAWN
 
 仕様書：[plan/games/016-othello.md](../../plan/games/016-othello.md)
 

@@ -36,7 +36,9 @@ $BuildTarget = 'StandaloneWindows64'
 $GeneratedDirs = 'Library', 'Temp', 'Logs', 'obj', 'Builds'
 $CaptureTimeoutSeconds = 120
 # 変更されると全作品の検証結果が変わりうる共通ファイル (-Staged でもこれらが含まれれば全作品を対象にする)
-$SharedPathPattern = '^(build/|\.editorconfig$|global\.json$|unity-100games\.slnx$|dev\.ps1$)'
+$SharedPathPattern = '^(build/|\.editorconfig$|global\.json$|dev\.ps1$)'
+# ソリューションは作品ごとの Folder / Project 行の追加・削除だけなら、その作品だけに影響する
+$SolutionPath = 'unity-100games.slnx'
 
 # 外部コマンドを実行し、失敗したらその終了コードで即終了する。
 # `--option` 形式の引数をそのまま渡すため、param ブロックを使わず $args で受ける。
@@ -86,11 +88,35 @@ function Get-TargetGameDirs {
         $files = @(git -C $RepoRoot diff --cached --name-only)
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         if ($files -match $SharedPathPattern) { return Get-GameDirs }
-        $names = @($files | ForEach-Object { if ($_ -match '^games/(\d{3}-[^/]+)/') { $Matches[1] } } | Sort-Object -Unique)
+        $names = @($files | ForEach-Object { if ($_ -match '^games/(\d{3}-[^/]+)/') { $Matches[1] } })
+        if ($files -contains $SolutionPath) {
+            $solutionGames = Get-StagedSolutionGames
+            if ($null -eq $solutionGames) { return Get-GameDirs }
+            $names += $solutionGames
+        }
+        $names = @($names | Sort-Object -Unique)
         return @(Get-GameDirs | Where-Object Name -In $names)
     }
     if ($Game) { return @(Find-GameDir) }
     Get-GameDirs
+}
+
+# ステージしたソリューションの変更が、作品ごとの Folder / Project 行（と Folder の閉じタグ）の追加・削除だけなら、その作品名の一覧。
+# それ以外の行が変わっていれば、全作品に影響しうるので $null。
+function Get-StagedSolutionGames {
+    $diff = @(git -C $RepoRoot diff --cached -U0 -- $SolutionPath)
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    $names = [Collections.Generic.List[string]]::new()
+    foreach ($line in $diff) {
+        if ($line -notmatch '^[+-]' -or $line -match '^(\+\+\+|---) ') { continue }
+        $body = $line.Substring(1).Trim()
+        if ($body -match '^<Folder Name="/(\d{3}-[^/"]+)/">$') { $names.Add($Matches[1]); continue }
+        if ($body -match '^<Project Path="games/(\d{3}-[^/"]+)/[^"]+" />$') { $names.Add($Matches[1]); continue }
+        if ($body -eq '</Folder>') { continue }
+        return $null
+    }
+    # 空でも配列のまま返す（パイプラインで $null に展開されないように）。
+    , $names.ToArray()
 }
 
 # Assets 配下の全ファイル/フォルダに .meta があり、孤立した .meta がないことを検証する。
@@ -165,8 +191,14 @@ function Invoke-Check {
         Invoke-Native dotnet build $Solution
         return
     }
+    # 全作品が対象なら、プロジェクトごとに dotnet build を起動するよりソリューションを 1 回ビルドするほうが速い。
+    $targets = @(Get-TargetGameDirs)
+    if ($targets.Count -gt 1 -and $targets.Count -eq @(Get-GameDirs).Count) {
+        Invoke-Native dotnet build $Solution
+        return
+    }
     # 対象作品のテストプロジェクトをビルドすれば、参照している Core / App も一緒にビルドされる。
-    foreach ($gameDir in Get-TargetGameDirs) {
+    foreach ($gameDir in $targets) {
         foreach ($project in Get-ChildItem (Join-Path $gameDir.FullName 'dotnet') -Recurse -Filter '*.Tests.csproj') {
             Invoke-Native dotnet build $project.FullName
         }
