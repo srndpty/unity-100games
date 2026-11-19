@@ -89,6 +89,35 @@ namespace Game.App.Tests
             TickQuietly(repeater, 10);
         }
 
+        [Test]
+        public void RestartIsReportedOnceWhenTheDelayIsSetAgain()
+        {
+            var repeater = NewRepeater();
+            Assert.That(repeater.TakeRestarted(), Is.False);
+
+            repeater.Press(ShiftDirection.Left);
+            Assert.That(repeater.TakeRestarted(), Is.True);
+            Assert.That(repeater.TakeRestarted(), Is.False);
+
+            repeater.Press(ShiftDirection.Right);
+            repeater.TakeRestarted();
+            repeater.Release(ShiftDirection.Right);
+            Assert.That(repeater.TakeRestarted(), Is.True);
+        }
+
+        [Test]
+        public void ReleasingTheEarlierKeyIsNotARestart()
+        {
+            var repeater = NewRepeater();
+            repeater.Press(ShiftDirection.Left);
+            repeater.Press(ShiftDirection.Right);
+            repeater.TakeRestarted();
+
+            repeater.Release(ShiftDirection.Left);
+
+            Assert.That(repeater.TakeRestarted(), Is.False);
+        }
+
         [TestCase(0, 1)]
         [TestCase(1, 0)]
         [TestCase(-1, 1)]

@@ -8,6 +8,9 @@ namespace Game.App.Tests
     {
         private const int RepeatDelay = 10;
         private const int RepeatInterval = 2;
+        private const int ShortDelay = 3;
+        private const double OneTickFrame = 1d / 60d;
+        private const double SlowFrame = .1d;
         private const int Seed = 77;
         private const int MaxDropsToLose = 200;
 
@@ -20,7 +23,19 @@ namespace Game.App.Tests
             return flow;
         }
 
+        private static StrataFlow StartedWithShortDelay()
+        {
+            var flow = new StrataFlow(new StrataConfig(), ShortDelay, RepeatInterval, Seed);
+            flow.Submit();
+            return flow;
+        }
+
         private static ActivePiece ActiveOf(StrataFlow flow) => flow.Game!.Active!.Value;
+
+        private static void Frames(StrataFlow flow, int count)
+        {
+            for (var i = 0; i < count; i++) { flow.Advance(OneTickFrame); }
+        }
 
         private static void Steps(StrataFlow flow, int count)
         {
@@ -237,6 +252,72 @@ namespace Game.App.Tests
             flow.Press(PlayerAction.Left);
             flow.Release(PlayerAction.Left);
             Assert.That(ActiveOf(flow).X, Is.EqualTo(startX - 1));
+        }
+
+        [Test]
+        public void TimeOfTheFrameAKeyWasPressedDoesNotCountTowardTheRepeat()
+        {
+            var flow = StartedWithShortDelay();
+            var startX = ActiveOf(flow).X;
+
+            flow.Press(PlayerAction.Left);
+            flow.Advance(SlowFrame);
+
+            Assert.That(ActiveOf(flow).X, Is.EqualTo(startX - 1));
+            Assert.That(flow.Game!.TickCount, Is.EqualTo(StrataFlow.MaxTicksPerFrame), "重力などの試合の時間は進める");
+
+            Frames(flow, ShortDelay - 1);
+            Assert.That(ActiveOf(flow).X, Is.EqualTo(startX - 1));
+            Frames(flow, 1);
+            Assert.That(ActiveOf(flow).X, Is.EqualTo(startX - 2));
+        }
+
+        [Test]
+        public void TimeOfTheFrameTheDirectionSwitchedDoesNotCountTowardTheRepeat()
+        {
+            var flow = StartedWithShortDelay();
+            flow.Press(PlayerAction.Left);
+            Frames(flow, 1);
+            var x = ActiveOf(flow).X;
+
+            flow.Press(PlayerAction.Right);
+            flow.Advance(SlowFrame);
+
+            Assert.That(ActiveOf(flow).X, Is.EqualTo(x + 1));
+        }
+
+        [Test]
+        public void TimeOfTheFrameTheLaterKeyWasReleasedDoesNotCountTowardTheRepeat()
+        {
+            var flow = StartedWithShortDelay();
+            flow.Press(PlayerAction.Left);
+            flow.Press(PlayerAction.Right);
+            Frames(flow, 1);
+            var x = ActiveOf(flow).X;
+
+            flow.Release(PlayerAction.Right);
+            flow.Advance(SlowFrame);
+            Assert.That(ActiveOf(flow).X, Is.EqualTo(x));
+
+            Frames(flow, ShortDelay - 1);
+            Assert.That(ActiveOf(flow).X, Is.EqualTo(x));
+            Frames(flow, 1);
+            Assert.That(ActiveOf(flow).X, Is.EqualTo(x - 1));
+        }
+
+        [Test]
+        public void ReleasingTheEarlierKeyDoesNotDelayTheRepeat()
+        {
+            var flow = StartedWithShortDelay();
+            flow.Press(PlayerAction.Left);
+            flow.Press(PlayerAction.Right);
+            Frames(flow, 1);
+            var x = ActiveOf(flow).X;
+
+            flow.Release(PlayerAction.Left);
+            Frames(flow, ShortDelay);
+
+            Assert.That(ActiveOf(flow).X, Is.EqualTo(x + 1));
         }
 
         [Test]

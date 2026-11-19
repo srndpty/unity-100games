@@ -165,6 +165,8 @@ namespace Game.App
         /// <summary>実時間を進める。処理落ちしても1回で進める Tick 数には上限がある。</summary>
         public void Advance(double seconds)
         {
+            // 待ち時間を設定し直したフレームの経過時間には操作より前の時間が入っているので、長押しの計測に数えない。
+            var repeats = !_repeater.TakeRestarted();
             if (Screen != AppScreen.Playing || !double.IsFinite(seconds) || seconds <= 0) { return; }
 
             // 小さい時間の加算でも Tick を取りこぼさないよう、累積の丸め誤差を補償する。
@@ -178,14 +180,16 @@ namespace Game.App
             var accounted = Math.Floor(total);
             var count = (int)Math.Min(MaxTicksPerFrame, accounted - _accountedTicks);
             _accountedTicks = accounted;
-            for (var i = 0; i < count && Screen == AppScreen.Playing; i++) { StepTick(); }
+            for (var i = 0; i < count && Screen == AppScreen.Playing; i++) { Step(repeats); }
         }
 
         /// <summary>1 Tick 進める。プレイ中でなければ何もしない。</summary>
-        public void StepTick()
+        public void StepTick() => Step(repeats: true);
+
+        private void Step(bool repeats)
         {
             if (Screen != AppScreen.Playing) { return; }
-            var shift = _repeater.Tick();
+            var shift = repeats ? _repeater.Tick() : null;
             if (shift != null) { Perform(shift == ShiftDirection.Left ? GameCommand.MoveLeft : GameCommand.MoveRight); }
             if (Screen != AppScreen.Playing) { return; }
             Game!.Tick();
