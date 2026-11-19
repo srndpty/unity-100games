@@ -1,6 +1,6 @@
 # 014 検証記録
 
-2026-11-19実施。人間のプレイ確認は未実施。
+2026-11-19実施。人間のプレイ確認を受け、同日に完了承認を受領した。
 
 ## 自動検証
 
@@ -8,15 +8,15 @@
 |---|---|
 | dev lint | 成功（全作品） |
 | dev check | 成功（全作品、警告0・エラー0） |
-| dev test | 成功（全作品）。014 Core 86/86、App 44/44 |
-| Unity EditMode | 130/130（Core/App、Mono） |
+| dev test | 成功（全作品）。014 Core 86/86、App 47/47 |
+| Unity EditMode | 133/133（Core/App、Mono） |
 | Unity PlayMode | 37/37（実シーン21、共通証跡公開16） |
 | Windowsビルド | 成功、StandaloneWindows64 |
 | ビルド起動 | dev captureで起動・全場面撮影・正常終了 |
 | 証跡 | JPEG品質85、11枚 |
-| 撮影再現 | 同一ビルドを2回撮影し、画像世代861e6587f065edfeが一致 |
+| 撮影再現 | 同一ビルドを2回撮影し、画像世代861e6587f065edfeが一致。CPUの操作列の修正後に再ビルドして撮影した画像も同じ世代 |
 
-Build GUID：`386c8cc794884512b2fd9ad7b8f5efa6`。シード：1。公開ポインタは[current.json](current.json)、実行記録は[manifest.json](runs/20261119T014311Z-236a864a/manifest.json)。
+Build GUID：`93b84b90ea57447ebb7ce59edc6db839`。シード：1。公開ポインタは[current.json](current.json)、実行記録は[manifest.json](runs/20261119T033551Z-6f5a2aa3/manifest.json)。
 
 同じシードと入力列の最終盤面は、固定のハッシュ値と照合するテストが dotnet（.NET）と Unity EditMode（Mono）の両方で通っている。
 
