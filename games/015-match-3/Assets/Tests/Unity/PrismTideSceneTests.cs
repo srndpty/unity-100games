@@ -37,6 +37,7 @@ namespace Game.Unity.Tests
         [UnityTearDown]
         public IEnumerator Unload()
         {
+            Time.timeScale = 1;
             InputSystem.RemoveDevice(_mouse);
             _keyboard.Dispose();
             yield return null;
@@ -99,6 +100,12 @@ namespace Game.Unity.Tests
             var deadline = Time.realtimeSinceStartup + WaitLimitSeconds;
             while (!condition() && Time.realtimeSinceStartup < deadline) { yield return null; }
             Assert.That(condition(), Is.True, "待ち時間の上限を超えました。");
+        }
+
+        private void StepUntil(Func<bool> condition)
+        {
+            for (var i = 0; i < 10000 && !condition(); i++) { Flow.StepTick(); }
+            Assert.That(condition(), Is.True, "Tick の上限を超えました。");
         }
 
         // バッチ実行ではUIイベントが配送されないので、実際の座標でボタンに当たることを確かめてから送る。
@@ -240,6 +247,84 @@ namespace Game.Unity.Tests
             Assert.That(Game.Board, Is.EqualTo(DemoBoards.TwoChain()));
             Assert.That(Game.MovesLeft, Is.EqualTo(Flow.Config.Moves));
             AssertViewMatchesBoard();
+        }
+
+        [UnityTest]
+        public IEnumerator Falling_SlidesPiecesInFromAboveTheMaskedBoard()
+        {
+            yield return BeginTwoChain();
+
+            // 実時間では進めず、Tick をテストから進めて決まった進み具合で描く。
+            Time.timeScale = 0;
+            try
+            {
+                yield return Click(CellPoint(DemoBoards.TwoChainSwap.From));
+                yield return Click(CellPoint(DemoBoards.TwoChainSwap.To));
+                Assert.That(Flow.LastVerdict, Is.EqualTo(SwapVerdict.Legal));
+                StepUntil(() => Game.Phase == GamePhase.Falling);
+
+                var mask = _game.View.GetComponentInChildren<SpriteMask>();
+                var bottomLeft = _game.View.CellWorld(0, 0);
+                var cell = _game.View.CellWorld(1, 1) - bottomLeft;
+                var top = bottomLeft.y + ((Board.Height - .5f) * cell.y);
+                Assert.That(mask.bounds.max.y, Is.EqualTo(top).Within(.01f), "マスクは盤面の上端まで");
+                Assert.That(mask.bounds.min.y, Is.EqualTo(bottomLeft.y - (.5f * cell.y)).Within(.01f), "マスクは盤面の下端から");
+
+                var falls = Game.Falls;
+                Assert.That(falls, Has.Some.Matches<FallMove>(m => m.FromY >= Board.Height), "補充がある場面");
+                float ShownY(FallMove m) => _game.View.PiecePosition(m.X, m.ToY).y;
+                float RowY(float row) => bottomLeft.y + (row * cell.y);
+
+                // 落ち始め：各結晶は落ちる前の段にあり、補充はマスクの外（盤面の上）にいる。
+                _game.Render();
+                foreach (var m in falls)
+                {
+                    Assert.That(ShownY(m), Is.EqualTo(RowY(m.FromY)).Within(.001f), $"落ち始め ({m.X}, {m.ToY})");
+                    Assert.That(_game.View.PiecePosition(m.X, m.ToY).x, Is.EqualTo(_game.View.CellWorld(m.X, m.ToY).x).Within(.001f));
+                    Assert.That(_game.View.IsClippedToBoard(m.X, m.ToY), Is.True);
+                    if (m.FromY >= Board.Height) { Assert.That(ShownY(m) - (.45f * cell.y), Is.GreaterThan(top), "補充は盤面の外から"); }
+                }
+
+                // 途中：落ちる前と着く段の間にあり、同じ列の結晶は重ならない。マスクの外にいるのは補充だけ。
+                StepUntil(() => Game.Phase == GamePhase.Falling && Game.PhaseRemaining <= Game.PhaseDuration / 2);
+                _game.Render();
+                var moved = 0;
+                foreach (var m in falls)
+                {
+                    var y = ShownY(m);
+                    Assert.That(y, Is.InRange(RowY(m.ToY) - .001f, RowY(m.FromY) + .001f), $"途中 ({m.X}, {m.ToY})");
+                    if (y < RowY(m.FromY) - .001f) { moved++; }
+                    if (y > top) { Assert.That(m.FromY, Is.GreaterThanOrEqualTo(Board.Height), "盤面の外にいるのは補充だけ"); }
+                }
+
+                Assert.That(moved, Is.GreaterThan(0), "途中で動いて見える");
+                for (var x = 0; x < Board.Width; x++)
+                {
+                    for (var y = 1; y < Board.Height; y++)
+                    {
+                        var gap = _game.View.PiecePosition(x, y).y - _game.View.PiecePosition(x, y - 1).y;
+                        Assert.That(gap, Is.GreaterThanOrEqualTo(cell.y - .001f), $"列 {x} の段 {y - 1} と {y} が重なる");
+                    }
+                }
+
+                // 着いた後：次の段の消去に入ると、すべての結晶が自分のマスにある。
+                StepUntil(() => Game.Phase != GamePhase.Falling);
+                Assert.That(Game.Phase, Is.EqualTo(GamePhase.Clearing));
+                Assert.That(Game.Chain, Is.EqualTo(2));
+                _game.Render();
+                for (var y = 0; y < Board.Height; y++)
+                {
+                    for (var x = 0; x < Board.Width; x++)
+                    {
+                        Assert.That((_game.View.PiecePosition(x, y) - _game.View.CellWorld(x, y)).magnitude, Is.LessThan(.001f), $"着地 ({x}, {y})");
+                        Assert.That(_game.View.SpriteAt(x, y), Is.SameAs(_game.View.PieceSprite(Game.Board.At(x, y))), $"着地 ({x}, {y})");
+                    }
+                }
+            }
+            finally
+            {
+                Time.timeScale = 1;
+            }
         }
 
         [UnityTest]

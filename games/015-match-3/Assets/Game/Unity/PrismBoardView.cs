@@ -54,6 +54,9 @@ namespace Game.Unity
         /// <summary>そのマスの結晶を描いている位置（演出中はずれる）。</summary>
         public Vector3 PiecePosition(int x, int y) => _cells[Board.Index(x, y)].transform.position;
 
+        /// <summary>そのマスの結晶が、盤面のマスクの内側だけに描かれるか。</summary>
+        public bool IsClippedToBoard(int x, int y) => _cells[Board.Index(x, y)].maskInteraction == SpriteMaskInteraction.VisibleInsideMask;
+
         /// <summary>マスの中心のワールド座標。</summary>
         public Vector3 CellWorld(int x, int y) => transform.TransformPoint(CellLocal(x, y));
 

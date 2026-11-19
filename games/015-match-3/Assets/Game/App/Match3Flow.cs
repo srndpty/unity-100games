@@ -87,30 +87,28 @@ namespace Game.App
         /// <summary>マウスのボタンを押した。位置は盤面座標。</summary>
         public void PointerDown(double x, double y)
         {
-            if (CanOperate()) { TrySwap(Input.PointerDown(x, y)); }
+            if (AcceptOperation()) { TrySwap(Input.PointerDown(x, y)); }
         }
 
         /// <summary>押したままマウスを動かした。</summary>
         public void PointerMove(double x, double y)
         {
-            if (CanOperate()) { TrySwap(Input.PointerMove(x, y)); }
+            if (AcceptOperation()) { TrySwap(Input.PointerMove(x, y)); }
         }
 
-        public void PointerUp()
-        {
-            if (CanOperate()) { Input.PointerUp(); }
-        }
+        /// <summary>マウスのボタンを離した。ドラッグの後始末なので、画面や解決中かを問わず行う。</summary>
+        public void PointerUp() => Input.PointerUp();
 
         /// <summary>矢印キー。</summary>
         public void Move(int dx, int dy)
         {
-            if (CanOperate()) { TrySwap(Input.Move(dx, dy)); }
+            if (AcceptOperation()) { TrySwap(Input.Move(dx, dy)); }
         }
 
         /// <summary>Space。</summary>
         public void ToggleSelect()
         {
-            if (CanOperate()) { Input.ToggleSelect(); }
+            if (AcceptOperation()) { Input.ToggleSelect(); }
         }
 
         /// <summary>フォーカスを失うと一時停止し、選択も取り消す。戻っても自動では再開しない。</summary>
@@ -157,7 +155,14 @@ namespace Game.App
             return events;
         }
 
-        private bool CanOperate() => _hasFocus && Screen == AppScreen.Playing;
+        // 盤面の操作を受け付けるか。解決の演出中に来た操作は捨て、選択とドラッグも取り消す（先行入力しない）。
+        private bool AcceptOperation()
+        {
+            if (!_hasFocus || Screen != AppScreen.Playing) { return false; }
+            if (Game!.AcceptsSwap) { return true; }
+            Input.Clear();
+            return false;
+        }
 
         private void TrySwap(Swap? swap)
         {

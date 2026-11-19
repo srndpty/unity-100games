@@ -132,21 +132,83 @@ namespace Game.App.Tests
             Assert.That(flow.Game.Board, Is.EqualTo(DemoBoards.TwoChain()));
         }
 
-        [Test]
-        public void SwapDuringResolutionIsDropped()
+        // 2連鎖の入れ替えを始め、解決の演出に入った状態を作る。
+        private static Match3Flow ResolvingFlow()
         {
             var flow = TwoChainFlow();
             flow.Submit();
             flow.PointerDown(0.5, 2.5);
+            flow.PointerUp();
             flow.PointerDown(1.5, 2.5);
+            flow.PointerUp();
             flow.StepTick();
+            Assert.That(flow.Game!.AcceptsSwap, Is.False);
+            return flow;
+        }
+
+        // 解決を終えた後、(3,3) の隣の (4,3) をクリックしても入れ替えにならず、そこが新しく選ばれるだけであること。
+        private static void AssertNothingCarriedOver(Match3Flow flow)
+        {
+            Assert.That(flow.Input.Selected, Is.Null, "演出中の選択");
+            RunUntilIdle(flow);
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Playing));
+            Assert.That(flow.Input.Selected, Is.Null, "解決後の選択");
+            var moves = flow.Game!.MovesLeft;
+            var verdict = flow.LastVerdict;
+            flow.PointerDown(4.5, 3.5);
+            flow.PointerUp();
+
+            Assert.That(flow.LastVerdict, Is.EqualTo(verdict), "演出中の操作と組み合わせた入れ替え");
+            Assert.That(flow.Game.Phase, Is.EqualTo(GamePhase.Idle));
+            Assert.That(flow.Game.MovesLeft, Is.EqualTo(moves));
+            Assert.That(flow.Input.Selected, Is.EqualTo(new Point(4, 3)));
+        }
+
+        [Test]
+        public void SwapDuringResolutionIsDropped()
+        {
+            var flow = ResolvingFlow();
             flow.PointerDown(4.5, 5.5);
             flow.PointerDown(5.5, 5.5);
 
-            Assert.That(flow.LastVerdict, Is.EqualTo(SwapVerdict.Busy));
-            Assert.That(flow.Input.Selected, Is.Null);
+            Assert.That(flow.LastVerdict, Is.EqualTo(SwapVerdict.Legal), "解決中の入れ替えはゲームへ渡さない");
             RunUntilIdle(flow);
             Assert.That(flow.Game!.MovesLeft, Is.EqualTo(flow.Config.Moves - 1));
+        }
+
+        [Test]
+        public void ClickDuringResolutionDoesNotStaySelected()
+        {
+            var flow = ResolvingFlow();
+            flow.PointerDown(3.5, 3.5);
+            flow.PointerUp();
+
+            AssertNothingCarriedOver(flow);
+        }
+
+        [Test]
+        public void PressHeldFromResolutionDoesNotDragAfterIt()
+        {
+            var flow = ResolvingFlow();
+            flow.PointerDown(3.5, 3.5);
+            RunUntilIdle(flow);
+            flow.PointerMove(4.4, 3.5);
+            Assert.That(flow.Game!.Phase, Is.EqualTo(GamePhase.Idle), "演出中に押したマスからのドラッグ");
+            flow.PointerUp();
+
+            AssertNothingCarriedOver(flow);
+        }
+
+        [Test]
+        public void KeyboardSelectDuringResolutionIsDropped()
+        {
+            var flow = ResolvingFlow();
+            var cursor = flow.Input.Cursor;
+            flow.ToggleSelect();
+            flow.Move(1, 0);
+
+            Assert.That(flow.Input.Cursor, Is.EqualTo(cursor), "解決中はカーソルも動かさない");
+            AssertNothingCarriedOver(flow);
         }
 
         [Test]
