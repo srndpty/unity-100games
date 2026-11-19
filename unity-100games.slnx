@@ -89,4 +89,10 @@
     <Project Path="games/015-match-3/dotnet/Core.Tests/G015.Core.Tests.csproj" />
     <Project Path="games/015-match-3/dotnet/Core/G015.Core.csproj" />
   </Folder>
+  <Folder Name="/016-othello/">
+    <Project Path="games/016-othello/dotnet/App.Tests/G016.App.Tests.csproj" />
+    <Project Path="games/016-othello/dotnet/App/G016.App.csproj" />
+    <Project Path="games/016-othello/dotnet/Core.Tests/G016.Core.Tests.csproj" />
+    <Project Path="games/016-othello/dotnet/Core/G016.Core.csproj" />
+  </Folder>
 </Solution>

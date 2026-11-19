@@ -1,0 +1,74 @@
+{
+    "Product": "DUSK & DAWN",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "bb33993496ab4112b8728f5235f39b23",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-19T14:35:27.4946988Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"FlipTicks\":18,\"PassTicks\":60,\"CpuThinkTicks\":30,\"WeakDepth\":1,\"NormalDepth\":3,\"StrongDepth\":5},\"Volume\":0.11999999731779099}"
+        },
+        {
+            "Key": "seed",
+            "Value": "1"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "97bf0f56fc1d4fc884c8ce417fd462fd2a144464fcb0cf32fb6f8f6b3717fa92",
+            "Note": "タイトル（普通・黒）"
+        },
+        {
+            "File": "02-start.jpg",
+            "Sha256": "2f1e1b068717456b548c7d9603702899b7218d49176cd786381ffab28eb17092",
+            "Note": "Tick 0、AwaitingMove、黒 2 白 2、手数 0、パス 0"
+        },
+        {
+            "File": "03-hints-cursor.jpg",
+            "Sha256": "c8a151e9f27f81e68daa02cf3ba42e3b820e8362fc71b66f23308defb449b466",
+            "Note": "Tick 330、AwaitingMove、黒 6 白 8、手数 10、パス 0"
+        },
+        {
+            "File": "04-flipping.jpg",
+            "Sha256": "9d7cd7f0b547f9d1ea132b2044027191adde763fb0ddfd6d49c40bbd0c19ba4b",
+            "Note": "Tick 336、Placing、黒 8 白 7、手数 11、パス 0"
+        },
+        {
+            "File": "05-cpu-thinking.jpg",
+            "Sha256": "80f5375ac38d1ae29282068bfe690a36804de82db374457edb4affb3216ac6c3",
+            "Note": "Tick 348、AwaitingMove、黒 8 白 7、手数 11、パス 0"
+        },
+        {
+            "File": "06-pass.jpg",
+            "Sha256": "202e4cda6305d6f17fb5159f47d71cbf23546756df5758d54dda19fa37402f1d",
+            "Note": "Tick 48、Passing、黒 20 白 23、手数 1、パス 1"
+        },
+        {
+            "File": "07-paused.jpg",
+            "Sha256": "808f0385f4b8c9fc49fdd8584823d83035df9c7c7f5df0860647e9a2f38585e4",
+            "Note": "Tick 48、Passing、黒 20 白 23、手数 1、パス 1"
+        },
+        {
+            "File": "08-win.jpg",
+            "Sha256": "16dd5d3b8a5dbd103ef95bc8e29aa4628738112f68b4716581bfe0dbc93009b6",
+            "Note": "Tick 84、Over、黒 45 白 19、手数 3、パス 0"
+        },
+        {
+            "File": "09-loss.jpg",
+            "Sha256": "ada2b04134a6ac5570b8693dcc7eccca76df0a91666f80dd5f38516fd547e5db",
+            "Note": "Tick 115、Over、黒 45 白 19、手数 3、パス 0"
+        },
+        {
+            "File": "10-replay-white.jpg",
+            "Sha256": "3360d55063549bd236eb55bea9a9b1b8d9034390f6908d0b650b8b058cc5f579",
+            "Note": "Tick 49、AwaitingMove、黒 4 白 1、手数 1、パス 0"
+        }
+    ]
+}
