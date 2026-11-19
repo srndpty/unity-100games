@@ -30,10 +30,17 @@ namespace Game.App
             var chosen = mistakePercent > 0 && random!.Next(100) < mistakePercent
                 ? candidates[random.Next(candidates.Count)]
                 : Best(config, field.Board, candidates);
-            return ToCommands(chosen);
+            return chosen.Commands;
         }
 
-        private static Candidate Best(SporeConfig config, Board board, List<Candidate> candidates)
+        /// <summary>回転してから左右へ動かして届く置き方を列挙する。今の位置のままの置き方が必ず含まれる。</summary>
+        public static IReadOnlyList<PairPlacement> Placements(Board board, ActivePair active)
+        {
+            if (board == null) { throw new ArgumentNullException(nameof(board)); }
+            return Enumerate(board, active).AsReadOnly();
+        }
+
+        private static PairPlacement Best(SporeConfig config, Board board, List<PairPlacement> candidates)
         {
             var best = candidates[0];
             var bestScore = long.MinValue;
@@ -48,16 +55,17 @@ namespace Game.App
             return best;
         }
 
-        // 回転してから左右へ動かして届く置き方を列挙する。今の位置のままの置き方が必ず含まれる。
-        private static List<Candidate> Enumerate(Board board, ActivePair active)
+        private static List<PairPlacement> Enumerate(Board board, ActivePair active)
         {
-            var candidates = new List<Candidate>();
+            var candidates = new List<PairPlacement>();
+            var counterClockwise = PairRotation.Rotate(board, active, false);
             var turned = active;
             for (var turns = 0; turns < OrientationCount; turns++)
             {
-                candidates.Add(new Candidate(turned, turns, 0));
-                AddShifts(candidates, board, turned, turns, -1);
-                AddShifts(candidates, board, turned, turns, 1);
+                var rotation = RotationCommands(turns, counterClockwise == turned);
+                candidates.Add(new PairPlacement(turned, rotation, 0));
+                AddShifts(candidates, board, turned, rotation, -1);
+                AddShifts(candidates, board, turned, rotation, 1);
                 if (PairRotation.Rotate(board, turned, true) is not ActivePair next) { break; }
                 turned = next;
             }
@@ -65,11 +73,25 @@ namespace Game.App
             return candidates;
         }
 
-        private static void AddShifts(List<Candidate> candidates, Board board, ActivePair turned, int turns, int direction)
+        // 回転は押し出しで軸が動くため、右3回と左1回は結果が同じときだけ置き換えられる。
+        private static List<GameCommand> RotationCommands(int turns, bool sameAsCounterClockwise)
+        {
+            var commands = new List<GameCommand>();
+            if (turns == OrientationCount - 1 && sameAsCounterClockwise)
+            {
+                commands.Add(GameCommand.RotateCounterClockwise);
+                return commands;
+            }
+
+            for (var i = 0; i < turns; i++) { commands.Add(GameCommand.RotateClockwise); }
+            return commands;
+        }
+
+        private static void AddShifts(List<PairPlacement> candidates, Board board, ActivePair turned, List<GameCommand> rotation, int direction)
         {
             for (var shift = direction; board.Fits(turned.Moved(shift, 0)); shift += direction)
             {
-                candidates.Add(new Candidate(turned.Moved(shift, 0), turns, shift));
+                candidates.Add(new PairPlacement(turned.Moved(shift, 0), rotation, shift));
             }
         }
 
@@ -118,40 +140,28 @@ namespace Game.App
 
             return 0;
         }
+    }
 
-        private static ReadOnlyCollection<GameCommand> ToCommands(Candidate candidate)
+    /// <summary>操作中のペアの置き方と、そこへ届く操作の列。</summary>
+    public sealed class PairPlacement
+    {
+        internal PairPlacement(ActivePair pair, List<GameCommand> rotation, int shift)
         {
-            var commands = new List<GameCommand>();
-            if (candidate.Turns == OrientationCount - 1)
+            Pair = pair;
+            var commands = new List<GameCommand>(rotation);
+            for (var i = 0; i < Math.Abs(shift); i++)
             {
-                commands.Add(GameCommand.RotateCounterClockwise);
-            }
-            else
-            {
-                for (var i = 0; i < candidate.Turns; i++) { commands.Add(GameCommand.RotateClockwise); }
-            }
-
-            for (var i = 0; i < Math.Abs(candidate.Shift); i++)
-            {
-                commands.Add(candidate.Shift < 0 ? GameCommand.MoveLeft : GameCommand.MoveRight);
+                commands.Add(shift < 0 ? GameCommand.MoveLeft : GameCommand.MoveRight);
             }
 
             commands.Add(GameCommand.SoftDropOn);
-            return commands.AsReadOnly();
+            Commands = commands.AsReadOnly();
         }
 
-        private readonly struct Candidate
-        {
-            public Candidate(ActivePair pair, int turns, int shift)
-            {
-                Pair = pair;
-                Turns = turns;
-                Shift = shift;
-            }
+        /// <summary>操作を終えた直後のペア。</summary>
+        public ActivePair Pair { get; }
 
-            public ActivePair Pair { get; }
-            public int Turns { get; }
-            public int Shift { get; }
-        }
+        /// <summary>回転、左右移動、ソフトドロップの順の操作。</summary>
+        public ReadOnlyCollection<GameCommand> Commands { get; }
     }
 }
