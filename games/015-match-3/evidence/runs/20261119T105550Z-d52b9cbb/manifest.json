@@ -1,0 +1,84 @@
+{
+    "Product": "PRISM TIDE",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "e5fe2282bbc5475e86ef3822540f6961",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-19T10:55:49.3230014Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"Colors\":5,\"Moves\":20,\"TargetScore\":2000,\"ScorePerPiece\":10,\"SwapTicks\":10,\"ClearTicks\":18,\"FallTicksPerRow\":4,\"ReshuffleTicks\":40,\"MaxGenerationAttempts\":1000},\"Volume\":0.11999999731779099}"
+        },
+        {
+            "Key": "seed",
+            "Value": "1"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "a422ae4c469142642a1408e42376aa626b2fb6c83e742be153e995f8ead0eac8",
+            "Note": "タイトル"
+        },
+        {
+            "File": "02-start.jpg",
+            "Sha256": "fe1ed98b8c976e002fa7c9411cbdb4c92ca5c347abf99806d622c1572ae4ec04",
+            "Note": "Tick 0、Idle、スコア 0、のこり 20 手、最大連鎖 0"
+        },
+        {
+            "File": "03-select.jpg",
+            "Sha256": "026de14f555dc84408e421d65a9e39315173fcf05630ecc436adc6f02c3b85f7",
+            "Note": "Tick 234、Idle、スコア 350、のこり 16 手、最大連鎖 3"
+        },
+        {
+            "File": "04-revert.jpg",
+            "Sha256": "62cf16ff34105a1b14a62a0044b33309bbd42c2482d265948e134467a8d05069",
+            "Note": "Tick 5、Reverting、スコア 0、のこり 20 手、最大連鎖 0"
+        },
+        {
+            "File": "05-falling.jpg",
+            "Sha256": "b17aa44114ea978afffc38f0ff3675c154897e41a3e4fb0437a9b4ed14983f34",
+            "Note": "Tick 54、Falling、スコア 30、のこり 19 手、最大連鎖 1"
+        },
+        {
+            "File": "06-chain-2.jpg",
+            "Sha256": "ad0ed3d987dadebf10920af2f1d44c7500e978984d00d8003d74ba427d88784b",
+            "Note": "Tick 69、Clearing、スコア 90、のこり 19 手、最大連鎖 2"
+        },
+        {
+            "File": "07-cross.jpg",
+            "Sha256": "70f1af67cf3c9c1c7b26a4712bf755766a3b168ce269a2c38866569987513680",
+            "Note": "Tick 19、Clearing、スコア 50、のこり 19 手、最大連鎖 1"
+        },
+        {
+            "File": "08-reshuffle.jpg",
+            "Sha256": "a36e423cc920990e34b087a5483ca968ccf2c63d431b4e9712e06f9d613e1e66",
+            "Note": "Tick 20、Reshuffling、スコア 0、のこり 20 手、最大連鎖 0"
+        },
+        {
+            "File": "09-paused.jpg",
+            "Sha256": "e4cfa947f090191cb315c1f2a9aeef60ad52f6b59cc548c1af65092719318562",
+            "Note": "Tick 20、Reshuffling、スコア 0、のこり 20 手、最大連鎖 0"
+        },
+        {
+            "File": "10-win.jpg",
+            "Sha256": "f6cffc7d2bf5689dbb4d4c551e90cb7d07f063f6a99d1ad5822b75668ed25e47",
+            "Note": "Tick 70、Won、スコア 90、のこり 19 手、最大連鎖 2"
+        },
+        {
+            "File": "11-lose.jpg",
+            "Sha256": "22ed89d0aad8caf8dc1b803f64201f3b04dfd46b47b68918aa3b29186fe7148e",
+            "Note": "Tick 62、Lost、スコア 150、のこり 0 手、最大連鎖 2"
+        },
+        {
+            "File": "12-replay.jpg",
+            "Sha256": "6a552c81e19211170006ad7291b8910f7a2c613ca741f46f1aaa56dd455ddaa9",
+            "Note": "Tick 0、Idle、スコア 0、のこり 20 手、最大連鎖 0"
+        }
+    ]
+}

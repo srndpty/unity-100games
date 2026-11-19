@@ -83,4 +83,10 @@
     <Project Path="games/014-puyo-puyo/dotnet/Core.Tests/G014.Core.Tests.csproj" />
     <Project Path="games/014-puyo-puyo/dotnet/Core/G014.Core.csproj" />
   </Folder>
+  <Folder Name="/015-match-3/">
+    <Project Path="games/015-match-3/dotnet/App.Tests/G015.App.Tests.csproj" />
+    <Project Path="games/015-match-3/dotnet/App/G015.App.csproj" />
+    <Project Path="games/015-match-3/dotnet/Core.Tests/G015.Core.Tests.csproj" />
+    <Project Path="games/015-match-3/dotnet/Core/G015.Core.csproj" />
+  </Folder>
 </Solution>

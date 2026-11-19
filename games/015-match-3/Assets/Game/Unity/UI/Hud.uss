@@ -1,0 +1,18 @@
+.hud { position: absolute; width: 100%; height: 100%; color: rgb(222, 238, 240); }
+.stats { position: absolute; left: 56%; right: 6%; top: 9%; bottom: 6%; }
+.stat-name { font-size: 26px; color: rgb(150, 196, 204); }
+.stat-name--moves { margin-top: 26px; }
+.score { font-size: 72px; -unity-font-style: bold; color: rgb(246, 252, 250); }
+.progress { height: 18px; margin-top: 6px; background-color: rgb(16, 44, 58); border-radius: 9px; border-width: 1px; border-color: rgb(70, 140, 160); overflow: hidden; }
+.progress-fill { height: 100%; width: 0; background-color: rgb(110, 214, 222); border-radius: 9px; }
+.target { margin-top: 6px; font-size: 24px; color: rgb(170, 210, 216); }
+.moves { font-size: 60px; -unity-font-style: bold; color: rgb(246, 252, 250); }
+.chain { height: 60px; margin-top: 10px; font-size: 44px; -unity-font-style: bold; color: rgb(255, 214, 120); }
+.controls { position: absolute; bottom: 0; left: 0; right: 0; font-size: 21px; white-space: normal; color: rgb(170, 200, 206); }
+.overlay { position: absolute; left: 54%; right: 4%; top: 10%; padding: 30px; background-color: rgba(10, 30, 42, 0.94); border-radius: 14px; border-width: 2px; border-color: rgb(80, 170, 186); }
+.headline { font-size: 58px; -unity-font-style: bold; -unity-text-align: middle-center; color: rgb(140, 228, 232); }
+.message { margin-top: 14px; margin-bottom: 10px; font-size: 24px; white-space: normal; }
+.buttons { align-items: stretch; }
+Button { height: 56px; margin: 8px 0 0 0; font-size: 26px; color: rgb(240, 250, 250); background-color: rgb(28, 86, 104); border-color: rgb(80, 170, 186); border-width: 1px; border-radius: 8px; }
+Button:hover { background-color: rgb(36, 106, 126); }
+Button:active { background-color: rgb(46, 126, 148); }
