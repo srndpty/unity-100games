@@ -51,7 +51,7 @@ namespace Game.Core.Tests
         }
 
         private const string ExpectedSeedOneOrder =
-            "KS 4S AS KW JS KF 3M 3W 7S 7W 7F 6W 6F QW AF 5M 8W QF 8M QM QS 7M 9M 2F 5W 8F " +
-            "JW JM 3S 2S 4W 5F 8S 9S 9F 6S 4M KM 6M AM 2M TS 3F 5S JF 9W TM TW 4F 2W TF AW";
+            "KH 4H AH KS JH KD 3C 3S 7H 7S 7D 6S 6D QS AD 5C 8S QD 8C QC QH 7C 9C 2D 5S 8D " +
+            "JS JC 3H 2H 4S 5D 8H 9H 9D 6H 4C KC 6C AC 2C TH 3D 5H JD 9S TC TS 4D 2S TD AS";
     }
 }

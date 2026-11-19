@@ -25,8 +25,12 @@ namespace Game.Core
     /// </summary>
     public static class DeadlockDetector
     {
-        public static DeadlockVerdict Check(IReadOnlyTable table, int maxStates)
+        public static DeadlockVerdict Check(IReadOnlyTable table, int maxStates) => Check(table, maxStates, out _);
+
+        /// <summary>visitedStates は調べた局面の数（最初の局面を含む）。1 回の判定の手間はこれに比例し、maxStates + 1 を超えない。</summary>
+        public static DeadlockVerdict Check(IReadOnlyTable table, int maxStates, out int visitedStates)
         {
+            visitedStates = 0;
             if (table == null) { throw new ArgumentNullException(nameof(table)); }
             if (maxStates < 1) { throw new ArgumentOutOfRangeException(nameof(maxStates), maxStates, "1 以上で指定してください。"); }
 
@@ -34,6 +38,7 @@ namespace Game.Core
             var baseline = work.FoundationTotal;
             var keys = new KeyBuilder();
             var visited = new HashSet<string>(StringComparer.Ordinal) { keys.Of(work) };
+            visitedStates = 1;
             var rootMoves = Expand(work, baseline);
             if (rootMoves == null) { return DeadlockVerdict.Progress; }
 
@@ -56,6 +61,7 @@ namespace Game.Core
                     continue;
                 }
 
+                visitedStates = visited.Count;
                 if (visited.Count > maxStates) { return DeadlockVerdict.Undetermined; }
                 var moves = Expand(work, baseline);
                 if (moves == null) { return DeadlockVerdict.Progress; }

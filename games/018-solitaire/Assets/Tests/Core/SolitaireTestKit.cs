@@ -7,8 +7,8 @@ namespace Game.Core.Tests
     /// <summary>テストで使う盤と、乱数で遊ぶ・素朴に探索する道具。</summary>
     public static class SolitaireTestKit
     {
-        /// <summary>場札の一番上の札。すべて太陽（赤）の偶数と K なので、互いに重ならず組札にも行けない。</summary>
-        public static readonly string[] StuckTops = { "2S", "4S", "6S", "8S", "TS", "QS", "KS" };
+        /// <summary>場札の一番上の札。すべてハート（赤）の偶数と K なので、互いに重ならず組札にも行けない。</summary>
+        public static readonly string[] StuckTops = { "2H", "4H", "6H", "8H", "TH", "QH", "KH" };
 
         public static SolitaireConfig Config(int drawCount = 1, int searchStates = 2_000) =>
             new() { DrawCount = drawCount, DeadlockSearchStates = searchStates };

@@ -17,10 +17,10 @@ namespace Game.Core.Tests
             }
         }
 
-        [TestCase("AS", Suit.Sun, 1, true)]
-        [TestCase("TF", Suit.Flame, 10, true)]
-        [TestCase("QM", Suit.Moon, 12, false)]
-        [TestCase("KW", Suit.Wave, 13, false)]
+        [TestCase("AH", Suit.Heart, 1, true)]
+        [TestCase("TD", Suit.Diamond, 10, true)]
+        [TestCase("QC", Suit.Club, 12, false)]
+        [TestCase("KS", Suit.Spade, 13, false)]
         public void TextGivesSuitRankAndColor(string text, Suit suit, int rank, bool red)
         {
             var card = Card.Parse(text);
@@ -44,7 +44,7 @@ namespace Game.Core.Tests
         [TestCase(14)]
         public void RankOutOfRangeThrows(int rank)
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => _ = new Card(Suit.Sun, rank));
+            Assert.Throws<ArgumentOutOfRangeException>(() => _ = new Card(Suit.Heart, rank));
         }
 
         [Test]

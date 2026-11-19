@@ -2,18 +2,18 @@ using System;
 
 namespace Game.Core
 {
-    /// <summary>スート。太陽と炎が赤、月と波が黒。</summary>
+    /// <summary>スート。ハートとダイヤが赤、クラブとスペードが黒。</summary>
     public enum Suit
     {
-        Sun,
-        Flame,
-        Moon,
-        Wave,
+        Heart,
+        Diamond,
+        Club,
+        Spade,
     }
 
     /// <summary>
     /// 1 枚の札。ランクは 1（A）〜13（K）。52 枚それぞれに 0〜51 の番号が付く。
-    /// 表記は「ランク＋スート」の 2 文字（A, 2〜9, T, J, Q, K と S, F, M, W）。例：TS は太陽の 10。
+    /// 表記は「ランク＋スート」の 2 文字（A, 2〜9, T, J, Q, K と H, D, C, S）。例：TH はハートの 10。
     /// </summary>
     public readonly struct Card : IEquatable<Card>
     {
@@ -23,13 +23,13 @@ namespace Game.Core
         public const int DeckSize = SuitCount * MaxRank;
 
         private const string RankChars = "A23456789TJQK";
-        private const string SuitChars = "SFMW";
+        private const string SuitChars = "HDCS";
 
         private readonly byte _id;
 
         public Card(Suit suit, int rank)
         {
-            if (suit < Suit.Sun || suit > Suit.Wave)
+            if (suit < Suit.Heart || suit > Suit.Spade)
             {
                 throw new ArgumentOutOfRangeException(nameof(suit), suit, "未定義のスートです。");
             }
@@ -51,7 +51,7 @@ namespace Game.Core
 
         public bool IsRed => IsRedSuit(Suit);
 
-        public static bool IsRedSuit(Suit suit) => suit == Suit.Sun || suit == Suit.Flame;
+        public static bool IsRedSuit(Suit suit) => suit == Suit.Heart || suit == Suit.Diamond;
 
         public static Card FromId(int id)
         {

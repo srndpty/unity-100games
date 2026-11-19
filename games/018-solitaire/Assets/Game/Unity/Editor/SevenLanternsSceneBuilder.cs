@@ -24,12 +24,13 @@ namespace Game.Unity.Editor
         private const int BackOrder = 5;
         private const int HighlightOrder = 6;
 
-        private const float CornerX = .34f;
-        private const float CornerRankY = .52f;
-        private const float CornerSuitY = .25f;
-        private const float CornerRankScale = .44f;
-        private const float CornerSuitScale = .24f;
-        private const float CenterSuitScale = .56f;
+        // 隅のランクと印は、札の縁と角の丸みから 0.1 ほど内側に収める（はみ出すと伏せ札の角から覗く）。
+        private const float CornerX = .3f;
+        private const float CornerRankY = .45f;
+        private const float CornerSuitY = .2f;
+        private const float CornerRankScale = .38f;
+        private const float CornerSuitScale = .2f;
+        private const float CenterSuitScale = .5f;
 
         // 卓の座標（TableLayout）を画面の左側いっぱいに広げる。右側は HUD。
         private const float TableScale = 1.25f;
@@ -184,14 +185,8 @@ namespace Game.Unity.Editor
             highlights.Add(highlight);
         }
 
-        // 赤は太陽（朱）と炎（紅）、黒は月（藍）と波（深緑）。同じ色の組でも見分けられるよう少しずらす。
-        private static Color Ink(Suit suit) => suit switch
-        {
-            Suit.Sun => new Color(.84f, .32f, .08f),
-            Suit.Flame => new Color(.76f, .1f, .16f),
-            Suit.Moon => new Color(.14f, .18f, .4f),
-            _ => new Color(.06f, .26f, .3f),
-        };
+        // 赤（ハート・ダイヤ）と黒（クラブ・スペード）の 2 色。
+        private static Color Ink(Suit suit) => Card.IsRedSuit(suit) ? new Color(.78f, .1f, .14f) : new Color(.1f, .11f, .16f);
 
         private static void Mark(Transform parent, string name, string file, Material material, Color color, Vector2 position, float scale, bool upsideDown)
         {

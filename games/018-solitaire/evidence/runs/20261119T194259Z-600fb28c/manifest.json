@@ -1,0 +1,84 @@
+{
+    "Product": "SEVEN LANTERNS",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "c9b30ce4c26c45e8a9adf57fb1fed361",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-19T19:42:58.5798669Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"DrawCount\":1,\"DeadlockSearchStates\":2000},\"DoubleClickSeconds\":0.3499999940395355,\"SlideSharpness\":18.0,\"Volume\":0.11999999731779099}"
+        },
+        {
+            "Key": "seed",
+            "Value": "1"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "a6cbeeac6cfbfe3a38a86fe1eff650d2788a5b41c36442b9f06758f820997fca",
+            "Note": "タイトル"
+        },
+        {
+            "File": "02-deal.jpg",
+            "Sha256": "3c3f9c50a923c426ba6a5941820411b8fdad2ed714e305708f053f4877a08dc6",
+            "Note": "Tick 0、Playing、Playing、手数 0、組札 0、None None"
+        },
+        {
+            "File": "03-selected.jpg",
+            "Sha256": "c8a63adcc15b796df90e86169ac80c2a3b6578ae0e6cc00913d7d3bdd163510c",
+            "Note": "Tick 0、Playing、Playing、手数 0、組札 0、None None"
+        },
+        {
+            "File": "04-dragging.jpg",
+            "Sha256": "69cea57c5a72f772122e0a6d4111c77640555b089bbc91d8cb3f400af161435a",
+            "Note": "Tick 0、Playing、Playing、手数 0、組札 0、None None"
+        },
+        {
+            "File": "05-dropped.jpg",
+            "Sha256": "fdaecfb5c96822f0908f58e4b958eb3e2c3a3e3587c9c8b3ff7ad26cc0b88351",
+            "Note": "Tick 0、Playing、Playing、手数 1、組札 0、None None"
+        },
+        {
+            "File": "06-rejected.jpg",
+            "Sha256": "2ccb6a574fbd2d24ae21c17f98559d8ccd7de039e7877e617fe3ddc6ca852af5",
+            "Note": "Tick 0、Playing、Playing、手数 1、組札 0、Rejected SameColor"
+        },
+        {
+            "File": "07-progress.jpg",
+            "Sha256": "2015e206b086b47bc142efe913914d924e2909c4127948316e898042839e6cd0",
+            "Note": "Tick 5400、Playing、Playing、手数 31、組札 5、None None"
+        },
+        {
+            "File": "08-undo.jpg",
+            "Sha256": "968c9460f0cbf7dc7584e0ff075f1f61d7233d95be249ecdf38614798b630b87",
+            "Note": "Tick 5400、Playing、Playing、手数 30、組札 5、Undone None"
+        },
+        {
+            "File": "09-paused.jpg",
+            "Sha256": "b58aa64967705d7e089b02fbaa39472cc712a56fbe26960898f6aaab1861160b",
+            "Note": "Tick 5400、Paused、Playing、手数 30、組札 5、Undone None"
+        },
+        {
+            "File": "10-draw-three.jpg",
+            "Sha256": "ec5e51b77a2f513e15fbd29e695545529655792b3a61e09f0700a778de8deaa0",
+            "Note": "Tick 0、Playing、Playing、手数 2、組札 0、None None"
+        },
+        {
+            "File": "11-stuck.jpg",
+            "Sha256": "8597fabadc3524001299a1cd378f3dc0dfa714afd09d736ee8fb52c9e6969873",
+            "Note": "Tick 0、Result、Stuck、手数 1、組札 0、None None"
+        },
+        {
+            "File": "12-won.jpg",
+            "Sha256": "98ec69ec0fe612914392a291dd09bf37b6d90db1192cfa86c15b533dcc82c3f9",
+            "Note": "Tick 0、Result、Won、手数 1、組札 52、None None"
+        }
+    ]
+}

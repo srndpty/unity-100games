@@ -6,30 +6,30 @@ namespace Game.Core.Tests
 {
     public sealed class MoveRulesTests
     {
-        // t1: 伏せ 2 枚の上に 9M 8F 7W（表の連続）。t2: 伏せ 1 枚の上に TF。t3: 空。t4: 9S。t5: KM。
-        // 捨て札の上は 6S、組札 f1 は太陽の A〜5、f2 は空。
+        // t1: 伏せ 2 枚の上に 9C 8D 7S（表の連続）。t2: 伏せ 1 枚の上に TD。t3: 空。t4: 9H。t5: KC。
+        // 捨て札の上は 6H、組札 f1 はハートの A〜5、f2 は空。
         private static readonly Table _sample = Parse(
             "stock: *",
-            "waste: 2M 6S",
-            "f1: AS 2S 3S 4S 5S",
-            "t1: JW QW | 9M 8F 7W",
-            "t2: QM | TF",
-            "t4: 9S",
-            "t5: KM");
+            "waste: 2C 6H",
+            "f1: AH 2H 3H 4H 5H",
+            "t1: JS QS | 9C 8D 7S",
+            "t2: QC | TD",
+            "t4: 9H",
+            "t5: KC");
 
         [Test]
         public void RunMovesOntoOppositeColorOneHigher()
         {
-            // 9M 8F 7W（3 枚）を TF（赤の 10）へ。
+            // 9C 8D 7S（3 枚）を TD（赤の 10）へ。
             Assert.That(MoveRules.Check(_sample, Command.Move(T(1), T(2), 3)), Is.EqualTo(MoveError.None));
-            // 7W 1 枚は 8 の赤がないので TF へは不可。
+            // 7S 1 枚は 8 の赤がないので TD へは不可。
             Assert.That(MoveRules.Check(_sample, Command.Move(T(1), T(2), 1)), Is.EqualTo(MoveError.RankMismatch));
         }
 
         [Test]
         public void SameColorIsRejected()
         {
-            // 8F 7W（2 枚、底は赤の 8）を 9S（赤の 9）へ。
+            // 8D 7S（2 枚、底は赤の 8）を 9H（赤の 9）へ。
             Assert.That(MoveRules.Check(_sample, Command.Move(T(1), T(4), 2)), Is.EqualTo(MoveError.SameColor));
         }
 
@@ -50,7 +50,7 @@ namespace Game.Core.Tests
         [Test]
         public void FoundationRules()
         {
-            Assert.That(MoveRules.Check(_sample, Command.Move(PileId.Waste, F(1))), Is.EqualTo(MoveError.None), "6S は 5S の上");
+            Assert.That(MoveRules.Check(_sample, Command.Move(PileId.Waste, F(1))), Is.EqualTo(MoveError.None), "6H は 5H の上");
             Assert.That(MoveRules.Check(_sample, Command.Move(T(1), F(1))), Is.EqualTo(MoveError.FoundationSuitMismatch));
             Assert.That(MoveRules.Check(_sample, Command.Move(T(4), F(1))), Is.EqualTo(MoveError.FoundationRankMismatch));
             Assert.That(MoveRules.Check(_sample, Command.Move(T(4), F(2))), Is.EqualTo(MoveError.FoundationNeedsAce));
@@ -60,7 +60,7 @@ namespace Game.Core.Tests
         [Test]
         public void AceGoesToAnyEmptyFoundation()
         {
-            var table = Parse("stock: *", "waste: AM", "f1: AS");
+            var table = Parse("stock: *", "waste: AC", "f1: AH");
             Assert.That(MoveRules.Check(table, Command.Move(PileId.Waste, F(2))), Is.EqualTo(MoveError.None));
             Assert.That(MoveRules.Check(table, Command.Move(PileId.Waste, F(4))), Is.EqualTo(MoveError.None));
             Assert.That(MoveRules.Check(table, Command.Move(PileId.Waste, F(1))), Is.EqualTo(MoveError.FoundationSuitMismatch));
@@ -71,14 +71,14 @@ namespace Game.Core.Tests
         {
             Assert.That(MoveRules.Check(_sample, Command.Move(PileId.Waste, T(1), 2)), Is.EqualTo(MoveError.NotSingleCard));
             Assert.That(MoveRules.Check(_sample, Command.Move(F(1), T(3), 2)), Is.EqualTo(MoveError.NotSingleCard));
-            // 組札の上の 5S（赤）は 6 の黒の上にしか戻せない。t1 の上は 7W。
+            // 組札の上の 5H（赤）は 6 の黒の上にしか戻せない。t1 の上は 7S。
             Assert.That(MoveRules.Check(_sample, Command.Move(F(1), T(1))), Is.EqualTo(MoveError.RankMismatch));
         }
 
         [Test]
         public void FoundationCardCanReturnToTableau()
         {
-            var table = Parse("stock: *", "f1: AS 2S 3S 4S 5S", "t1: 6M");
+            var table = Parse("stock: *", "f1: AH 2H 3H 4H 5H", "t1: 6C");
             Assert.That(MoveRules.Check(table, Command.Move(F(1), T(1))), Is.EqualTo(MoveError.None));
         }
 
@@ -117,13 +117,13 @@ namespace Game.Core.Tests
         public void BrokenRunIsRejectedEvenIfBuiltByHand()
         {
             // 手で作った盤でも、表の札が列になっていなければ Table が拒否する。
-            Assert.That(() => Parse("stock: *", "t1: 9M 9F"), Throws.InvalidOperationException);
+            Assert.That(() => Parse("stock: *", "t1: 9C 9D"), Throws.InvalidOperationException);
         }
 
         [Test]
         public void FoundationMoveFromPrefersTheSuitAlreadyStarted()
         {
-            var table = Parse("stock: *", "waste: 2M", "f3: AM", "t1: AF");
+            var table = Parse("stock: *", "waste: 2C", "f3: AC", "t1: AD");
             Assert.That(MoveRules.FoundationMoveFrom(table, PileId.Waste), Is.EqualTo(Command.Move(PileId.Waste, F(3))));
             Assert.That(MoveRules.FoundationMoveFrom(table, T(1)), Is.EqualTo(Command.Move(T(1), F(1))));
             Assert.That(MoveRules.FoundationMoveFrom(table, T(2)), Is.Null, "空の列");

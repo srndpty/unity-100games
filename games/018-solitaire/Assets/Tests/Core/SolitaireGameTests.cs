@@ -7,13 +7,13 @@ namespace Game.Core.Tests
 {
     public sealed class SolitaireGameTests
     {
-        /// <summary>組札に 51 枚、残りの KW が場札にある。1 手で勝つ。</summary>
+        /// <summary>組札に 51 枚、残りの KS が場札にある。1 手で勝つ。</summary>
         private static Table OneMoveFromWin() => Parse(
-            "f1: AS 2S 3S 4S 5S 6S 7S 8S 9S TS JS QS KS",
-            "f2: AF 2F 3F 4F 5F 6F 7F 8F 9F TF JF QF KF",
-            "f3: AM 2M 3M 4M 5M 6M 7M 8M 9M TM JM QM KM",
-            "f4: AW 2W 3W 4W 5W 6W 7W 8W 9W TW JW QW",
-            "t3: KW");
+            "f1: AH 2H 3H 4H 5H 6H 7H 8H 9H TH JH QH KH",
+            "f2: AD 2D 3D 4D 5D 6D 7D 8D 9D TD JD QD KD",
+            "f3: AC 2C 3C 4C 5C 6C 7C 8C 9C TC JC QC KC",
+            "f4: AS 2S 3S 4S 5S 6S 7S 8S 9S TS JS QS",
+            "t3: KS");
 
         [Test]
         public void NewGameIsPlayingWithNoMoves()
@@ -61,7 +61,7 @@ namespace Game.Core.Tests
         [Test]
         public void UndoRestoresFlippedCardAndMoveCount()
         {
-            var table = Parse("stock: *", "t1: JW QW | 9M", "t2: TF");
+            var table = Parse("stock: *", "t1: JS QS | 9C", "t2: TD");
             var game = new SolitaireGame(Config(), table);
             var before = TableText.Format(game.Table);
 
@@ -89,7 +89,7 @@ namespace Game.Core.Tests
         [Test]
         public void SendToFoundationRejectsCardsThatDoNotFit()
         {
-            var game = new SolitaireGame(Config(), Parse("stock: *", "t1: 9M", "waste: AF"));
+            var game = new SolitaireGame(Config(), Parse("stock: *", "t1: 9C", "waste: AD"));
             Assert.That(game.SendToFoundation(T(1)), Is.EqualTo(MoveError.InvalidDestination));
             Assert.That(game.SendToFoundation(PileId.Waste), Is.EqualTo(MoveError.None));
         }
@@ -107,8 +107,8 @@ namespace Game.Core.Tests
         [Test]
         public void MoveThatLeavesNoProgressEndsAsStuck()
         {
-            // QM を KS に置くと、その上に置ける J の赤はなく、残りの 3F・5F もどこにも置けない。
-            var game = new SolitaireGame(Config(), StuckTable(waste: "3F 5F QM"));
+            // QC を KH に置くと、その上に置ける J の赤はなく、残りの 3D・5D もどこにも置けない。
+            var game = new SolitaireGame(Config(), StuckTable(waste: "3D 5D QC"));
             Assert.That(game.Phase, Is.EqualTo(GamePhase.Playing));
             Assert.That(game.Apply(Command.Move(PileId.Waste, T(7))), Is.EqualTo(MoveError.None));
             Assert.That(game.Phase, Is.EqualTo(GamePhase.Stuck));
@@ -126,7 +126,7 @@ namespace Game.Core.Tests
         [Test]
         public void GameCopiesTheTableAndConfig()
         {
-            var table = Parse("stock: *", "t1: 9M", "t2: TF");
+            var table = Parse("stock: *", "t1: 9C", "t2: TD");
             var config = Config();
             var game = new SolitaireGame(config, table);
             config.DrawCount = 2;

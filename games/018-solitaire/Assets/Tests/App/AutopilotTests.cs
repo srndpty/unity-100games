@@ -8,7 +8,7 @@ namespace Game.App.Tests
         [Test]
         public void PrefersFoundationMoves()
         {
-            var table = TableText.Parse("stock: *\nwaste: AS\nt1: 9M\nt2: TF");
+            var table = TableText.Parse("stock: *\nwaste: AH\nt1: 9C\nt2: TD");
             var move = new Autopilot(1).Next(table);
             Assert.That(move?.From, Is.EqualTo(PileId.Waste));
             Assert.That(move?.To.Kind, Is.EqualTo(PileKind.Foundation));
@@ -17,8 +17,8 @@ namespace Game.App.Tests
         [Test]
         public void ReturnsNullWhenNoMoveIsLegal()
         {
-            // 山札・捨て札が空で、場札の一番上（KW と太陽・炎の札）はどこにも置けない。空いた列もない。
-            var table = TableText.Parse("t2: 5S\nt3: 7S\nt4: 9S\nt5: JS\nt6: 3S\nt7: 5F\nt1: *");
+            // 山札・捨て札が空で、場札の一番上（KS とハート・ダイヤの札）はどこにも置けない。空いた列もない。
+            var table = TableText.Parse("t2: 5H\nt3: 7H\nt4: 9H\nt5: JH\nt6: 3H\nt7: 5D\nt1: *");
             Assert.That(new Autopilot(1).Next(table), Is.Null);
         }
 

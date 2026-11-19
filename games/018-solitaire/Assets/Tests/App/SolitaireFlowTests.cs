@@ -52,7 +52,7 @@ namespace Game.App.Tests
         [Test]
         public void DragMovesCardsAndFlipsWithEvents()
         {
-            var flow = FlowFrom(TableText.Parse("stock: *\nt1: QW | 9M\nt2: TF"));
+            var flow = FlowFrom(TableText.Parse("stock: *\nt1: QS | 9C\nt2: TD"));
             flow.Submit();
             flow.TakeEvents();
             Drag(flow, Center(flow, PileId.Tableau(0), 1), Center(flow, PileId.Tableau(1), 0) + new TablePoint(0, -.3), 1);
@@ -64,7 +64,7 @@ namespace Game.App.Tests
         [Test]
         public void IllegalDropIsRejectedWithTheReasonAndNothingChanges()
         {
-            var flow = FlowFrom(TableText.Parse("stock: *\nt1: 9M\nt2: 9S"));
+            var flow = FlowFrom(TableText.Parse("stock: *\nt1: 9C\nt2: 9H"));
             flow.Submit();
             var before = TableText.Format(flow.Game!.Table);
             Drag(flow, Center(flow, PileId.Tableau(0), 0), Center(flow, PileId.Tableau(1), 0), 1);

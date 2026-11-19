@@ -256,6 +256,74 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &615816182
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1531282212769936324, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_Name
+      value: SevenLanternsStage
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+--- !u!114 &615816183 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1895529178941624242, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+  m_PrefabInstance: {fileID: 615816182}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a43c34e92a22c04ea5e0ad5c24f6a9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.SevenLanternsTableView
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0
@@ -360,75 +428,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &701888856
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 3369630193652572946, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_Name
-      value: SevenLanternsStage
-      objectReference: {fileID: 0}
-    - target: {fileID: 4211930413283818538, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4211930413283818538, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4211930413283818538, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4211930413283818538, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4211930413283818538, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4211930413283818538, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4211930413283818538, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4211930413283818538, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4211930413283818538, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4211930413283818538, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
---- !u!114 &701888857 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6847683364175018144, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-  m_PrefabInstance: {fileID: 701888856}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a43c34e92a22c04ea5e0ad5c24f6a9b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game.Unity::Game.Unity.SevenLanternsTableView
---- !u!1 &1826757390
+--- !u!1 &1730474180
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -436,11 +436,11 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1826757395}
-  - component: {fileID: 1826757394}
-  - component: {fileID: 1826757393}
-  - component: {fileID: 1826757392}
-  - component: {fileID: 1826757391}
+  - component: {fileID: 1730474185}
+  - component: {fileID: 1730474184}
+  - component: {fileID: 1730474183}
+  - component: {fileID: 1730474182}
+  - component: {fileID: 1730474181}
   m_Layer: 0
   m_Name: SevenLanterns
   m_TagString: Untagged
@@ -448,41 +448,41 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1826757391
+--- !u!114 &1730474181
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1826757390}
+  m_GameObject: {fileID: 1730474180}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1c3aa6fd3e9c5b44ca726f5017b42dc3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Unity::Game.Unity.SevenLanternsCaptureScenario
---- !u!114 &1826757392
+--- !u!114 &1730474182
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1826757390}
+  m_GameObject: {fileID: 1730474180}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aa99a94446ff99a4f9f985e3b345b03d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Unity::Game.Unity.SevenLanternsGame
   _settings: {fileID: 11400000, guid: c01dd49919fcb5e40a2a9c3095a21f11, type: 2}
-  _hudRenderer: {fileID: 1826757394}
+  _hudRenderer: {fileID: 1730474184}
   _camera: {fileID: 519420031}
-  _view: {fileID: 701888857}
---- !u!82 &1826757393
+  _view: {fileID: 615816183}
+--- !u!82 &1730474183
 AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1826757390}
+  m_GameObject: {fileID: 1730474180}
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
@@ -573,13 +573,13 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!1931382934 &1826757394
+--- !u!1931382934 &1730474184
 PanelRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1826757390}
+  m_GameObject: {fileID: 1730474180}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -631,13 +631,13 @@ PanelRenderer:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_Position: 0
---- !u!4 &1826757395
+--- !u!4 &1730474185
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1826757390}
+  m_GameObject: {fileID: 1730474180}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -652,5 +652,5 @@ SceneRoots:
   m_Roots:
   - {fileID: 519420032}
   - {fileID: 619394802}
-  - {fileID: 701888856}
-  - {fileID: 1826757395}
+  - {fileID: 615816182}
+  - {fileID: 1730474185}

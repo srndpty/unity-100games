@@ -8,9 +8,9 @@ namespace Game.App.Tests
     {
         private const double DoubleClick = .35;
 
-        // t1: QW（伏せ）の上に 9M 8F。t2: TF。t3: 空。捨て札の上は AS。
+        // t1: QS（伏せ）の上に 9C 8D。t2: TD。t3: 空。捨て札の上は AH。
         private static readonly Table _table = TableText.Parse(string.Join(
-            "\n", "stock: *", "waste: AS", "t1: QW | 9M 8F", "t2: TF"));
+            "\n", "stock: *", "waste: AH", "t1: QS | 9C 8D", "t2: TD"));
 
         private static PileId T(int column) => PileId.Tableau(column - 1);
 

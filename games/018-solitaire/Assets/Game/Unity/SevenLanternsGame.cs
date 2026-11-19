@@ -335,7 +335,7 @@ namespace Game.Unity
             switch (screen)
             {
                 case AppScreen.Title:
-                    return "4 つの印（太陽・炎・月・波）を、それぞれ A から K まで組札に積み上げてください。\n" +
+                    return "4 つの印（ハート・ダイヤ・クラブ・スペード）を、それぞれ A から K まで組札に積み上げてください。\n" +
                         "場札は色違いで 1 つ小さい数を重ねられます。空いた列には K だけ置けます。\n\n" + Controls;
                 case AppScreen.Paused:
                     return "Enter：再開\nR：配り直す\nA：あきらめる\nT：タイトルへ";

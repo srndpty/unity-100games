@@ -10,7 +10,7 @@ namespace Game.App.Tests
         [Test]
         public void TableauCardsStepDownNarrowlyWhileHiddenAndWiderWhenFaceUp()
         {
-            var table = Parse("stock: *", "t2: JW QW | 9M 8F");
+            var table = Parse("stock: *", "t2: JS QS | 9C 8D");
             var pile = PileId.Tableau(1);
             var slot = TableLayout.SlotCenter(pile);
             Assert.That(TableLayout.CardCenter(table, pile, 0), Is.EqualTo(slot));
@@ -25,7 +25,7 @@ namespace Game.App.Tests
             // 伏せ札 6 枚の上に K から A までの 13 枚。
             var table = Parse(
                 "stock: *",
-                "t7: 2S 3S 4S 5S 7S 8S | KM QF JW TS 9M 8F 7W 6S 5M 4F 3W 2F AM");
+                "t7: 2H 3H 4H 5H 7H 8H | KC QD JS TH 9C 8D 7S 6H 5C 4D 3S 2D AC");
             var bottom = TableLayout.CardCenter(table, PileId.Tableau(6), 18).Y - (TableLayout.CardHeight / 2);
             Assert.That(bottom, Is.GreaterThan(-5.4));
         }
@@ -33,8 +33,8 @@ namespace Game.App.Tests
         [Test]
         public void WasteFansOnlyTheTopThreeWithDrawThree()
         {
-            var one = Parse("waste: 2S 3S 4S 5S", "stock: *");
-            var three = Parse("draw: 3", "waste: 2S 3S 4S 5S", "stock: *");
+            var one = Parse("waste: 2H 3H 4H 5H", "stock: *");
+            var three = Parse("draw: 3", "waste: 2H 3H 4H 5H", "stock: *");
             var slot = TableLayout.SlotCenter(PileId.Waste);
             for (var i = 0; i < 4; i++) { Assert.That(TableLayout.CardCenter(one, PileId.Waste, i), Is.EqualTo(slot)); }
             Assert.That(TableLayout.CardCenter(three, PileId.Waste, 0), Is.EqualTo(slot));
@@ -45,12 +45,12 @@ namespace Game.App.Tests
         [Test]
         public void HitTestFindsTheFrontmostCard()
         {
-            var table = Parse("stock: *", "t2: JW QW | 9M 8F");
+            var table = Parse("stock: *", "t2: JS QS | 9C 8D");
             var pile = PileId.Tableau(1);
             var top = TableLayout.CardCenter(table, pile, 3);
             Assert.That(TableLayout.HitTest(table, top), Is.EqualTo(new TableHit(pile, 3)));
 
-            // 一番上の札より上で、9M だけが見えている帯。
+            // 一番上の札より上で、9C だけが見えている帯。
             var strip = TableLayout.CardCenter(table, pile, 2) + new TablePoint(0, (TableLayout.CardHeight / 2) - .05);
             Assert.That(TableLayout.HitTest(table, strip), Is.EqualTo(new TableHit(pile, 2)));
 
@@ -61,7 +61,7 @@ namespace Game.App.Tests
         [Test]
         public void HitTestReportsEmptySlotsAndStock()
         {
-            var table = Parse("stock: *", "t2: 9M");
+            var table = Parse("stock: *", "t2: 9C");
             Assert.That(TableLayout.HitTest(table, TableLayout.SlotCenter(PileId.Tableau(0))), Is.EqualTo(new TableHit(PileId.Tableau(0), -1)));
             Assert.That(TableLayout.HitTest(table, TableLayout.SlotCenter(PileId.Foundation(2))), Is.EqualTo(new TableHit(PileId.Foundation(2), -1)));
             Assert.That(TableLayout.HitTest(table, TableLayout.SlotCenter(PileId.Stock)), Is.EqualTo(new TableHit(PileId.Stock, -1)));
@@ -72,7 +72,7 @@ namespace Game.App.Tests
         [Test]
         public void DropTargetIsThePileWithTheLargestOverlap()
         {
-            var table = Parse("stock: *", "t1: 9M", "t2: TF");
+            var table = Parse("stock: *", "t1: 9C", "t2: TD");
             var t2 = TableLayout.CardCenter(table, PileId.Tableau(1), 0);
             Assert.That(TableLayout.DropTarget(table, PileId.Tableau(0), t2 + new TablePoint(.1, -.2)), Is.EqualTo(PileId.Tableau(1)));
 

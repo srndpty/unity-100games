@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 4b5567579bcd38842a260f8fe9b5ffcf
+guid: 1b70b72f2592ed741be64eb7eb25a236
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1926264011190888653
-    second: SuitFlame_0
+      213: 4572525892149795346
+    second: SuitHeart_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -102,13 +102,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: SuitFlame_0
+      name: SuitHeart_0
       rect:
         serializedVersion: 2
-        x: 32
-        y: 10
-        width: 64
-        height: 113
+        x: 12
+        y: 13
+        width: 104
+        height: 102
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -117,8 +117,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: dc8e6a299e67bba10800000000000000
-      internalID: 1926264011190888653
+      spriteID: 21a5dd79210e47f30800000000000000
+      internalID: 4572525892149795346
       vertices: []
       indices: 
       edges: []
@@ -137,7 +137,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      SuitFlame_0: 1926264011190888653
+      SuitHeart_0: 4572525892149795346
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

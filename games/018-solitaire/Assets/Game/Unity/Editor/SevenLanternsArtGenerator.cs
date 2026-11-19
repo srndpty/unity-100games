@@ -212,44 +212,35 @@ namespace Game.Unity.Editor
         // スートの印。-1〜1 の正方形で定義する。
         private static Func<float, float, bool> SuitShape(Core.Suit suit) => suit switch
         {
-            Core.Suit.Sun => (x, y) => SunShape(x * 2, y * 2),
-            Core.Suit.Flame => (x, y) => FlameShape(x * 2, y * 2),
-            Core.Suit.Moon => (x, y) => MoonShape(x * 2, y * 2),
-            _ => (x, y) => WaveShape(x * 2, y * 2),
+            Core.Suit.Heart => (x, y) => HeartShape(x * 2, y * 2),
+            Core.Suit.Diamond => (x, y) => DiamondShape(x * 2, y * 2),
+            Core.Suit.Club => (x, y) => ClubShape(x * 2, y * 2),
+            _ => (x, y) => SpadeShape(x * 2, y * 2),
         };
 
-        // 太陽：円と 8 本の光。
-        private static bool SunShape(float x, float y)
+        // ハート：(x² + y² - 1)³ - x²y³ ≤ 0 の曲線を縮めて中央に置く。
+        private static bool HeartShape(float x, float y) => HeartCurve(x / .7f, (y / .7f) + .12f);
+
+        private static bool HeartCurve(float x, float y)
         {
-            var r = new Vector2(x, y).magnitude;
-            if (r < .44f) { return true; }
-            if (r < .58f || r > .9f) { return false; }
-            var angle = Mathf.Atan2(y, x) / (Mathf.PI / 4f);
-            return Mathf.Abs(angle - Mathf.Round(angle)) * (Mathf.PI / 4f) * r < .08f;
+            var a = (x * x) + (y * y) - 1f;
+            return (a * a * a) - (x * x * y * y * y) <= 0f;
         }
 
-        // 炎：下が丸く、上がとがって少し右へなびく滴。
-        private static bool FlameShape(float x, float y)
-        {
-            if (new Vector2(x, y + .35f).magnitude < .48f) { return true; }
-            if (y < -.35f || y > .9f) { return false; }
-            var t = (y + .35f) / 1.25f;
-            var center = Mathf.Sin(t * Mathf.PI) * .12f;
-            var halfWidth = .48f * Mathf.Pow(1f - t, .9f);
-            return Mathf.Abs(x - center) < halfWidth;
-        }
+        // ダイヤ：縦長のひし形。
+        private static bool DiamondShape(float x, float y) => (Mathf.Abs(x) / .62f) + (Mathf.Abs(y) / .86f) <= 1f;
 
-        // 月：三日月。
-        private static bool MoonShape(float x, float y) =>
-            new Vector2(x, y).magnitude < .78f && new Vector2(x - .36f, y - .2f).magnitude > .62f;
+        // クラブ：3 つの円と、裾の広がる軸。
+        private static bool ClubShape(float x, float y) =>
+            new Vector2(x, y - .36f).magnitude < .3f ||
+            new Vector2(x + .33f, y + .1f).magnitude < .3f ||
+            new Vector2(x - .33f, y + .1f).magnitude < .3f ||
+            Stem(x, y);
 
-        // 波：うねる 2 本の帯。
-        private static bool WaveShape(float x, float y)
-        {
-            if (Mathf.Abs(x) > .85f) { return false; }
-            var curve = Mathf.Sin(x * Mathf.PI * 1.3f) * .2f;
-            return Mathf.Abs(y - .28f - curve) < .14f || Mathf.Abs(y + .28f - curve) < .14f;
-        }
+        // スペード：上下を返したハートと、裾の広がる軸。
+        private static bool SpadeShape(float x, float y) => HeartCurve(x / .66f, (-y / .66f) + .3f) || Stem(x, y);
+
+        private static bool Stem(float x, float y) => y < 0f && y > -.84f && Mathf.Abs(x) < .06f + (Mathf.Max(0f, -.45f - y) * .55f);
 
         // ランクの字形。幅 -0.4〜0.4、高さ -0.68〜0.68 に収める。円弧の角度は度、反時計回りが正。
         private static List<(Vector2 A, Vector2 B)> RankStrokes(int rank)
