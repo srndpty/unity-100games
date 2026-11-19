@@ -1,0 +1,79 @@
+{
+    "Product": "SPORE BLOOM",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "386c8cc794884512b2fd9ad7b8f5efa6",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-19T01:43:08.6739472Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"GravityTicks\":[40,32,26,20,15,11,8,6],\"TicksPerGravityStep\":1800,\"SoftDropTicks\":2,\"LockDelayTicks\":30,\"MaxLockResets\":8,\"SettleTicksPerRow\":2,\"PopTicks\":24,\"SpawnDelayTicks\":6,\"ScorePerSpore\":10,\"ChainBonuses\":[0,4,8,16,32,64,96,128],\"ColorBonus\":3,\"GarbageRate\":70,\"MaxGarbagePerDrop\":30},\"CpuActionIntervalTicks\":10,\"CpuMistakePercent\":30,\"RepeatDelayTicks\":10,\"RepeatIntervalTicks\":2,\"Volume\":0.11999999731779099}"
+        },
+        {
+            "Key": "seed",
+            "Value": "1"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "21f929efc7db8b7e895e78ac61fc294d66fac0ec14a8c3ea05bf74584922d868",
+            "Note": "タイトル"
+        },
+        {
+            "File": "02-start.jpg",
+            "Sha256": "4bccc0c341967b405439406b3de773a04cf6cbbebb3b96f9240a1ae7703a31d5",
+            "Note": "Tick 0、あなた 0 点、CPU 0 点、最大連鎖 0"
+        },
+        {
+            "File": "03-playing.jpg",
+            "Sha256": "7c6e8aa9c4c65800bf711a1b3685db1e2937b5cee5d3141b8f7b54baab585ed6",
+            "Note": "Tick 272、あなた 80 点、CPU 0 点、最大連鎖 1"
+        },
+        {
+            "File": "04-paused.jpg",
+            "Sha256": "68c7e0af84e96d2beedf6d1835a80bfd4ae6c6f4b1bd6f6460177143d112091d",
+            "Note": "Tick 272、あなた 80 点、CPU 0 点、最大連鎖 1"
+        },
+        {
+            "File": "05-chain-1.jpg",
+            "Sha256": "4db4d8e19418fe887d93d3a879c865c381ad6f962bf24c8f5ed28376299c7dea",
+            "Note": "Tick 21、あなた 40 点、CPU 0 点、最大連鎖 1"
+        },
+        {
+            "File": "06-chain-2.jpg",
+            "Sha256": "98b216fc894bd76b83d7fb06926a459a541be3b8ccadf2eaf58eeb8c3679eaeb",
+            "Note": "Tick 49、あなた 200 点、CPU 0 点、最大連鎖 2"
+        },
+        {
+            "File": "07-attack.jpg",
+            "Sha256": "867aeb69449d6f1b7374ae28993a3aa19878ac9a23bb20a43974336c96455b2d",
+            "Note": "Tick 79、あなた 200 点、CPU 0 点、最大連鎖 2"
+        },
+        {
+            "File": "08-garbage.jpg",
+            "Sha256": "867aeb69449d6f1b7374ae28993a3aa19878ac9a23bb20a43974336c96455b2d",
+            "Note": "Tick 79、あなた 200 点、CPU 0 点、最大連鎖 2"
+        },
+        {
+            "File": "09-win.jpg",
+            "Sha256": "b3817629860daafbf990e0a888c6334c7480379081a70b974f5beee817463c43",
+            "Note": "Tick 3、あなた 0 点、CPU 0 点、最大連鎖 0"
+        },
+        {
+            "File": "10-lose.jpg",
+            "Sha256": "8d76b14b28ce959f588fbf2b8c81025a0eda8d9e1d73b3cdbbe48949d83de444",
+            "Note": "Tick 3、あなた 0 点、CPU 0 点、最大連鎖 0"
+        },
+        {
+            "File": "11-replay.jpg",
+            "Sha256": "e18c5f0c7ae17f2935a5c4b68af908250bbc86bfba8b56121c6d8e35cbbe362a",
+            "Note": "Tick 0、あなた 0 点、CPU 0 点、最大連鎖 0"
+        }
+    ]
+}

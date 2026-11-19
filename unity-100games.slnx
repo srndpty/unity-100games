@@ -77,4 +77,10 @@
     <Project Path="games/013-tetris/dotnet/Core.Tests/G013.Core.Tests.csproj" />
     <Project Path="games/013-tetris/dotnet/Core/G013.Core.csproj" />
   </Folder>
+  <Folder Name="/014-puyo-puyo/">
+    <Project Path="games/014-puyo-puyo/dotnet/App.Tests/G014.App.Tests.csproj" />
+    <Project Path="games/014-puyo-puyo/dotnet/App/G014.App.csproj" />
+    <Project Path="games/014-puyo-puyo/dotnet/Core.Tests/G014.Core.Tests.csproj" />
+    <Project Path="games/014-puyo-puyo/dotnet/Core/G014.Core.csproj" />
+  </Folder>
 </Solution>

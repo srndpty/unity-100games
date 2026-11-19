@@ -1,0 +1,22 @@
+.hud { position: absolute; width: 100%; height: 100%; color: rgb(224, 234, 222); }
+.field-title { position: absolute; top: 1.5%; width: 21%; font-size: 34px; -unity-font-style: bold; -unity-text-align: middle-center; color: rgb(170, 222, 160); }
+.field-title--player { left: 9.6%; }
+.field-title--cpu { left: 69.4%; }
+.stats { position: absolute; width: 100%; height: 100%; }
+.column { position: absolute; top: 9%; width: 9.6%; }
+.column--player { left: 31.8%; }
+.column--cpu { left: 58.6%; }
+.column-title { font-size: 28px; -unity-font-style: bold; -unity-text-align: middle-center; color: rgb(170, 222, 160); }
+.next-space { height: 425px; }
+.stat-name { font-size: 22px; -unity-text-align: middle-center; color: rgb(176, 194, 174); }
+.stat-value { font-size: 34px; -unity-font-style: bold; -unity-text-align: middle-center; color: rgb(240, 246, 236); }
+.pending { height: 34px; margin-top: 10px; font-size: 22px; -unity-font-style: bold; -unity-text-align: middle-center; color: rgb(232, 170, 110); }
+.chain { height: 46px; margin-top: 6px; font-size: 32px; -unity-font-style: bold; -unity-text-align: middle-center; color: rgb(250, 222, 120); }
+.controls { position: absolute; left: 42.4%; top: 11%; width: 15.2%; font-size: 21px; white-space: normal; color: rgb(196, 210, 192); }
+.overlay { position: absolute; left: 32%; right: 32%; top: 12%; padding: 30px; background-color: rgb(20, 32, 26); border-radius: 14px; border-width: 2px; border-color: rgb(94, 150, 104); }
+.headline { font-size: 54px; -unity-font-style: bold; -unity-text-align: middle-center; color: rgb(170, 222, 160); }
+.message { margin-top: 14px; margin-bottom: 10px; font-size: 25px; white-space: normal; }
+.buttons { align-items: stretch; }
+Button { height: 58px; margin: 8px 0 0 0; font-size: 26px; color: rgb(240, 246, 236); background-color: rgb(46, 86, 62); border-color: rgb(94, 150, 104); border-width: 1px; border-radius: 8px; }
+Button:hover { background-color: rgb(58, 106, 76); }
+Button:active { background-color: rgb(70, 126, 90); }
