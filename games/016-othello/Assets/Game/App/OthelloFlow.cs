@@ -65,13 +65,19 @@ namespace Game.App
         public CpuPlayer? Cpu { get; private set; }
         public BoardCursor Cursor { get; } = new();
 
-        /// <summary>CPU の強さ。タイトルと結果画面で選ぶ。</summary>
+        /// <summary>次の試合の CPU の強さ。タイトルと結果画面で選ぶ。</summary>
         public CpuLevel Level { get; private set; } = CpuLevel.Normal;
 
-        /// <summary>プレイヤーの石の色。タイトルと結果画面で選ぶ。</summary>
+        /// <summary>次の試合のプレイヤーの石の色。タイトルと結果画面で選ぶ。</summary>
         public Side PlayerSide { get; private set; } = Side.Black;
 
-        public Side CpuSide => PlayerSide.Opponent();
+        /// <summary>遊んでいる試合の CPU の強さ。結果画面で次の試合の強さを選んでも変わらない。</summary>
+        public CpuLevel MatchLevel { get; private set; } = CpuLevel.Normal;
+
+        /// <summary>遊んでいる試合のプレイヤーの石の色。結果画面で次の試合の色を選んでも変わらない。</summary>
+        public Side MatchPlayerSide { get; private set; } = Side.Black;
+
+        public Side CpuSide => MatchPlayerSide.Opponent();
 
         /// <summary>遊んでいる試合のシード。</summary>
         public int MatchSeed { get; private set; }
@@ -83,7 +89,7 @@ namespace Game.App
         public Func<int, OthelloGame> GameFactory { get; set; }
 
         /// <summary>プレイヤーが打てる状態。</summary>
-        public bool IsPlayerTurn => Screen == AppScreen.Playing && Game!.AcceptsMove && Game.ToMove == PlayerSide;
+        public bool IsPlayerTurn => Screen == AppScreen.Playing && Game!.AcceptsMove && Game.ToMove == MatchPlayerSide;
 
         /// <summary>CPU の手番で、考えている。</summary>
         public bool IsCpuTurn => Screen == AppScreen.Playing && Game!.AcceptsMove && Game.ToMove == CpuSide;
@@ -95,7 +101,7 @@ namespace Game.App
             {
                 if (Game == null || !Game.IsOver) { return null; }
                 var winner = Game.Winner;
-                return winner == null ? App.Outcome.Draw : winner == PlayerSide ? App.Outcome.Win : App.Outcome.Loss;
+                return winner == null ? App.Outcome.Draw : winner == MatchPlayerSide ? App.Outcome.Win : App.Outcome.Loss;
             }
         }
 
@@ -175,7 +181,20 @@ namespace Game.App
             Play(square);
         }
 
-        /// <summary>矢印キー。カーソルは CPU の手番でも動かせる。</summary>
+        /// <summary>矢印キー。タイトルと結果画面では左右で強さ、上下で色を選び、プレイ中はカーソルを動かす。</summary>
+        public void Navigate(int dx, int dy)
+        {
+            if (CanChooseOptions)
+            {
+                if (dx != 0) { ShiftLevel(dx); }
+                if (dy != 0) { ToggleSide(); }
+                return;
+            }
+
+            MoveCursor(dx, dy);
+        }
+
+        /// <summary>カーソルを動かす。下と右が正。CPU の手番でも動かせる。</summary>
         public void MoveCursor(int dx, int dy)
         {
             if (_hasFocus && Screen == AppScreen.Playing) { Cursor.Move(dx, dy); }
@@ -239,7 +258,7 @@ namespace Game.App
 
         private void Play(Square square)
         {
-            LastVerdict = Game!.TryPlay(PlayerSide, square);
+            LastVerdict = Game!.TryPlay(MatchPlayerSide, square);
             if (LastVerdict != PlayVerdict.Ok) { _events |= FlowEvents.Rejected; }
             Collect();
         }
@@ -248,8 +267,10 @@ namespace Game.App
         {
             MatchSeed = _nextSeed;
             _nextSeed = unchecked(_nextSeed + 1);
+            MatchLevel = Level;
+            MatchPlayerSide = PlayerSide;
             Game = GameFactory(MatchSeed);
-            Cpu = new CpuPlayer(CpuSide, Config.DepthOf(Level), Config.CpuThinkTicks, MatchSeed);
+            Cpu = new CpuPlayer(CpuSide, Config.DepthOf(MatchLevel), Config.CpuThinkTicks, MatchSeed);
             LastVerdict = null;
             _events = FlowEvents.None;
             Cursor.Reset();

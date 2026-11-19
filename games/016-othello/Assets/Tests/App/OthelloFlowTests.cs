@@ -184,6 +184,36 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void CursorIsShownForKeysAndHiddenForTheMouse()
+        {
+            var flow = new OthelloFlow(new OthelloConfig { FlipTicks = 0, CpuThinkTicks = 0 }, 1);
+            flow.Submit();
+            Assert.That(flow.Cursor.IsActive, Is.False);
+            flow.MoveCursor(1, 0);
+            Assert.That(flow.Cursor.IsActive, Is.True);
+            Click(flow, "d3");
+            Assert.That(flow.Cursor.IsActive, Is.False);
+            Assert.That(flow.Cursor.Position, Is.EqualTo(S("d3")));
+        }
+
+        [Test]
+        public void NavigateChoosesOptionsOnTheTitleAndMovesTheCursorInPlay()
+        {
+            var flow = new OthelloFlow(new OthelloConfig(), 1);
+            flow.Navigate(1, 0);
+            Assert.That(flow.Level, Is.EqualTo(CpuLevel.Strong));
+            flow.Navigate(0, 1);
+            Assert.That(flow.PlayerSide, Is.EqualTo(Side.White));
+            flow.Navigate(0, -1);
+            Assert.That(flow.PlayerSide, Is.EqualTo(Side.Black));
+
+            flow.Submit();
+            flow.Navigate(1, 0);
+            Assert.That(flow.Level, Is.EqualTo(CpuLevel.Strong));
+            Assert.That(flow.Cursor.Position, Is.EqualTo(S("e4")));
+        }
+
+        [Test]
         public void CursorStaysOnTheBoard()
         {
             var flow = new OthelloFlow(new OthelloConfig(), 1);
@@ -317,6 +347,15 @@ namespace Game.App.Tests
             flow.SelectSide(Side.Black);
             Assert.That(flow.Level, Is.EqualTo(CpuLevel.Weak));
             Assert.That(flow.PlayerSide, Is.EqualTo(Side.Black));
+
+            // 選び直しは次の試合のもの。終わった試合の色・強さ・勝敗は変わらない。
+            Assert.That(flow.MatchPlayerSide, Is.EqualTo(Side.White));
+            Assert.That(flow.MatchLevel, Is.EqualTo(CpuLevel.Normal));
+            Assert.That(flow.Outcome, Is.EqualTo(Outcome.Win));
+
+            flow.Submit();
+            Assert.That(flow.MatchPlayerSide, Is.EqualTo(Side.Black));
+            Assert.That(flow.Cpu!.Depth, Is.EqualTo(1));
         }
 
         [Test]

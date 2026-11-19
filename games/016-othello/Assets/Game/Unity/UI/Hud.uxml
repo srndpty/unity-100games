@@ -1,0 +1,44 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:VisualElement name="stats" class="stats" picking-mode="Ignore">
+            <ui:VisualElement name="black-row" class="side-row" picking-mode="Ignore">
+                <ui:VisualElement class="side-icon side-icon--black" picking-mode="Ignore" />
+                <ui:Label name="black-name" class="side-name" />
+                <ui:Label name="black-count" text="2" class="side-count" />
+            </ui:VisualElement>
+            <ui:VisualElement name="white-row" class="side-row" picking-mode="Ignore">
+                <ui:VisualElement class="side-icon side-icon--white" picking-mode="Ignore" />
+                <ui:Label name="white-name" class="side-name" />
+                <ui:Label name="white-count" text="2" class="side-count" />
+            </ui:VisualElement>
+            <ui:Label name="status" class="status" />
+            <ui:Label name="level" class="level" />
+            <ui:Label name="controls" class="controls" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:VisualElement name="overlay" class="overlay">
+            <ui:Label name="headline" text="DUSK &amp; DAWN" class="headline" />
+            <ui:Label name="message" class="message" />
+            <ui:VisualElement name="options" class="options">
+                <ui:Label text="CPU の強さ" class="option-name" />
+                <ui:VisualElement class="option-row">
+                    <ui:Button name="level-weak" text="弱い" class="option" />
+                    <ui:Button name="level-normal" text="普通" class="option" />
+                    <ui:Button name="level-strong" text="強い" class="option" />
+                </ui:VisualElement>
+                <ui:Label text="あなたの石" class="option-name" />
+                <ui:VisualElement class="option-row">
+                    <ui:Button name="side-black" text="黒（先手）" class="option" />
+                    <ui:Button name="side-white" text="白（後手）" class="option" />
+                </ui:VisualElement>
+                <ui:Label name="option-keys" text="←→：強さ　↑↓：石の色" class="option-keys" />
+            </ui:VisualElement>
+            <ui:VisualElement class="buttons">
+                <ui:Button name="submit" text="はじめる  /  Enter" />
+                <ui:Button name="restart" text="やり直す  /  R" />
+                <ui:Button name="title" text="タイトルへ  /  T" />
+                <ui:Button name="quit" text="終了" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

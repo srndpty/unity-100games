@@ -1,0 +1,26 @@
+.hud { position: absolute; width: 100%; height: 100%; color: rgb(244, 234, 214); }
+.stats { position: absolute; left: 56%; right: 6%; top: 9%; bottom: 6%; }
+.side-row { flex-direction: row; align-items: center; height: 96px; margin-bottom: 12px; padding: 0 20px; border-radius: 12px; border-width: 2px; border-color: rgba(0, 0, 0, 0); background-color: rgba(30, 24, 52, 0.6); }
+.side-row--turn { border-color: rgb(236, 190, 104); background-color: rgba(70, 50, 72, 0.85); }
+.side-icon { width: 54px; height: 54px; border-radius: 27px; border-width: 3px; }
+.side-icon--black { background-color: rgb(42, 38, 86); border-color: rgb(120, 112, 190); }
+.side-icon--white { background-color: rgb(248, 226, 170); border-color: rgb(214, 160, 80); }
+.side-name { flex-grow: 1; margin-left: 18px; font-size: 34px; }
+.side-count { font-size: 58px; -unity-font-style: bold; color: rgb(255, 248, 232); }
+.status { height: 88px; margin-top: 10px; font-size: 32px; white-space: normal; color: rgb(250, 214, 140); }
+.level { margin-top: 4px; font-size: 24px; color: rgb(196, 182, 206); }
+.controls { position: absolute; bottom: 0; left: 0; right: 0; font-size: 21px; white-space: normal; color: rgb(190, 178, 200); }
+.overlay { position: absolute; left: 54%; right: 4%; top: 6%; padding: 26px 30px; background-color: rgba(26, 20, 44, 0.95); border-radius: 14px; border-width: 2px; border-color: rgb(214, 170, 90); }
+.headline { font-size: 58px; -unity-font-style: bold; -unity-text-align: middle-center; color: rgb(250, 206, 120); }
+.message { margin-top: 10px; margin-bottom: 6px; font-size: 23px; white-space: normal; }
+.options { margin-top: 4px; }
+.option-name { margin-top: 8px; font-size: 22px; color: rgb(196, 182, 206); }
+.option-row { flex-direction: row; }
+.option-keys { margin-top: 6px; font-size: 20px; color: rgb(196, 182, 206); }
+.buttons { align-items: stretch; margin-top: 8px; }
+Button { height: 54px; margin: 8px 0 0 0; font-size: 25px; color: rgb(250, 242, 226); background-color: rgb(64, 48, 96); border-color: rgb(150, 120, 170); border-width: 1px; border-radius: 8px; }
+Button:hover { background-color: rgb(82, 62, 118); }
+Button:active { background-color: rgb(100, 76, 140); }
+.option { flex-grow: 1; flex-basis: 0; height: 50px; margin: 6px 8px 0 0; font-size: 23px; }
+.option--selected { background-color: rgb(196, 140, 64); border-color: rgb(250, 214, 140); color: rgb(30, 20, 30); -unity-font-style: bold; }
+.option--selected:hover { background-color: rgb(212, 156, 78); }

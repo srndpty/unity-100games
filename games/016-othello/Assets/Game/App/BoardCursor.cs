@@ -3,7 +3,7 @@ using Game.Core;
 
 namespace Game.App
 {
-    /// <summary>キー操作のカーソル。盤の外へは出ない。</summary>
+    /// <summary>キー操作のカーソル。盤の外へは出ない。キーで動かしている間だけ表示する。</summary>
     public sealed class BoardCursor
     {
         /// <summary>試合の開始時の位置（d4、盤の中央）。</summary>
@@ -11,18 +11,28 @@ namespace Game.App
 
         public Square Position { get; private set; } = Home;
 
+        /// <summary>キーで動かした後で、表示する。マウスで打つと隠れる。</summary>
+        public bool IsActive { get; private set; }
+
         public void Move(int dx, int dy)
         {
             Position = new Square(Clamp(Position.X + Math.Sign(dx)), Clamp(Position.Y + Math.Sign(dy)));
+            IsActive = true;
         }
 
+        /// <summary>マウスで選んだマスへ移す。カーソルは隠す。</summary>
         public void MoveTo(Square square)
         {
             if (!square.IsInside) { throw new ArgumentOutOfRangeException(nameof(square), square, "盤外のマスです。"); }
             Position = square;
+            IsActive = false;
         }
 
-        public void Reset() => Position = Home;
+        public void Reset()
+        {
+            Position = Home;
+            IsActive = false;
+        }
 
         /// <summary>
         /// 盤の座標（左上の角が 0、1マスが 1、右と下が正）からマスを求める。盤外なら null。
