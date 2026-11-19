@@ -95,4 +95,10 @@
     <Project Path="games/016-othello/dotnet/Core.Tests/G016.Core.Tests.csproj" />
     <Project Path="games/016-othello/dotnet/Core/G016.Core.csproj" />
   </Folder>
+  <Folder Name="/017-sudoku/">
+    <Project Path="games/017-sudoku/dotnet/App.Tests/G017.App.Tests.csproj" />
+    <Project Path="games/017-sudoku/dotnet/App/G017.App.csproj" />
+    <Project Path="games/017-sudoku/dotnet/Core.Tests/G017.Core.Tests.csproj" />
+    <Project Path="games/017-sudoku/dotnet/Core/G017.Core.csproj" />
+  </Folder>
 </Solution>

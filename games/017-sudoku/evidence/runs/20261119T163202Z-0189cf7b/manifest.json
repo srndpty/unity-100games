@@ -1,0 +1,69 @@
+{
+    "Product": "NINE LATTICE",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "6509d46524d441b0b1f9cd93ab707427",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-19T16:32:01.0135727Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"EasyGivens\":42,\"NormalGivens\":36,\"HardGivens\":26},\"HintGlowTicks\":120,\"Volume\":0.11999999731779099}"
+        },
+        {
+            "Key": "seed",
+            "Value": "1"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "276e94a14d6fe28efe82c1e5635624325dc2e3b846f4dbb073b62f5a61c0b7a6",
+            "Note": "タイトル"
+        },
+        {
+            "File": "02-start.jpg",
+            "Sha256": "6f0ea613348c4c1ed493aebbd883899550f9571b147d78b3d1d586fd7a51fd4c",
+            "Note": "Tick 0、Playing、埋まったマス 36、ヒント 0、None"
+        },
+        {
+            "File": "03-notes.jpg",
+            "Sha256": "2bda0523504865bf14336e70a8a940ec1d2492710d8b2f065e536465b16f0ada",
+            "Note": "Tick 5880、Playing、埋まったマス 50、ヒント 0、Noted"
+        },
+        {
+            "File": "04-conflict.jpg",
+            "Sha256": "10092aa69141ded0b59e0f8f2cc5e401b75cf1ae6f8877ab66a0733b8fa4167d",
+            "Note": "Tick 5880、Playing、埋まったマス 50、ヒント 0、Conflict"
+        },
+        {
+            "File": "05-hint.jpg",
+            "Sha256": "8e5953d007ff3bd60c92d2f5d32432a9fc3d845f47d5b6e8cff7d20e78736c60",
+            "Note": "Tick 5900、Playing、埋まったマス 51、ヒント 1、HintDeduced"
+        },
+        {
+            "File": "06-mistake.jpg",
+            "Sha256": "fdd22acd715258f80b5ea203aeaed1e0b7ec27e29dbbf293b4634a59207e716c",
+            "Note": "Tick 6320、Playing、埋まったマス 52、ヒント 2、HintMistake"
+        },
+        {
+            "File": "07-paused.jpg",
+            "Sha256": "7fa70a0198f4c228f0548d7d6c42896b9f5c84d79d8fe5818089934ee3b84960",
+            "Note": "Tick 6320、Paused、埋まったマス 52、ヒント 2、HintMistake"
+        },
+        {
+            "File": "08-full-but-wrong.jpg",
+            "Sha256": "6c036d4b2ec410943cf61eed1ab4212536df13aa57ea70385d88f4ee04d638e4",
+            "Note": "Tick 1680、Playing、埋まったマス 81、ヒント 0、FullButWrong"
+        },
+        {
+            "File": "09-solved.jpg",
+            "Sha256": "eb8d67528146b8fe34fbf42a00e74b815a1f2df0e64f77db49b6543a595e7154",
+            "Note": "Tick 18480、Result、埋まったマス 81、ヒント 1、Placed"
+        }
+    ]
+}

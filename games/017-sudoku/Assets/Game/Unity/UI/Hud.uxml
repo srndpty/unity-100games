@@ -1,0 +1,59 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:VisualElement name="stats" class="stats" picking-mode="Ignore">
+            <ui:Label text="NINE LATTICE" class="brand" />
+            <ui:VisualElement class="stat-row" picking-mode="Ignore">
+                <ui:Label name="time" text="時間  00:00" class="stat" />
+                <ui:Label name="hints" text="ヒント  0 回" class="stat" />
+            </ui:VisualElement>
+            <ui:VisualElement class="info-row" picking-mode="Ignore">
+                <ui:Label name="difficulty" text="難しさ：ふつう" class="mode" />
+                <ui:Label name="mode" text="入力：数字" class="mode" />
+            </ui:VisualElement>
+            <ui:Label name="status" class="status" />
+            <ui:VisualElement class="pad" picking-mode="Ignore">
+                <ui:VisualElement class="pad-row" picking-mode="Ignore">
+                    <ui:Button name="pad-1" text="1" class="pad-key" />
+                    <ui:Button name="pad-2" text="2" class="pad-key" />
+                    <ui:Button name="pad-3" text="3" class="pad-key" />
+                </ui:VisualElement>
+                <ui:VisualElement class="pad-row" picking-mode="Ignore">
+                    <ui:Button name="pad-4" text="4" class="pad-key" />
+                    <ui:Button name="pad-5" text="5" class="pad-key" />
+                    <ui:Button name="pad-6" text="6" class="pad-key" />
+                </ui:VisualElement>
+                <ui:VisualElement class="pad-row" picking-mode="Ignore">
+                    <ui:Button name="pad-7" text="7" class="pad-key" />
+                    <ui:Button name="pad-8" text="8" class="pad-key" />
+                    <ui:Button name="pad-9" text="9" class="pad-key" />
+                </ui:VisualElement>
+                <ui:VisualElement class="pad-row" picking-mode="Ignore">
+                    <ui:Button name="pad-note" text="候補" class="pad-tool" />
+                    <ui:Button name="pad-erase" text="消す" class="pad-tool" />
+                    <ui:Button name="pad-hint" text="ヒント" class="pad-tool" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label name="controls" class="controls" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:VisualElement name="overlay" class="overlay">
+            <ui:Label name="headline" text="NINE LATTICE" class="headline" />
+            <ui:Label name="message" class="message" />
+            <ui:VisualElement name="options" class="options">
+                <ui:Label text="難しさ" class="option-name" />
+                <ui:VisualElement class="option-row">
+                    <ui:Button name="difficulty-easy" text="やさしい" class="option" />
+                    <ui:Button name="difficulty-normal" text="ふつう" class="option" />
+                    <ui:Button name="difficulty-hard" text="むずかしい" class="option" />
+                </ui:VisualElement>
+                <ui:Label text="←→：難しさ" class="option-keys" />
+            </ui:VisualElement>
+            <ui:VisualElement class="buttons">
+                <ui:Button name="submit" text="はじめる  /  Enter" />
+                <ui:Button name="restart" text="別の問題  /  R" />
+                <ui:Button name="title" text="タイトルへ  /  T" />
+                <ui:Button name="quit" text="終了" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

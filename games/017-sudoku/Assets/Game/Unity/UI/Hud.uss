@@ -1,0 +1,29 @@
+.hud { position: absolute; width: 100%; height: 100%; color: rgb(236, 238, 244); }
+.stats { position: absolute; left: 58%; right: 4%; top: 6%; bottom: 4%; }
+.brand { font-size: 44px; -unity-font-style: bold; color: rgb(244, 214, 150); letter-spacing: 6px; }
+.stat-row { flex-direction: row; margin-top: 10px; }
+.stat { flex-grow: 1; flex-basis: 0; height: 64px; margin-right: 12px; padding: 0 18px; font-size: 32px; -unity-text-align: middle-left; border-radius: 10px; background-color: rgba(16, 26, 48, 0.75); }
+.info-row { flex-direction: row; justify-content: space-between; margin-top: 14px; }
+.mode { font-size: 28px; color: rgb(170, 200, 246); }
+.status { height: 92px; margin-top: 8px; font-size: 27px; white-space: normal; color: rgb(250, 214, 140); }
+.pad { margin-top: 6px; }
+.pad-row { flex-direction: row; }
+.pad-key { flex-grow: 1; flex-basis: 0; height: 74px; margin: 0 10px 10px 0; font-size: 40px; -unity-font-style: bold; }
+.pad-tool { flex-grow: 1; flex-basis: 0; height: 60px; margin: 0 10px 10px 0; font-size: 26px; }
+.pad--on { background-color: rgb(196, 150, 70); border-color: rgb(250, 214, 140); color: rgb(24, 20, 30); -unity-font-style: bold; }
+.pad--on:hover { background-color: rgb(212, 166, 84); }
+.controls { position: absolute; bottom: 0; left: 0; right: 0; font-size: 20px; white-space: normal; color: rgb(176, 188, 210); }
+.overlay { position: absolute; left: 57%; right: 4%; top: 6%; padding: 26px 30px; background-color: rgba(14, 22, 42, 0.95); border-radius: 14px; border-width: 2px; border-color: rgb(200, 170, 110); }
+.headline { font-size: 58px; -unity-font-style: bold; -unity-text-align: middle-center; color: rgb(244, 214, 150); }
+.message { margin-top: 10px; margin-bottom: 6px; font-size: 24px; white-space: normal; }
+.options { margin-top: 4px; }
+.option-name { margin-top: 8px; font-size: 22px; color: rgb(176, 188, 210); }
+.option-row { flex-direction: row; }
+.option-keys { margin-top: 6px; font-size: 20px; color: rgb(176, 188, 210); }
+.option { flex-grow: 1; flex-basis: 0; height: 50px; margin: 6px 8px 0 0; font-size: 23px; }
+.option--selected { background-color: rgb(196, 150, 70); border-color: rgb(250, 214, 140); color: rgb(24, 20, 30); -unity-font-style: bold; }
+.option--selected:hover { background-color: rgb(212, 166, 84); }
+.buttons { align-items: stretch; margin-top: 8px; }
+Button { height: 54px; margin: 8px 0 0 0; font-size: 25px; color: rgb(240, 242, 248); background-color: rgb(40, 64, 106); border-color: rgb(110, 140, 190); border-width: 1px; border-radius: 8px; }
+Button:hover { background-color: rgb(54, 82, 130); }
+Button:active { background-color: rgb(70, 100, 152); }
