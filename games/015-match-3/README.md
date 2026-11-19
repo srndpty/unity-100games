@@ -50,7 +50,7 @@ dev capture 015  # 証跡を evidence/ に撮る
 | 手数 | 成立した入れ替えで1減る（既定 20手）。連鎖しても1手 |
 | 勝敗 | 連鎖を最後まで解決してから判定する。目標スコア（既定 2,000点）以上ならクリア、届かずに手数が0なら手数切れ。最後の1手で届けばクリア |
 | 手詰まり | 解決後に合法手がなければ、手数を減らさずに盤面を作り直す（初期盤面と同じ生成、別の乱数系列） |
-| 解決中の入力 | 入れ替え・消去・落下・作り直しの演出中の入れ替えは捨てる（先行入力しない）。選択は取り消す |
+| 解決中の入力 | 入れ替え・消去・落下・作り直しの演出中のクリック・ドラッグ・キー操作は捨てる（先行入力しない）。選択とドラッグも取り消し、次の手番へ持ち越さない |
 | 時間 | 60Hz の固定 Tick。入れ替え10、戻し20、消去18、落下は1段4、作り直し40 Tick |
 | 再戦 | 試合ごとに新しいシードを使う |
 
@@ -96,9 +96,9 @@ unity run games/015-match-3 -- -executeMethod Game.Unity.Editor.PrismTideSceneBu
 | 種類 | 場所 | 件数 | 実行方法 |
 |---|---|---:|---|
 | Core | `Assets/Tests/Core/` | 87 | `dev test` |
-| App | `Assets/Tests/App/` | 40 | `dev test` |
-| EditMode（Core/App を Mono で実行） | 同上 | 127 | `dev test 015 -Unity` |
-| PlayMode（実シーン13、共通証跡16） | `Assets/Tests/Unity/` | 29 | `dev test 015 -Unity -Mode PlayMode` |
+| App | `Assets/Tests/App/` | 43 | `dev test` |
+| EditMode（Core/App を Mono で実行） | 同上 | 130 | `dev test 015 -Unity` |
+| PlayMode（実シーン14、共通証跡16） | `Assets/Tests/Unity/` | 30 | `dev test 015 -Unity -Mode PlayMode` |
 
 仕様書の題材固有テストとの対応：
 
