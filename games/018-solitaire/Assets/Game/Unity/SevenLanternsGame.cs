@@ -16,7 +16,7 @@ namespace Game.Unity
         private const float ViewHalfWidth = 9.4f;
         private const int TitleSeed = 0;
         private const string Controls =
-            "ドラッグ：札を重ねる ／ クリック→クリック：選んで置く\nダブルクリック：組札へ ／ 山札をクリック：めくる\nZ・BS：1 手戻す ／ Esc・P：一時停止";
+            "ドラッグ：札を重ねる ／ クリック→クリック：選んで置く\nダブルクリック：組札へ ／ 山札をクリック：めくる\nZ・BS：1 手戻す ／ F：自動で仕上げる ／ Esc・P：一時停止";
 
         [SerializeField] private SevenLanternsSettings _settings;
         [SerializeField] private PanelRenderer _hudRenderer;
@@ -43,6 +43,7 @@ namespace Game.Unity
         private Label _headlineLabel;
         private Label _messageLabel;
         private Button _undoButton;
+        private Button _autoButton;
         private Button _submitButton;
         private Button _restartButton;
         private Button _resignButton;
@@ -66,6 +67,7 @@ namespace Game.Unity
             PointerDown,
             PointerUp,
             Undo,
+            AutoComplete,
             Submit,
             Pause,
             Restart,
@@ -89,7 +91,7 @@ namespace Game.Unity
 
             // 撮影中は決まったシードから始め、同じビルドなら同じ画像になるようにする。再戦は Flow が試合ごとにシードを進める。
             var seed = EvidenceCapture.IsRunning ? EvidenceCapture.Seed : Environment.TickCount;
-            Flow = new SolitaireFlow(_settings.Rules, seed, _settings.DoubleClickSeconds);
+            Flow = new SolitaireFlow(_settings.Rules, seed, _settings.DoubleClickSeconds) { AutoMoveTicks = _settings.AutoMoveTicks };
             _titleTable = Deal.Create(TitleSeed, _settings.Rules.DrawCount);
             _audio = GetComponent<AudioSource>();
             _audio.playOnAwake = false;
@@ -110,6 +112,7 @@ namespace Game.Unity
             press.performed += context => PointerChanged(context, IntentKind.PointerDown);
             press.canceled += context => PointerChanged(context, IntentKind.PointerUp);
             Action("Undo", "<Keyboard>/z", "<Keyboard>/backspace").performed += _ => Request(new Intent(IntentKind.Undo));
+            Action("AutoComplete", "<Keyboard>/f").performed += _ => Request(new Intent(IntentKind.AutoComplete));
             Action("Submit", "<Keyboard>/enter", "<Keyboard>/numpadEnter").performed += _ => Request(new Intent(IntentKind.Submit));
             Action("Pause", "<Keyboard>/escape", "<Keyboard>/p").performed += _ => Request(new Intent(IntentKind.Pause));
             Action("Restart", "<Keyboard>/r").performed += _ => Request(new Intent(IntentKind.Restart));
@@ -171,6 +174,7 @@ namespace Game.Unity
                 case IntentKind.PointerDown: Flow.PointerDown(ScreenToTable(intent.Point), intent.Time); break;
                 case IntentKind.PointerUp: Flow.PointerUp(ScreenToTable(intent.Point), intent.Time); break;
                 case IntentKind.Undo: Flow.Undo(); break;
+                case IntentKind.AutoComplete: Flow.StartAutoComplete(); break;
                 case IntentKind.Submit: Flow.Submit(); break;
                 case IntentKind.Pause: Flow.TogglePause(); break;
                 case IntentKind.Restart: Flow.Restart(); break;
@@ -249,6 +253,7 @@ namespace Game.Unity
             _headlineLabel = root.Q<Label>("headline");
             _messageLabel = root.Q<Label>("message");
             _undoButton = root.Q<Button>("undo");
+            _autoButton = root.Q<Button>("auto");
             _submitButton = root.Q<Button>("submit");
             _restartButton = root.Q<Button>("restart");
             _resignButton = root.Q<Button>("resign");
@@ -256,6 +261,7 @@ namespace Game.Unity
             _quitButton = root.Q<Button>("quit");
 
             _undoButton.clicked += () => Request(new Intent(IntentKind.Undo));
+            _autoButton.clicked += () => Request(new Intent(IntentKind.AutoComplete));
             root.Q<Button>("pause").clicked += () => Request(new Intent(IntentKind.Pause));
             _submitButton.clicked += () => Request(new Intent(IntentKind.Submit));
             _restartButton.clicked += () => Request(new Intent(IntentKind.Restart));
@@ -279,7 +285,8 @@ namespace Game.Unity
             SetText(_foundationLabel, $"組札  {game?.Table.FoundationTotal ?? 0} / {Card.DeckSize}");
             SetText(_modeLabel, DrawModeName(game?.Table.DrawCount ?? Flow.Config.DrawCount));
             SetText(_statusLabel, game == null ? string.Empty : Status());
-            _undoButton.SetEnabled(game?.CanUndo ?? false);
+            _undoButton.SetEnabled(game != null && game.CanUndo && !Flow.IsAutoCompleting);
+            Show(_autoButton, screen == AppScreen.Playing && Flow.CanStartAutoComplete);
 
             Show(_overlay, screen != AppScreen.Playing);
             SetText(_headlineLabel, Headline(screen, game));
@@ -297,6 +304,8 @@ namespace Game.Unity
             Notice.Rejected => RejectMessage(Flow.LastError),
             Notice.Undone => "1 手戻しました。",
             Notice.NothingToUndo => "戻せる手がありません。",
+            _ when Flow.IsAutoCompleting => "組札へ送っています…",
+            _ when Flow.CanStartAutoComplete => "伏せ札も山札もなくなりました。\n残りは自動で組札へ送れます。",
             _ => Flow.Input.Selected != null ? "置きたい場所をクリックしてください。" : "札をドラッグして重ねます。\nダブルクリックで組札へ送ります。",
         };
 

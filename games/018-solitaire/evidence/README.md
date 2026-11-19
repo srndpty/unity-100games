@@ -1,6 +1,6 @@
 # 018 検証記録
 
-2026-11-20実施。自動検証まで通し、人間のプレイ確認待ち。試遊の指摘を受けてスートを一般的なハート・ダイヤ・クラブ・スペード（赤黒 2 色）に替え、札の隅のランクと印を縁から内側へ寄せて、検証をやり直した。
+2026-11-20実施。自動検証まで通し、人間のプレイ確認待ち。試遊の指摘を受けてスートを一般的なハート・ダイヤ・クラブ・スペード（赤黒 2 色）に替え、札の隅のランクと印を縁から内側へ寄せ、「自動で仕上げる」を追加して、検証をやり直した。
 
 ## 自動検証
 
@@ -8,15 +8,15 @@
 |---|---|
 | dev lint | 成功 |
 | dev check | 成功（018、警告0・エラー0） |
-| dev test | 成功。018 Core 71/71、App 38/38 |
-| Unity EditMode | 109/109（Core/App、Mono） |
-| Unity PlayMode | 32/32（実シーン16、共通証跡公開16） |
+| dev test | 成功。018 Core 76/76、App 42/42 |
+| Unity EditMode | 118/118（Core/App、Mono） |
+| Unity PlayMode | 34/34（実シーン18、共通証跡公開16） |
 | Windowsビルド | 成功、StandaloneWindows64 |
 | ビルド起動 | dev captureで起動・全場面撮影・正常終了 |
-| 証跡 | JPEG品質85、12枚 |
-| 撮影再現 | 同一ビルドを2回撮影し、画像世代3edc1cad45ba68b3が一致した |
+| 証跡 | JPEG品質85、14枚 |
+| 撮影再現 | 同一ビルドを2回撮影し、画像世代d4cf5442d0726a27が一致した |
 
-Build GUID：`4238130ad8f7424e911154a23708e79f`。シード：1。公開ポインタは[current.json](current.json)、実行記録は[manifest.json](runs/20261119T200305Z-761629fc/manifest.json)。
+Build GUID：`f53eaceca8ca473e9ff01bcf586bb193`。シード：1。公開ポインタは[current.json](current.json)、実行記録は[manifest.json](runs/20261119T201745Z-daa4e143/manifest.json)。
 
 Unityのビルドログにライセンスクライアントの検証メッセージが出たが、ビルドとPlayerの撮影起動は成功した。
 
@@ -45,6 +45,7 @@ Unityのビルドログにライセンスクライアントの検証メッセー
 ## 入力
 
 - 実シーンの PlayMode テストで、仮想マウスから次を確かめている：ドラッグで札の連続を動かし下の伏せ札が開く、ドラッグ中は掴んだ札がポインタに付いて手前に描かれ盤は変わらない、何もない所や置けない所で離すと盤は変わらず札が元の位置へ戻る（置けない理由を表示）、クリックで選ぶと縁が光り別の山のクリックで動かす、山札のクリックでめくり・戻す、ダブルクリックで組札へ送る（最後の 1 枚で勝利）。
+- 「自動で仕上げる」は、伏せ札と山札が残るうちは出ず、仕上げられる局面で出ること、押すと送っている間はボタンが消えて取り消しが無効になり、最後に勝つことを PlayMode テストで確かめている。F キーでも始まる。1 枚ずつ送る間隔、一時停止で止まること、処理落ちの分をまとめて送ることは App テストで確かめている。
 - 1 手戻すは Z キーと HUD のボタンの両方で、戻す手がないときボタンが押せないことと、押すと戻ることを同じテストで確かめている。
 - フォーカスを失うとドラッグ中の札を落とさずに取り消し、復帰直後のクリックで再開しないことを確かめている。
 - 終了ボタンは、押すと終了処理を1回呼ぶことをPlayModeテストで確認している。エディタでは `Application.Quit` が働かないため、ビルドで実際に終了する動作は自動テストの対象外。
@@ -53,48 +54,56 @@ Unityのビルドログにライセンスクライアントの検証メッセー
 
 ### タイトル（飾りの配札）
 
-![タイトル](captures/3edc1cad45ba68b3/01-title.jpg)
+![タイトル](captures/d4cf5442d0726a27/01-title.jpg)
 
 ### 配札
 
-![配札](captures/3edc1cad45ba68b3/02-deal.jpg)
+![配札](captures/d4cf5442d0726a27/02-deal.jpg)
 
 ### クリックで選んだ札
 
-![選択](captures/3edc1cad45ba68b3/03-selected.jpg)
+![選択](captures/d4cf5442d0726a27/03-selected.jpg)
 
 ### ドラッグ中
 
-![ドラッグ中](captures/3edc1cad45ba68b3/04-dragging.jpg)
+![ドラッグ中](captures/d4cf5442d0726a27/04-dragging.jpg)
 
 ### ドロップ
 
-![ドロップ](captures/3edc1cad45ba68b3/05-dropped.jpg)
+![ドロップ](captures/d4cf5442d0726a27/05-dropped.jpg)
 
 ### 置けない場所（理由の表示）
 
-![置けない場所](captures/3edc1cad45ba68b3/06-rejected.jpg)
+![置けない場所](captures/d4cf5442d0726a27/06-rejected.jpg)
 
 ### 進行中（自動操縦で 31 手）
 
-![進行中](captures/3edc1cad45ba68b3/07-progress.jpg)
+![進行中](captures/d4cf5442d0726a27/07-progress.jpg)
 
 ### 1 手戻す
 
-![1手戻す](captures/3edc1cad45ba68b3/08-undo.jpg)
+![1手戻す](captures/d4cf5442d0726a27/08-undo.jpg)
 
 ### 一時停止
 
-![一時停止](captures/3edc1cad45ba68b3/09-paused.jpg)
+![一時停止](captures/d4cf5442d0726a27/09-paused.jpg)
 
 ### 3 枚めくり
 
-![3枚めくり](captures/3edc1cad45ba68b3/10-draw-three.jpg)
+![3枚めくり](captures/d4cf5442d0726a27/10-draw-three.jpg)
 
 ### 手詰まり
 
-![手詰まり](captures/3edc1cad45ba68b3/11-stuck.jpg)
+![手詰まり](captures/d4cf5442d0726a27/11-stuck.jpg)
 
 ### 完成
 
-![完成](captures/3edc1cad45ba68b3/12-won.jpg)
+![完成](captures/d4cf5442d0726a27/12-won.jpg)
+
+### 自動で仕上げられる（ボタン）
+
+![自動で仕上げられる](captures/d4cf5442d0726a27/13-auto-ready.jpg)
+
+### 自動で仕上げている途中
+
+![自動で仕上げている途中](captures/d4cf5442d0726a27/14-auto-completing.jpg)

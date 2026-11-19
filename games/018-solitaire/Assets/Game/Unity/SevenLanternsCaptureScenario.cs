@@ -100,8 +100,18 @@ namespace Game.Unity
             var king = TableLayout.CardCenter(Table, PileId.Tableau(2), 0);
             DoubleClick(king);
             Require(Flow.Screen == AppScreen.Result && Game.Phase == GamePhase.Won, "勝利");
-            Flow.GameFactory = normalGame;
             await Shoot(capture, "12-won");
+
+            Flow.GameFactory = _ => new SolitaireGame(Flow.Config, DemoTables.AutoCompleteReady());
+            Flow.Restart();
+            Require(Flow.CanStartAutoComplete, "自動で仕上げられる");
+            await Shoot(capture, "13-auto-ready");
+
+            Flow.StartAutoComplete();
+            Steps(Flow.AutoMoveTicks * 12);
+            Require(Flow.IsAutoCompleting && Table.FoundationTotal == 26, "自動で仕上げている途中");
+            await Shoot(capture, "14-auto-completing");
+            Flow.GameFactory = normalGame;
         }
 
         private static void Require(bool condition, string scene)

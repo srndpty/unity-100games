@@ -42,6 +42,9 @@ namespace Game.App
         Stuck = 1 << 8,
 
         Resigned = 1 << 9,
+
+        /// <summary>自動で仕上げ始めた。</summary>
+        AutoCompleteStarted = 1 << 10,
     }
 
     /// <summary>直前の操作の結果。HUD の案内に使う。次の操作で置き換わる。</summary>
@@ -69,7 +72,12 @@ namespace Game.App
         /// <summary>経過時間の上限（99 時間 59 分 59 秒）。表示の桁と int の範囲に収める。</summary>
         public const int MaxElapsedTicks = ((99 * 3600) + (59 * 60) + 59) * TickRate;
 
+        /// <summary>自動で仕上げるとき、1 枚送るごとの間隔の上限（Tick）。</summary>
+        public const int MaxAutoMoveTicks = 60;
+
         private int _nextSeed;
+        private int _autoMoveTicks = 5;
+        private int _autoCountdown;
         private double _elapsedTicks;
         private double _accountedTicks;
         private double _timeError;
@@ -112,6 +120,27 @@ namespace Game.App
         /// <summary>盤への操作を受け付ける状態。</summary>
         public bool IsPlaying => Screen == AppScreen.Playing;
 
+        /// <summary>自動で仕上げている途中。この間は札の操作と取り消しを受け付けない。</summary>
+        public bool IsAutoCompleting { get; private set; }
+
+        /// <summary>「自動で仕上げる」を出す状態。</summary>
+        public bool CanStartAutoComplete => IsPlaying && !IsAutoCompleting && Game!.CanAutoComplete;
+
+        /// <summary>自動で仕上げるとき、1 枚送るごとの間隔（Tick、1〜<see cref="MaxAutoMoveTicks"/>）。</summary>
+        public int AutoMoveTicks
+        {
+            get => _autoMoveTicks;
+            set
+            {
+                if (value < 1 || value > MaxAutoMoveTicks)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), value, $"1〜{MaxAutoMoveTicks} の範囲で指定してください。");
+                }
+
+                _autoMoveTicks = value;
+            }
+        }
+
         /// <summary>決定。タイトルと結果画面では試合を始め、一時停止中は再開する。</summary>
         public void Submit()
         {
@@ -146,6 +175,7 @@ namespace Game.App
         {
             if (!_hasFocus || (Screen != AppScreen.Paused && Screen != AppScreen.Result)) { return; }
             Game = null;
+            IsAutoCompleting = false;
             ChangeScreen(AppScreen.Title);
         }
 
@@ -153,8 +183,22 @@ namespace Game.App
         public void Resign()
         {
             if (!_hasFocus || Screen != AppScreen.Paused || !Game!.Resign()) { return; }
+            IsAutoCompleting = false;
             _events |= FlowEvents.Resigned;
             ChangeScreen(AppScreen.Result);
+        }
+
+        /// <summary>
+        /// 自動で仕上げ始める。プレイ中に <see cref="SolitaireGame.CanAutoComplete"/> のときだけ受け付ける。
+        /// 以後はプレイ中の時間の経過に合わせて <see cref="AutoMoveTicks"/> ごとに 1 枚ずつ組札へ送る（一時停止中は止まる）。
+        /// </summary>
+        public void StartAutoComplete()
+        {
+            if (!_hasFocus || !CanStartAutoComplete) { return; }
+            Input.Cancel();
+            IsAutoCompleting = true;
+            _autoCountdown = AutoMoveTicks;
+            Report(Notice.None, FlowEvents.AutoCompleteStarted);
         }
 
         /// <summary>直前の手を取り消す。</summary>
@@ -212,9 +256,11 @@ namespace Game.App
         {
             if (Screen != AppScreen.Playing || !double.IsFinite(seconds) || seconds <= 0) { return; }
             var elapsed = seconds * TickRate;
+            var before = ElapsedTicks;
             if (!double.IsFinite(elapsed) || ElapsedTicks + elapsed >= MaxElapsedTicks)
             {
                 ElapsedTicks = MaxElapsedTicks;
+                RunAutoComplete(int.MaxValue);
                 return;
             }
 
@@ -226,12 +272,15 @@ namespace Game.App
             var accounted = Math.Floor(total);
             ElapsedTicks = (int)Math.Min(MaxElapsedTicks, ElapsedTicks + (accounted - _accountedTicks));
             _accountedTicks = accounted;
+            RunAutoComplete(ElapsedTicks - before);
         }
 
         /// <summary>1 Tick 進める。プレイ中でなければ何もしない。</summary>
         public void StepTick()
         {
-            if (Screen == AppScreen.Playing && ElapsedTicks < MaxElapsedTicks) { ElapsedTicks++; }
+            if (Screen != AppScreen.Playing) { return; }
+            if (ElapsedTicks < MaxElapsedTicks) { ElapsedTicks++; }
+            RunAutoComplete(1);
         }
 
         /// <summary>前回の呼び出し以降に起きた出来事を取り出す。</summary>
@@ -242,7 +291,25 @@ namespace Game.App
             return events;
         }
 
-        private bool AcceptOperation() => _hasFocus && Screen == AppScreen.Playing;
+        private bool AcceptOperation() => _hasFocus && Screen == AppScreen.Playing && !IsAutoCompleting;
+
+        // 進んだ Tick の分だけ待ち時間を減らし、0 になるたびに 1 枚送る。処理落ちで大きく進んだときは、その分をまとめて送る。
+        private void RunAutoComplete(int ticks)
+        {
+            if (!IsAutoCompleting || ticks <= 0) { return; }
+            _autoCountdown -= Math.Min(ticks, AutoMoveTicks * Card.DeckSize);
+            while (_autoCountdown <= 0 && IsAutoCompleting && Screen == AppScreen.Playing)
+            {
+                _autoCountdown += AutoMoveTicks;
+                if (AutoComplete.NextMove(Game!.Table) is not Command move)
+                {
+                    IsAutoCompleting = false;
+                    return;
+                }
+
+                ApplyCommand(Game!.Apply(move));
+            }
+        }
 
         private void Perform(PointerAction action)
         {
@@ -263,6 +330,13 @@ namespace Game.App
                     return;
             }
 
+            ApplyCommand(error);
+        }
+
+        // 適用した結果を案内と出来事にし、試合が終わったら結果画面へ移る。
+        private void ApplyCommand(MoveError error)
+        {
+            var game = Game!;
             if (error != MoveError.None)
             {
                 LastError = error;
@@ -274,6 +348,7 @@ namespace Game.App
             Report(Notice.None, EventsOf(game.LastMove!.Value));
             if (!game.IsOver) { return; }
             _events |= game.Phase == GamePhase.Won ? FlowEvents.Won : FlowEvents.Stuck;
+            IsAutoCompleting = false;
             ChangeScreen(AppScreen.Result);
         }
 
@@ -302,6 +377,7 @@ namespace Game.App
             _nextSeed = unchecked(_nextSeed + 1);
             Game = GameFactory(MatchSeed);
             ElapsedTicks = 0;
+            IsAutoCompleting = false;
             Report(Notice.None, FlowEvents.None);
             _events = FlowEvents.None;
             ChangeScreen(Game.IsOver ? AppScreen.Result : AppScreen.Playing);

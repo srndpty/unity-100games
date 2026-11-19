@@ -53,6 +53,9 @@ namespace Game.Core
 
         public bool CanUndo => !IsOver && _history.Count > 0;
 
+        /// <summary>残りを自動で組札へ送れる（<see cref="AutoComplete"/>）。</summary>
+        public bool CanAutoComplete => !IsOver && AutoComplete.IsAvailable(_table);
+
         /// <summary>直前に適用したコマンドの記録。描画が動きを知るために使う。</summary>
         public MoveRecord? LastMove => _history.Count > 0 ? _history.Peek() : null;
 

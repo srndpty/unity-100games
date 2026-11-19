@@ -15,6 +15,19 @@ namespace Game.App
             "f4: AS 2S 3S 4S 5S 6S 7S 8S 9S TS JS QS",
             "t3: KS"));
 
+        /// <summary>山札・捨て札が空で伏せ札もなく、自動で仕上げられる局面（組札に 14 枚、場札に 38 枚）。</summary>
+        public static Table AutoCompleteReady() => TableText.Parse(string.Join(
+            "\n",
+            "f1: AD 2D 3D 4D",
+            "f2: AH 2H 3H 4H",
+            "f3: AS 2S 3S",
+            "f4: AC 2C 3C",
+            "t1: KH QC JD TC 9H 8C 7D 6C 5H",
+            "t2: KC QH JC TH 9C 8H 7C 6H 5C",
+            "t3: KD QS JH TS 9D 8S 7H 6S 5D 4S",
+            "t5: KS QD JS TD 9S 8D 7S 6D 5S",
+            "t6: 4C"));
+
         /// <summary>
         /// 場札の一番上がハート（赤）の 2・4・6・8・10・Q・K で、残りは伏せ札。捨て札の上の QC を KH に置くと、
         /// 残りの捨て札（3D・5D）はどこにも置けず手詰まりになる。

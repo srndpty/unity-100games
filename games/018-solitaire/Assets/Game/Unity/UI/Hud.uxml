@@ -12,6 +12,7 @@
                 <ui:Label name="mode" text="1 枚めくり" class="mode" />
             </ui:VisualElement>
             <ui:Label name="status" class="status" />
+            <ui:Button name="auto" text="自動で仕上げる  /  F" class="auto" />
             <ui:VisualElement class="tool-row" picking-mode="Ignore">
                 <ui:Button name="undo" text="1 手戻す  /  Z" class="tool" />
                 <ui:Button name="pause" text="一時停止  /  Esc" class="tool" />

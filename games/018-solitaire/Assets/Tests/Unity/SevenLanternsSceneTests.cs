@@ -348,6 +348,41 @@ namespace Game.Unity.Tests
         }
 
         [UnityTest]
+        public IEnumerator AutoButton_AppearsOnlyWhenReadyAndFinishesTheGame()
+        {
+            yield return Begin();
+            yield return null;
+            Assert.That(IsShown("auto"), Is.False, "伏せ札と山札があるうちは出さない");
+
+            yield return _keyboard.Tap(Key.Escape);
+            Flow.GameFactory = _ => new SolitaireGame(Flow.Config, DemoTables.AutoCompleteReady());
+            yield return _keyboard.Tap(Key.R);
+            yield return null;
+            Assert.That(IsShown("auto"), Is.True);
+            Assert.That(Text("status"), Does.Contain("自動で組札へ送れます"));
+
+            yield return ClickButton("auto");
+            Assert.That(Flow.IsAutoCompleting, Is.True);
+            Assert.That(IsShown("auto"), Is.False, "仕上げている間は出さない");
+            Assert.That(_game.HudRoot.Q<Button>("undo").enabledSelf, Is.False, "仕上げている間は戻せない");
+
+            // 1 枚ずつ実時間の間隔で送るので、実時間の上限で待つ。
+            var limit = Time.realtimeSinceStartup + 20f;
+            while (Flow.Screen == AppScreen.Playing && Time.realtimeSinceStartup < limit) { yield return null; }
+            Assert.That(Game.Phase, Is.EqualTo(GamePhase.Won));
+            yield return null;
+            Assert.That(Text("headline"), Is.EqualTo("完成！"));
+        }
+
+        [UnityTest]
+        public IEnumerator AutoKey_StartsTheAutoComplete()
+        {
+            yield return Begin(DemoTables.AutoCompleteReady());
+            yield return _keyboard.Tap(Key.F);
+            Assert.That(Flow.IsAutoCompleting, Is.True);
+        }
+
+        [UnityTest]
         public IEnumerator Pause_StopsTimeBlocksTheTableAndResigns()
         {
             yield return Begin();

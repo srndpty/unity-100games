@@ -258,5 +258,84 @@ namespace Game.App.Tests
             Assert.That(flow.Screen, Is.EqualTo(AppScreen.Result));
             Assert.That(flow.Game!.Phase, Is.EqualTo(GamePhase.Stuck));
         }
+
+        [Test]
+        public void AutoCompleteSendsOneCardPerIntervalUntilWon()
+        {
+            var flow = FlowFrom(DemoTables.AutoCompleteReady());
+            flow.AutoMoveTicks = 4;
+            flow.Submit();
+            Assert.That(flow.CanStartAutoComplete, Is.True);
+            flow.StartAutoComplete();
+            Assert.That(flow.IsAutoCompleting, Is.True);
+            Assert.That(flow.CanStartAutoComplete, Is.False, "仕上げている間はボタンを出さない");
+            Assert.That(flow.TakeEvents(), Is.EqualTo(FlowEvents.AutoCompleteStarted));
+
+            for (var i = 0; i < 3; i++) { flow.StepTick(); }
+            Assert.That(flow.Game!.Table.FoundationTotal, Is.EqualTo(14), "間隔までは送らない");
+            flow.StepTick();
+            Assert.That(flow.Game!.Table.FoundationTotal, Is.EqualTo(15));
+            Assert.That(flow.TakeEvents(), Is.EqualTo(FlowEvents.ToFoundation));
+
+            for (var i = 0; i < 200 && flow.Screen == AppScreen.Playing; i++) { flow.StepTick(); }
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Result));
+            Assert.That(flow.Game!.Phase, Is.EqualTo(GamePhase.Won));
+            Assert.That(flow.IsAutoCompleting, Is.False);
+            Assert.That(flow.TakeEvents() & FlowEvents.Won, Is.EqualTo(FlowEvents.Won));
+        }
+
+        [Test]
+        public void AutoCompleteBlocksPointersAndUndoAndStopsWhilePaused()
+        {
+            var flow = FlowFrom(DemoTables.AutoCompleteReady());
+            flow.Submit();
+            flow.StartAutoComplete();
+            for (var i = 0; i < flow.AutoMoveTicks; i++) { flow.StepTick(); }
+            var sent = flow.Game!.Table.FoundationTotal;
+            Assert.That(sent, Is.EqualTo(15));
+
+            flow.Undo();
+            Assert.That(flow.Game!.Table.FoundationTotal, Is.EqualTo(sent), "仕上げている間は取り消せない");
+            var king = Center(flow, PileId.Tableau(0), 0);
+            flow.PointerDown(king, 1);
+            flow.PointerMove(king + new TablePoint(2, 0));
+            Assert.That(flow.Input.Dragging, Is.Null, "札を掴めない");
+
+            flow.TogglePause();
+            flow.Advance(10);
+            flow.StepTick();
+            Assert.That(flow.Game!.Table.FoundationTotal, Is.EqualTo(sent), "一時停止中は止まる");
+            flow.TogglePause();
+            flow.Advance(flow.AutoMoveTicks / (double)SolitaireFlow.TickRate * 1.01);
+            Assert.That(flow.Game!.Table.FoundationTotal, Is.EqualTo(sent + 1), "再開すると続く");
+        }
+
+        [Test]
+        public void AutoCompleteIsRefusedWhenNotAvailable()
+        {
+            var flow = NewFlow();
+            flow.StartAutoComplete();
+            Assert.That(flow.IsAutoCompleting, Is.False, "タイトル");
+            flow.Submit();
+            Assert.That(flow.CanStartAutoComplete, Is.False, "伏せ札と山札がある");
+            flow.StartAutoComplete();
+            Assert.That(flow.IsAutoCompleting, Is.False);
+            Assert.That(flow.TakeEvents(), Is.EqualTo(FlowEvents.None));
+            Assert.Throws<System.ArgumentOutOfRangeException>(() => flow.AutoMoveTicks = 0);
+            Assert.Throws<System.ArgumentOutOfRangeException>(() => flow.AutoMoveTicks = SolitaireFlow.MaxAutoMoveTicks + 1);
+        }
+
+        [Test]
+        public void LongFrameSendsTheCardsItCovered()
+        {
+            var flow = FlowFrom(DemoTables.AutoCompleteReady());
+            flow.AutoMoveTicks = 5;
+            flow.Submit();
+            flow.StartAutoComplete();
+            flow.Advance(20.0 / SolitaireFlow.TickRate);
+            Assert.That(flow.Game!.Table.FoundationTotal, Is.EqualTo(18), "20 Tick で 4 枚");
+            flow.Advance(60);
+            Assert.That(flow.Game!.Phase, Is.EqualTo(GamePhase.Won), "処理落ちの分はまとめて送る");
+        }
     }
 }

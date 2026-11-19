@@ -1,4 +1,5 @@
 using System;
+using Game.App;
 using Game.Core;
 using UnityEngine;
 
@@ -19,6 +20,9 @@ namespace Game.Unity
         [Tooltip("札が新しい位置へ寄る速さ（1 秒あたりの減衰の係数。大きいほど速い）。0 で瞬時に動く。")]
         public float SlideSharpness = 18f;
 
+        [Tooltip("自動で仕上げるとき、1 枚送るごとの間隔（60Hz の Tick 数、1〜60）。")]
+        public int AutoMoveTicks = 5;
+
         [Range(0, 1)] public float Volume = .12f;
 
         public void Validate()
@@ -27,6 +31,10 @@ namespace Game.Unity
             RequireRange(DoubleClickSeconds, 0, MaxDoubleClickSeconds, nameof(DoubleClickSeconds));
             RequireRange(SlideSharpness, 0, MaxSlideSharpness, nameof(SlideSharpness));
             RequireRange(Volume, 0, 1, nameof(Volume));
+            if (AutoMoveTicks < 1 || AutoMoveTicks > SolitaireFlow.MaxAutoMoveTicks)
+            {
+                throw new ArgumentOutOfRangeException(nameof(AutoMoveTicks), AutoMoveTicks, $"1〜{SolitaireFlow.MaxAutoMoveTicks} の範囲で指定してください。");
+            }
         }
 
         private static void RequireRange(float value, float min, float max, string name)
