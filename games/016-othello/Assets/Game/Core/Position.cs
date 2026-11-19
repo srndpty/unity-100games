@@ -19,10 +19,9 @@ namespace Game.Core
         public Position(ulong black, ulong white, Side toMove)
         {
             if ((black & white) != 0) { throw new ArgumentException("黒と白が同じマスにあります。", nameof(white)); }
-            if (toMove != Side.Black && toMove != Side.White) { throw new ArgumentOutOfRangeException(nameof(toMove)); }
             Black = black;
             White = white;
-            ToMove = toMove;
+            ToMove = toMove.Validate();
         }
 
         /// <summary>初期配置。d4・e5 が白、e4・d5 が黒で、黒の手番。</summary>
@@ -38,7 +37,7 @@ namespace Game.Core
         public ulong Empty => ~(Black | White);
         public int EmptyCount => Bits.PopCount(Empty);
 
-        public ulong Stones(Side side) => side == Side.Black ? Black : White;
+        public ulong Stones(Side side) => side.Validate() == Side.Black ? Black : White;
 
         public int Count(Side side) => Bits.PopCount(Stones(side));
 

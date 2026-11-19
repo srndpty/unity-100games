@@ -148,6 +148,7 @@ namespace Game.Core
         /// <summary>side が square に打てるかを、局面を変えずに判定する。</summary>
         public PlayVerdict Check(Side side, Square square)
         {
+            side.Validate();
             if (IsOver) { return PlayVerdict.GameOver; }
             if (!AcceptsMove) { return PlayVerdict.Busy; }
             if (side != ToMove) { return PlayVerdict.NotYourTurn; }

@@ -2,9 +2,9 @@
     "Product": "DUSK & DAWN",
     "Version": "1.0",
     "UnityVersion": "6000.6.9f1",
-    "BuildGuid": "b3f649aa879e4cfcbdd058c4e1e4fc99",
+    "BuildGuid": "bb33993496ab4112b8728f5235f39b23",
     "Seed": 1,
-    "CapturedAtUtc": "2026-11-19T14:09:59.0670413Z",
+    "CapturedAtUtc": "2026-11-19T14:35:27.4946988Z",
     "Info": [
         {
             "Key": "imageEncoding",
@@ -37,7 +37,7 @@
         },
         {
             "File": "04-flipping.jpg",
-            "Sha256": "150e481412dbf76bd6888935214fc95378d76c4fc0f642c14734acc6168aab3c",
+            "Sha256": "9d7cd7f0b547f9d1ea132b2044027191adde763fb0ddfd6d49c40bbd0c19ba4b",
             "Note": "Tick 336、Placing、黒 8 白 7、手数 11、パス 0"
         },
         {

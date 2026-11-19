@@ -28,5 +28,18 @@ namespace Game.App
             ".WBBWWWW",
             "WWWWWWWW",
             "B.BBBB.W");
+
+        /// <summary>h8 だけが空きで、黒が h8 に打つと g8 が返って 32 対 32 の引き分けで終わる局面。</summary>
+        public static Position DrawSoon() => BoardText.Parse(Side.Black,
+            "WWWWWWWW",
+            "WWWWWWWW",
+            "WWWWWWWW",
+            "WWWWWWWW",
+            "BBBBBBBB",
+            "BBBBBBBB",
+            "BBBBBBBB",
+            "BBBBBBW.");
+
+        public static readonly Square DrawMove = new(7, 7);
     }
 }

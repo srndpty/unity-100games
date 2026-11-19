@@ -125,8 +125,7 @@ namespace Game.App
         public void SelectSide(Side side)
         {
             if (!CanChooseOptions) { return; }
-            if (side != Side.Black && side != Side.White) { throw new ArgumentOutOfRangeException(nameof(side), side, "未定義の色です。"); }
-            PlayerSide = side;
+            PlayerSide = side.Validate();
         }
 
         public void ToggleSide() => SelectSide(PlayerSide.Opponent());

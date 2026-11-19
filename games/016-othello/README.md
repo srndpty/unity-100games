@@ -48,7 +48,7 @@ dev capture 016  # 証跡を evidence/ に撮る
 | 評価 | 終局は石差 × 10,000。途中は位置の重み（隅 +120、X打ち -40、C打ち -20 など）の差＋合法手の数の差 × 8 |
 | 同点の手 | 最善の評価の手が複数あれば、試合のシードの乱数で選ぶ。手は重みの大きい順の固定順序で調べる |
 | 時間 | 60Hz の固定 Tick。返す演出 18、パスの表示 60、CPU が手を決めてから打つまで 30 Tick |
-| 演出中の入力 | 返す演出・パスの表示・CPU の手番に来たクリックとキーの着手は、入力の受付（App）で捨てる。カーソルの移動だけは受け付ける |
+| 演出中の入力 | 返す演出・パスの表示・CPU の手番に来たクリックとキーの着手は、入力の受付（App）で捨てる。カーソルの移動だけは受け付ける。返す演出中は手番が移っていても「石を返しています…」と出し、手番の案内と合法手の印は返し終わってから出す |
 | 再戦 | 試合ごとに新しいシード（起動時の値から1ずつ進める） |
 
 棋譜の表記は列 a〜h（左から）、行 1〜8（上から）。
@@ -101,10 +101,10 @@ unity run games/016-othello -- -executeMethod Game.Unity.Editor.DuskDawnSceneBui
 
 | 種類 | 場所 | 件数 | 実行方法 |
 |---|---|---:|---|
-| Core | `Assets/Tests/Core/` | 75 | `dev test` |
-| App | `Assets/Tests/App/` | 37 | `dev test` |
-| EditMode（Core/App を Mono で実行） | 同上 | 112 | `dev test 016 -Unity` |
-| PlayMode（実シーン16、共通証跡16） | `Assets/Tests/Unity/` | 32 | `dev test 016 -Unity -Mode PlayMode` |
+| Core | `Assets/Tests/Core/` | 79 | `dev test` |
+| App | `Assets/Tests/App/` | 38 | `dev test` |
+| EditMode（Core/App を Mono で実行） | 同上 | 117 | `dev test 016 -Unity` |
+| PlayMode（実シーン19、共通証跡16） | `Assets/Tests/Unity/` | 35 | `dev test 016 -Unity -Mode PlayMode` |
 
 仕様書の題材固有テストとの対応：
 
@@ -112,7 +112,7 @@ unity run games/016-othello -- -executeMethod Game.Unity.Editor.DuskDawnSceneBui
 |---|---|
 | 挟めない手を拒否 | `OthelloGameTests.IllegalSquaresAreRejectedWithoutChangingTheGame` / `OutOfBoardIsRejected` / `MoveByTheSideNotToMoveIsRejected`、`PositionTests.OnlyClosedLinesAreFlipped` / `LinesDoNotWrapAroundTheBoardEdge`、App `IllegalClickIsRejectedAndChangesNothing`、PlayMode `Mouse_IllegalClickIsRejectedButALegalClickPlays` |
 | 合法手ゼロでパス | `OthelloGameTests.SideWithoutLegalMovesPassesAutomatically` / `PassIsShownForPassTicksAndRejectsMoves` / `PassAfterAMoveHandsTheTurnBackToTheMover`、App `PassIsReportedAndTheGameContinues`、PlayMode `Pass_IsAnnouncedAndTheTurnReturns` |
-| 両者打てないと終局 | `OthelloGameTests.GameEndsWhenNeitherSideCanMoveWithEmptySquaresLeft` / `GameEndsWhenTheBoardIsFull` / `MovesAfterTheEndAreRejectedAndTicksStop`、PlayMode `Result_ShowsTheWinAndEnterReplays` / `Result_ShowsTheLossWhenTheCpuHasMoreDiscs` |
+| 両者打てないと終局 | `OthelloGameTests.GameEndsWhenNeitherSideCanMoveWithEmptySquaresLeft` / `GameEndsWhenTheBoardIsFull` / `MovesAfterTheEndAreRejectedAndTicksStop`、PlayMode `Result_ShowsTheWinAndEnterReplays` / `Result_ShowsTheLossWhenTheCpuHasMoreDiscs` / `Result_ShowsTheDrawWhenTheCountsAreEqual` |
 | 合法手を全探索で照合 | `BruteForceTests.LegalMovesAndFlipsMatchTheNaiveScanInEveryVisitedPosition` |
 | CPU対戦が完走 | App `CpuMatchesFinishForEveryLevelAndSide`（3段階×2色×3シード）、PlayMode `Mouse_ClickPlaysAndTheCpuAnswers` |
 | Minimax と評価 | `SearcherTests.AlphaBetaGivesTheSameValueAsPlainMinimax`（深さ1〜4、枝刈りなしと一致）/ `BestMovesAreExactlyTheMovesWithTheBestPlainValue`、App `StrongerCpuBeatsTheWeakestMoreOften` |

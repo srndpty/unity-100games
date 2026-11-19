@@ -235,6 +235,7 @@ namespace Game.Unity.Tests
             _game.Render();
             Assert.That(_game.View.ShownHints, Is.EqualTo(0), "CPU の手番では印を出さない");
 
+            yield return WaitUntil(() => Flow.IsCpuTurn);
             yield return null;
             Assert.That(Text("status"), Is.EqualTo("CPU が考えています…"));
             yield return WaitUntil(() => Flow.IsPlayerTurn);
@@ -318,6 +319,57 @@ namespace Game.Unity.Tests
         }
 
         [UnityTest]
+        public IEnumerator Status_DoesNotOfferTheTurnWhileTheCpuMoveIsFlipping()
+        {
+            Flow.SelectSide(Side.White);
+            yield return Begin();
+
+            // 実時間では進めず、Tick をテストから進めて CPU の着手直後の演出中を作る。
+            Time.timeScale = 0;
+            try
+            {
+                StepUntil(() => Game.Phase == GamePhase.Placing);
+                Assert.That(Game.ToMove, Is.EqualTo(Side.White), "置いた時点で手番は移っている");
+                Assert.That(Flow.IsPlayerTurn, Is.False);
+                _game.Render();
+                Assert.That(Text("status"), Is.EqualTo("石を返しています…"));
+                Assert.That(_game.View.ShownHints, Is.EqualTo(0));
+
+                StepUntil(() => Game.Phase != GamePhase.Placing);
+                Assert.That(Flow.IsPlayerTurn, Is.True);
+                _game.Render();
+                Assert.That(Text("status"), Is.EqualTo("あなたの番です。"));
+                Assert.That(_game.View.ShownHints, Is.GreaterThan(0));
+            }
+            finally
+            {
+                Time.timeScale = 1;
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator Status_SaysFlippingRatherThanThinkingAfterThePlayerMoves()
+        {
+            yield return Begin();
+            Time.timeScale = 0;
+            try
+            {
+                yield return Click(S("d3"));
+                Assert.That(Game.Phase, Is.EqualTo(GamePhase.Placing));
+                _game.Render();
+                Assert.That(Text("status"), Is.EqualTo("石を返しています…"));
+
+                StepUntil(() => Game.Phase != GamePhase.Placing);
+                _game.Render();
+                Assert.That(Text("status"), Is.EqualTo("CPU が考えています…"));
+            }
+            finally
+            {
+                Time.timeScale = 1;
+            }
+        }
+
+        [UnityTest]
         public IEnumerator ClicksDuringTheCpuTurnAreIgnored()
         {
             Flow.SelectSide(Side.White);
@@ -379,6 +431,17 @@ namespace Game.Unity.Tests
             yield return PlayToTheEndWithClicks();
             Assert.That(Text("headline"), Is.EqualTo("CPU の勝ち"));
             Assert.That(Text("message"), Does.Contain("あなたは白"));
+        }
+
+        [UnityTest]
+        public IEnumerator Result_ShowsTheDrawWhenTheCountsAreEqual()
+        {
+            yield return Begin(_ => new OthelloGame(Flow.Config, DemoGames.DrawSoon()));
+            yield return Click(DemoGames.DrawMove);
+            yield return WaitUntil(() => Flow.Screen == AppScreen.Result);
+            yield return null;
+            Assert.That(Text("headline"), Is.EqualTo("引き分け"));
+            Assert.That(Text("message"), Does.Contain("黒 32").And.Contain("白 32"));
         }
 
         [UnityTest]

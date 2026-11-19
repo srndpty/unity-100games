@@ -330,6 +330,8 @@ namespace Game.Unity
                 return $"{PlayerName(state.ToMove)}は打てる場所がないので、パスします。";
             }
 
+            // 置いた時点で手番は相手へ移るが、返し終わるまで着手は受け付けない。その間は手番を案内しない。
+            if (state.Phase == GamePhase.Placing) { return "石を返しています…"; }
             if (state.ToMove != Flow.MatchPlayerSide) { return "CPU が考えています…"; }
             var rejected = state.IsPlayerTurn && state.LastVerdict.HasValue && state.LastVerdict != PlayVerdict.Ok;
             return rejected ? "そこには打てません。\n点の出ているマスに打てます。" : "あなたの番です。";

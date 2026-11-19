@@ -47,6 +47,19 @@ namespace Game.App.Tests
             Walk(DemoGames.Endgame());
         }
 
+        [Test]
+        public void DrawMoveEndsTheGameAsADraw()
+        {
+            var flow = new OthelloFlow(InstantConfig(), 1);
+            flow.GameFactory = _ => new OthelloGame(flow.Config, DemoGames.DrawSoon());
+            flow.Submit();
+            Assert.That(flow.Game!.LegalMoves, Is.EqualTo(DemoGames.DrawMove.Bit));
+            flow.PointerDown(DemoGames.DrawMove.X + 0.5, DemoGames.DrawMove.Y + 0.5);
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Result));
+            Assert.That(flow.Outcome, Is.EqualTo(Outcome.Draw));
+            Assert.That(flow.Game.Count(Side.Black), Is.EqualTo(32));
+        }
+
         [TestCase(Side.Black, Outcome.Win)]
         [TestCase(Side.White, Outcome.Loss)]
         public void EndgameGivesTheExpectedResultForEachSide(Side playerSide, Outcome expected)

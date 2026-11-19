@@ -71,6 +71,14 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void UndefinedSideIsRejected()
+        {
+            var game = new OthelloGame(new OthelloConfig());
+            Assert.Throws<System.ArgumentOutOfRangeException>(() => game.TryPlay((Side)2, S("d3")));
+            AssertUntouched(game);
+        }
+
+        [Test]
         public void CheckDoesNotChangeTheGame()
         {
             var game = new OthelloGame(new OthelloConfig());

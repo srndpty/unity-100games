@@ -160,6 +160,22 @@ namespace Game.Core.Tests
             Assert.That(Position.Initial.IsTerminal, Is.False);
         }
 
+        [TestCase(-1)]
+        [TestCase(2)]
+        [TestCase(99)]
+        public void UndefinedSidesAreRejectedInsteadOfTreatedAsWhite(int value)
+        {
+            var side = (Side)value;
+            var p = Position.Initial;
+            Assert.Throws<System.ArgumentOutOfRangeException>(() => side.Opponent());
+            Assert.Throws<System.ArgumentOutOfRangeException>(() => side.ToDisc());
+            Assert.Throws<System.ArgumentOutOfRangeException>(() => p.Stones(side));
+            Assert.Throws<System.ArgumentOutOfRangeException>(() => p.Count(side));
+            Assert.Throws<System.ArgumentOutOfRangeException>(() => p.LegalMoves(side));
+            Assert.Throws<System.ArgumentOutOfRangeException>(() => p.HasLegalMove(side));
+            Assert.Throws<System.ArgumentOutOfRangeException>(() => _ = new Position(0, 0, side));
+        }
+
         [Test]
         public void OverlappingStonesAreRejected()
         {
