@@ -101,4 +101,10 @@
     <Project Path="games/017-sudoku/dotnet/Core.Tests/G017.Core.Tests.csproj" />
     <Project Path="games/017-sudoku/dotnet/Core/G017.Core.csproj" />
   </Folder>
+  <Folder Name="/018-solitaire/">
+    <Project Path="games/018-solitaire/dotnet/App.Tests/G018.App.Tests.csproj" />
+    <Project Path="games/018-solitaire/dotnet/App/G018.App.csproj" />
+    <Project Path="games/018-solitaire/dotnet/Core.Tests/G018.Core.Tests.csproj" />
+    <Project Path="games/018-solitaire/dotnet/Core/G018.Core.csproj" />
+  </Folder>
 </Solution>
