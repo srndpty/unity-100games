@@ -184,6 +184,88 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void Hash_DistinguishesABufferedJumpThatHasNotFiredYet()
+        {
+            // レビュー P3-2：着地前にジャンプを押してバッファに入れただけの状態は、位置・速度が同じでも以後の動きが違う。
+            var room = Ledge();
+            var run = Run(room);
+            run.Tick(Idle);
+            Hold(run, Jump, 25);
+            run.Tick(Idle);
+            Assert.That(run.Player.VelocityY, Is.LessThan(0), "落下中");
+            Assert.That(run.Player.Grounded, Is.False);
+
+            // 着地の 3 Tick 前（バッファの範囲内）まで落とす。
+            for (var i = 0; i < 120 && TicksToLand(run) > 3; i++) { run.Tick(Idle); }
+            Assert.That(TicksToLand(run), Is.EqualTo(3));
+            var buffered = run.Clone();
+            var plain = run.Clone();
+            buffered.Tick(Jump);
+            plain.Tick(Idle);
+            Assert.That(buffered.Player.Body, Is.EqualTo(plain.Player.Body));
+            Assert.That(buffered.Player.VelocityY, Is.EqualTo(plain.Player.VelocityY));
+            Assert.That(buffered.Player.BufferRemaining, Is.GreaterThan(0));
+            Assert.That(buffered.Hash(), Is.Not.EqualTo(plain.Hash()), "バッファの残りもハッシュに含める");
+
+            for (var i = 0; i < 60 && buffered.Player.Body == plain.Player.Body; i++)
+            {
+                buffered.Tick(Idle);
+                plain.Tick(Idle);
+            }
+
+            Assert.That(buffered.Player.Body, Is.Not.EqualTo(plain.Player.Body), "着地すると片方だけ跳ぶ");
+        }
+
+        private static int TicksToLand(RoomRun run)
+        {
+            var probe = run.Clone();
+            for (var i = 1; i <= 120; i++)
+            {
+                probe.Tick(Idle);
+                if (probe.Player.Grounded) { return i; }
+            }
+
+            return int.MaxValue;
+        }
+
+        [Test]
+        public void Hash_DistinguishesAHeldDashKey()
+        {
+            var room = Ledge();
+            var run = Run(room);
+            run.Tick(Idle);
+            Hold(run, Jump, 3);
+            run.Tick(Dash);
+            Hold(run, Idle, new PrecisionConfig().DashTicks);
+            Assert.That(run.Player.DashesLeft, Is.Zero);
+            var held = run.Clone();
+            var released = run.Clone();
+            held.Tick(Dash);
+            released.Tick(Idle);
+            Assert.That(held.Player.Body, Is.EqualTo(released.Player.Body), "回数がないのでどちらも動きは同じ");
+            Assert.That(held.Hash(), Is.Not.EqualTo(released.Hash()), "押したままかどうか（着地後に押し直しが要るか）もハッシュに含める");
+        }
+
+        [Test]
+        public void Hash_DistinguishesTheWallJumpLockAndDashTicks()
+        {
+            var config = new PrecisionConfig();
+            var locked = new Player(config, new Box(0, 6 * T, Player.Width, Player.Height));
+            locked.Step(Open, Idle);
+            var copy = locked.Clone();
+            locked.Step(Open, Jump);
+            Assert.That(locked.Hash(), Is.Not.EqualTo(copy.Hash()));
+
+            var dashing = Floating(10 * T, 6 * T, config);
+            dashing.Step(Open, Dash);
+            var a = dashing.Clone();
+            var b = dashing.Clone();
+            a.Step(Open, Idle);
+            b.Step(Open, Idle);
+            Assert.That(a.Hash(), Is.EqualTo(b.Hash()), "同じ状態・同じ入力なら同じ");
+        }
+
+        [Test]
         public void Constructor_RejectsInvalidArguments()
         {
             Assert.Throws<ArgumentNullException>(() => _ = new RoomRun(null!, Corridor()));

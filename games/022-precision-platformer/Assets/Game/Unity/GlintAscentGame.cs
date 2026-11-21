@@ -157,8 +157,10 @@ namespace Game.Unity
 
             _intents.Clear();
 
+            // 入力と時計で進める Tick は、このフレームで合わせて Flow の上限まで。Advance・EndFrame でフレームを終える。
             // 撮影中は台本が Tick を進める。timeScale が 0 の間（テストが Tick を直接進めるとき）も時計で進めない。
             if (!EvidenceCapture.IsRunning && Time.timeScale > 0) { Flow.Advance(Now); }
+            else { Flow.EndFrame(); }
             PlayEvents();
             Render();
         }

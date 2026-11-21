@@ -81,8 +81,11 @@ namespace Game.Core
         /// <summary>死亡してから部屋の開始位置に戻るまでの Tick 数。</summary>
         public int DeathTicks = 18;
 
-        /// <summary>斜めの移動量。各軸を 1/√2 倍（181/256）にした整数。</summary>
-        public static int DiagonalOf(int speed) => speed * 181 / 256;
+        /// <summary>
+        /// 斜めの移動量。各軸を 1/√2 倍（181/256）にした整数。正の速さは最低 1 にする
+        /// （切り捨てで 0 になると、斜めのダッシュが回数だけ使って動かなくなる）。
+        /// </summary>
+        public static int DiagonalOf(int speed) => speed <= 0 ? 0 : Math.Max(1, speed * 181 / 256);
 
         public void Validate()
         {

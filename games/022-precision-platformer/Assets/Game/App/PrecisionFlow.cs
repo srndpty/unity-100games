@@ -35,11 +35,17 @@ namespace Game.App
     /// 時刻 τ の入力は、τ を含む区間の Tick から効く（その前の Tick を先に進めてから入力を反映する）。
     /// どのフレームで届いても同じ Tick に効くので、フレームレートが違っても同じ入力の列なら同じ結果になる。
     /// </para>
+    /// <para>
+    /// 1 フレームの処理量：<see cref="Apply"/> と <see cref="Advance"/> は 1 フレームで合わせて <see cref="MaxTicksPerFrame"/> Tick までしか
+    /// 進めない（<see cref="Advance"/> か <see cref="EndFrame"/> でフレームの終わりとし、次のフレームの分を数え直す）。
+    /// 上限を超えた区間は進めずに飛ばす（その間の時間はなかったことにする）が、入力は起きた順にすべて反映するので、
+    /// 押している・離したの状態は崩れない。
+    /// </para>
     /// </summary>
     public sealed class PrecisionFlow
     {
-        /// <summary>遅れがこれを超えたら、超えたぶんの時間を捨てる（処理落ちの後に一度に進める Tick 数の上限）。</summary>
-        public const int MaxTicksBehind = 5;
+        /// <summary>1 フレームで進める Tick 数の上限（処理落ちの後に一度に進める量を抑える）。</summary>
+        public const int MaxTicksPerFrame = 5;
 
         private readonly PrecisionConfig _config;
         private readonly Room[] _rooms;
@@ -47,6 +53,7 @@ namespace Game.App
         private bool _hasFocus = true;
         private double _origin;
         private long _ticksDone;
+        private int _frameBudget = MaxTicksPerFrame;
         private FlowEvents _events;
 
         public PrecisionFlow(PrecisionConfig config, IReadOnlyList<Room> rooms)
@@ -126,12 +133,21 @@ namespace Game.App
             _held.Clear();
         }
 
-        /// <summary>時刻 <paramref name="now"/>（秒、<see cref="Intent.Time"/> と同じ時計）までの Tick を進める。</summary>
+        /// <summary>
+        /// 時刻 <paramref name="now"/>（秒、<see cref="Intent.Time"/> と同じ時計）までの Tick を進め、フレームを終える。
+        /// 1 フレームに 1 回、そのフレームの入力をすべて <see cref="Apply"/> した後に呼ぶ。
+        /// </summary>
         public void Advance(double now)
         {
-            if (!_hasFocus) { return; }
-            AdvanceTo(now);
+            if (_hasFocus) { AdvanceTo(now); }
+            EndFrame();
         }
+
+        /// <summary>時計で進めずにフレームを終える（撮影中など、Tick を直接進めるとき）。次のフレームの上限を数え直す。</summary>
+        public void EndFrame() => _frameBudget = MaxTicksPerFrame;
+
+        /// <summary>今のフレームで、まだ進められる Tick 数。</summary>
+        public int FrameBudget => _frameBudget;
 
         /// <summary>時刻と無関係に 1 Tick 進める（撮影・テスト用）。プレイ中でなければ何もしない。</summary>
         public void StepTick()
@@ -158,12 +174,14 @@ namespace Game.App
             var elapsed = Math.Floor((time - _origin) * Units.TickRate);
             if (elapsed <= _ticksDone) { return; }
 
-            // 処理落ちで遅れすぎたら、上限を超えたぶんの Tick を飛ばす（その間の時間は進まなかったことにする）。
+            // このフレームの残りの上限を超える区間は、手前を飛ばして（時間は進まなかったことにして）直前の Tick だけを進める。
+            // 同じフレームの他の入力・Advance と上限を分け合うので、入力がいくつたまっても 1 フレームの Tick 数は上限を超えない。
             var target = elapsed > long.MaxValue / 2 ? long.MaxValue / 2 : (long)elapsed;
-            if (target - _ticksDone > MaxTicksBehind) { _ticksDone = target - MaxTicksBehind; }
+            if (target - _ticksDone > _frameBudget) { _ticksDone = target - _frameBudget; }
             while (_ticksDone < target && Screen == AppScreen.Playing)
             {
                 _ticksDone++;
+                _frameBudget--;
                 StepTick();
             }
         }

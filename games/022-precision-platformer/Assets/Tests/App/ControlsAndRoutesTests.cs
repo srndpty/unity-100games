@@ -11,7 +11,7 @@ namespace Game.App.Tests
         /// 全ルートで 10 部屋を通したときの状態のハッシュ。整数だけで計算するので .NET と Mono で同じ値になる。
         /// 部屋・ルート・設定の既定値を変えたら作り直す。
         /// </summary>
-        private const uint ExpectedClimbHash = 0x69B43996u;
+        private const uint ExpectedClimbHash = 0x4FC97CE8u;
 
         private static readonly Control[] _allControls = { Control.Left, Control.Right, Control.Up, Control.Down, Control.Jump, Control.Dash };
 

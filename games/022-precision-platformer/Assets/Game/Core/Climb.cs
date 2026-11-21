@@ -87,19 +87,15 @@ namespace Game.Core
             return events;
         }
 
-        /// <summary>状態のハッシュ。</summary>
+        /// <summary>状態のハッシュ。今の部屋の挑戦の全状態と、進行（部屋・死亡回数・経過 Tick・勝利）を含む。</summary>
         public uint Hash()
         {
-            var hash = Run.Hash();
-            unchecked
-            {
-                hash = (hash ^ (uint)RoomIndex) * 16777619u;
-                hash = (hash ^ (uint)Deaths) * 16777619u;
-                hash = (hash ^ (uint)ElapsedTicks) * 16777619u;
-                hash = (hash ^ (IsWon ? 1u : 0u)) * 16777619u;
-            }
-
-            return hash;
+            var hash = StateHash.Start();
+            hash.Mix(RoomIndex);
+            hash.Mix(Deaths);
+            hash.Mix(ElapsedTicks);
+            hash.Mix(IsWon);
+            return Run.Mix(hash).Value;
         }
     }
 }

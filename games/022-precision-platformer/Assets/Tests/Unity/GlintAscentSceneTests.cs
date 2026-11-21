@@ -367,7 +367,8 @@ namespace Game.Unity.Tests
             InputSystem.QueueStateEvent(_mouse, state);
         }
 
-        // バッチ実行ではUIイベントが配送されないので、実際の座標でボタンに当たることを確かめてから送る。
+        // 実際の座標でボタンに当たることを確かめ、マウスで押して離す。バッチ実行ではUIイベントが配送されないので、
+        // マウスのクリックが届かなかったときだけボタンへ直接送る（GUI のエディタでは届くので、二重に押さない）。
         private IEnumerator ClickButton(string name)
         {
             yield return null;
@@ -380,14 +381,25 @@ namespace Game.Unity.Tests
             var point = new Vector2(panelPoint.x / rootSize.x * Screen.width, Screen.height - (panelPoint.y / rootSize.y * Screen.height));
             Assert.That(panel.Pick(RuntimePanelUtils.ScreenToPanel(panel, new Vector2(point.x, Screen.height - point.y))), Is.SameAs(button));
 
-            SetMouse(point);
-            yield return null;
-            SetMouse(point, MouseButton.Left);
-            yield return null;
-            SendButtonClick(name);
-            SetMouse(point);
-            yield return null;
-            yield return null;
+            var delivered = false;
+            void OnClicked() => delivered = true;
+            button.clicked += OnClicked;
+            try
+            {
+                SetMouse(point);
+                yield return null;
+                SetMouse(point, MouseButton.Left);
+                yield return null;
+                SetMouse(point);
+                yield return null;
+                if (!delivered) { SendButtonClick(name); }
+                yield return null;
+                yield return null;
+            }
+            finally
+            {
+                button.clicked -= OnClicked;
+            }
         }
 
         // ボタンへポインタの押下と離しを送る（ClickEvent では Button.clicked が呼ばれない）。

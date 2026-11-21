@@ -126,6 +126,38 @@ namespace Game.Core
         /// <summary>同じ状態の複製。</summary>
         public Player Clone() => (Player)MemberwiseClone();
 
+        /// <summary>
+        /// 以後の動きを決める状態をすべて混ぜる（位置・速度・向き・回数に加え、猶予・バッファ・固定・ダッシュの残り Tick、
+        /// 直前のキーの押下）。ハッシュが一致すれば、同じ入力に対して以後も同じに動く。
+        /// </summary>
+        public void MixInto(ref StateHash hash)
+        {
+            hash.Mix(Body.X);
+            hash.Mix(Body.Y);
+            hash.Mix(VelocityX);
+            hash.Mix(VelocityY);
+            hash.Mix(Grounded);
+            hash.Mix(Facing);
+            hash.Mix(DashesLeft);
+            hash.Mix(WallSliding);
+            hash.Mix(_jumpWasHeld);
+            hash.Mix(_dashWasHeld);
+            hash.Mix(_rising);
+            hash.Mix(_coyote.Remaining);
+            hash.Mix(_buffer.Remaining);
+            hash.Mix(_wallLock.Remaining);
+            hash.Mix(_dashLeft);
+            hash.Mix(_dashX);
+            hash.Mix(_dashY);
+        }
+
+        public uint Hash()
+        {
+            var hash = StateHash.Start();
+            MixInto(ref hash);
+            return hash.Value;
+        }
+
         /// <summary>1 Tick 進める。</summary>
         public PlayerActions Step(TileMap map, PlayerInput input)
         {

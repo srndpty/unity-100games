@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 using static Game.Core.Tests.TestKit;
 
@@ -31,6 +32,25 @@ namespace Game.Core.Tests
             var speed = h != 0 && v != 0 ? PrecisionConfig.DiagonalOf(_config.DashSpeed) : _config.DashSpeed;
             Assert.That(player.VelocityX, Is.EqualTo(h * speed));
             Assert.That(player.VelocityY, Is.EqualTo(v * speed));
+        }
+
+        [Test]
+        public void Dash_EightDirectionsMoveEvenAtTheSlowestSpeeds([Values(1, 2, 72)] int dashSpeed)
+        {
+            // レビュー P3-1：DashSpeed 1 の斜め成分が切り捨てで 0 になり、回数だけ使って動かなかった。
+            var config = new PrecisionConfig { DashSpeed = dashSpeed, DashEndSpeed = 0 };
+            for (var h = -1; h <= 1; h++)
+            {
+                for (var v = -1; v <= 1; v++)
+                {
+                    if (h == 0 && v == 0) { continue; }
+                    var player = Floating(20 * T, 6 * T, config);
+                    var start = player.Body;
+                    Assert.That(player.Step(Open, In(h, v, dash: true)), Is.EqualTo(PlayerActions.Dashed));
+                    Assert.That(Math.Sign(player.Body.X - start.X), Is.EqualTo(h), $"({h}, {v}) の横");
+                    Assert.That(Math.Sign(player.Body.Y - start.Y), Is.EqualTo(v), $"({h}, {v}) の縦");
+                }
+            }
         }
 
         [Test]

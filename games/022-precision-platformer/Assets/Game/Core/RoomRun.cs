@@ -135,28 +135,18 @@ namespace Game.Core
             return events;
         }
 
-        /// <summary>状態のハッシュ（FNV-1a）。Mono と .NET で同じ結果になることの確認用。</summary>
-        public uint Hash(uint seed = 2166136261u)
-        {
-            var hash = seed;
-            void Mix(long value)
-            {
-                unchecked
-                {
-                    hash = (hash ^ (uint)value) * 16777619u;
-                    hash = (hash ^ (uint)(value >> 32)) * 16777619u;
-                }
-            }
+        /// <summary>状態のハッシュ。以後の動きを決める状態（自機の内部の残り Tick・直前のキーの押下、死亡からの再開までの Tick）をすべて含む。</summary>
+        public uint Hash() => Mix(StateHash.Start()).Value;
 
-            Mix(Ticks);
-            Mix((int)Status);
-            Mix(Deaths);
-            Mix(Player.Body.X);
-            Mix(Player.Body.Y);
-            Mix(Player.VelocityX);
-            Mix(Player.VelocityY);
-            Mix(Player.DashesLeft);
-            Mix(Player.Facing);
+        /// <summary>この挑戦の状態をハッシュに混ぜる。</summary>
+        public StateHash Mix(StateHash hash)
+        {
+            hash.Mix(Ticks);
+            hash.Mix((int)Status);
+            hash.Mix((int)LastDeath);
+            hash.Mix(Deaths);
+            hash.Mix(_respawnLeft);
+            Player.MixInto(ref hash);
             return hash;
         }
 

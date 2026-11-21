@@ -70,6 +70,9 @@ namespace Game.Core.Tests
             Assert.That(PrecisionConfig.DiagonalOf(PrecisionConfig.MaxSpeed), Is.LessThan(PrecisionConfig.MaxSpeed));
             Assert.That(PrecisionConfig.DiagonalOf(72), Is.EqualTo(50));
             Assert.That(PrecisionConfig.DiagonalOf(0), Is.Zero);
+            Assert.That(PrecisionConfig.DiagonalOf(1), Is.EqualTo(1), "正の速さの斜め成分は 0 にしない");
+            Assert.That(PrecisionConfig.DiagonalOf(2), Is.EqualTo(1));
+            Assert.That(PrecisionConfig.DiagonalOf(3), Is.EqualTo(2));
         }
 
         [Test]

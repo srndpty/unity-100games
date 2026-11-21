@@ -104,13 +104,71 @@ namespace Game.App.Tests
         }
 
         [Test]
-        public void Hitch_SkipsTimeBeyondMaxTicksBehind()
+        public void Hitch_SkipsTimeBeyondMaxTicksPerFrame()
         {
             var flow = Playing();
             flow.Advance(Start + 10);
-            Assert.That(flow.Climb!.ElapsedTicks, Is.EqualTo(PrecisionFlow.MaxTicksBehind), "処理落ちの後に一度に進めるのは上限まで");
+            Assert.That(flow.Climb!.ElapsedTicks, Is.EqualTo(PrecisionFlow.MaxTicksPerFrame), "処理落ちの後に一度に進めるのは上限まで");
             flow.Advance(Start + 10 + (1.5 * Tick));
-            Assert.That(flow.Climb.ElapsedTicks, Is.EqualTo(PrecisionFlow.MaxTicksBehind + 1), "飛ばした後は時計に沿って進む");
+            Assert.That(flow.Climb.ElapsedTicks, Is.EqualTo(PrecisionFlow.MaxTicksPerFrame + 1), "飛ばした後は時計に沿って進む");
+        }
+
+        [Test]
+        public void Hitch_InputsAndAdvanceInOneFrameShareTheTickBudget()
+        {
+            // レビュー P2-1 の例：処理停止の後、1 フレームで 2 つの入力と Advance を処理する。
+            var flow = Playing();
+            flow.Apply(Intent.Down(Control.Right, 2.0));
+            flow.Apply(Intent.Up(Control.Right, 3.0));
+            flow.Advance(4.0);
+            Assert.That(flow.Climb!.ElapsedTicks, Is.EqualTo(PrecisionFlow.MaxTicksPerFrame), "3 回の呼び出しで合わせて上限まで（以前は 15 Tick 進んだ）");
+
+            // 飛ばした区間の押下・解放も順に反映され、右は離した状態になっている。
+            Walk(flow, 4.0, 30);
+            Assert.That(flow.Climb.Run.Player.VelocityX, Is.Zero, "離したキーで動き続けない");
+            Assert.That(flow.Climb.Run.Player.Body.X, Is.EqualTo(flow.Climb.Run.Room.StartBox.X));
+        }
+
+        [Test]
+        public void Hitch_KeyPressedDuringSkippedTimeIsStillHeld()
+        {
+            var flow = Playing();
+            flow.Apply(Intent.Down(Control.Left, 1.5));
+            flow.Apply(Intent.Up(Control.Left, 1.6));
+            flow.Apply(Intent.Down(Control.Right, 2.0));
+            flow.Advance(4.0);
+            Assert.That(flow.Climb!.ElapsedTicks, Is.EqualTo(PrecisionFlow.MaxTicksPerFrame));
+            Walk(flow, 4.0, 10);
+            Assert.That(flow.Climb.Run.Player.VelocityX, Is.GreaterThan(0), "飛ばした区間で押した右は押したままになっている");
+        }
+
+        [Test]
+        public void Hitch_ManyInputsInOneFrameNeverExceedTheBudget()
+        {
+            var flow = Playing();
+            var events = 0;
+            for (var i = 0; i < 40; i++)
+            {
+                var time = Start + 1 + (i * 0.5);
+                flow.Apply(i % 2 == 0 ? Intent.Down(Control.Right, time) : Intent.Up(Control.Right, time));
+                events++;
+            }
+
+            Assert.That(flow.FrameBudget, Is.Zero);
+            flow.Advance(Start + 30);
+            Assert.That(flow.Climb!.ElapsedTicks, Is.EqualTo(PrecisionFlow.MaxTicksPerFrame), $"{events} 個の入力をためても 1 フレームの上限を超えない");
+            Assert.That(flow.FrameBudget, Is.EqualTo(PrecisionFlow.MaxTicksPerFrame), "Advance でフレームを終え、上限を数え直す");
+        }
+
+        [Test]
+        public void EndFrame_ResetsTheBudgetWithoutAdvancing()
+        {
+            var flow = Playing();
+            flow.Apply(Intent.Down(Control.Right, Start + 10));
+            Assert.That(flow.FrameBudget, Is.Zero);
+            flow.EndFrame();
+            Assert.That(flow.FrameBudget, Is.EqualTo(PrecisionFlow.MaxTicksPerFrame));
+            Assert.That(flow.Climb!.ElapsedTicks, Is.EqualTo(PrecisionFlow.MaxTicksPerFrame));
         }
 
         [Test]
