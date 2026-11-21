@@ -1,0 +1,75 @@
+{
+    "Product": "BRAMBLE DASH",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "4dded6dac1104ddf9e3c11ae89408a27",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-21T17:19:15.1110024Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"WalkSpeed\":24,\"RunSpeed\":40,\"GroundAccel\":2,\"AirAccel\":1,\"Friction\":2,\"SkidDecel\":4,\"JumpSpeed\":96,\"JumpCutSpeed\":32,\"Gravity\":4,\"MaxFallSpeed\":112,\"StompBounce\":56,\"WalkerSpeed\":8,\"ThornSpeed\":6,\"HopperInterval\":80,\"HopperJumpSpeed\":72,\"ActivationTiles\":18,\"Lives\":3,\"TimeLimitSeconds\":150,\"StompScore\":100,\"TimeBonusPerSecond\":10},\"InterludeTicks\":90,\"CameraDeadZoneTiles\":1.5,\"Volume\":0.11999999731779099}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "caf33091542514296e20be4c462a478e9db17a66a128bddf470424721e13babc",
+            "Note": "タイトル（1 面の配置を Stage Prefab のまま描く。試合はまだない）"
+        },
+        {
+            "File": "02-start.jpg",
+            "Sha256": "1a2d8aec50dd1304bf979eadffbc62d8b0e81d87c5b1c3a8c14598f7905e6222",
+            "Note": "1 面の開始直後。1 面、Tick 0、自機 (544, 512)、残機 3、スコア 0"
+        },
+        {
+            "File": "03-jump.jpg",
+            "Sha256": "6da6ec4b90f65a2f2a1fbe396965ca87ab1af00adf0925f146401fc3788e6b47",
+            "Note": "走りながら跳んでいる途中。1 面、Tick 52、自機 (2224, 604)、残機 3、スコア 0"
+        },
+        {
+            "File": "04-stomp.jpg",
+            "Sha256": "f338cfd3b84dc0c874521bb8fcd8d08834612414d4059b4b3e3a5e1f76f66923",
+            "Note": "敵を上から踏んだ直後（敵はつぶれ、自機は跳ね返る）。1 面、Tick 406、自機 (15841, 648)、残機 3、スコア 100"
+        },
+        {
+            "File": "05-clear.jpg",
+            "Sha256": "77949898d5f456c971697db8b737d42e0a3df7d4627d310ccbaa4ea7f3b7cc2a",
+            "Note": "旗の柱に触れて 1 面クリア。残り時間ボーナスと次の面の案内。1 面、Tick 594、自機 (23135, 2276)、残機 3、スコア 1500"
+        },
+        {
+            "File": "06-level2.jpg",
+            "Sha256": "4e308a0e3383d5c2bcc3d65d3bba69822ae2cf60d5ee290f1e3076f9f8d26295",
+            "Note": "2 面の途中（カメラは自機を追って横に進む）。2 面、Tick 278、自機 (10267, 708)、残機 3、スコア 1600"
+        },
+        {
+            "File": "07-level3.jpg",
+            "Sha256": "d26df91296ac647275844c9cb7eb19b09242ac0492dacd35df489f0f6b39d868",
+            "Note": "3 面の途中。3 面、Tick 380、自機 (15364, 1840)、残機 3、スコア 3270"
+        },
+        {
+            "File": "08-won.jpg",
+            "Sha256": "aa8116f9f19e3ea1c71306b285baef41847bda49b7ee94def007836d7ba23cdd",
+            "Note": "自動操縦で 3 面をミスなしで抜けた結果。3 面、Tick 824、自機 (31074, 2056)、残機 3、スコア 4630"
+        },
+        {
+            "File": "09-miss.jpg",
+            "Sha256": "33f5b582a6dc22d0b6c8f9fcba53633d4cf57d028a52d1a7ad83bc828a1a3f02",
+            "Note": "歩き虫に横から触れてミス。残機が 1 減り、この面の最初からやり直す。1 面、Tick 94、自機 (2668, 512)、残機 2、スコア 0"
+        },
+        {
+            "File": "10-paused.jpg",
+            "Sha256": "1836528d37a7880ba842cfbc764efb57886d5e9afb3a24585f7b0916da7053e9",
+            "Note": "一時停止のメニュー。1 面、Tick 0、自機 (544, 512)、残機 2、スコア 0"
+        },
+        {
+            "File": "11-lost.jpg",
+            "Sha256": "4505342f80c6bae6dfad8fc745dc8db350728568350ac54f66cd778cb39ca5f6",
+            "Note": "残機がなくなった結果。1 面、Tick 94、自機 (2668, 512)、残機 0、スコア 0"
+        }
+    ]
+}

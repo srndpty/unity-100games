@@ -1,0 +1,23 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:VisualElement name="stats" class="stats" picking-mode="Ignore">
+            <ui:Label name="level" text=" " class="stat level" />
+            <ui:Label name="lives" text=" " class="stat" />
+            <ui:Label name="score" text=" " class="stat" />
+            <ui:Label name="time" text=" " class="stat" />
+            <ui:Label name="best" text=" " class="stat" />
+            <ui:Button name="pause" text="一時停止 / Esc" class="pause" />
+        </ui:VisualElement>
+        <ui:VisualElement name="panel" class="panel">
+            <ui:Label name="headline" text="BRAMBLE DASH" class="headline" />
+            <ui:Label name="message" class="message" />
+            <ui:VisualElement class="buttons">
+                <ui:Button name="submit" text="はじめる / Enter" />
+                <ui:Button name="restart" text="1 面から / R" />
+                <ui:Button name="title" text="タイトルへ / T" />
+                <ui:Button name="quit" text="終了" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
