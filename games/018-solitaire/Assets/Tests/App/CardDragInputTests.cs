@@ -136,6 +136,47 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void ClickOnBackgroundBetweenClicksCancelsTheDoubleClick()
+        {
+            var input = new CardDragInput(DoubleClick);
+            var ace = Center(PileId.Waste, 0);
+            input.PointerDown(_table, ace, 1);
+            input.PointerUp(_table, ace, 1.02);
+            input.PointerDown(_table, new TablePoint(9, -4), 1.1);
+            input.PointerUp(_table, new TablePoint(9, -4), 1.12);
+            Assert.That(input.PointerDown(_table, ace, 1.2), Is.EqualTo(PointerAction.None), "背景を挟んだら 2 回目にならない");
+            input.PointerUp(_table, ace, 1.22);
+            Assert.That(input.Selected, Is.EqualTo(new PileRun(PileId.Waste, 1)), "改めて選ぶ");
+        }
+
+        [Test]
+        public void ClickOnAFaceDownCardBetweenClicksCancelsTheDoubleClick()
+        {
+            var input = new CardDragInput(DoubleClick);
+            var top = Center(T(1), 2);
+            input.PointerDown(_table, top, 1);
+            input.PointerUp(_table, top, 1.02);
+            var hidden = Center(T(1), 0) + new TablePoint(0, .6);
+            input.PointerDown(_table, hidden, 1.1);
+            input.PointerUp(_table, hidden, 1.12);
+            Assert.That(input.PointerDown(_table, top, 1.2), Is.EqualTo(PointerAction.None), "伏せ札を挟んだら 2 回目にならない");
+        }
+
+        [Test]
+        public void DoubleClickOnAFoundationIsJustTwoClicks()
+        {
+            var table = TableText.Parse("stock: *\nf1: AH 2H\nt1: 9C");
+            var input = new CardDragInput(DoubleClick);
+            var point = TableLayout.CardCenter(table, PileId.Foundation(0), 1);
+            input.PointerDown(table, point, 1);
+            input.PointerUp(table, point, 1.02);
+            Assert.That(input.Selected, Is.EqualTo(new PileRun(PileId.Foundation(0), 1)));
+            Assert.That(input.PointerDown(table, point, 1.1), Is.EqualTo(PointerAction.None), "組札から組札へは送らない");
+            input.PointerUp(table, point, 1.12);
+            Assert.That(input.Selected, Is.Null, "2 回目は選択を外すだけ");
+        }
+
+        [Test]
         public void ClickOnAnotherPileBetweenClicksCancelsTheDoubleClick()
         {
             var input = new CardDragInput(DoubleClick);

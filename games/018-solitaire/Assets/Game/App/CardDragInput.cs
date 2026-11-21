@@ -92,7 +92,7 @@ namespace Game.App
     /// <list type="bullet">
     /// <item>ドラッグ＆ドロップ：押した札から上を掴み、離した位置で重なりの最も大きい山へ動かす。重ならなければ元に戻る。</item>
     /// <item>クリック→クリック：札をクリックすると選び、別の山をクリックするとそこへ動かす。同じ札をもう一度クリックすると外す。</item>
-    /// <item>ダブルクリック：一番上の札を組札へ送る。</item>
+    /// <item>ダブルクリック：捨て札・場札の一番上の札を組札へ送る。</item>
     /// <item>山札のクリック：めくる（空なら戻す）。</item>
     /// </list>
     /// </summary>
@@ -131,9 +131,11 @@ namespace Game.App
         {
             if (table == null) { throw new ArgumentNullException(nameof(table)); }
             _press = null;
+            // 札以外や触れない札を押したら、選択もダブルクリックの候補も捨てる（間に挟んだ操作で 2 回目にならない）。
             if (TableLayout.HitTest(table, point) is not TableHit hit)
             {
                 Selected = null;
+                _lastClick = null;
                 return PointerAction.None;
             }
 
@@ -155,10 +157,13 @@ namespace Game.App
             if (hit.Index < 0 || hit.Index < table.FaceDownCountOf(hit.Pile))
             {
                 Selected = null;
+                _lastClick = null;
                 return PointerAction.None;
             }
 
-            if (_lastClick is (TableHit last, double lastTime) && last == hit && hit.Index == count - 1 && time - lastTime <= _doubleClickSeconds)
+            // 組札へ送るダブルクリックは、捨て札と場札の一番上の札だけ。組札の札は 2 回目も通常のクリック（選択の付け外し）にする。
+            var canSendHome = hit.Pile.Kind == PileKind.Waste || hit.Pile.Kind == PileKind.Tableau;
+            if (canSendHome && _lastClick is (TableHit last, double lastTime) && last == hit && hit.Index == count - 1 && time - lastTime <= _doubleClickSeconds)
             {
                 Selected = null;
                 _lastClick = null;
