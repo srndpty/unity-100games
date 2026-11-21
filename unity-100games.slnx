@@ -107,4 +107,10 @@
     <Project Path="games/018-solitaire/dotnet/Core.Tests/G018.Core.Tests.csproj" />
     <Project Path="games/018-solitaire/dotnet/Core/G018.Core.csproj" />
   </Folder>
+  <Folder Name="/019-lights-out/">
+    <Project Path="games/019-lights-out/dotnet/App.Tests/G019.App.Tests.csproj" />
+    <Project Path="games/019-lights-out/dotnet/App/G019.App.csproj" />
+    <Project Path="games/019-lights-out/dotnet/Core.Tests/G019.Core.Tests.csproj" />
+    <Project Path="games/019-lights-out/dotnet/Core/G019.Core.csproj" />
+  </Folder>
 </Solution>
