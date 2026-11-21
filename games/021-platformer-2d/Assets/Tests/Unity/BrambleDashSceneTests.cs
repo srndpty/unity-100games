@@ -101,6 +101,55 @@ namespace Game.Unity.Tests
             Assert.That(_game.HudRoot.Q("stats").style.display.value, Is.EqualTo(DisplayStyle.None));
         }
 
+        // Stage の自機と敵の表示（位置・姿・向き・表示の有無）。
+        private static (Vector3, string, bool, bool)[] Snapshot(BrambleDashStage stage)
+        {
+            var result = new (Vector3, string, bool, bool)[stage.EnemyCount + 1];
+            for (var i = 0; i <= stage.EnemyCount; i++)
+            {
+                var renderer = i == stage.EnemyCount ? stage.Player : stage.EnemyAt(i);
+                result[i] = (renderer.transform.localPosition, renderer.sprite.name, renderer.flipX, renderer.enabled);
+            }
+
+            return result;
+        }
+
+        [UnityTest]
+        public IEnumerator BackToTitle_RestoresInitialLayoutFromCoreLevel()
+        {
+            yield return null;
+            var stage = _game.StageAt(0);
+            var level = Levels.All()[0];
+            var initial = Snapshot(stage);
+
+            // タイトルの配置は Core の地図（開始位置・出現位置）と一致する。
+            var start = Level.PlaceOnTile(level.StartColumn, level.StartRow, Player.Width, Player.Height);
+            Assert.That(stage.Player.transform.position, Is.EqualTo(stage.World(start.CenterX, start.Bottom)));
+            for (var i = 0; i < level.Enemies.Count; i++)
+            {
+                var spawn = level.Enemies[i];
+                var size = Enemy.SizeOf(spawn.Kind);
+                var box = Level.PlaceOnTile(spawn.Column, spawn.Row, size.Width, size.Height);
+                Assert.That(stage.EnemyAt(i).transform.position, Is.EqualTo(stage.World(box.CenterX, box.Bottom)), $"敵 {i}");
+                Assert.That(stage.EnemyAt(i).sprite, Is.SameAs(stage.InitialSprite(spawn.Kind)), $"敵 {i}");
+            }
+
+            // 進んで敵を倒し、別の敵を動かしてからタイトルへ戻る。
+            yield return StartMatch();
+            Time.timeScale = 0;
+            _game.Flow.Pilot = new Autopilot();
+            StepUntil(() => Run.Stomps > 0 && Run.Player.Body.X > 30 * Units.Tile);
+            Assert.That(Snapshot(stage), Is.Not.EqualTo(initial), "遊んだ後は表示が変わっている");
+            _game.Flow.Pilot = null;
+            Time.timeScale = 1;
+            yield return _keyboard.Tap(Key.Escape);
+            yield return _keyboard.Tap(Key.T);
+            Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Title));
+            yield return null;
+
+            Assert.That(Snapshot(stage), Is.EqualTo(initial), "自機と全ての敵が開始前の位置・姿・向き・表示に戻る");
+        }
+
         [UnityTest]
         public IEnumerator HoldingRightKey_MovesPlayerAndReleaseStops()
         {

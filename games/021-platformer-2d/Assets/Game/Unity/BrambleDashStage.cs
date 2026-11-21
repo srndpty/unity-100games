@@ -64,14 +64,42 @@ namespace Game.Unity
             return null;
         }
 
-        /// <summary>面を始める前の配置（Prefab に保存した姿）に戻す。</summary>
-        public void RenderInitial()
+        /// <summary>
+        /// 面を始める前の配置を描く。Core の地図（開始位置と敵の出現位置）から位置・姿・向き・表示を作り直すので、
+        /// 遊んだ後にタイトルへ戻っても前の試合の位置や倒された敵の姿は残らない。
+        /// </summary>
+        public void RenderInitial(Level level)
         {
+            if (level == null) { throw new ArgumentNullException(nameof(level)); }
+            if (level.Enemies.Count != _enemies.Length)
+            {
+                throw new InvalidOperationException($"敵の数が Stage（{_enemies.Length}）と面（{level.Enemies.Count}）で違います。Stage Prefab を作り直してください。");
+            }
+
             _player.enabled = true;
             _player.sprite = _playerStand;
             _player.flipX = false;
-            foreach (var enemy in _enemies) { enemy.enabled = true; }
+            Place(_player, Level.PlaceOnTile(level.StartColumn, level.StartRow, Core.Player.Width, Core.Player.Height));
+            for (var i = 0; i < _enemies.Length; i++)
+            {
+                var spawn = level.Enemies[i];
+                var size = Enemy.SizeOf(spawn.Kind);
+                var renderer = _enemies[i];
+                renderer.enabled = true;
+                renderer.flipX = false;
+                renderer.sprite = InitialSprite(spawn.Kind);
+                Place(renderer, Level.PlaceOnTile(spawn.Column, spawn.Row, size.Width, size.Height));
+            }
         }
+
+        /// <summary>出現時（止まって左を向いている）の敵の姿。</summary>
+        public Sprite InitialSprite(EnemyKind kind) => kind switch
+        {
+            EnemyKind.Walker => _walker[0],
+            EnemyKind.Hopper => _hopper,
+            EnemyKind.Thorn => _thorn[0],
+            _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "未定義の敵です。"),
+        };
 
         public void Render(LevelRun run)
         {

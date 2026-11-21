@@ -48,6 +48,15 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void Held_RejectsUndefinedControl()
+        {
+            var held = new HeldControls();
+            Assert.Throws<ArgumentOutOfRangeException>(() => held.Press((Control)99));
+            Assert.Throws<ArgumentOutOfRangeException>(() => held.Release((Control)99));
+            Assert.That(held.TakeTickInput(), Is.EqualTo(PlayerInput.None), "拒否した操作は記録しない");
+        }
+
+        [Test]
         public void Camera_StaysInsideDeadZone()
         {
             Assert.That(CameraFollow.Follow(5000, 5100, 200, 2000, 20000), Is.EqualTo(5000));

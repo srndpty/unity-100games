@@ -183,7 +183,7 @@ namespace Game.Unity
             }
 
             var run = Flow.Campaign?.Run;
-            if (run == null) { current.RenderInitial(); }
+            if (run == null) { current.RenderInitial(_levels[current.LevelIndex]); }
             else { current.Render(run); }
             RenderCamera(current, run);
             RenderHud();

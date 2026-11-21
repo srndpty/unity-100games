@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Game.Core;
 
@@ -70,6 +71,11 @@ namespace Game.App
             _jumpLatched = false;
         }
 
-        private static int ToDirection(Control control) => control == Control.Left ? -1 : 1;
+        private static int ToDirection(Control control) => control switch
+        {
+            Control.Left => -1,
+            Control.Right => 1,
+            _ => throw new ArgumentOutOfRangeException(nameof(control), control, "未定義の操作キーです。"),
+        };
     }
 }
