@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f5f47fa82a3bbe4e94da8a0a74925aa, type: 3}
+  m_Name: BrambleDashSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.BrambleDashSettings
+  Rules:
+    WalkSpeed: 24
+    RunSpeed: 40
+    GroundAccel: 2
+    AirAccel: 1
+    Friction: 2
+    SkidDecel: 4
+    JumpSpeed: 96
+    JumpCutSpeed: 32
+    Gravity: 4
+    MaxFallSpeed: 112
+    StompBounce: 56
+    WalkerSpeed: 8
+    ThornSpeed: 6
+    HopperInterval: 80
+    HopperJumpSpeed: 72
+    ActivationTiles: 18
+    Lives: 3
+    TimeLimitSeconds: 150
+    StompScore: 100
+    TimeBonusPerSecond: 10
+  InterludeTicks: 90
+  CameraDeadZoneTiles: 1.5
+  Volume: 0.12

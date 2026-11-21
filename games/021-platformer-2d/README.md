@@ -58,7 +58,7 @@ dev capture 021  # 証跡を evidence/ に撮る（画像は captures/<画像世
 | 面の合間 | クリア・ミスの後、1.5 秒（設定）の間を置いて次の面かやり直しへ進む。フォーカスがない間は時間を数えない |
 | 終了後の操作 | 面・試合の終了後の Tick と入力は受け付けず、状態を変えない |
 | 乱数 | 使わない。面と入力の列だけで結果が決まる |
-| カメラ | 横だけ追う。中央の遊び（左右 2 タイル）を出たぶんだけ追い、面の左右の端で止める。左にも戻る |
+| カメラ | 横だけ追う。中央の遊び（左右 1.5 タイル、設定）を出たぶんだけ追い、面の左右の端で止める。左にも戻る |
 
 ## 設計上の選択
 
@@ -66,12 +66,15 @@ dev capture 021  # 証跡を evidence/ に撮る（画像は captures/<画像世
 |---|---|
 | Core | `Box`・`Units`（整数の箱と単位）、`TileMap`（地形）、`Level`・`Levels`（文字の地図と 3 面）、`BodyMotion`（地形との衝突解決）、`GroundProbe`（接地検出）、`Player`（速度ベースの制御）、`Enemy`（3 種の敵）、`EnemyContact`（踏みつけ・横衝突の判定）、`LevelRun`（1 面の挑戦）、`Campaign`（3 面・残機・スコア）、`PlatformerConfig`（設定） |
 | App | `PlatformerFlow`（画面遷移・実時間から Tick への変換）、`Intent`・`HeldControls`（入力の列と Tick ごとの入力）、`CameraFollow`（カメラの位置）、`Autopilot`（撮影・テスト用の操縦役） |
-| Unity | （Playable のセッションで作る） |
+| Unity | `BrambleDashGame`（入力・カメラ・HUD・音）、`BrambleDashStage`（1 面の描画：Tilemap・自機・敵）、`BrambleDashSettings`（設定アセット）、`BrambleDashArtGenerator`・`BrambleDashSceneBuilder`（素材・Stage Prefab・シーンの生成）、`BrambleDashCaptureScenario`（撮影台本） |
 
 - **物理エンジンには何も委譲していない。** 移動・衝突・接地・接触は Core の整数演算で、Rigidbody2D や Collider2D は使わない。
 - **接地検出と敵の接触判定を分けた。** 接地は地形だけを見る `GroundProbe`、敵との接触は自機と敵の Tick 中の位置だけを見る純粋関数 `EnemyContact`。踏みつけの跳ね返りは接地とは無関係なので、敵の上で「接地してジャンプ」はできない。
 - **接触は相対軌跡の掃引で判定する。** Tick の終わりの重なりだけで判定すると、速く落ちたときに横から触れたのか上から触れたのかが分からず、斜めに角をかすめた接触も見逃す。時刻は分数のまま比べる。
 - **ジャンプの押し始めは Core が見分ける。** 入力は押している状態で渡し、前の Tick との差で押し始めを判定する。App はキーを押して離すまでが 1 Tick より短くても、1 Tick は押したことにして渡す。
+- **3 面は Core の地図から作った Stage Prefab。** 生成スクリプトが Tilemap（地面・旗の柱）、旗、敵（地図の出現順）、自機を置いた Prefab を面ごとに作るので、プレイ前から Scene ビューで見える。既にある Prefab は上書きせず、地形と敵の数が Core の地図と違えば生成を止める（PlayMode テストでも照合する）。シーンには 3 面を置き、今の面だけを表示する。
+- **素材はドット絵を生成する。** 1 タイル = 32 ピクセル、Point フィルタ。キャラクターは体の箱の下端の中央を基準点にして、Tick の状態をそのまま描く（補間しない）。
+- **カメラは描画だけに使う。** `CameraFollow` の位置をカメラに写すだけで、敵の起動も接触も自機からの距離で決まる。
 - **自動操縦は先読みで選ぶ。** 接地したとき、7 通りの操作（右・止まる・左 × 跳ばない・跳ぶ）を `LevelRun.Clone()` の複製で 120 Tick 先読みし、ミスしないもののうちゴールに着く・右へ進むものを選ぶ。既定の設定で 3 面ともミスなしでクリアする（594・759・824 Tick）。
 
 ## テスト
@@ -80,6 +83,7 @@ dev capture 021  # 証跡を evidence/ に撮る（画像は captures/<画像世
 |---|---|---|---|
 | Core | `Assets/Tests/Core/` | 130 | `dev test`（.NET）／`dev test 021 -Unity`（Mono） |
 | App | `Assets/Tests/App/` | 28 | 同上 |
+| PlayMode | `Assets/Tests/Unity/` | 31（実シーン 15、共通証跡公開 16） | `dev test 021 -Unity -Mode PlayMode` |
 
 - 題材固有：踏みつけと横衝突の区別（`EnemyContactTests`・`LevelRunTests`）、空中で無制限ジャンプ不可（`PlayerTests`）、ゴール後の多重クリアの防止（`LevelRunTests`・`CampaignTests`・`PlatformerFlowTests`）。
 - 再現性：決まった入力列の最終状態のハッシュを固定値として .NET と Mono の両方で照合する。
