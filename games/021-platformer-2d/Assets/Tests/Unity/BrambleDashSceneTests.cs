@@ -413,6 +413,15 @@ namespace Game.Unity.Tests
             AssertRejected(s => s.CameraDeadZoneTiles = -1);
             AssertRejected(s => s.InterludeTicks = 0);
             AssertRejected(s => s.Rules.Gravity = 0);
+
+            // 個々の値は範囲内でも、組み合わせで 3 面を通れない設定（レビューの例：跳んでも上昇しない）。
+            AssertRejected(s =>
+            {
+                s.Rules.JumpSpeed = 4;
+                s.Rules.JumpCutSpeed = 0;
+                s.Rules.StompBounce = 4;
+            });
+            AssertRejected(s => s.Rules.TimeLimitSeconds = PlatformerConfig.MinTimeLimitSeconds);
         }
 
         private static void AssertRejected(Action<BrambleDashSettings> change)

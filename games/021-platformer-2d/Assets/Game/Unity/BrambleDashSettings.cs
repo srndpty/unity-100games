@@ -21,6 +21,11 @@ namespace Game.Unity
         public void Validate()
         {
             Rules.Validate();
+
+            // 個々の値の範囲だけでなく、組み合わせで 3 面の地面の道（段・穴・距離）を通れることを確かめる。
+            var unreachable = Traversal.Unreachable(Rules, Levels.All());
+            if (unreachable != null) { throw new ArgumentOutOfRangeException(nameof(Rules), unreachable); }
+
             if (InterludeTicks < 1 || InterludeTicks > PlatformerFlow.MaxInterludeTicks)
             {
                 throw new ArgumentOutOfRangeException(nameof(InterludeTicks), InterludeTicks, $"1〜{PlatformerFlow.MaxInterludeTicks} で指定してください。");
