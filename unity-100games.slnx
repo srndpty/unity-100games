@@ -113,4 +113,10 @@
     <Project Path="games/019-lights-out/dotnet/Core.Tests/G019.Core.Tests.csproj" />
     <Project Path="games/019-lights-out/dotnet/Core/G019.Core.csproj" />
   </Folder>
+  <Folder Name="/020-qix/">
+    <Project Path="games/020-qix/dotnet/App.Tests/G020.App.Tests.csproj" />
+    <Project Path="games/020-qix/dotnet/App/G020.App.csproj" />
+    <Project Path="games/020-qix/dotnet/Core.Tests/G020.Core.Tests.csproj" />
+    <Project Path="games/020-qix/dotnet/Core/G020.Core.csproj" />
+  </Folder>
 </Solution>

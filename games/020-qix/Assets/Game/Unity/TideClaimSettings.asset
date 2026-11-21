@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92aa320acd2687046a7605b0df949414, type: 3}
+  m_Name: TideClaimSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.TideClaimSettings
+  Rules:
+    Width: 80
+    Height: 56
+    PlayerStepTicks: 2
+    EnemyRadius: 384
+    EnemySpeed: 40
+    EnemyTurnMinTicks: 40
+    EnemyTurnMaxTicks: 150
+    Lives: 3
+    TargetPercent: 75
+  Volume: 0.12
