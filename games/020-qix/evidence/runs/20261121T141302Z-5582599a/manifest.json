@@ -1,0 +1,65 @@
+{
+    "Product": "TIDE CLAIM",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "e6e83109c18f4b55a0bf6a53e43d03b9",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-21T14:13:01.1252917Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"Width\":80,\"Height\":56,\"PlayerStepTicks\":2,\"EnemyRadius\":384,\"EnemySpeed\":40,\"EnemyTurnMinTicks\":40,\"EnemyTurnMaxTicks\":150,\"Lives\":3,\"TargetPercent\":75},\"Volume\":0.11999999731779099}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "5444ba99356b9a7445f87989a23dcaf9194b3300a20ab07d1e4a3cd8fde20cc9",
+            "Note": "タイトル（試合の前の盤。試合はまだない）"
+        },
+        {
+            "File": "02-start.jpg",
+            "Sha256": "e1d2edbb266e4b051370643a9c0e88fbde02d9328bff20567cd6e133d164c3e3",
+            "Note": "開始直後。自機は下の縁の中央。シード 1、Tick 0、陸 0.0%（0/4212）、残機 3、スコア 0"
+        },
+        {
+            "File": "03-drawing.jpg",
+            "Sha256": "ebc4db0b038a6bd1468e2e4e47bf15dd8539f275289b79de7e16011edc72b5a7",
+            "Note": "Space を押しながら海へ線を引いている途中。シード 1、Tick 23、陸 0.0%（0/4212）、残機 3、スコア 0"
+        },
+        {
+            "File": "04-claimed.jpg",
+            "Sha256": "984559b2d74a87e6cae8bb7e3b2d3f01f3e2f2c18578ad7ada58ddd9802b5c3a",
+            "Note": "線を閉じ、渦のいない側が陸になった直後。シード 1、Tick 141、陸 15.6%（660/4212）、残機 3、スコア 660"
+        },
+        {
+            "File": "05-paused.jpg",
+            "Sha256": "2b8615d0ee3e0221c548dd9bf4da342988f2246c24afaf086923d3f8bf89381c",
+            "Note": "一時停止のメニュー。シード 1、Tick 141、陸 15.6%（660/4212）、残機 3、スコア 660"
+        },
+        {
+            "File": "06-won.jpg",
+            "Sha256": "eb219bcb317d8c53e694d0c114d8060ecbfbe5ae1252c75ee1f655a7df6403d9",
+            "Note": "自動操縦で占有率 75% 以上に達した結果。シード 1、Tick 933、陸 75.1%（3167/4212）、残機 3、スコア 3167"
+        },
+        {
+            "File": "07-miss.jpg",
+            "Sha256": "c20e3e6e8ae1ea351d23c9f5ccab9d36d9c0abe04b1ebc7cdb20b5a6b4046e16",
+            "Note": "止めた線に渦が触れた直後。線は消え、自機は始点に戻る。シード 2、Tick 4776、陸 0.0%（0/4212）、残機 2、スコア 0"
+        },
+        {
+            "File": "08-lost.jpg",
+            "Sha256": "f0e6fa9939ad735c6e3903442dbb469b48b092757f8729c862748d77ae35d855",
+            "Note": "残機がなくなった結果。シード 2、Tick 4792、陸 0.0%（0/4212）、残機 0、スコア 0"
+        },
+        {
+            "File": "09-next.jpg",
+            "Sha256": "50683d0a0bd8d55c48d6c69ce49575af9f02f74dfe64a963285c18b6e6bad25c",
+            "Note": "結果から次の試合（新しいシード）。シード 3、Tick 0、陸 0.0%（0/4212）、残機 3、スコア 0"
+        }
+    ]
+}

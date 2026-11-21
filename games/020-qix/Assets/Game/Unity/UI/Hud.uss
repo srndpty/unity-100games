@@ -1,0 +1,14 @@
+.hud { position: absolute; width: 100%; height: 100%; color: rgb(232, 236, 226); }
+.panel { position: absolute; left: 75%; right: 2%; top: 5%; bottom: 5%; padding: 24px; background-color: rgba(14, 30, 40, 0.92); border-radius: 16px; border-width: 1px; border-color: rgb(96, 128, 126); }
+.headline { font-size: 44px; -unity-font-style: bold; color: rgb(246, 226, 150); white-space: normal; }
+.stats { margin-top: 12px; margin-bottom: 12px; padding-top: 10px; padding-bottom: 10px; border-top-width: 1px; border-bottom-width: 1px; border-color: rgb(96, 128, 126); }
+.ratio { font-size: 24px; -unity-font-style: bold; }
+.ratio-bar { height: 16px; margin-top: 6px; margin-bottom: 10px; background-color: rgb(28, 78, 112); border-radius: 4px; overflow: hidden; }
+.ratio-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background-color: rgb(112, 146, 88); }
+.ratio-target { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1px; left: 75%; background-color: rgb(255, 240, 128); }
+.stat { font-size: 22px; margin-top: 2px; }
+.message { flex-grow: 1; font-size: 20px; white-space: normal; }
+.buttons { align-items: stretch; }
+Button { height: 50px; margin: 6px 0 0 0; font-size: 21px; color: rgb(240, 244, 236); background-color: rgb(40, 74, 84); border-color: rgb(104, 140, 136); border-width: 1px; border-radius: 8px; }
+Button:hover { background-color: rgb(52, 92, 102); }
+Button:active { background-color: rgb(66, 110, 118); }
