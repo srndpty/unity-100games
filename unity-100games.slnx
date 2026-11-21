@@ -119,4 +119,10 @@
     <Project Path="games/020-qix/dotnet/Core.Tests/G020.Core.Tests.csproj" />
     <Project Path="games/020-qix/dotnet/Core/G020.Core.csproj" />
   </Folder>
+  <Folder Name="/021-platformer-2d/">
+    <Project Path="games/021-platformer-2d/dotnet/App.Tests/G021.App.Tests.csproj" />
+    <Project Path="games/021-platformer-2d/dotnet/App/G021.App.csproj" />
+    <Project Path="games/021-platformer-2d/dotnet/Core.Tests/G021.Core.Tests.csproj" />
+    <Project Path="games/021-platformer-2d/dotnet/Core/G021.Core.csproj" />
+  </Folder>
 </Solution>
