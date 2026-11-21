@@ -61,6 +61,26 @@ namespace Game.Core
             Require(EnemyTurnMaxTicks, EnemyTurnMinTicks, MaxTurnTicks, nameof(EnemyTurnMaxTicks));
             Require(Lives, 1, MaxLives, nameof(Lives));
             Require(TargetPercent, MinTargetPercent, MaxTargetPercent, nameof(TargetPercent));
+
+            // 閉じるとき、敵の円が重なる海は必ず残る。それを除いても目標に届かなければ、どう遊んでも勝てない。
+            long open = (Width - 2) * (Height - 2);
+            if ((open - EnemyFootprintCells()) * 100 < (long)TargetPercent * open)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(EnemyRadius),
+                    EnemyRadius,
+                    $"敵の円が覆いうる {EnemyFootprintCells()} セルを除くと、目標 {TargetPercent}% に届きません。半径か目標を小さくしてください。");
+            }
+        }
+
+        /// <summary>
+        /// 敵の円が一度に重なりうるセル数の上限。直径 2r の開区間が横切る列（行）は最大 floor(2r / SubCell) + 2 なので、
+        /// その正方形（海の大きさで頭打ち）とする。閉じたときに必ず残る海はこれ以下。
+        /// </summary>
+        public int EnemyFootprintCells()
+        {
+            var span = (2 * EnemyRadius / SubCell) + 2;
+            return Math.Min(span, Width - 2) * Math.Min(span, Height - 2);
         }
 
         /// <summary>進行中の試合が設定の書き換えの影響を受けないよう複製する。</summary>

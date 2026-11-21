@@ -12,7 +12,9 @@ namespace Game.Core.Tests
             Height = 20,
             PlayerStepTicks = 2,
             Lives = QixConfig.MaxLives,
-            TargetPercent = QixConfig.MaxTargetPercent,
+
+            // 勝って止まらないよう高くする。30×20 の海 504 セルから半径 1.5 セルの敵が覆いうる 25 セルを除くと 95% まで。
+            TargetPercent = 95,
         };
 
         [Test]
@@ -116,7 +118,7 @@ namespace Game.Core.Tests
         }
 
         /// <summary>試合の盤を写した CellGrid（敵の重なりを数えるため）。</summary>
-        private static CellGrid Snapshot(QixGame game)
+        internal static CellGrid Snapshot(QixGame game)
         {
             var grid = new CellGrid(game.Width, game.Height);
             for (var i = 0; i < grid.CellCount; i++)
@@ -161,7 +163,7 @@ namespace Game.Core.Tests
         [Test]
         public void EnemyMustFitInsideTheSea()
         {
-            var config = new QixConfig { Width = 10, Height = 6 };
+            var config = new QixConfig { Width = 10, Height = 6, TargetPercent = 1 };
             config.EnemyRadius = (4 * QixConfig.SubCell - 1) / 2;
             Assert.DoesNotThrow(config.Validate);
 
@@ -172,13 +174,71 @@ namespace Game.Core.Tests
         [Test]
         public void SmallestBoardWithLargestEnemyStillSpawns([Range(0, 49)] int seed)
         {
-            var config = new QixConfig { Width = CellGrid.MinSize, Height = CellGrid.MinSize };
-            config.EnemyRadius = (3 * QixConfig.SubCell - 1) / 2;
+            // 3×3 の海では、敵が覆いうるセルを 9 未満にしないと目標 1% にも届かない（半径 127 で 2×2）。
+            var config = new QixConfig { Width = CellGrid.MinSize, Height = CellGrid.MinSize, TargetPercent = 1 };
+            config.EnemyRadius = (QixConfig.SubCell / 2) - 1;
 
             var game = new QixGame(config, seed);
 
             Assert.That(game.Enemy.X - game.Enemy.Radius, Is.GreaterThanOrEqualTo(QixConfig.SubCell));
             Assert.That(game.Enemy.X + game.Enemy.Radius, Is.LessThanOrEqualTo(4 * QixConfig.SubCell));
+
+            config.EnemyRadius++;
+            Assert.Throws<System.ArgumentOutOfRangeException>(config.Validate);
+        }
+
+        /// <summary>レビューの例：80×56・目標 75% で半径 6911 だと、敵が必ず残す海のため占有率は約 67.5% までしか届かない。</summary>
+        [Test]
+        public void RejectsEnemyTooLargeToReachTarget()
+        {
+            var config = new QixConfig { EnemyRadius = 6911 };
+
+            Assert.Throws<System.ArgumentOutOfRangeException>(config.Validate);
+        }
+
+        [Test]
+        public void EnemyRadiusBoundaryForDefaultBoardAndTarget()
+        {
+            // 海 4,212 セルの 75% = 3,159 セル。半径 3967 は 32×32 = 1,024 セルを覆いうるので届き、3968 は 33×33 = 1,089 セルで届かない。
+            var config = new QixConfig { EnemyRadius = 3967 };
+            Assert.That(config.EnemyFootprintCells(), Is.EqualTo(32 * 32));
+            Assert.DoesNotThrow(config.Validate);
+
+            config.EnemyRadius = 3968;
+            Assert.That(config.EnemyFootprintCells(), Is.EqualTo(33 * 33));
+            Assert.Throws<System.ArgumentOutOfRangeException>(config.Validate);
+        }
+
+        [Test]
+        public void LowerTargetAllowsLargerEnemy()
+        {
+            // 半径 6911 は 55×54 = 2,970 セルを覆いうるので、残り 1,242 セル（29.4%）まで取れる。
+            var config = new QixConfig { EnemyRadius = 6911, TargetPercent = 29 };
+            Assert.DoesNotThrow(config.Validate);
+
+            config.TargetPercent = 30;
+            Assert.Throws<System.ArgumentOutOfRangeException>(config.Validate);
+        }
+
+        /// <summary>覆いうるセル数は、どの半径・位置でも実際に重なるセル数以上（検証が勝てる設定を拒否しすぎない範囲で安全側）。</summary>
+        [Test]
+        public void FootprintBoundsActualOverlap([Range(0, 19)] int seed)
+        {
+            var random = new SeededRandom(seed);
+            var overlapped = new List<int>();
+            for (var trial = 0; trial < 50; trial++)
+            {
+                var config = new QixConfig { TargetPercent = 1, EnemyRadius = QixConfig.MinEnemyRadius + random.Next(3000) };
+                const int s = QixConfig.SubCell;
+                var r = config.EnemyRadius;
+                var x = s + r + random.Next((config.Width - 2) * s - 2 * r + 1);
+                var y = s + r + random.Next((config.Height - 2) * s - 2 * r + 1);
+                var game = QixGame.WithEnemy(config, seed, x, y, 1, 0);
+
+                game.Enemy.OverlappedCells(RandomPlayTests.Snapshot(game), overlapped);
+
+                Assert.That(overlapped.Count, Is.LessThanOrEqualTo(config.EnemyFootprintCells()), $"半径 {r}、中心 ({x}, {y})");
+            }
         }
     }
 }

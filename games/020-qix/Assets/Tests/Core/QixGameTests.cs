@@ -130,14 +130,15 @@ namespace Game.Core.Tests
         public void MovesToNearestRimWhenLandingCellIsNoLongerRim()
         {
             // 敵を左下の 2×2 の入り江に閉じ込め、線の終点は反対側の上の縁にする。
-            var game = QixGame.WithEnemy(Small(targetPercent: 99), 1, 384, 384, 1, 0);
+            // 敵が 2×2 を覆いうる 20×14 の盤では、98% が目標の上限（216 セル中 212 セル）。
+            var game = QixGame.WithEnemy(Small(targetPercent: 98), 1, 384, 384, 1, 0);
             Hold(game, Direction.Left, draw: false, 7);
 
             Draw(game, (Direction.Up, 3), (Direction.Left, 2), (Direction.Up, 10));
 
             Assert.That(game.TakeEvents().Has(GameEventKind.Closed), Is.True);
             Assert.That(game.ClaimedCells, Is.EqualTo(game.InitialOpen - 4));
-            Assert.That(game.Status, Is.EqualTo(GameStatus.Playing));
+            Assert.That(game.Status, Is.EqualTo(GameStatus.Won), "敵の入り江以外をすべて取ると上限の目標に届く");
             Assert.That(game.IsBoundary(1, 13), Is.False);
             Assert.That(game.IsBoundary(game.PlayerX, game.PlayerY), Is.True);
             Assert.That(game.PlayerY, Is.LessThanOrEqualTo(3), "入り江の周りの縁に移る");

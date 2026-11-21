@@ -455,6 +455,7 @@ namespace Game.Unity.Tests
             AssertRejected(s => s.Rules.Height = 40);
             AssertRejected(s => s.Rules.TargetPercent = 100);
             AssertRejected(s => s.Rules.EnemySpeed = 0);
+            AssertRejected(s => s.Rules.EnemyRadius = 6911);
         }
 
         private static void AssertRejected(Action<TideClaimSettings> change)
