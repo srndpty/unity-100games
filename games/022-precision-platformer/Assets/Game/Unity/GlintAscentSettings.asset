@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a388e5596d8ebb942b2f1e2ecb0e63e4, type: 3}
+  m_Name: GlintAscentSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.GlintAscentSettings
+  Rules:
+    MoveSpeed: 36
+    GroundAccel: 6
+    AirAccel: 4
+    GroundDecel: 6
+    AirDecel: 2
+    Gravity: 4
+    MaxFallSpeed: 96
+    JumpSpeed: 84
+    JumpCutSpeed: 24
+    CoyoteTicks: 6
+    JumpBufferTicks: 6
+    WallReach: 48
+    WallJumpSpeedX: 48
+    WallJumpSpeedY: 80
+    WallJumpLockTicks: 10
+    WallSlideMaxFall: 32
+    DashSpeed: 72
+    DashTicks: 10
+    DashEndSpeed: 36
+    DashCount: 1
+    DeathTicks: 18
+  Volume: 0.12

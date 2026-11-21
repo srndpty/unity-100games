@@ -1,0 +1,75 @@
+{
+    "Product": "GLINT ASCENT",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "02945f358e9847cb928a547fe590fd53",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-21T18:36:16.4841392Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"MoveSpeed\":36,\"GroundAccel\":6,\"AirAccel\":4,\"GroundDecel\":6,\"AirDecel\":2,\"Gravity\":4,\"MaxFallSpeed\":96,\"JumpSpeed\":84,\"JumpCutSpeed\":24,\"CoyoteTicks\":6,\"JumpBufferTicks\":6,\"WallReach\":48,\"WallJumpSpeedX\":48,\"WallJumpSpeedY\":80,\"WallJumpLockTicks\":10,\"WallSlideMaxFall\":32,\"DashSpeed\":72,\"DashTicks\":10,\"DashEndSpeed\":36,\"DashCount\":1,\"DeathTicks\":18},\"Volume\":0.11999999731779099}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "ed2178cad0e2499174f908546bb9c349a65c784fbee9c50b286dbed6a3a6625d",
+            "Note": "タイトル（1 部屋目の配置を Stage Prefab のまま描く。挑戦はまだない）"
+        },
+        {
+            "File": "02-start.jpg",
+            "Sha256": "06193265c49f30e4f0be5f736a92e9a77fc751fab4889764022a181de4b91a22",
+            "Note": "1 部屋目の開始直後。1 部屋目、経過 0 Tick、自機 (560, 512)、死亡 0"
+        },
+        {
+            "File": "03-jump.jpg",
+            "Sha256": "8722c05bf0cca1b5efa56292751bf99b2c1a946c8ed99d02d828e6f049bcf35b",
+            "Note": "1 部屋目、跳び上がっている途中。1 部屋目、経過 49 Tick、自機 (2232, 592)、死亡 0"
+        },
+        {
+            "File": "04-dash.jpg",
+            "Sha256": "721b49dcd05aeaa60de509955901355caf950c9aea0a57f1507127d99a2106d1",
+            "Note": "2 部屋目、空中のダッシュ（使い切ると自機が青くなる）。2 部屋目、経過 308 Tick、自機 (2254, 1000)、死亡 0"
+        },
+        {
+            "File": "05-walljump.jpg",
+            "Sha256": "98d8e57570fafdbe3cf3cadec2be8404aa7bd1b3e55df793a2cb9ec8d1406407",
+            "Note": "3 部屋目の煙突、壁を蹴って反対の壁へ跳んだ直後。3 部屋目、経過 543 Tick、自機 (3604, 1688)、死亡 0"
+        },
+        {
+            "File": "06-diagonal.jpg",
+            "Sha256": "58fee2aa46d63c040b946c9b48289c2251e38df40510343b3fa085790f864071",
+            "Note": "6 部屋目、斜め上へのダッシュ。6 部屋目、経過 1460 Tick、自機 (2668, 1956)、死亡 0"
+        },
+        {
+            "File": "07-summit.jpg",
+            "Sha256": "399a48720f516527a55d688fec65d986caab3f6ac10f98277c7dce7fa6f51a8e",
+            "Note": "10 部屋目（最後の部屋）の途中。10 部屋目、経過 2754 Tick、自機 (5126, 3324)、死亡 0"
+        },
+        {
+            "File": "08-result.jpg",
+            "Sha256": "7b599f2a0c18aafaa1c0786436f1178c02c660e03f5020731c7615842db570ad",
+            "Note": "入力の列で 10 部屋を死亡なしで抜けた結果。10 部屋目、経過 2882 Tick、自機 (9836, 3840)、死亡 0"
+        },
+        {
+            "File": "09-death.jpg",
+            "Sha256": "29ca19adaea982643d4a17be9c340abeccf48c8d2983bed0c322728b32cd0955",
+            "Note": "2 部屋目、トゲに触れて死亡（入力を受け付けない短い演出）。2 部屋目、経過 316 Tick、自機 (2270, 356)、死亡 1"
+        },
+        {
+            "File": "10-respawn.jpg",
+            "Sha256": "1e99c79abf33905279703a2cc4af802bd911095abf1b3024f63053127501fefa",
+            "Note": "部屋の入口に戻ってすぐやり直す。死亡回数が 1 増え、ダッシュは戻る。2 部屋目、経過 328 Tick、自機 (560, 1280)、死亡 1"
+        },
+        {
+            "File": "11-paused.jpg",
+            "Sha256": "c390542c0f419220faa51bc9f6f9b7597f8f39ec7c880b707fe854a0b8507a5e",
+            "Note": "一時停止のメニュー。2 部屋目、経過 328 Tick、自機 (560, 1280)、死亡 1"
+        }
+    ]
+}
