@@ -125,4 +125,10 @@
     <Project Path="games/021-platformer-2d/dotnet/Core.Tests/G021.Core.Tests.csproj" />
     <Project Path="games/021-platformer-2d/dotnet/Core/G021.Core.csproj" />
   </Folder>
+  <Folder Name="/022-precision-platformer/">
+    <Project Path="games/022-precision-platformer/dotnet/App.Tests/G022.App.Tests.csproj" />
+    <Project Path="games/022-precision-platformer/dotnet/App/G022.App.csproj" />
+    <Project Path="games/022-precision-platformer/dotnet/Core.Tests/G022.Core.Tests.csproj" />
+    <Project Path="games/022-precision-platformer/dotnet/Core/G022.Core.csproj" />
+  </Folder>
 </Solution>

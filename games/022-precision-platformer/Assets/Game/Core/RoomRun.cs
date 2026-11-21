@@ -1,0 +1,175 @@
+using System;
+
+namespace Game.Core
+{
+    public enum RunStatus
+    {
+        Playing,
+
+        /// <summary>死亡して、開始位置に戻るのを待っている。入力は受け付けない。</summary>
+        Dying,
+        Cleared,
+    }
+
+    public enum DeathCause
+    {
+        None,
+        Spike,
+        Fall,
+    }
+
+    [Flags]
+    public enum RunEventKind
+    {
+        None = 0,
+        Jumped = 1 << 0,
+        WallJumped = 1 << 1,
+        Dashed = 1 << 2,
+        Died = 1 << 3,
+        Respawned = 1 << 4,
+        Cleared = 1 << 5,
+    }
+
+    /// <summary>
+    /// 1 部屋の挑戦。死亡すると <see cref="PrecisionConfig.DeathTicks"/> Tick 後に部屋の開始位置から
+    /// 新しい自機でやり直す（何度でも）。出口に触れたら終わり、以後の Tick と入力は受け付けない。
+    /// 1 Tick の順序は「自機の移動 → トゲと出口（移動の経路で、先に通った区間を優先。同じ区間なら死亡）→ 落下」。
+    /// 乱数は使わないので、部屋と入力の列だけで結果が決まる。
+    /// </summary>
+    public sealed class RoomRun
+    {
+        private readonly PrecisionConfig _config;
+        private RunEventKind _events;
+        private int _respawnLeft;
+
+        public RoomRun(PrecisionConfig config, Room room)
+        {
+            if (config == null) { throw new ArgumentNullException(nameof(config)); }
+            config.Validate();
+            _config = config.Copy();
+            Room = room ?? throw new ArgumentNullException(nameof(room));
+            Player = new Player(_config, room.StartBox);
+        }
+
+        private RoomRun(RoomRun source)
+        {
+            _config = source._config;
+            Room = source.Room;
+            Player = source.Player.Clone();
+            Status = source.Status;
+            LastDeath = source.LastDeath;
+            Deaths = source.Deaths;
+            Ticks = source.Ticks;
+            _respawnLeft = source._respawnLeft;
+        }
+
+        public Room Room { get; }
+
+        public TileMap Map => Room.Map;
+
+        /// <summary>今の自機。死亡からの再開で新しく作り直す。</summary>
+        public Player Player { get; private set; }
+
+        public RunStatus Status { get; private set; }
+
+        public DeathCause LastDeath { get; private set; }
+
+        /// <summary>この部屋での死亡回数。</summary>
+        public int Deaths { get; private set; }
+
+        /// <summary>この部屋で進めた Tick 数（死亡の演出中を含む）。</summary>
+        public long Ticks { get; private set; }
+
+        public bool IsCleared => Status == RunStatus.Cleared;
+
+        /// <summary>同じ状態の複製（取り出していない出来事は複製しない）。</summary>
+        public RoomRun Clone() => new(this);
+
+        /// <summary>1 Tick 進める。クリアの後は何もせず false。</summary>
+        public bool Tick(PlayerInput input)
+        {
+            if (IsCleared)
+            {
+                return false;
+            }
+
+            Ticks++;
+            if (Status == RunStatus.Dying)
+            {
+                if (--_respawnLeft == 0)
+                {
+                    Player = new Player(_config, Room.StartBox);
+                    Status = RunStatus.Playing;
+                    _events |= RunEventKind.Respawned;
+                }
+
+                return true;
+            }
+
+            var actions = Player.Step(Map, input);
+            if ((actions & PlayerActions.Jumped) != 0) { _events |= RunEventKind.Jumped; }
+            if ((actions & PlayerActions.WallJumped) != 0) { _events |= RunEventKind.WallJumped; }
+            if ((actions & PlayerActions.Dashed) != 0) { _events |= RunEventKind.Dashed; }
+
+            // トゲと出口は、Tick の終わりの位置ではなく移動の経路で判定する（斜めに角をかすめた接触も見逃さない）。
+            // 経路は地形の解決と同じく横 → 縦の順で、先に通る区間の接触が優先。同じ区間なら死亡が優先。
+            var motion = Player.LastMotion;
+            if (!Touch(motion.HorizontalSweep) && !Touch(motion.VerticalSweep) && Player.Body.Top <= 0)
+            {
+                Die(DeathCause.Fall);
+            }
+
+            return true;
+        }
+
+        /// <summary>通った範囲がトゲか出口に触れていれば、死亡かクリアにして true。</summary>
+        private bool Touch(Box swept)
+        {
+            if (Map.TouchesSpike(swept))
+            {
+                Die(DeathCause.Spike);
+                return true;
+            }
+
+            if (Map.Touches(swept, TileKind.Exit))
+            {
+                Status = RunStatus.Cleared;
+                _events |= RunEventKind.Cleared;
+                return true;
+            }
+
+            return false;
+        }
+
+        public RunEventKind TakeEvents()
+        {
+            var events = _events;
+            _events = RunEventKind.None;
+            return events;
+        }
+
+        /// <summary>状態のハッシュ。以後の動きを決める状態（自機の内部の残り Tick・直前のキーの押下、死亡からの再開までの Tick）をすべて含む。</summary>
+        public uint Hash() => Mix(StateHash.Start()).Value;
+
+        /// <summary>この挑戦の状態をハッシュに混ぜる。</summary>
+        public StateHash Mix(StateHash hash)
+        {
+            hash.Mix(Ticks);
+            hash.Mix((int)Status);
+            hash.Mix((int)LastDeath);
+            hash.Mix(Deaths);
+            hash.Mix(_respawnLeft);
+            Player.MixInto(ref hash);
+            return hash;
+        }
+
+        private void Die(DeathCause cause)
+        {
+            Status = RunStatus.Dying;
+            LastDeath = cause;
+            Deaths++;
+            _respawnLeft = _config.DeathTicks;
+            _events |= RunEventKind.Died;
+        }
+    }
+}
