@@ -7,7 +7,11 @@ namespace Game.Core
     public sealed class LightsOutConfig
     {
         public const int MinScramblePresses = 1;
-        public const int MaxScramblePresses = LightsBoard.CellCount;
+        /// <summary>
+        /// 全 25 マスを選ぶと、押す順序は結果に影響しないのでどのシードでも同じ盤になる。
+        /// 1 マス残せば、残すマスの選び方の分だけ盤が変わる。
+        /// </summary>
+        public const int MaxScramblePresses = LightsBoard.CellCount - 1;
 
         /// <summary>問題を作るときに押す、重複のないマスの数。</summary>
         public int ScramblePresses = 10;

@@ -142,11 +142,11 @@ namespace Game.Core.Tests
         {
             Assert.Throws<ArgumentNullException>(() => _ = new LightsOutGame(null!, 1));
             Assert.Throws<ArgumentOutOfRangeException>(() => _ = NewGame(presses: 0));
-            Assert.Throws<ArgumentOutOfRangeException>(() => _ = NewGame(presses: 26));
+            Assert.Throws<ArgumentOutOfRangeException>(() => _ = NewGame(presses: 25));
         }
 
         [TestCase(1)]
-        [TestCase(25)]
+        [TestCase(24)]
         public void BoundaryConfigIsAccepted(int presses)
         {
             var game = NewGame(presses: presses);

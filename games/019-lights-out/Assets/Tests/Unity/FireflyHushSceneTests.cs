@@ -173,6 +173,22 @@ namespace Game.Unity.Tests
         }
 
         [UnityTest]
+        public IEnumerator RepeatedClicks_CountOneMoveEach()
+        {
+            yield return StartMatch();
+            var expected = Game.Board;
+            int[] cells = { 0, 0, 12, 12, 12, 24 };
+            foreach (var cell in cells)
+            {
+                yield return Click(CellPoint(cell));
+                expected = expected.Press(cell);
+            }
+
+            Assert.That(Game.Moves, Is.EqualTo(cells.Length));
+            Assert.That(Game.Board, Is.EqualTo(expected));
+        }
+
+        [UnityTest]
         public IEnumerator Click_OnGapOrOutsideBoard_IsIgnored()
         {
             yield return StartMatch();
@@ -410,7 +426,7 @@ namespace Game.Unity.Tests
             AssertRejected(s => s.FadeSeconds = -.1f);
             AssertRejected(s => s.FadeSeconds = float.PositiveInfinity);
             AssertRejected(s => s.Puzzle.ScramblePresses = 0);
-            AssertRejected(s => s.Puzzle.ScramblePresses = 26);
+            AssertRejected(s => s.Puzzle.ScramblePresses = 25);
         }
 
         private static void AssertRejected(Action<FireflyHushSettings> change)

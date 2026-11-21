@@ -31,6 +31,23 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void EveryAllowedPressCountGivesVariedPuzzles()
+        {
+            // 押す順序は結果に影響しないので、全 25 マスを選ぶと全シードで同じ盤になる。上限はそれを避けている。
+            for (var presses = LightsOutConfig.MinScramblePresses; presses <= LightsOutConfig.MaxScramblePresses; presses++)
+            {
+                var boards = new HashSet<uint>();
+                for (var seed = 0; seed < 200; seed++)
+                {
+                    boards.Add(PuzzleGenerator.Generate(seed, presses).Board.Bits);
+                }
+
+                // 1 マスだけ・1 マス残しは高々 25 通りなので、その数に近い多様性を求める。
+                Assert.That(boards, Has.Count.GreaterThanOrEqualTo(20), $"押下数 {presses}");
+            }
+        }
+
+        [Test]
         public void KnownSolutionHasTheRequestedPressesAndRebuildsTheBoard()
         {
             for (var presses = LightsOutConfig.MinScramblePresses; presses <= LightsOutConfig.MaxScramblePresses; presses++)
@@ -108,6 +125,7 @@ namespace Game.Core.Tests
 
         [TestCase(0)]
         [TestCase(-1)]
+        [TestCase(25)]
         [TestCase(26)]
         public void OutOfRangePressCountIsRejected(int presses)
         {

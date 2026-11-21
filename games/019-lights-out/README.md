@@ -78,7 +78,7 @@ HUD のボタンでも同じ操作ができる。ウィンドウを選び直す�
 - **あきらめたときの解答は、あきらめた時点の盤の最短解。** 出題時の盤の解ではないので、途中まで押した分を差し引いた押し方になる。
 - **物理エンジンは使わない。** ターン制で、時間にも依存しない。
 
-設定アセットは `Assets/Game/Unity/FireflyHushSettings.asset`。問題を作るときに押すマスの数（1〜25）、音量、灯の演出時間を調整できる。盤の大きさは設定に出していない（大サイズ対応は Out of scope）。
+設定アセットは `Assets/Game/Unity/FireflyHushSettings.asset`。問題を作るときに押すマスの数（1〜24。全 25 マスを選ぶと押す順序が結果に影響しないため、どのシードでも同じ盤になるので上限を 24 にしている）、音量、灯の演出時間を調整できる。盤の大きさは設定に出していない（大サイズ対応は Out of scope）。
 
 シーンの再生成：
 
@@ -92,14 +92,14 @@ unity run games/019-lights-out -- -executeMethod Game.Unity.Editor.FireflyHushSc
 
 | 種類 | 場所 | 件数 | 実行方法 |
 |---|---|---:|---|
-| Core | `Assets/Tests/Core/` | 57 | `dev test` |
+| Core | `Assets/Tests/Core/` | 59 | `dev test` |
 | App | `Assets/Tests/App/` | 33 | `dev test` |
-| EditMode（Core/App を Mono で実行） | 同上 | 90 | `dev test 019 -Unity` |
-| PlayMode（実シーン19、共通証跡16） | `Assets/Tests/Unity/` | 35 | `dev test 019 -Unity -Mode PlayMode` |
+| EditMode（Core/App を Mono で実行） | 同上 | 92 | `dev test 019 -Unity` |
+| PlayMode（実シーン20、共通証跡16） | `Assets/Tests/Unity/` | 36 | `dev test 019 -Unity -Mode PlayMode` |
 
 - 押下は、bool の 2 次元配列で 1 マスずつ反転する素朴な参照実装と全 25 マスで照合している。
 - ソルバの可解判定と最短解は、素朴な「ライト追い」（1 行目 32 通りの総当たりで全解を列挙）と乱数の盤で照合している。
-- 生成盤は押下数 1〜25 の全範囲で必ず解けることを確かめ、生成結果のハッシュを .NET と Mono の両方で固定値と照合している（整数だけで作るので一致する）。
+- 生成盤は押下数 1〜24 の全範囲で必ず解け、どの押下数でもシードによって盤が変わることを確かめ、生成結果のハッシュを .NET と Mono の両方で固定値と照合している（整数だけで作るので一致する）。
 
 結果と画面証跡は [evidence/README.md](evidence/README.md) に記録している。
 
