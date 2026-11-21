@@ -33,9 +33,10 @@ namespace Game.Unity.Editor
         private const float CenterSuitScale = .5f;
 
         // 卓の座標（TableLayout）を画面の左側いっぱいに広げる。右側は HUD。
-        private const float TableScale = 1.25f;
+        // 最も長い列（伏せ札 6 枚＋表 13 枚）の下端と上の段の上端が、縦の半分 5.4 の画面に収まる倍率と位置にする。
+        private const float TableScale = 1.18f;
 
-        private static readonly Vector3 _tableOffset = new(1.2f, -.45f, 0);
+        private static readonly Vector3 _tableOffset = new(1.05f, -.05f, 0);
         private static readonly Color _highlightColor = new(1f, .74f, .22f);
 
         [MenuItem("Game/Rebuild Seven Lanterns Scene")]

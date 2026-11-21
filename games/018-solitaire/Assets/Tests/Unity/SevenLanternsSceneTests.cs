@@ -205,6 +205,41 @@ namespace Game.Unity.Tests
             yield return WaitForCardsToSettle();
         }
 
+        /// <summary>
+        /// 最も長い列（伏せ札 6 枚の上で開いた K から A まで 13 枚）と上の段の札の四隅が、卓の Transform とカメラを通した実際の画面に収まる。
+        /// </summary>
+        [UnityTest]
+        public IEnumerator LongestColumnAndTopRowFitInTheActualView()
+        {
+            yield return Begin(Parse(
+                "waste: *",
+                "f4: AH",
+                "t7: 2H 3H 4H 5H 7H 8H | KC QD JS TH 9C 8D 7S 6H 5C 4D 3S 2D AC"));
+            yield return WaitForCardsToSettle();
+            var corners = new[]
+            {
+                (T(7), 18, -1f, -1f), (T(7), 18, 1f, -1f), (T(1), -1, -1f, -1f),
+                (PileId.Stock, -1, -1f, 1f), (PileId.Foundation(3), 0, 1f, 1f),
+            };
+            foreach (var aspect in new[] { 16f / 9f, 16f / 10f, 21f / 9f })
+            {
+                var size = _game.ViewSize(aspect);
+                foreach (var (pile, index, sx, sy) in corners)
+                {
+                    var center = index < 0 ? TableLayout.SlotCenter(pile) : TableLayout.CardCenter(Table, pile, index);
+                    var local = new Vector3((float)(center.X + (sx * TableLayout.CardWidth / 2)), (float)(center.Y + (sy * TableLayout.CardHeight / 2)), 0);
+                    var world = View.transform.TransformPoint(local) - _game.ViewCamera.transform.position;
+                    Assert.That(Mathf.Abs(world.y), Is.LessThanOrEqualTo(size), $"{pile}[{index}] の縦（{aspect:0.00}）");
+                    Assert.That(Mathf.Abs(world.x), Is.LessThanOrEqualTo(size * aspect), $"{pile}[{index}] の横（{aspect:0.00}）");
+                }
+            }
+
+            // 今の画面でも、最後の札の下端がビューポートの中にある。
+            var last = TableLayout.CardCenter(Table, T(7), 18);
+            var bottom = View.transform.TransformPoint(new Vector3((float)last.X, (float)(last.Y - (TableLayout.CardHeight / 2)), 0));
+            Assert.That(_game.ViewCamera.WorldToViewportPoint(bottom).y, Is.GreaterThanOrEqualTo(0f));
+        }
+
         [UnityTest]
         public IEnumerator Mouse_DragMovesARunAndFlipsTheCardBelow()
         {

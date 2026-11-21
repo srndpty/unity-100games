@@ -20,14 +20,17 @@ namespace Game.App.Tests
         }
 
         [Test]
-        public void LongestColumnStaysAboveTheBottomOfTheView()
+        public void LongestColumnEndsAtTheContentBottom()
         {
-            // 伏せ札 6 枚の上に K から A までの 13 枚。
+            // 伏せ札 6 枚の上で開いた K から A までの 13 枚。画面に収まるかは PlayMode で実際の表示範囲を確かめる。
             var table = Parse(
                 "stock: *",
                 "t7: 2H 3H 4H 5H 7H 8H | KC QD JS TH 9C 8D 7S 6H 5C 4D 3S 2D AC");
             var bottom = TableLayout.CardCenter(table, PileId.Tableau(6), 18).Y - (TableLayout.CardHeight / 2);
-            Assert.That(bottom, Is.GreaterThan(-5.4));
+            Assert.That(bottom, Is.EqualTo(TableLayout.ContentBottom).Within(1e-9));
+            Assert.That(TableLayout.SlotCenter(PileId.Stock).Y + (TableLayout.CardHeight / 2), Is.EqualTo(TableLayout.ContentTop).Within(1e-9));
+            Assert.That(TableLayout.SlotCenter(PileId.Tableau(0)).X - (TableLayout.CardWidth / 2), Is.EqualTo(TableLayout.ContentLeft).Within(1e-9));
+            Assert.That(TableLayout.SlotCenter(PileId.Foundation(3)).X + (TableLayout.CardWidth / 2), Is.EqualTo(TableLayout.ContentRight).Within(1e-9));
         }
 
         [Test]

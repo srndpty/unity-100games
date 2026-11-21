@@ -12,8 +12,12 @@ namespace Game.Unity
     [RequireComponent(typeof(AudioSource))]
     public sealed class SevenLanternsGame : MonoBehaviour
     {
+        // 画面の縦の半分は少なくともこれだけ写す。右側の HUD の場所を取るため、横の半分も少なくともこれだけ写す。
         private const float ViewHalfHeight = 5.4f;
         private const float ViewHalfWidth = 9.4f;
+
+        // 卓の中身の端と画面の端の間に残す余白（ワールド座標）。
+        private const float ViewMargin = .1f;
         private const int TitleSeed = 0;
         private const string Controls =
             "ドラッグ：札を重ねる ／ クリック→クリック：選んで置く\nダブルクリック：組札へ ／ 山札をクリック：めくる\nZ・BS：1 手戻す ／ F：自動で仕上げる ／ Esc・P：一時停止";
@@ -31,6 +35,7 @@ namespace Game.Unity
         private bool _hasFocus = true;
         private int _focusRestoredFrame = -10;
         private Table _titleTable;
+        private Bounds _content;
         private VisualElement _root;
         private int _version = -1;
         private VisualElement _stats;
@@ -121,6 +126,7 @@ namespace Game.Unity
 
             _font = Font.CreateDynamicFontFromOSFont("Yu Gothic", 24);
             _view.Arrange();
+            _content = _view.ContentWorldBounds();
             _hudRenderer.RegisterUIReloadCallback(OnHudReloaded);
             Render(0);
         }
@@ -219,11 +225,22 @@ namespace Game.Unity
             else if ((events & FlowEvents.Drawn) != 0) { _audio.PlayOneShot(_drawSound); }
         }
 
+        /// <summary>
+        /// カメラの縦の半分の大きさ。卓の中身が届きうる範囲（最も長い列を含む）を、卓の Transform で変換した後の座標で必ず収める。
+        /// カメラは原点を中心に写す。
+        /// </summary>
+        public float ViewSize(float aspect)
+        {
+            var halfHeight = Mathf.Max(_content.max.y, -_content.min.y) + ViewMargin;
+            var halfWidth = Mathf.Max(ViewHalfWidth, Mathf.Max(_content.max.x, -_content.min.x) + ViewMargin);
+            return Mathf.Max(ViewHalfHeight, halfHeight, halfWidth / aspect);
+        }
+
         /// <summary>現在の状態を描く。deltaTime は札を寄せる実時間（撮影中は札を即座に置く）。</summary>
         public void Render(float deltaTime)
         {
             if (Flow == null) { return; }
-            _camera.orthographicSize = Mathf.Max(ViewHalfHeight, ViewHalfWidth / _camera.aspect);
+            _camera.orthographicSize = ViewSize(_camera.aspect);
             var sharpness = EvidenceCapture.IsRunning ? 0f : _settings.SlideSharpness;
             var game = Flow.Game;
             if (game == null) { _view.Render(_titleTable, null, null, default, deltaTime, sharpness); }

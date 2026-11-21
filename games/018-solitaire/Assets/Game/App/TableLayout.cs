@@ -83,6 +83,22 @@ namespace Game.App
 
         public const int WasteFanCount = 3;
 
+        /// <summary>場札の 1 列に残りうる伏せ札の最大（7 列目の配札）。</summary>
+        public const int MaxFaceDownInColumn = PileId.TableauCount - 1;
+
+        /// <summary>
+        /// 卓の中身が届きうる範囲の端（卓の座標）。下端は、伏せ札 6 枚の上で開いた K から A まで 13 枚が並んだ列の最後の札の下端。
+        /// 右端は 3 枚めくりで広げた捨て札ではなく、最も右の列（組札・場札）。
+        /// </summary>
+        public static double ContentTop => TopRowY + (CardHeight / 2);
+
+        public static double ContentBottom =>
+            TableauY - (MaxFaceDownInColumn * FaceDownStep) - ((Card.MaxRank - 1) * FaceUpStep) - (CardHeight / 2);
+
+        public static double ContentLeft => ColumnX(0) - (CardWidth / 2);
+
+        public static double ContentRight => ColumnX(PileId.TableauCount - 1) + (CardWidth / 2);
+
         /// <summary>空の山の枠の中心。</summary>
         public static TablePoint SlotCenter(PileId pile) => pile.Kind switch
         {

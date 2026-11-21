@@ -34,6 +34,16 @@ namespace Game.Unity
 
         public int SortingOrderOf(Card card) => _groups[card.Id].sortingOrder;
 
+        /// <summary>卓の中身が届きうる範囲（<see cref="TableLayout"/> の端）を、卓の Transform で変換したワールド座標の範囲。</summary>
+        public Bounds ContentWorldBounds()
+        {
+            var min = transform.TransformPoint(new Vector3((float)TableLayout.ContentLeft, (float)TableLayout.ContentBottom, 0));
+            var max = transform.TransformPoint(new Vector3((float)TableLayout.ContentRight, (float)TableLayout.ContentTop, 0));
+            var bounds = new Bounds(min, Vector3.zero);
+            bounds.Encapsulate(max);
+            return bounds;
+        }
+
         /// <summary>空の山の枠を置く。札はまだ動かさない。</summary>
         public void Arrange()
         {

@@ -1,6 +1,6 @@
 # 018 検証記録
 
-2026-11-20〜21実施。人間のプレイ確認を受け、2026-11-21に完了承認を受領した。試遊の指摘を受けてスートを一般的なハート・ダイヤ・クラブ・スペード（赤黒 2 色）に替え、札の隅のランクと印を縁から内側へ寄せ、「自動で仕上げる」を追加して、検証をやり直した。完了承認後のレビュー対応（ダブルクリックの判定）の後にも全検証を通した。
+2026-11-20〜21実施。人間のプレイ確認を受け、2026-11-21に完了承認を受領した。試遊の指摘を受けてスートを一般的なハート・ダイヤ・クラブ・スペード（赤黒 2 色）に替え、札の隅のランクと印を縁から内側へ寄せ、「自動で仕上げる」を追加して、検証をやり直した。完了承認後のレビュー対応（ダブルクリックの判定、最も長い列が画面の下で切れる問題）の後にも全検証を通した。
 
 ## 自動検証
 
@@ -10,13 +10,13 @@
 | dev check | 成功（018、警告0・エラー0） |
 | dev test | 成功（全作品）。018 Core 76/76、App 45/45 |
 | Unity EditMode | 121/121（Core/App、Mono） |
-| Unity PlayMode | 34/34（実シーン18、共通証跡公開16） |
+| Unity PlayMode | 35/35（実シーン19、共通証跡公開16） |
 | Windowsビルド | 成功、StandaloneWindows64 |
 | ビルド起動 | dev captureで起動・全場面撮影・正常終了 |
 | 証跡 | JPEG品質85、14枚 |
-| 撮影再現 | 同一ビルド（Build GUID `b076888a374d468c960712f9eeabfbe6`）を2回撮影し、14枚すべての SHA-256 が一致した（画像世代d4cf5442d0726a27）。比較した撮影記録は1回目 `20261121T120007Z-19cba86b` と2回目（公開中）`20261121T120023Z-274e8d7f` で、両 manifest の Build GUID・シード・14枚の SHA-256 を照合した |
+| 撮影再現 | 同一ビルド（Build GUID `f8327d10beca4338ade06659932f345f`）を2回撮影し、14枚すべての SHA-256 が一致した（画像世代fcb2ae9aacdb2e6f）。比較した撮影記録は1回目 `20261121T121931Z-a1a339b8` と2回目（公開中）`20261121T121942Z-dad71e2f` で、両 manifest の Build GUID・シード・14枚の SHA-256 を照合した |
 
-Build GUID：`b076888a374d468c960712f9eeabfbe6`。シード：1。公開ポインタは[current.json](current.json)、実行記録は[manifest.json](runs/20261121T120023Z-274e8d7f/manifest.json)。
+Build GUID：`f8327d10beca4338ade06659932f345f`。シード：1。公開ポインタは[current.json](current.json)、実行記録は[manifest.json](runs/20261121T121942Z-dad71e2f/manifest.json)。
 
 Unityのビルドログにライセンスクライアントの検証メッセージが出たが、ビルドとPlayerの撮影起動は成功した。
 
@@ -45,6 +45,7 @@ Unityのビルドログにライセンスクライアントの検証メッセー
 ## 入力
 
 - 実シーンの PlayMode テストで、仮想マウスから次を確かめている：ドラッグで札の連続を動かし下の伏せ札が開く、ドラッグ中は掴んだ札がポインタに付いて手前に描かれ盤は変わらない、何もない所や置けない所で離すと盤は変わらず札が元の位置へ戻る（置けない理由を表示）、クリックで選ぶと縁が光り別の山のクリックで動かす、山札のクリックでめくり・戻す、ダブルクリックで組札へ送る（最後の 1 枚で勝利）。ダブルクリックは捨て札・場札の一番上の札だけで、間に背景や伏せ札のクリックを挟んだ場合と、組札の札を 2 回クリックした場合は成立しないことを App テストで確かめている。
+- 最も長い列（伏せ札 6 枚の上で開いた K から A まで 13 枚）の最後の札と上の段の札の四隅が、卓の Transform とカメラを通した実際の表示範囲（16:9・16:10・21:9）に収まることを PlayMode テストで確かめている。
 - 「自動で仕上げる」は、伏せ札と山札が残るうちは出ず、仕上げられる局面で出ること、押すと送っている間はボタンが消えて取り消しが無効になり、最後に勝つことを PlayMode テストで確かめている。F キーでも始まる。1 枚ずつ送る間隔、一時停止で止まること、処理落ちの分をまとめて送ることは App テストで確かめている。
 - 1 手戻すは Z キーと HUD のボタンの両方で、戻す手がないときボタンが押せないことと、押すと戻ることを同じテストで確かめている。
 - フォーカスを失うとドラッグ中の札を落とさずに取り消し、復帰直後のクリックで再開しないことを確かめている。
@@ -54,56 +55,56 @@ Unityのビルドログにライセンスクライアントの検証メッセー
 
 ### タイトル（飾りの配札）
 
-![タイトル](captures/d4cf5442d0726a27/01-title.jpg)
+![タイトル](captures/fcb2ae9aacdb2e6f/01-title.jpg)
 
 ### 配札
 
-![配札](captures/d4cf5442d0726a27/02-deal.jpg)
+![配札](captures/fcb2ae9aacdb2e6f/02-deal.jpg)
 
 ### クリックで選んだ札
 
-![選択](captures/d4cf5442d0726a27/03-selected.jpg)
+![選択](captures/fcb2ae9aacdb2e6f/03-selected.jpg)
 
 ### ドラッグ中
 
-![ドラッグ中](captures/d4cf5442d0726a27/04-dragging.jpg)
+![ドラッグ中](captures/fcb2ae9aacdb2e6f/04-dragging.jpg)
 
 ### ドロップ
 
-![ドロップ](captures/d4cf5442d0726a27/05-dropped.jpg)
+![ドロップ](captures/fcb2ae9aacdb2e6f/05-dropped.jpg)
 
 ### 置けない場所（理由の表示）
 
-![置けない場所](captures/d4cf5442d0726a27/06-rejected.jpg)
+![置けない場所](captures/fcb2ae9aacdb2e6f/06-rejected.jpg)
 
 ### 進行中（自動操縦で 31 手）
 
-![進行中](captures/d4cf5442d0726a27/07-progress.jpg)
+![進行中](captures/fcb2ae9aacdb2e6f/07-progress.jpg)
 
 ### 1 手戻す
 
-![1手戻す](captures/d4cf5442d0726a27/08-undo.jpg)
+![1手戻す](captures/fcb2ae9aacdb2e6f/08-undo.jpg)
 
 ### 一時停止
 
-![一時停止](captures/d4cf5442d0726a27/09-paused.jpg)
+![一時停止](captures/fcb2ae9aacdb2e6f/09-paused.jpg)
 
 ### 3 枚めくり
 
-![3枚めくり](captures/d4cf5442d0726a27/10-draw-three.jpg)
+![3枚めくり](captures/fcb2ae9aacdb2e6f/10-draw-three.jpg)
 
 ### 手詰まり
 
-![手詰まり](captures/d4cf5442d0726a27/11-stuck.jpg)
+![手詰まり](captures/fcb2ae9aacdb2e6f/11-stuck.jpg)
 
 ### 完成
 
-![完成](captures/d4cf5442d0726a27/12-won.jpg)
+![完成](captures/fcb2ae9aacdb2e6f/12-won.jpg)
 
 ### 自動で仕上げられる（ボタン）
 
-![自動で仕上げられる](captures/d4cf5442d0726a27/13-auto-ready.jpg)
+![自動で仕上げられる](captures/fcb2ae9aacdb2e6f/13-auto-ready.jpg)
 
 ### 自動で仕上げている途中
 
-![自動で仕上げている途中](captures/d4cf5442d0726a27/14-auto-completing.jpg)
+![自動で仕上げている途中](captures/fcb2ae9aacdb2e6f/14-auto-completing.jpg)

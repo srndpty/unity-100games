@@ -119,74 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1001 &313278869
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1405742326653885896, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1531282212769936324, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-      propertyPath: m_Name
-      value: SevenLanternsStage
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
---- !u!114 &313278870 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1895529178941624242, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
-  m_PrefabInstance: {fileID: 313278869}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a43c34e92a22c04ea5e0ad5c24f6a9b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game.Unity::Game.Unity.SevenLanternsTableView
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -428,7 +360,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &885157493
+--- !u!1 &1444472413
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -436,11 +368,11 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 885157498}
-  - component: {fileID: 885157497}
-  - component: {fileID: 885157496}
-  - component: {fileID: 885157495}
-  - component: {fileID: 885157494}
+  - component: {fileID: 1444472418}
+  - component: {fileID: 1444472417}
+  - component: {fileID: 1444472416}
+  - component: {fileID: 1444472415}
+  - component: {fileID: 1444472414}
   m_Layer: 0
   m_Name: SevenLanterns
   m_TagString: Untagged
@@ -448,41 +380,41 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &885157494
+--- !u!114 &1444472414
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 885157493}
+  m_GameObject: {fileID: 1444472413}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1c3aa6fd3e9c5b44ca726f5017b42dc3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Unity::Game.Unity.SevenLanternsCaptureScenario
---- !u!114 &885157495
+--- !u!114 &1444472415
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 885157493}
+  m_GameObject: {fileID: 1444472413}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aa99a94446ff99a4f9f985e3b345b03d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Unity::Game.Unity.SevenLanternsGame
   _settings: {fileID: 11400000, guid: c01dd49919fcb5e40a2a9c3095a21f11, type: 2}
-  _hudRenderer: {fileID: 885157497}
+  _hudRenderer: {fileID: 1444472417}
   _camera: {fileID: 519420031}
-  _view: {fileID: 313278870}
---- !u!82 &885157496
+  _view: {fileID: 1453481328}
+--- !u!82 &1444472416
 AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 885157493}
+  m_GameObject: {fileID: 1444472413}
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
@@ -573,13 +505,13 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!1931382934 &885157497
+--- !u!1931382934 &1444472417
 PanelRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 885157493}
+  m_GameObject: {fileID: 1444472413}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -631,13 +563,13 @@ PanelRenderer:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_Position: 0
---- !u!4 &885157498
+--- !u!4 &1444472418
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 885157493}
+  m_GameObject: {fileID: 1444472413}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -646,11 +578,79 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1453481327
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4882794257080499624, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4882794257080499624, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4882794257080499624, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4882794257080499624, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4882794257080499624, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4882794257080499624, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4882794257080499624, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4882794257080499624, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4882794257080499624, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4882794257080499624, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8490140716060456530, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+      propertyPath: m_Name
+      value: SevenLanternsStage
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+--- !u!114 &1453481328 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5809529480623405938, guid: f5cd04cbcac101c46bfb1b8cae1e6409, type: 3}
+  m_PrefabInstance: {fileID: 1453481327}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a43c34e92a22c04ea5e0ad5c24f6a9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.SevenLanternsTableView
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 519420032}
   - {fileID: 619394802}
-  - {fileID: 313278869}
-  - {fileID: 885157498}
+  - {fileID: 1453481327}
+  - {fileID: 1444472418}
