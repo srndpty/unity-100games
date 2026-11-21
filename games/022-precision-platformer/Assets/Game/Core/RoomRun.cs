@@ -33,7 +33,7 @@ namespace Game.Core
     /// <summary>
     /// 1 部屋の挑戦。死亡すると <see cref="PrecisionConfig.DeathTicks"/> Tick 後に部屋の開始位置から
     /// 新しい自機でやり直す（何度でも）。出口に触れたら終わり、以後の Tick と入力は受け付けない。
-    /// 1 Tick の順序は「自機の移動 → トゲ → 落下 → 出口」（同じ Tick なら死亡が優先）。
+    /// 1 Tick の順序は「自機の移動 → トゲと出口（移動の経路で、先に通った区間を優先。同じ区間なら死亡）→ 落下」。
     /// 乱数は使わないので、部屋と入力の列だけで結果が決まる。
     /// </summary>
     public sealed class RoomRun
@@ -111,21 +111,34 @@ namespace Game.Core
             if ((actions & PlayerActions.WallJumped) != 0) { _events |= RunEventKind.WallJumped; }
             if ((actions & PlayerActions.Dashed) != 0) { _events |= RunEventKind.Dashed; }
 
-            if (Map.TouchesSpike(Player.Body))
-            {
-                Die(DeathCause.Spike);
-            }
-            else if (Player.Body.Top <= 0)
+            // トゲと出口は、Tick の終わりの位置ではなく移動の経路で判定する（斜めに角をかすめた接触も見逃さない）。
+            // 経路は地形の解決と同じく横 → 縦の順で、先に通る区間の接触が優先。同じ区間なら死亡が優先。
+            var motion = Player.LastMotion;
+            if (!Touch(motion.HorizontalSweep) && !Touch(motion.VerticalSweep) && Player.Body.Top <= 0)
             {
                 Die(DeathCause.Fall);
             }
-            else if (Map.Touches(Player.Body, TileKind.Exit))
+
+            return true;
+        }
+
+        /// <summary>通った範囲がトゲか出口に触れていれば、死亡かクリアにして true。</summary>
+        private bool Touch(Box swept)
+        {
+            if (Map.TouchesSpike(swept))
+            {
+                Die(DeathCause.Spike);
+                return true;
+            }
+
+            if (Map.Touches(swept, TileKind.Exit))
             {
                 Status = RunStatus.Cleared;
                 _events |= RunEventKind.Cleared;
+                return true;
             }
 
-            return true;
+            return false;
         }
 
         public RunEventKind TakeEvents()

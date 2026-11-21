@@ -221,7 +221,7 @@ namespace Game.Unity.Tests
 
             StepUntil(() => _game.Flow.Screen == AppScreen.Result);
             Assert.That(Text("headline"), Is.EqualTo("登りきった！"));
-            Assert.That(Text("message"), Does.Contain("死亡  0 回").And.Contain(GlintAscentGame.FormatTicks(Climb.ElapsedTicks)));
+            Assert.That(Text("message"), Does.Contain("死亡  0 回").And.Contain(GlintAscentGame.FormatTicks(_game.Flow.ClearTicks!.Value)));
             Assert.That(IsShown("submit") && IsShown("title"), Is.True);
         }
 

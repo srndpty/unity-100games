@@ -114,6 +114,52 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void PlayedTime_IncludesTimeSkippedByTheTickBudget()
+        {
+            // レビュー：処理落ちで飛ばした時間が完走タイムから消え、不当に短い記録になっていた。
+            var flow = Playing();
+            flow.Advance(Start + 10);
+            Assert.That(flow.Climb!.ElapsedTicks, Is.EqualTo(PrecisionFlow.MaxTicksPerFrame), "ゲームの進行は上限で抑える");
+            Assert.That(flow.PlayedTicks, Is.EqualTo(600), "遊んだ時間は実際に経った 10 秒");
+        }
+
+        [Test]
+        public void PlayedTime_ExcludesPause()
+        {
+            var flow = Playing();
+            Walk(flow, Start, 10);
+            flow.Apply(Intent.Of(IntentKind.TogglePause, Start + (10.7 * Tick)));
+            flow.Advance(Start + 50);
+            Assert.That(flow.PlayedTicks, Is.EqualTo(10), "一時停止の間は数えない");
+            flow.Apply(Intent.Of(IntentKind.Submit, Start + 50));
+            Walk(flow, Start + 50, 3);
+            Assert.That(flow.PlayedTicks, Is.EqualTo(13));
+            Assert.That(flow.Climb!.ElapsedTicks, Is.EqualTo(13), "処理落ちがなければゲームの Tick 数と同じ");
+        }
+
+        [Test]
+        public void ClearTime_AndBest_UsePlayedTimeNotLogicTicks()
+        {
+            var flow = Playing();
+            flow.Apply(Intent.Down(Control.Right, Start));
+            Walk(flow, Start, 20);
+            flow.Advance(Start + 10);
+            var skipped = (10 * Units.TickRate) - 20 - PrecisionFlow.MaxTicksPerFrame;
+            for (var i = 1; i < 600 && flow.Screen == AppScreen.Playing; i++) { flow.Advance(Start + 10 + ((i + 0.5) * Tick)); }
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Result));
+            Assert.That(flow.ClearTicks, Is.EqualTo(flow.Climb!.ElapsedTicks + skipped), "処理落ちで飛ばした時間も完走タイムに入る");
+            Assert.That(flow.BestTicks, Is.EqualTo(flow.ClearTicks), "最短記録も遊んだ時間で比べる");
+
+            // 処理落ちなしで同じように走ると、ゲームの Tick 数は同じでも完走タイムは短い（こちらが最短になる）。
+            flow.Apply(Intent.Of(IntentKind.Submit, Start + 100));
+            flow.Apply(Intent.Down(Control.Right, Start + 100));
+            for (var i = 0; i < 600 && flow.Screen == AppScreen.Playing; i++) { flow.Advance(Start + 100 + ((i + 0.5) * Tick)); }
+            Assert.That(flow.ClearTicks, Is.EqualTo(flow.Climb!.ElapsedTicks));
+            Assert.That(flow.IsNewBest, Is.True);
+            Assert.That(flow.BestTicks, Is.EqualTo(flow.ClearTicks));
+        }
+
+        [Test]
         public void Hitch_InputsAndAdvanceInOneFrameShareTheTickBudget()
         {
             // レビュー P2-1 の例：処理停止の後、1 フレームで 2 つの入力と Advance を処理する。
@@ -404,6 +450,7 @@ namespace Game.App.Tests
 
             Assert.That(flow.Screen, Is.EqualTo(AppScreen.Result));
             Assert.That(flow.Climb!.Deaths, Is.Zero);
+            Assert.That(flow.ClearTicks, Is.EqualTo(flow.Climb.ElapsedTicks), "StepTick で直接進めた Tick は 1 Tick ぶんの時間として数える");
             Assert.That(events & (FlowEvents.Jumped | FlowEvents.WallJumped | FlowEvents.Dashed | FlowEvents.Won), Is.EqualTo(FlowEvents.Jumped | FlowEvents.WallJumped | FlowEvents.Dashed | FlowEvents.Won));
         }
 

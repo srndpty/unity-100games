@@ -40,6 +40,17 @@ namespace Game.Core
 
         public Box Offset(int dx, int dy) => new(X + dx, Y + dy, Width, Height);
 
+        /// <summary>
+        /// 2 つの箱を囲む箱。同じ大きさの箱が 1 軸だけ動いたとき（横か縦の一方だけが違うとき）は、
+        /// 途中のすべての位置が通る範囲とちょうど一致する（掃引の判定に使う）。
+        /// </summary>
+        public static Box Span(Box a, Box b)
+        {
+            var left = Math.Min(a.Left, b.Left);
+            var bottom = Math.Min(a.Bottom, b.Bottom);
+            return new Box(left, bottom, Math.Max(a.Right, b.Right) - left, Math.Max(a.Top, b.Top) - bottom);
+        }
+
         public bool Overlaps(Box other)
         {
             return Left < other.Right && other.Left < Right && Bottom < other.Top && other.Bottom < Top;

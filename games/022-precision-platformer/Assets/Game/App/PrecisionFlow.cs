@@ -53,6 +53,7 @@ namespace Game.App
         private bool _hasFocus = true;
         private double _origin;
         private long _ticksDone;
+        private long _playedBase;
         private int _frameBudget = MaxTicksPerFrame;
         private FlowEvents _events;
 
@@ -76,7 +77,17 @@ namespace Game.App
         /// <summary>設定されていれば、キー入力の代わりに入力の列で動かす（撮影・テスト用）。</summary>
         public RoutePilot? Pilot { get; set; }
 
-        /// <summary>起動してからの最短の完走 Tick 数（まだなければ null）。</summary>
+        /// <summary>
+        /// 今の挑戦で遊んだ時間（Tick 単位）。一時停止・フォーカス喪失・タイトルは含まないが、処理落ちで 1 フレームの上限を超えて
+        /// 飛ばした区間は含む（ゲームの進行は上限で抑えても、記録は実際に経った時間で数える）。<see cref="StepTick"/> で直接進めた
+        /// Tick は 1 Tick ぶんの時間として数える。勝利した Tick で止まる。
+        /// </summary>
+        public long PlayedTicks => _playedBase + _ticksDone;
+
+        /// <summary>直前の挑戦の完走タイム（<see cref="PlayedTicks"/> の単位。完走していなければ null）。</summary>
+        public long? ClearTicks { get; private set; }
+
+        /// <summary>起動してからの最短の完走タイム（<see cref="PlayedTicks"/> の単位。まだなければ null）。</summary>
         public long? BestTicks { get; private set; }
 
         /// <summary>直前の挑戦で最短記録を更新したか。</summary>
@@ -153,6 +164,12 @@ namespace Game.App
         public void StepTick()
         {
             if (Screen != AppScreen.Playing) { return; }
+            _playedBase++;
+            Step();
+        }
+
+        private void Step()
+        {
             var climb = Climb!;
             var input = _held.TakeTickInput();
             if (Pilot != null) { input = Pilot.Next(climb); }
@@ -182,7 +199,7 @@ namespace Game.App
             {
                 _ticksDone++;
                 _frameBudget--;
-                StepTick();
+                Step();
             }
         }
 
@@ -190,6 +207,9 @@ namespace Game.App
         {
             Climb = new Climb(_config, _rooms);
             IsNewBest = false;
+            ClearTicks = null;
+            _playedBase = 0;
+            _ticksDone = 0;
             _events |= FlowEvents.Started;
             Resume(time);
         }
@@ -197,6 +217,9 @@ namespace Game.App
         private void Resume(double time)
         {
             SwitchTo(AppScreen.Playing);
+
+            // 停止までに遊んだ時間を確定し、新しい区間を数え始める。
+            _playedBase += _ticksDone;
             _origin = time;
             _ticksDone = 0;
         }
@@ -221,8 +244,11 @@ namespace Game.App
             if (climb.IsWon)
             {
                 _events |= FlowEvents.Won;
-                IsNewBest = BestTicks == null || climb.ElapsedTicks < BestTicks;
-                if (IsNewBest) { BestTicks = climb.ElapsedTicks; }
+                // 記録はゲームの Tick 数（処理落ちで飛ばした区間を含まない）ではなく、遊んだ時間で比べる。
+                var played = PlayedTicks;
+                ClearTicks = played;
+                IsNewBest = BestTicks == null || played < BestTicks;
+                if (IsNewBest) { BestTicks = played; }
                 SwitchTo(AppScreen.Result);
             }
         }

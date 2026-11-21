@@ -162,6 +162,81 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void Spike_CornerClippedDuringTheTick_KillsEvenIfTheEndIsSafe()
+        {
+            // レビュー：Tick の終わりの位置だけでは、跳び上がりながらトゲの角をかすめた接触を見逃していた。
+            // 横に動いた時点（縦に動く前）でトゲの当たりに重なり、縦に動いた後は上へ抜ける Tick を探す。
+            var room = Map(
+                "E.........",
+                "..........",
+                "..........",
+                "..........",
+                "..........",
+                "S....^....",
+                "##########");
+            var found = 0;
+            for (var walk = 0; walk < 40; walk++)
+            {
+                var run = Run(room);
+                run.Tick(Idle);
+                Hold(run, Right, walk);
+                if (run.Status != RunStatus.Playing) { break; }
+                for (var air = 0; air < 6 && run.Status == RunStatus.Playing; air++)
+                {
+                    run.Tick(In(1, jump: true));
+                    var motion = run.Player.LastMotion;
+                    if (!run.Map.TouchesSpike(motion.End) && run.Map.TouchesSpike(motion.Corner))
+                    {
+                        found++;
+                        Assert.That(run.Status, Is.EqualTo(RunStatus.Dying), $"歩き {walk} Tick・空中 {air + 1} Tick 目：終わりの位置は安全でも、途中で触れたら死亡");
+                        Assert.That(run.LastDeath, Is.EqualTo(DeathCause.Spike));
+                    }
+                }
+            }
+
+            Assert.That(found, Is.GreaterThan(0), "角をかすめる Tick を作れなかった");
+        }
+
+        [Test]
+        public void Spike_TheReviewExample_DiagonalDashPastTheCornerOfRoom1()
+        {
+            // レビューの例：1 部屋目の列 28・行 4 のトゲの近く (6983, 1110) から右上へダッシュする。
+            // 終わり (7033, 1160) はトゲの上だが、横に動いた (7033, 1110) で当たりに重なる。
+            var map = Rooms.All()[0].Map;
+            var player = new Player(new PrecisionConfig(), new Box(6983, 1110, Player.Width, Player.Height));
+            player.Step(map, Idle);
+            var before = player.Body;
+            player.Step(map, In(1, 1, dash: true));
+            var motion = player.LastMotion;
+            Assert.That(motion.Start, Is.EqualTo(before));
+            Assert.That(map.TouchesSpike(motion.End), Is.False, "終わりの位置だけなら安全");
+            Assert.That(map.TouchesSpike(motion.HorizontalSweep), Is.True, "横に動く区間でトゲに触れる");
+        }
+
+        [Test]
+        public void Motion_IsHorizontalThenVertical_StoppingAtTerrain()
+        {
+            var player = Floating((40 * T) - Player.Width - 20, 6 * T);
+            var start = player.Body;
+            player.Step(Open, In(1, 1, dash: true));
+            var motion = player.LastMotion;
+            Assert.That(motion.Start, Is.EqualTo(start));
+            Assert.That(motion.Corner, Is.EqualTo(start.At((40 * T) - Player.Width, start.Y)), "横は壁で止まる");
+            Assert.That(motion.End, Is.EqualTo(motion.Corner.Offset(0, PrecisionConfig.DiagonalOf(new PrecisionConfig().DashSpeed))));
+            Assert.That(motion.HorizontalSweep, Is.EqualTo(new Box(start.X, start.Y, motion.Corner.Right - start.X, Player.Height)));
+            Assert.That(motion.VerticalSweep, Is.EqualTo(new Box(motion.Corner.X, start.Y, Player.Width, motion.End.Top - start.Y)));
+        }
+
+        [Test]
+        public void Exit_TouchedOnTheWayClears_SpikeOnTheSameSegmentWins()
+        {
+            var run = Run(Corridor());
+            for (var i = 0; i < 600 && !run.IsCleared; i++) { run.Tick(Right); }
+            Assert.That(run.IsCleared, Is.True);
+            Assert.That(run.Map.Touches(run.Player.LastMotion.HorizontalSweep, TileKind.Exit), Is.True);
+        }
+
+        [Test]
         public void Events_ReportActionsOnce()
         {
             var run = Run(Corridor());

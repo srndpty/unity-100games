@@ -235,7 +235,7 @@ namespace Game.Unity
         {
             if (_root == null) { return; }
             var climb = Flow.Climb;
-            var state = (Flow.Screen, climb?.RoomIndex ?? -1, climb?.Deaths ?? 0, (climb?.ElapsedTicks ?? 0) * 100 / Units.TickRate, climb?.Run.Player.DashesLeft ?? 0, Flow.BestTicks);
+            var state = (Flow.Screen, climb?.RoomIndex ?? -1, climb?.Deaths ?? 0, (climb == null ? 0 : Flow.PlayedTicks) * 100 / Units.TickRate, climb?.Run.Player.DashesLeft ?? 0, Flow.BestTicks);
             if (_shownHud == state) { return; }
             _shownHud = state;
 
@@ -245,14 +245,15 @@ namespace Game.Unity
             {
                 _root.Q<Label>("room").text = $"{climb.RoomIndex + 1} / {climb.Rooms.Count}  {climb.Rooms[climb.RoomIndex].Name}";
                 _root.Q<Label>("deaths").text = $"死亡  {climb.Deaths}";
-                _root.Q<Label>("time").text = $"時間  {FormatTicks(climb.ElapsedTicks)}";
+                // 遊んだ時間（処理落ちで進行を抑えた区間も含む）。ゲームの Tick 数とは別に Flow が数える。
+                _root.Q<Label>("time").text = $"時間  {FormatTicks(Flow.PlayedTicks)}";
                 var dashes = climb.Run.Player.DashesLeft;
                 _root.Q<Label>("dash").text = "ダッシュ  " + new string('◆', dashes) + new string('◇', Math.Max(0, _settings.Rules.DashCount - dashes));
             }
 
             _root.Q("panel").style.display = screen != AppScreen.Playing ? DisplayStyle.Flex : DisplayStyle.None;
             _root.Q<Label>("headline").text = Headline(screen);
-            _root.Q<Label>("message").text = Message(screen, climb, Flow.BestTicks, Flow.IsNewBest);
+            _root.Q<Label>("message").text = Message(screen, climb, Flow.ClearTicks, Flow.BestTicks, Flow.IsNewBest);
             Show("submit", screen != AppScreen.Playing);
             _root.Q<Button>("submit").text = screen switch
             {
@@ -281,7 +282,7 @@ namespace Game.Unity
             _ => "登りきった！",
         };
 
-        public static string Message(AppScreen screen, Climb climb, long? bestTicks, bool newBest)
+        public static string Message(AppScreen screen, Climb climb, long? clearTicks, long? bestTicks, bool newBest)
         {
             const string controls = "← → ↑ ↓：動く・ダッシュの向き\nSpace / Z：跳ぶ（壁際で壁蹴り）\nX / Shift：ダッシュ（空中で 1 回）\nEsc：一時停止";
             switch (screen)
@@ -293,9 +294,9 @@ namespace Game.Unity
                     return "R：1 部屋目から\nT：タイトルへ";
                 case AppScreen.Result:
                     var record = newBest ? "\n最短記録を更新！" : string.Empty;
-                    return climb == null
+                    return climb == null || clearTicks == null
                         ? string.Empty
-                        : $"10 部屋をすべて抜けた。\nタイム  {FormatTicks(climb.ElapsedTicks)}\n死亡  {climb.Deaths} 回{record}";
+                        : $"10 部屋をすべて抜けた。\nタイム  {FormatTicks(clearTicks.Value)}\n死亡  {climb.Deaths} 回{record}";
                 default:
                     return string.Empty;
             }

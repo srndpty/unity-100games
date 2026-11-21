@@ -48,6 +48,32 @@ namespace Game.Core
         public static bool operator !=(PlayerInput left, PlayerInput right) => !left.Equals(right);
     }
 
+    /// <summary>
+    /// 1 Tick の移動の経路。地形の解決と同じく、横に動いてから（<see cref="Start"/> → <see cref="Corner"/>）
+    /// 縦に動く（<see cref="Corner"/> → <see cref="End"/>）。各区間は 1 軸だけの移動で、地形で止まった位置まで。
+    /// </summary>
+    public readonly struct Motion
+    {
+        public Motion(Box start, Box corner, Box end)
+        {
+            Start = start;
+            Corner = corner;
+            End = end;
+        }
+
+        public Box Start { get; }
+
+        public Box Corner { get; }
+
+        public Box End { get; }
+
+        /// <summary>横の区間で通る範囲。</summary>
+        public Box HorizontalSweep => Box.Span(Start, Corner);
+
+        /// <summary>縦の区間で通る範囲。</summary>
+        public Box VerticalSweep => Box.Span(Corner, End);
+    }
+
     /// <summary>1 Tick の間に自機がしたこと。</summary>
     [Flags]
     public enum PlayerActions
@@ -89,6 +115,7 @@ namespace Game.Core
             }
 
             Body = box;
+            LastMotion = new Motion(box, box, box);
             Facing = 1;
             DashesLeft = _config.DashCount;
 
@@ -98,6 +125,9 @@ namespace Game.Core
         }
 
         public Box Body { get; private set; }
+
+        /// <summary>直前の Tick の移動の経路（トゲ・出口の掃引に使う）。</summary>
+        public Motion LastMotion { get; private set; }
 
         public int VelocityX { get; private set; }
 
@@ -209,12 +239,14 @@ namespace Game.Core
                 ApplyGravity(map, input);
             }
 
+            var start = Body;
             var body = Body;
             if (BodyMotion.MoveX(map, ref body, VelocityX))
             {
                 VelocityX = 0;
             }
 
+            var corner = body;
             if (BodyMotion.MoveY(map, ref body, VelocityY))
             {
                 VelocityY = 0;
@@ -222,6 +254,7 @@ namespace Game.Core
             }
 
             Body = body;
+            LastMotion = new Motion(start, corner, body);
             if (IsDashing && --_dashLeft == 0)
             {
                 EndDash();
