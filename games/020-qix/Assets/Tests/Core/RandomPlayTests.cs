@@ -66,7 +66,7 @@ namespace Game.Core.Tests
         [Test]
         public void FinalHashIsFixedAcrossRuntimes()
         {
-            Assert.That(Play(20), Is.EqualTo(2407590067u));
+            Assert.That(Play(20), Is.EqualTo(2084818581u));
         }
 
         [Test]

@@ -308,6 +308,7 @@ namespace Game.Unity.Tests
                 flow.Apply(Intent.Up(Control.Up));
                 StepUntil(() => Game.Lives < lives);
                 flow.Apply(Intent.Up(Control.Draw));
+                flow.StepTick();
             }
 
             yield return null;
@@ -429,6 +430,20 @@ namespace Game.Unity.Tests
 
             yield return ClickButton("quit");
             Assert.That(requests, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void TitleMessage_UsesTargetPercentFromSettings()
+        {
+            Assert.That(TideClaimGame.Message(AppScreen.Title, null, 50, false), Does.Contain("海の 50% を陸にすれば勝ち"));
+            Assert.That(TideClaimGame.Message(AppScreen.Title, null, 75, false), Does.Contain("海の 75% を陸にすれば勝ち"));
+        }
+
+        [UnityTest]
+        public IEnumerator TitleMessage_MatchesLoadedSettings()
+        {
+            yield return null;
+            Assert.That(Text("message"), Does.Contain($"海の {_game.Settings.Rules.TargetPercent}% を陸にすれば勝ち"));
         }
 
         [Test]

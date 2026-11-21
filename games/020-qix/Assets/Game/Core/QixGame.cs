@@ -63,6 +63,7 @@ namespace Game.Core
         private readonly List<int> _scratch = new();
         private Direction _direction;
         private bool _drawHeld;
+        private bool _awaitingDrawRelease;
         private int _stepCooldown;
         private int _trailStartX;
         private int _trailStartY;
@@ -101,6 +102,12 @@ namespace Game.Core
 
         /// <summary>線を描いている途中か。</summary>
         public bool IsDrawing => _trail.Count > 0;
+
+        /// <summary>
+        /// ミスの後、描画キーを一度離すまで新しい線を引けない状態か。
+        /// キーを押したままだと同じ場所から同じ敵へ踏み出し続け、数 Tick で残機をすべて失うのを防ぐ。縁を歩くことはできる。
+        /// </summary>
+        public bool AwaitingDrawRelease => _awaitingDrawRelease;
 
         public Enemy Enemy { get; }
 
@@ -166,6 +173,7 @@ namespace Game.Core
 
             _direction = direction;
             _drawHeld = draw;
+            if (!draw) { _awaitingDrawRelease = false; }
             return true;
         }
 
@@ -252,7 +260,7 @@ namespace Game.Core
                     return true;
                 }
 
-                if (target != Cell.Open || !_drawHeld)
+                if (target != Cell.Open || !_drawHeld || _awaitingDrawRelease)
                 {
                     return false;
                 }
@@ -341,6 +349,7 @@ namespace Game.Core
             }
 
             Lives--;
+            _awaitingDrawRelease = true;
             _events |= GameEventKind.Miss;
             if (Lives <= 0)
             {

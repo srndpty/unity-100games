@@ -38,6 +38,13 @@ namespace Game.App
             if (game == null) { throw new ArgumentNullException(nameof(game)); }
             if (game.IsOver) { return (Direction.None, false); }
 
+            // ミスの後は描画キーを一度離さないと線を引けない。
+            if (game.AwaitingDrawRelease)
+            {
+                Reset();
+                return (Direction.None, false);
+            }
+
             var here = (game.PlayerX, game.PlayerY);
             while (_next < _plan.Count && _waypoints[_next] == here) { _next++; }
 

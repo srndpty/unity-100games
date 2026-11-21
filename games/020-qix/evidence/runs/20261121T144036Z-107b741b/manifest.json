@@ -2,9 +2,9 @@
     "Product": "TIDE CLAIM",
     "Version": "1.0",
     "UnityVersion": "6000.6.9f1",
-    "BuildGuid": "e6e83109c18f4b55a0bf6a53e43d03b9",
+    "BuildGuid": "1457a70af8e348a58f581dcf56de1cc1",
     "Seed": 1,
-    "CapturedAtUtc": "2026-11-21T14:13:01.1252917Z",
+    "CapturedAtUtc": "2026-11-21T14:40:35.8154981Z",
     "Info": [
         {
             "Key": "imageEncoding",
@@ -23,17 +23,17 @@
         },
         {
             "File": "02-start.jpg",
-            "Sha256": "e1d2edbb266e4b051370643a9c0e88fbde02d9328bff20567cd6e133d164c3e3",
+            "Sha256": "5f455aba5ba66979742ab3f405ac6802a8911c2c2925b2ff7485ab318dbd1b18",
             "Note": "開始直後。自機は下の縁の中央。シード 1、Tick 0、陸 0.0%（0/4212）、残機 3、スコア 0"
         },
         {
             "File": "03-drawing.jpg",
-            "Sha256": "ebc4db0b038a6bd1468e2e4e47bf15dd8539f275289b79de7e16011edc72b5a7",
+            "Sha256": "aa66f67c31a90ab4d6f1b6afc73c5003317e39373caed67ba70abe8b5baf0c6f",
             "Note": "Space を押しながら海へ線を引いている途中。シード 1、Tick 23、陸 0.0%（0/4212）、残機 3、スコア 0"
         },
         {
             "File": "04-claimed.jpg",
-            "Sha256": "984559b2d74a87e6cae8bb7e3b2d3f01f3e2f2c18578ad7ada58ddd9802b5c3a",
+            "Sha256": "71bde7ee12fd0014c3c7a85a7229fe17c6dcf287a3b729b6873f4896215d3f7d",
             "Note": "線を閉じ、渦のいない側が陸になった直後。シード 1、Tick 141、陸 15.6%（660/4212）、残機 3、スコア 660"
         },
         {
@@ -48,17 +48,17 @@
         },
         {
             "File": "07-miss.jpg",
-            "Sha256": "c20e3e6e8ae1ea351d23c9f5ccab9d36d9c0abe04b1ebc7cdb20b5a6b4046e16",
-            "Note": "止めた線に渦が触れた直後。線は消え、自機は始点に戻る。シード 2、Tick 4776、陸 0.0%（0/4212）、残機 2、スコア 0"
+            "Sha256": "d6811a701465fb9a1183131d0ac9c49aa9a753243f4c330b66cfcad7a8433a64",
+            "Note": "止めた線に渦が触れた直後。線は消え、自機は始点に戻る。シード 2、Tick 4777、陸 0.0%（0/4212）、残機 2、スコア 0"
         },
         {
             "File": "08-lost.jpg",
-            "Sha256": "f0e6fa9939ad735c6e3903442dbb469b48b092757f8729c862748d77ae35d855",
-            "Note": "残機がなくなった結果。シード 2、Tick 4792、陸 0.0%（0/4212）、残機 0、スコア 0"
+            "Sha256": "e3dbea7f69833917bd6c9febac7b0b2ffdbb8b4167448fd0aa05db009922be74",
+            "Note": "残機がなくなった結果。シード 2、Tick 4794、陸 0.0%（0/4212）、残機 0、スコア 0"
         },
         {
             "File": "09-next.jpg",
-            "Sha256": "50683d0a0bd8d55c48d6c69ce49575af9f02f74dfe64a963285c18b6e6bad25c",
+            "Sha256": "b7e64c667242242ca26bd5ea953e69aecc64e7a7c5dbb2f7a0455ae7e5953bfc",
             "Note": "結果から次の試合（新しいシード）。シード 3、Tick 0、陸 0.0%（0/4212）、残機 3、スコア 0"
         }
     ]

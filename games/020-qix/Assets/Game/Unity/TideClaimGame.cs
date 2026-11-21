@@ -204,7 +204,7 @@ namespace Game.Unity
                 _root.Q<Label>("score").text = $"スコア  {game.Score}　最高  {Flow.BestScore}";
             }
 
-            _root.Q<Label>("message").text = Message(screen, game, Flow.IsNewBest);
+            _root.Q<Label>("message").text = Message(screen, game, _settings.Rules.TargetPercent, Flow.IsNewBest);
             Show("submit", screen != AppScreen.Playing);
             _root.Q<Button>("submit").text = screen switch
             {
@@ -234,7 +234,8 @@ namespace Game.Unity
             _ => game?.Status == GameStatus.Won ? "埋め立て完了" : "潮に負けた",
         };
 
-        private static string Message(AppScreen screen, QixGame game, bool newBest)
+        /// <summary>案内の文言。勝利条件は設定の目標値から作る。</summary>
+        public static string Message(AppScreen screen, QixGame game, int targetPercent, bool newBest)
         {
             const string controls = "矢印キー / WASD：移動\nSpace（押している間）：堤を引く\nEsc：一時停止";
             switch (screen)
@@ -242,9 +243,9 @@ namespace Game.Unity
                 case AppScreen.Title:
                     return "干潟に堤を引いて、海を陸に変えよう。\n\n"
                         + "Space を押しながら海へ進むと、\n堤を引ける。陸に戻ると、\n渦のいない側が陸になる。\n"
-                        + "途中の堤に渦が触れると崩れる。\n\n海の 75% を陸にすれば勝ち。\n\n" + controls;
+                        + $"途中の堤に渦が触れると崩れる。\n\n海の {targetPercent}% を陸にすれば勝ち。\n\n" + controls;
                 case AppScreen.Playing:
-                    return "堤で囲うと、渦のいない側が陸になる。\n明るい縁の上は安全。\n\n" + controls;
+                    return "堤で囲うと、渦のいない側が陸になる。\n明るい縁の上は安全。\n崩されたら Space を離してから引き直す。\n\n" + controls;
                 case AppScreen.Paused:
                     return "R：新しい試合\nT：タイトルへ";
                 default:

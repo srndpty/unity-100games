@@ -199,6 +199,49 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void HoldingKeysAfterAMissDoesNotCostMoreLives()
+        {
+            // 敵は描き始める場所の隣 (10, 1) にほぼ止まっている。
+            var game = WithEnemyAt(Small(), 10, 1);
+
+            Hold(game, Direction.Up, draw: true, 1);
+            Assert.That(game.Lives, Is.EqualTo(2));
+            Assert.That(game.AwaitingDrawRelease, Is.True);
+
+            Hold(game, Direction.Up, draw: true, 30);
+            Assert.That(game.Lives, Is.EqualTo(2), "押したままでは同じ敵へ踏み出し続けない");
+            Assert.That((game.PlayerX, game.PlayerY), Is.EqualTo((10, 0)));
+            Assert.That(game.Status, Is.EqualTo(GameStatus.Playing));
+
+            Hold(game, Direction.Left, draw: true, 2);
+            Assert.That(game.PlayerX, Is.EqualTo(8), "縁は歩ける");
+            Hold(game, Direction.Up, draw: true, 2);
+            Assert.That(game.IsDrawing, Is.False, "離すまでは別の場所でも線を引けない");
+
+            Hold(game, Direction.None, draw: false, 1);
+            Assert.That(game.AwaitingDrawRelease, Is.False);
+            Hold(game, Direction.Up, draw: true, 2);
+            Assert.That(game.IsDrawing, Is.True, "離して押し直すと再び描ける");
+            Assert.That(game.Lives, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void EnemyHittingTheLineAlsoRequiresDrawRelease()
+        {
+            var config = Small();
+            config.EnemyRadius = 384;
+            var game = QixGame.WithEnemy(config, 1, 1152, 1664, 40, 0);
+            Draw(game, (Direction.Up, 6));
+            for (var tick = 0; tick < 60 && game.Lives == 3; tick++) { game.Tick(); }
+            Assert.That(game.Lives, Is.EqualTo(2));
+
+            Hold(game, Direction.Up, draw: true, 5);
+
+            Assert.That(game.IsDrawing, Is.False);
+            Assert.That(game.AwaitingDrawRelease, Is.True);
+        }
+
+        [Test]
         public void LosingLastLifeEndsGameAndRejectsInput()
         {
             var config = Small();

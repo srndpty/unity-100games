@@ -99,6 +99,30 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void AfterAMissDrawKeyMustBeReleasedAndPressedAgain()
+        {
+            var flow = Playing();
+            flow.Apply(Intent.Down(Control.Draw));
+            flow.Apply(Intent.Down(Control.Up));
+            for (var i = 0; i < 20; i++) { flow.StepTick(); }
+            flow.Apply(Intent.Up(Control.Up));
+            while (flow.Game!.Lives == 3 && flow.Game.Ticks < TickLimit) { flow.StepTick(); }
+            Assert.That(flow.Game.Lives, Is.EqualTo(2));
+
+            // Space を押したまま、もう一度 ↑ を押し続ける。
+            flow.Apply(Intent.Down(Control.Up));
+            for (var i = 0; i < 120; i++) { flow.StepTick(); }
+            Assert.That(flow.Game.Lives, Is.EqualTo(2));
+            Assert.That(flow.Game.IsDrawing, Is.False);
+
+            flow.Apply(Intent.Up(Control.Draw));
+            flow.StepTick();
+            flow.Apply(Intent.Down(Control.Draw));
+            flow.StepTick();
+            Assert.That(flow.Game.IsDrawing, Is.True, "離して押し直すと描ける");
+        }
+
+        [Test]
         public void HeldControlsDriveThePlayerOnlyWhilePlaying()
         {
             var flow = new QixFlow(new QixConfig(), 1);

@@ -77,10 +77,12 @@ namespace Game.Unity
             Apply(Intent.Up(Control.Up));
         }
 
+        // ミスの後は描画キーを離した状態を 1 Tick 渡さないと、次の線を引けない。
         private void Release()
         {
             Apply(Intent.Up(Control.Up));
             Apply(Intent.Up(Control.Draw));
+            if (_game.Flow.Screen == AppScreen.Playing) { _game.Flow.StepTick(); }
         }
 
         private void StepUntil(Func<bool> done, string scene)
