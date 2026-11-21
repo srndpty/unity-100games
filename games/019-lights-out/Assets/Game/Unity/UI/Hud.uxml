@@ -1,0 +1,19 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:VisualElement name="panel" class="panel">
+            <ui:Label name="headline" text="FIREFLY HUSH" class="headline" />
+            <ui:Label name="moves" text=" " class="moves" />
+            <ui:Label name="message" class="message" />
+            <ui:VisualElement class="buttons">
+                <ui:Button name="submit" text="はじめる / Enter" />
+                <ui:Button name="pause" text="一時停止 / Esc" />
+                <ui:Button name="retry" text="最初からやり直す / R" />
+                <ui:Button name="newPuzzle" text="新しい問題 / N" />
+                <ui:Button name="giveUp" text="あきらめて解答を見る / G" />
+                <ui:Button name="title" text="タイトルへ / T" />
+                <ui:Button name="quit" text="終了" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

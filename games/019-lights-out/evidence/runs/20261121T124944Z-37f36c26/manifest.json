@@ -1,0 +1,55 @@
+{
+    "Product": "FIREFLY HUSH",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "0832d60287314b01aa4c65bfed11a730",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-21T12:49:43.8187653Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Puzzle\":{\"ScramblePresses\":10},\"Volume\":0.11999999731779099,\"FadeSeconds\":0.18000000715255737}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "b61f458d641c07c1ae22c87fae50b80c8fb5a6cad1a07c1b89b30a56ec4a4388",
+            "Note": "タイトル（飾りの灯、試合はまだない）"
+        },
+        {
+            "File": "02-start.jpg",
+            "Sha256": "c6c344bb16beb27eb38aa43c7982b8cd336c560b4ed8fc453070c02f871386e2",
+            "Note": "出題直後。カーソルは中央。シード 1、手数 0、最短 10、点灯 14"
+        },
+        {
+            "File": "03-playing.jpg",
+            "Sha256": "6016fcb1807afe4775a84c2b8ba9423bf3d1b905871146f6a5d9851549b7ac9d",
+            "Note": "最短解の 2 マスを押した途中。シード 1、手数 2、最短 10、点灯 12"
+        },
+        {
+            "File": "04-paused.jpg",
+            "Sha256": "9a9eb547deb77da449f3ceeca21f64412fc37e84c7ee1cc113303d9b608f4778",
+            "Note": "一時停止のメニュー。シード 1、手数 2、最短 10、点灯 12"
+        },
+        {
+            "File": "05-gave-up.jpg",
+            "Sha256": "745ad0bb95c0c1b999f88ca42b2644a4c9187441b1bf0bd53fbeeb17a8df40b4",
+            "Note": "あきらめた結果。印は今の盤の最短解。シード 1、手数 2、最短 10、点灯 12"
+        },
+        {
+            "File": "06-cleared.jpg",
+            "Sha256": "bd066884cc2cc69f0c89fe5bde262974725380c04b9afdc34231f57564e90320",
+            "Note": "次の問題を最短解で消した結果。シード 2、手数 10、最短 10、点灯 0"
+        },
+        {
+            "File": "07-next.jpg",
+            "Sha256": "9958295334e2825b426b7580a36db1d89aceb89a8cb2a404d26c40036d5f1d56",
+            "Note": "結果から次の問題（新しいシード）。シード 3、手数 0、最短 10、点灯 12"
+        }
+    ]
+}
