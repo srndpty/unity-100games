@@ -2,6 +2,7 @@
   <!--
     Unity 非依存のアセンブリ (Game.Core / Game.App) を Unity なしで検証するための共通設定。Unity 6.6 の C# 設定に合わせる。
     取り込む前に GameLayer (Core または App) を設定する。ソースは Assets/Game/$(GameLayer)/ を Unity と共有する。
+    packages/ のパッケージは GameLayer の代わりに SharedSourceDir (共有するソースのフォルダ) を設定する。
   -->
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
@@ -12,8 +13,9 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <RootNamespace>Game.$(GameLayer)</RootNamespace>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <SharedSourceDir Condition="'$(SharedSourceDir)' == ''">$(MSBuildProjectDirectory)/../../Assets/Game/$(GameLayer)</SharedSourceDir>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildProjectDirectory)/../../Assets/Game/$(GameLayer)/**/*.cs" />
+    <Compile Include="$(SharedSourceDir)/**/*.cs" />
   </ItemGroup>
 </Project>

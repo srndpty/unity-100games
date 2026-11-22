@@ -4,6 +4,12 @@
 
 ## 未対応
 
+### 021・022：共通パッケージ tile-motion に置き換える
+
+- **対象：** `games/021-platformer-2d`・`games/022-precision-platformer` の `Box`・`Units`・`BodyMotion`・`GroundProbe`（022 は `Countdown`・`StateHash` も）
+- **状況：** 023 の着手時に `packages/com.games100.tile-motion` へ抽出した。完了済みの 021・022 は元の複製のまま残している。
+- **対応：** 各作品の `TileMap` に `ISolidGrid` を実装させ、重複するファイルを消してパッケージを参照する。完走ハッシュなどの固定値が変わらないことを .NET と Mono の両方で確かめる。
+
 ### 010 SAFE DIG：フォーカス復帰のクリックでゲームが終了する
 
 - **対象：** `games/010-minesweeper/Assets/Game/Unity/SafeDigGame.cs` の終了ボタン

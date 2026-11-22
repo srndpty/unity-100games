@@ -64,6 +64,6 @@ dotnet_naming_style.underscore_camel.required_prefix = _
 # Core の設定クラスを Unity の ScriptableObject からそのままシリアライズするため、公開フィールドを許可する
 dotnet_diagnostic.CA1051.severity = none
 
-[**/Assets/Tests/**.cs]
+[{**/Assets/Tests/**.cs,packages/*/Tests/**.cs}]
 # テストメソッド名は Arrange_Act_Assert 形式のアンダースコアを許可する
 dotnet_diagnostic.CA1707.severity = none

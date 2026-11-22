@@ -131,4 +131,14 @@
     <Project Path="games/022-precision-platformer/dotnet/Core.Tests/G022.Core.Tests.csproj" />
     <Project Path="games/022-precision-platformer/dotnet/Core/G022.Core.csproj" />
   </Folder>
+  <Folder Name="/023-metroidvania/">
+    <Project Path="games/023-metroidvania/dotnet/App.Tests/G023.App.Tests.csproj" />
+    <Project Path="games/023-metroidvania/dotnet/App/G023.App.csproj" />
+    <Project Path="games/023-metroidvania/dotnet/Core.Tests/G023.Core.Tests.csproj" />
+    <Project Path="games/023-metroidvania/dotnet/Core/G023.Core.csproj" />
+  </Folder>
+  <Folder Name="/packages/">
+    <Project Path="packages/com.games100.tile-motion/dotnet~/TileMotion.Tests/TileMotion.Tests.csproj" />
+    <Project Path="packages/com.games100.tile-motion/dotnet~/TileMotion/TileMotion.csproj" />
+  </Folder>
 </Solution>

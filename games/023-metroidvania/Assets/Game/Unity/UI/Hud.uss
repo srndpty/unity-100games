@@ -1,0 +1,24 @@
+.hud { position: absolute; width: 100%; height: 100%; color: rgb(232, 244, 226); justify-content: center; align-items: center; }
+.stats { position: absolute; left: 0; right: 0; top: 0; height: 60px; padding: 0 24px; flex-direction: row; align-items: center; background-color: rgba(14, 24, 20, 0.82); border-bottom-width: 2px; border-color: rgb(96, 150, 110); }
+.stat { font-size: 24px; -unity-font-style: bold; margin-right: 32px; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(8, 14, 10); }
+.room { color: rgb(240, 222, 150); min-width: 120px; }
+.health { color: rgb(255, 120, 130); letter-spacing: 2px; }
+.ability { color: rgb(80, 100, 90); font-size: 20px; padding: 2px 10px; border-width: 1px; border-color: rgb(60, 80, 70); border-radius: 8px; margin-right: 14px; }
+.ability.owned { color: rgb(170, 240, 210); border-color: rgb(120, 220, 180); background-color: rgba(60, 120, 100, 0.5); }
+.pause { position: absolute; right: 20px; top: 7px; height: 46px; width: 170px; margin: 0; font-size: 20px; }
+.map { position: relative; flex-shrink: 0; }
+.minimap { position: absolute; right: 210px; top: 8px; }
+.bigmap { align-self: center; margin-top: 20px; margin-bottom: 8px; }
+.map-room { position: absolute; background-color: rgb(52, 84, 66); border-width: 2px; border-color: rgb(110, 160, 120); border-radius: 3px; }
+.map-save { background-color: rgb(60, 100, 120); }
+.map-boss { background-color: rgb(110, 50, 60); border-color: rgb(200, 100, 110); }
+.map-current { background-color: rgb(240, 222, 150); border-color: rgb(255, 250, 220); }
+.map-link { position: absolute; background-color: rgb(110, 160, 120); }
+.toast { position: absolute; top: 76px; padding: 10px 28px; font-size: 24px; -unity-font-style: bold; color: rgb(250, 240, 190); background-color: rgba(14, 24, 20, 0.88); border-radius: 12px; border-width: 2px; border-color: rgb(200, 190, 120); }
+.panel { width: 720px; padding: 30px 40px; background-color: rgba(16, 28, 22, 0.94); border-radius: 18px; border-width: 2px; border-color: rgb(110, 170, 120); }
+.headline { font-size: 52px; -unity-font-style: bold; color: rgb(240, 222, 150); -unity-text-align: middle-center; white-space: normal; }
+.message { margin-top: 14px; margin-bottom: 14px; font-size: 22px; white-space: normal; -unity-text-align: middle-center; }
+.buttons { align-items: stretch; }
+Button { height: 52px; margin: 8px 0 0 0; font-size: 22px; color: rgb(232, 244, 226); background-color: rgb(46, 84, 64); border-color: rgb(110, 170, 120); border-width: 1px; border-radius: 10px; }
+Button:hover { background-color: rgb(58, 102, 78); }
+Button:active { background-color: rgb(72, 120, 92); }

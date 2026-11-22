@@ -1,0 +1,85 @@
+{
+    "Product": "MOSSLIGHT DEPTHS",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "ee84c841d9ae4fab897bc00fbe2cce22",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-22T05:27:51.6386933Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"MoveSpeed\":36,\"GroundAccel\":6,\"AirAccel\":4,\"GroundDecel\":6,\"AirDecel\":2,\"Gravity\":4,\"MaxFallSpeed\":96,\"JumpSpeed\":84,\"DoubleJumpSpeed\":72,\"JumpCutSpeed\":24,\"CoyoteTicks\":6,\"JumpBufferTicks\":6,\"MaxHealth\":5,\"InvincibleTicks\":60,\"KnockbackSpeedX\":32,\"KnockbackSpeedY\":40,\"KnockbackTicks\":12,\"ShotSpeed\":96,\"ShotRangeTicks\":40,\"ShotCooldownTicks\":10,\"MaxShots\":2,\"FruitHeal\":2,\"WalkerSpeed\":8,\"WalkerHealth\":2,\"ContactDamage\":1,\"BossHealth\":20,\"BossIdleTicks\":60,\"BossChargeSpeed\":48,\"BossStunTicks\":40,\"BossBulletSpeed\":56,\"BulletDamage\":1},\"Volume\":0.11999999731779099,\"ToastTicks\":180}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "7d50a8bf513d5a04a7784083e08ffaa33563742ab55dc2f2a29057a05035347a",
+            "Note": "タイトル（拠点の配置を Stage Prefab のまま描く。試合はまだない）"
+        },
+        {
+            "File": "02-start.jpg",
+            "Sha256": "6b8bfae45e677fda0ac485846c3e676d09dcfdd9cf8b859322fe8b40d1ee134c",
+            "Note": "拠点、試合の開始直後。拠点、経過 0 Tick、自機 (1072, 512)、体力 5、力尽きた 0"
+        },
+        {
+            "File": "03-corridor.jpg",
+            "Sha256": "f9f3d5631c4a07d1caeec0f8e640907a2b1f59aa82fb68f273386e7f8f5f4056",
+            "Note": "回廊。歩く敵の間を抜ける。回廊、経過 295 Tick、自機 (2060, 808)、体力 5、力尽きた 0"
+        },
+        {
+            "File": "04-double-jump-get.jpg",
+            "Sha256": "c43a56b492fd6eabd2f426135d3eb2eaf466e5bb5cd85976a6d363fe8211eae6",
+            "Note": "洞穴の穴の底で二段ジャンプを手に入れた（案内が出る）。洞穴、経過 786 Tick、自機 (7636, 808)、体力 5、力尽きた 0"
+        },
+        {
+            "File": "05-double-jump.jpg",
+            "Sha256": "86e86e5c974de89a4fe43ffe8c59b21426853ea886dfa30683b9fe3c1452b848",
+            "Note": "穴の壁（5 タイル）を二段ジャンプで越える途中。洞穴、経過 927 Tick、自機 (3072, 1332)、体力 5、力尽きた 0"
+        },
+        {
+            "File": "06-ledge.jpg",
+            "Sha256": "5c1d0294a16833f35f821a06d5c752f2564e29921bb912d978decb883fd03d8d",
+            "Note": "拠点に戻り、二段ジャンプで高い段から塔へ登る。拠点、経過 1329 Tick、自機 (8704, 1820)、体力 5、力尽きた 0"
+        },
+        {
+            "File": "07-break-shot-get.jpg",
+            "Sha256": "875fa9c765b652482cccc7416b3d04f4b9c3bc613aa18c362323f7ae78836795",
+            "Note": "塔の台の上で破壊ショットを手に入れた。塔、経過 1682 Tick、自機 (2928, 1792)、体力 5、力尽きた 0"
+        },
+        {
+            "File": "08-wall-broken.jpg",
+            "Sha256": "07dfea05bd3843a8cf82acc33dea4a3ff5b778884b17b6b18b5a3420387aa4ab",
+            "Note": "塔の右の通路、ひびの壁を撃って壊した直後。塔、経過 1883 Tick、自機 (8890, 768)、体力 5、力尽きた 0"
+        },
+        {
+            "File": "09-map.jpg",
+            "Sha256": "3044cc33bbec790c2238bf3a622cdb018f24faaee1f2a092cd6ee8543f69a381",
+            "Note": "一時停止の地図（訪れた 4 部屋と今いる塔）。塔、経過 1883 Tick、自機 (8890, 768)、体力 5、力尽きた 0"
+        },
+        {
+            "File": "10-boss.jpg",
+            "Sha256": "bfdcf42b32c9c101830d0cf7454845a49bf6ae2a47c0081d54dc25f1a426d8ba",
+            "Note": "ボスの間。気絶の後の 3 方向の弾を避けながら撃つ。ボスの間、経過 2182 Tick、自機 (2116, 648)、体力 4、力尽きた 0"
+        },
+        {
+            "File": "11-victory.jpg",
+            "Sha256": "0a4f78913789c637b5567e24bf7defb71b4ba7f65fb06707639b271e34534c0f",
+            "Note": "ボスを倒した結果（タイム・力尽きた回数・見つけたもの）。ボスの間、経過 2565 Tick、自機 (7052, 512)、体力 3、力尽きた 0"
+        },
+        {
+            "File": "12-game-over.jpg",
+            "Sha256": "671dd22a34723ff8b7cd10459bea07de3fdd8b312232c31964963e2158505bd3",
+            "Note": "ボスの間で力尽きた。最後に触れたセーブ像から再開できる。ボスの間、経過 2552 Tick、自機 (9824, 512)、体力 0、力尽きた 1"
+        },
+        {
+            "File": "13-continue.jpg",
+            "Sha256": "d20a6b5fe4215b9be937732773f4e2512aa7c555d908cf7fd4e4c671e703fa14",
+            "Note": "塔のセーブ像の前から体力満タンで再開（破壊ショットは残り、セーブの後に壊した壁は元に戻る）。塔、経過 2554 Tick、自機 (5186, 512)、体力 5、力尽きた 1"
+        }
+    ]
+}
