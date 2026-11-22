@@ -20,7 +20,7 @@
 | 0（済） | `packages/` へ抽出・dev.ps1/props/slnx 対応・`dev new 023`・最小コミット | `dev lint/check/test` 通過 |
 | 1（済） | Core ＋ App とテスト（ルール表の固定を含む） | Core/App テスト通過、README のルール表 |
 | 2（済） | Playable（Stage Prefab・HUD・地図・音・シーン生成） | 人間が通しで遊べる |
-| 3 | Verification（PlayMode・ビルド・`dev capture`・README/evidence） | 状態「検証待ち」 |
+| 3（済） | Verification（PlayMode・ビルド・`dev capture`・README/evidence） | 状態「検証待ち」 |
 
 ---
 
