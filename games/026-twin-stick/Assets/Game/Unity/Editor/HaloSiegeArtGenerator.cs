@@ -10,7 +10,8 @@ namespace Game.Unity.Editor
     /// <summary>
     /// 図形を組み合わせてドット絵の素材 PNG を描き出す。既にあるファイルとそのインポート設定は上書きしない。
     /// 1 セル = 32 ピクセル（Core の 8 単位 = 1 ピクセル）。どの絵も中央を基準点にし、向きのある絵は右（+x）向きに描く。
-    /// 体の絵の直径は Core の当たりの円の直径にそろえる。乱数は使わず、毎回同じ絵にする。
+    /// 体の絵の直径は既定の当たりの円の直径（<see cref="HaloSiegeStage.ShipArtRadius"/> など）にそろえ、描画は設定の半径に合わせて拡縮する。
+    /// 乱数は使わず、毎回同じ絵にする。
     /// </summary>
     public static class HaloSiegeArtGenerator
     {

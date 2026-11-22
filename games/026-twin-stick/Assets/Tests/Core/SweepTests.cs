@@ -119,6 +119,36 @@ namespace Game.Core.Tests
             Assert.That(IntMath.Scale(At(-3, -4), 100), Is.EqualTo(At(-60, -80)));
             Assert.That(IntMath.Scale(At(1, 0), 1), Is.EqualTo(At(1, 0)));
             Assert.That(IntMath.Scale(Vec2i.Zero, 100), Is.EqualTo(Vec2i.Zero));
+            Assert.That(IntMath.Scale(At(1, 1), 96), Is.EqualTo(At(68, 68)), "短い向きでも長さ 96 のまま（96/√2 = 67.88）");
+            Assert.That(IntMath.Scale(At(int.MaxValue, int.MinValue + 1), 96), Is.EqualTo(At(68, -68)), "大きすぎる向きも桁あふれしない");
+        }
+
+        /// <summary>
+        /// 向きの長さにかかわらず、結果は指定の長さで向きも保つ（照準点が自機のすぐ近くでも弾速が変わらない）。
+        /// 各成分の誤差は四捨五入の 0.5 と、2^10 倍した長さの平方根の切り捨ての分（長さ 256 でも 0.2 未満）以内。
+        /// </summary>
+        [TestCase(1)]
+        [TestCase(4)]
+        [TestCase(300)]
+        [TestCase(20000)]
+        public void Scale_LengthDoesNotDependOnDirectionMagnitude(int range)
+        {
+            var random = new SeededRandom(range);
+            for (var i = 0; i < 2000; i++)
+            {
+                var direction = At(random.Range(-range, range), random.Range(-range, range));
+                if (direction.IsZero) { continue; }
+                foreach (var length in new[] { 1, 32, 96, 256 })
+                {
+                    var scaled = IntMath.Scale(direction, length);
+                    var actual = Math.Sqrt(scaled.LengthSquared);
+                    Assert.That(actual, Is.EqualTo(length).Within(0.75), $"{direction} → {scaled}");
+                    var expectedX = direction.X * length / Math.Sqrt(direction.LengthSquared);
+                    var expectedY = direction.Y * length / Math.Sqrt(direction.LengthSquared);
+                    Assert.That(scaled.X, Is.EqualTo(expectedX).Within(0.75), $"{direction} → {scaled}");
+                    Assert.That(scaled.Y, Is.EqualTo(expectedY).Within(0.75), $"{direction} → {scaled}");
+                }
+            }
         }
 
         [Test]

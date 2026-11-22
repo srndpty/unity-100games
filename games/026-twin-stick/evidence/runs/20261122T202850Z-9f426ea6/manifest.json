@@ -2,9 +2,9 @@
     "Product": "HALO SIEGE",
     "Version": "1.0",
     "UnityVersion": "6000.6.9f1",
-    "BuildGuid": "e843ad27a28d4dc79b6d145225e8c37c",
+    "BuildGuid": "9fe8a06232ff4323a7d228044c0086aa",
     "Seed": 1,
-    "CapturedAtUtc": "2026-11-22T20:02:29.1685753Z",
+    "CapturedAtUtc": "2026-11-22T20:28:49.3278350Z",
     "Info": [
         {
             "Key": "imageEncoding",
@@ -28,48 +28,48 @@
         },
         {
             "File": "03-warning.jpg",
-            "Sha256": "c8555625d14dec97254e873ae30d4d3eb4c73294fb1df12869eb81fd14faf25e",
+            "Sha256": "27e365f8e07c66669290eaa06b8ceae424d75f1de839d46939e78607f41c72f3",
             "Note": "光の輪が出現の予告（予告中は動かず当たらない）。自動操縦が近い敵を撃つ。経過 1770 Tick、自機 (6220, 3532)、残機 3、得点 520、敵 3"
         },
         {
             "File": "04-three-kinds.jpg",
-            "Sha256": "60105de0546a59d90b52ebb9ad936c7452304b30caf79c96ab019f5399298fb8",
+            "Sha256": "147379e92d6695b9a485a60c9cd5b8c4da162cba38b2e9e25f8dbe36efe5e931",
             "Note": "画面に敵 3 種（桃：Chaser、緑：Bouncer、橙：Lancer）。経過 3589 Tick、自機 (6106, 3456)、残機 3、得点 2060、敵 4"
         },
         {
             "File": "05-lancer-aim.jpg",
-            "Sha256": "60105de0546a59d90b52ebb9ad936c7452304b30caf79c96ab019f5399298fb8",
+            "Sha256": "147379e92d6695b9a485a60c9cd5b8c4da162cba38b2e9e25f8dbe36efe5e931",
             "Note": "Lancer が止まって狙う間、突進の通り道を筋で示す。経過 3589 Tick、自機 (6106, 3456)、残機 3、得点 2060、敵 4"
         },
         {
             "File": "09-late.jpg",
-            "Sha256": "05acbdeb29955bd111e227667dbec903795c3abc916700025b3c53149dae4834",
+            "Sha256": "eb587ced5a128d180ff16235437726b770edfc6fb97685050c1306f85c99e667",
             "Note": "50 秒過ぎ。出現の間隔が最初の 3 倍の頻度になった終盤。経過 3594 Tick、自機 (6106, 3456)、残機 3、得点 2060、敵 5"
         },
         {
             "File": "10-victory.jpg",
-            "Sha256": "728769841f25f219c3955c670be66bb6664172171096d5d88939be199b8e97df",
+            "Sha256": "7b2ae8961734a265c7100cd40affa798d9b6e6e397be2a0bf95e775a56d1916a",
             "Note": "1 分生き残った結果（得点・生き残った時間・撃破数・残機ボーナス）。経過 3600 Tick、自機 (6106, 3456)、残機 3、得点 3560、敵 5"
         },
         {
             "File": "06-hurt.jpg",
-            "Sha256": "cfeb73c08f04a402bc0136eff11b6f752644c287e1d92e08d4283ef85902cee1",
+            "Sha256": "403ef97b9f8a07a7cd821ad758c3d0785638b6c021a216e36d1af4dac820ef7f",
             "Note": "敵に触れて残機が 1 減った。被弾した Tick を含めて 120 Tick は無敵（自機が半透明に点滅）。経過 242 Tick、自機 (8462, 2126)、残機 2、得点 0、敵 2"
         },
         {
             "File": "07-pause.jpg",
-            "Sha256": "daec4d0e21046e3eebef481e9698ba9531ceb5c724fe3fbdd1a511ffbdf8b05e",
+            "Sha256": "69c2ca08737d21afcd621640e28b6a7f56d8fc58612b2c1de749015bc4f08d75",
             "Note": "一時停止。経過 242 Tick、自機 (8462, 2126)、残機 2、得点 0、敵 2"
         },
         {
             "File": "08-density-cap.jpg",
-            "Sha256": "b3b5635809a765b61cd57b7fb111514f5294bf2515900267bbf8aac61578e53e",
+            "Sha256": "b68587a1dba50a6888ac6d150bf488d9261b6a2ac5f5e30b3a85dffdc337a47f",
             "Note": "敵を上限の 36 体まで置いた場面（台本で配置）。上限の間は新しい敵が出ない。経過 272 Tick、自機 (8462, 2126)、残機 2、得点 0、敵 36"
         },
         {
             "File": "11-defeat.jpg",
-            "Sha256": "c188db6f7a27dec48e2d872815941b2b38819e2abe0763610866d68f8ab14a1f",
-            "Note": "撃たずに敵へ向かい続けて残機 0。負けの結果。経過 472 Tick、自機 (9374, 2672)、残機 0、得点 0、敵 35"
+            "Sha256": "fe373712f7797c7df34a4c6817df74f1d816de34beee92a8f3b6a5be8f46460d",
+            "Note": "撃たずに敵へ向かい続けて残機 0。負けの結果。経過 472 Tick、自機 (9393, 2439)、残機 0、得点 0、敵 35"
         }
     ]
 }

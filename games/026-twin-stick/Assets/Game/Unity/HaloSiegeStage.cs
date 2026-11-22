@@ -19,6 +19,20 @@ namespace Game.Unity
         /// <summary>無敵中の点滅の 1 段の Tick 数。</summary>
         public const int BlinkTicks = 4;
 
+        /// <summary>
+        /// 絵に描いた体の半径（Core の単位。1 ピクセル = 8 単位）。生成スクリプトは既定の当たりの半径でこの大きさに描き、
+        /// 描画は「設定の半径 ÷ 絵の半径」で拡縮する（設定で当たりの半径を変えても、見た目と当たりが食い違わない）。
+        /// </summary>
+        public const int ShipArtRadius = 72;
+
+        public const int BulletArtRadius = 32;
+
+        public const int ChaserArtRadius = 96;
+
+        public const int BouncerArtRadius = 104;
+
+        public const int LancerArtRadius = 120;
+
         [SerializeField] private Tilemap _floor;
         [SerializeField] private Tilemap _walls;
         [SerializeField] private SpriteRenderer _ship;
@@ -69,6 +83,21 @@ namespace Game.Unity
         /// <summary>向き（Core の速度）の角度（度）。</summary>
         public static float Angle(Vec2i direction) => direction.IsZero ? 0 : Mathf.Atan2(direction.Y, direction.X) * Mathf.Rad2Deg;
 
+        /// <summary>絵の半径が <paramref name="artRadius"/> のスプライトを、当たりの半径 <paramref name="radius"/> の大きさに描く倍率。</summary>
+        public static Vector3 ScaleFor(int radius, int artRadius)
+        {
+            var scale = (float)radius / artRadius;
+            return new Vector3(scale, scale, 1);
+        }
+
+        public static int ArtRadius(EnemyKind kind) => kind switch
+        {
+            EnemyKind.Chaser => ChaserArtRadius,
+            EnemyKind.Bouncer => BouncerArtRadius,
+            EnemyKind.Lancer => LancerArtRadius,
+            _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "未定義の敵です。"),
+        };
+
         public Sprite EnemySprite(EnemyKind kind) => kind switch
         {
             EnemyKind.Chaser => _chaser,
@@ -108,6 +137,7 @@ namespace Game.Unity
             _ship.enabled = true;
             _ship.transform.localPosition = Local(new Vec2i(config.ArenaWidth / 2, config.ArenaHeight / 2));
             _ship.transform.localRotation = Quaternion.identity;
+            _ship.transform.localScale = ScaleFor(config.ShipRadius, ShipArtRadius);
             _ship.color = Color.white;
             _crosshair.enabled = false;
             Hide(_enemies, _enemyTemplate, 0);
@@ -124,6 +154,7 @@ namespace Game.Unity
             var ship = run.Ship;
             _ship.transform.localPosition = Local(ship.Position);
             _ship.transform.localRotation = Quaternion.Euler(0, 0, Angle(ship.ShotVelocity));
+            _ship.transform.localScale = ScaleFor(config.ShipRadius, ShipArtRadius);
             _ship.enabled = run.Status != RunStatus.Lost;
             var dim = ship.IsInvincible && (ship.InvincibleRemaining / BlinkTicks) % 2 == 1;
             _ship.color = dim ? new Color(1f, 1f, 1f, .3f) : Color.white;
@@ -137,7 +168,8 @@ namespace Game.Unity
                 {
                     var marker = Take(_warnings, _warningTemplate, warnings++);
                     marker.transform.localPosition = Local(enemy.Position);
-                    var pulse = 1f + (.2f * ((run.Elapsed / 6) % 2));
+                    // 予告の輪は、出てくる敵の体より少し大きく描く（絵の輪の半径は 16 ピクセル = 128 単位）。
+                    var pulse = (1.1f + (.2f * ((run.Elapsed / 6) % 2))) * enemy.Radius / 128f;
                     marker.transform.localScale = new Vector3(pulse, pulse, 1);
                     marker.color = _warningTints[(int)enemy.Kind];
                     continue;
@@ -146,6 +178,7 @@ namespace Game.Unity
                 var body = Take(_enemies, _enemyTemplate, enemies++);
                 body.sprite = EnemySprite(enemy.Kind);
                 body.transform.localPosition = Local(enemy.Position);
+                body.transform.localScale = ScaleFor(enemy.Radius, ArtRadius(enemy.Kind));
                 body.color = enemy.IsFlashing ? _flashTint : Color.white;
                 var angle = enemy.Kind == EnemyKind.Bouncer ? -run.Elapsed * 4 % 360 : Angle(enemy.Velocity);
                 body.transform.localRotation = Quaternion.Euler(0, 0, angle);
@@ -168,6 +201,7 @@ namespace Game.Unity
                 var item = Take(_bullets, _bulletTemplate, bullets++);
                 item.transform.localPosition = Local(bullet.Position);
                 item.transform.localRotation = Quaternion.Euler(0, 0, Angle(bullet.Velocity));
+                item.transform.localScale = ScaleFor(config.BulletRadius, BulletArtRadius);
             }
 
             Hide(_enemies, _enemyTemplate, enemies);

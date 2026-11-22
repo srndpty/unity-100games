@@ -268,6 +268,37 @@ namespace Game.Unity.Tests
             Assert.That(EnemyRenderer(lancer).color, Is.EqualTo(Color.white), "点滅が終われば戻る");
         }
 
+        /// <summary>設定で当たりの半径を変えると、描画の大きさも同じだけ変わる（見た目と当たりが食い違わない）。</summary>
+        [UnityTest]
+        public IEnumerator SpritesAreScaledToTheConfiguredRadius()
+        {
+            yield return null;
+            var config = new SiegeConfig { ShipRadius = 144, BulletRadius = 64 };
+            config.Chaser.Radius = 512;
+            config.Bouncer.Radius = 52;
+            config.Validate();
+            var run = new SiegeRun(config, 1);
+            var ship = run.Ship.Position;
+            var chaser = run.Place(EnemyKind.Chaser, ship + new Vec2i(8 * Units.Tile, 0));
+            var bouncer = run.Place(EnemyKind.Bouncer, ship + new Vec2i(-8 * Units.Tile, 0));
+            run.Step(new ShipCommand(0, 0, true, ship + new Vec2i(0, Units.Tile)));
+            Stage.Render(run, ship, true, config);
+
+            Assert.That(EnemyRenderer(chaser).transform.localScale.x, Is.EqualTo(512f / HaloSiegeStage.ChaserArtRadius).Within(1e-5f));
+            Assert.That(EnemyRenderer(bouncer).transform.localScale.x, Is.EqualTo(.5f).Within(1e-5f));
+            Assert.That(Stage.Ship.transform.localScale.x, Is.EqualTo(2f).Within(1e-5f));
+            Assert.That(Stage.VisibleBullets, Is.EqualTo(1));
+            var bulletAt = Stage.transform.TransformPoint(HaloSiegeStage.Local(run.Bullets[0].Position));
+            SpriteRenderer bullet = null;
+            foreach (var renderer in Stage.GetComponentsInChildren<SpriteRenderer>())
+            {
+                if (renderer.enabled && renderer != Stage.Ship && renderer != Stage.Crosshair && Vector2.Distance(renderer.transform.position, bulletAt) < .001f) { bullet = renderer; }
+            }
+
+            Assert.That(bullet, Is.Not.Null, "弾が描かれていない");
+            Assert.That(bullet.transform.localScale.x, Is.EqualTo(64f / HaloSiegeStage.BulletArtRadius).Within(1e-5f));
+        }
+
         /// <summary>敵の位置に描かれている SpriteRenderer。</summary>
         private SpriteRenderer EnemyRenderer(Enemy enemy)
         {
