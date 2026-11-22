@@ -169,7 +169,7 @@ namespace Game.Unity.Editor
                 foreach (var cell in room.Statues)
                 {
                     var statue = Sprite(root.transform, $"Statue{statues.Count}", MossDepthsArtGenerator.StatueFile, material, 3);
-                    statue.transform.localPosition = new Vector3(cell.Column + .5f, cell.Row, 0);
+                    statue.transform.localPosition = MossDepthsStage.StatuePosition(cell);
                     statues.Add(statue);
                 }
 
@@ -183,7 +183,7 @@ namespace Game.Unity.Editor
                         _ => MossDepthsArtGenerator.FruitFile,
                     };
                     var item = Sprite(root.transform, $"Pickup{pickups.Count}{pickup.Kind}", file, material, 4);
-                    item.transform.localPosition = new Vector3(pickup.Cell.Column + .5f, pickup.Cell.Row + .5f, 0);
+                    item.transform.localPosition = MossDepthsStage.PickupPosition(pickup.Cell);
                     pickups.Add(item);
                 }
 
@@ -242,6 +242,7 @@ namespace Game.Unity.Editor
                 Assign(serialized, "_hurt", LoadSprite(MossDepthsArtGenerator.HurtFile));
                 AssignArray(serialized, "_statues", statues.ToArray());
                 AssignArray(serialized, "_pickups", pickups.ToArray());
+                AssignArray(serialized, "_pickupSprites", new Object[] { LoadSprite(MossDepthsArtGenerator.FruitFile), LoadSprite(MossDepthsArtGenerator.JumpOrbFile), LoadSprite(MossDepthsArtGenerator.BreakOrbFile) });
                 AssignArray(serialized, "_walkers", walkers.ToArray());
                 AssignArray(serialized, "_walk", new Object[] { LoadSprite(MossDepthsArtGenerator.Walk0File), LoadSprite(MossDepthsArtGenerator.Walk1File) });
                 Assign(serialized, "_boss", boss);
@@ -261,10 +262,7 @@ namespace Game.Unity.Editor
             }
         }
 
-        private static void PlaceFeet(SpriteRenderer renderer, Box body)
-        {
-            renderer.transform.localPosition = new Vector3((float)body.CenterX / Units.Tile, (float)body.Bottom / Units.Tile, 0);
-        }
+        private static void PlaceFeet(SpriteRenderer renderer, Box body) => renderer.transform.localPosition = MossDepthsStage.Feet(body);
 
         private static Tilemap Tilemap(Transform parent, string name, int order, Material material)
         {

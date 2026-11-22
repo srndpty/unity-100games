@@ -47,6 +47,30 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void SamePilot_AfterAnAbandonedBossFight_ReplaysTheSameGame()
+        {
+            // レビュー P3-1：ボス戦の途中でやめた試合の計画（選んだ手と残り Tick）が、同じ操縦役の次の試合へ残っていた。
+            var pilot = Routes.Pilot();
+            var first = Run(pilot, e => e.Status != ExpeditionStatus.Playing);
+            Assert.That(first.IsWon, Is.True);
+
+            // ボスの間に入って 50 Tick（判断の途中）でやめる。
+            Run(pilot, e => e.RoomIndex == Rooms.Lair && e.RoomTicks == 50);
+
+            var again = Run(pilot, e => e.Status != ExpeditionStatus.Playing);
+            Assert.That(again.Hash(), Is.EqualTo(first.Hash()), "同じ操縦役で再戦しても同じ試合になる");
+            Assert.That(again.Hash(), Is.EqualTo(0xD0072BE8u));
+        }
+
+        private static Expedition Run(RoutePilot pilot, Func<Expedition, bool> stop)
+        {
+            var expedition = new Expedition(new ExplorerConfig(), Rooms.Create());
+            for (var tick = 0; tick < 20_000 && !stop(expedition); tick++) { expedition.Tick(pilot.InputFor(expedition)); }
+            Assert.That(stop(expedition), Is.True);
+            return expedition;
+        }
+
+        [Test]
         public void Routes_SegmentsTakeNoDamage()
         {
             var expedition = new Expedition(new ExplorerConfig(), Rooms.Create());

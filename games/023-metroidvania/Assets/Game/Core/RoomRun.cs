@@ -185,7 +185,11 @@ namespace Game.Core
             CollectPickups(motion);
             CheckStatues(motion);
             TakeDamage(motion, bossStart);
-            if (!HasDoor(Side.Bottom) && Player.Body.Top <= 0)
+
+            // 扉への接触を先に求める。部屋の下へ抜けても、この Tick に扉に触れていなければ（扉でない穴に落ちた）倒れる。
+            // 部屋に床の扉があるかでは決めない（扉と別の穴から落ちると、どこへも移らずに落ち続ける）。
+            var door = TouchedDoor(motion.HorizontalSweep) ?? TouchedDoor(motion.VerticalSweep);
+            if (door == null && Player.Body.Top <= 0)
             {
                 Player.Fall();
             }
@@ -196,7 +200,6 @@ namespace Game.Core
                 return RoomOutcome.Down;
             }
 
-            var door = TouchedDoor(motion.HorizontalSweep) ?? TouchedDoor(motion.VerticalSweep);
             if (door is Side side)
             {
                 ExitSide = side;
@@ -217,8 +220,6 @@ namespace Game.Core
             hash.Mix(_bullets.Count);
             foreach (var bullet in _bullets) { bullet.MixInto(ref hash); }
         }
-
-        private bool HasDoor(Side side) => Room.HasDoor(side);
 
         private void MoveShots(Box bossStart)
         {

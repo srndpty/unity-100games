@@ -160,14 +160,33 @@ namespace Game.Core
         /// <summary>5 部屋の世界を作る（呼ぶたびに作り直す）。</summary>
         public static World Create()
         {
-            return new World(new[]
+            var rooms = new Room[_sources.Length];
+            for (var i = 0; i < rooms.Length; i++)
             {
-                Room.Parse("拠点", 0, 0, _hub),
-                Room.Parse("回廊", 1, 0, _corridor),
-                Room.Parse("洞穴", 2, 0, _cave),
-                Room.Parse("塔", 0, 1, _tower),
-                Room.Parse("ボスの間", 1, 1, _lair),
-            });
+                var (name, x, y, rows) = _sources[i];
+                rooms[i] = Room.Parse(name, x, y, rows);
+            }
+
+            return new World(rooms);
         }
+
+        /// <summary>
+        /// 部屋 <paramref name="index"/> の名前・格子の位置・文字の地図（複製）。地図を少し変えた部屋を作り、
+        /// 描画側の Prefab が食い違いを見つけるかを確かめるのに使う。
+        /// </summary>
+        public static (string Name, int GridX, int GridY, string[] Rows) Source(int index)
+        {
+            var (name, x, y, rows) = _sources[index];
+            return (name, x, y, (string[])rows.Clone());
+        }
+
+        private static readonly (string Name, int GridX, int GridY, string[] Rows)[] _sources =
+        {
+            ("拠点", 0, 0, _hub),
+            ("回廊", 1, 0, _corridor),
+            ("洞穴", 2, 0, _cave),
+            ("塔", 0, 1, _tower),
+            ("ボスの間", 1, 1, _lair),
+        };
     }
 }

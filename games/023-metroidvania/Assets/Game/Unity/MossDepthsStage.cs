@@ -33,6 +33,9 @@ namespace Game.Unity
         [SerializeField] private Sprite _hurt;
         [SerializeField] private SpriteRenderer[] _statues = Array.Empty<SpriteRenderer>();
         [SerializeField] private SpriteRenderer[] _pickups = Array.Empty<SpriteRenderer>();
+
+        /// <summary>アイテムの種類ごとの絵（<see cref="PickupKind"/> の順）。</summary>
+        [SerializeField] private Sprite[] _pickupSprites = Array.Empty<Sprite>();
         [SerializeField] private SpriteRenderer[] _walkers = Array.Empty<SpriteRenderer>();
         [SerializeField] private Sprite[] _walk = Array.Empty<Sprite>();
         [SerializeField] private SpriteRenderer _boss;
@@ -94,12 +97,57 @@ namespace Game.Unity
                 }
             }
 
+            // 置かれた物は数だけでなく、種類・位置も Core の地図から期待値を出して比べる（1 マスずれた玉を見逃さない）。
             if (_statues.Length != room.Statues.Count) { return "セーブ像の数が地図と違います。"; }
+            for (var i = 0; i < _statues.Length; i++)
+            {
+                var cell = room.Statues[i];
+                if (!At(_statues[i], StatuePosition(cell))) { return $"セーブ像 {i} の位置が地図の {cell} と違います。"; }
+            }
+
             if (_pickups.Length != room.Pickups.Count) { return "アイテムの数が地図と違います。"; }
+            for (var i = 0; i < _pickups.Length; i++)
+            {
+                var pickup = room.Pickups[i];
+                if (!At(_pickups[i], PickupPosition(pickup.Cell))) { return $"アイテム {i} の位置が地図の {pickup.Cell} と違います。"; }
+                var sprite = PickupSprite(pickup.Kind);
+                if (sprite == null || _pickups[i].sprite != sprite) { return $"アイテム {i} の絵が地図の種類（{pickup.Kind}）と違います。"; }
+            }
+
             if (_walkers.Length != room.Walkers.Count) { return "歩く敵の数が地図と違います。"; }
+            for (var i = 0; i < _walkers.Length; i++)
+            {
+                var cell = room.Walkers[i];
+                if (!At(_walkers[i], Feet(Room.PlaceOnTile(cell, Walker.Width, Walker.Height)))) { return $"歩く敵 {i} の位置が地図の {cell} と違います。"; }
+            }
+
             if ((_boss != null) != room.Boss.HasValue) { return "ボスの有無が地図と違います。"; }
+            if (room.Boss is Cell boss && !At(_boss, Feet(Room.PlaceOnTile(boss, Core.Boss.Width, Core.Boss.Height))))
+            {
+                return $"ボスの位置が地図の {boss} と違います。";
+            }
+
             return null;
         }
+
+        /// <summary>アイテムの種類の絵。</summary>
+        public Sprite PickupSprite(PickupKind kind)
+        {
+            var index = (int)kind;
+            return index >= 0 && index < _pickupSprites.Length ? _pickupSprites[index] : null;
+        }
+
+        private static bool At(SpriteRenderer renderer, Vector3 expected) =>
+            renderer != null && (renderer.transform.localPosition - expected).sqrMagnitude < 1e-6f;
+
+        /// <summary>体の箱の下端の中央（ワールド単位、Stage のローカル座標）。描画と Prefab の照合・生成で共有する。</summary>
+        public static Vector3 Feet(Box body) => new((float)body.CenterX / Units.Tile, (float)body.Bottom / Units.Tile, 0);
+
+        /// <summary>セーブ像の基準点（マスの下端の中央）。</summary>
+        public static Vector3 StatuePosition(Cell cell) => new(cell.Column + .5f, cell.Row, 0);
+
+        /// <summary>アイテムの基準点（マスの中央）。</summary>
+        public static Vector3 PickupPosition(Cell cell) => new(cell.Column + .5f, cell.Row + .5f, 0);
 
         /// <summary>
         /// 試合の前の姿を描く（タイトル）。Core の部屋の初期配置から作り直すので、遊んだ後にタイトルへ戻っても
@@ -255,7 +303,7 @@ namespace Game.Unity
         /// <summary>体の箱の下端の中央に、スプライトの基準点を置く。</summary>
         private static void Place(SpriteRenderer renderer, Box body)
         {
-            renderer.transform.localPosition = new Vector3((float)body.CenterX / Units.Tile, (float)body.Bottom / Units.Tile, 0);
+            renderer.transform.localPosition = Feet(body);
         }
 
         /// <summary>箱の中央に、スプライトの基準点（中央）を置く。</summary>

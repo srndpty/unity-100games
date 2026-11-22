@@ -83,6 +83,44 @@ namespace Game.Core.Tests
             Assert.That(e.Deaths, Is.EqualTo(1));
         }
 
+        /// <summary>
+        /// 床に扉（列 2）と、扉でない穴（列 4）がある上の部屋と、上の扉でつながった下の部屋。
+        /// </summary>
+        private static World FloorDoorAndHole() => Worlds(
+            Map(0, 1,
+                "########",
+                "#......#",
+                "#S....b#",
+                "##D#.###"),
+            Map(0, 0,
+                "##D#####",
+                "#......#",
+                "#.t....#",
+                "########"));
+
+        [Test]
+        public void FallingThroughTheFloorDoor_MovesToTheRoomBelow()
+        {
+            var world = FloorDoorAndHole();
+            var e = At(world, 0, new Cell(2, 1));
+            Assert.That(Until(e, Idle, x => x.RoomIndex != 0 || x.Status != ExpeditionStatus.Playing, 300), Is.True);
+            Assert.That(e.Status, Is.EqualTo(ExpeditionStatus.Playing));
+            Assert.That(e.RoomIndex, Is.EqualTo(1), "床の扉から下の部屋へ");
+            Assert.That(e.Player.Body, Is.EqualTo(Room.PlaceOnTile(new Cell(2, 1), Player.Width, Player.Height)));
+        }
+
+        [Test]
+        public void FallingThroughAHoleThatIsNotADoor_IsDown_EvenIfTheRoomHasAFloorDoor()
+        {
+            // レビュー P2-2：床に扉がある部屋では、扉でない穴から落ちても倒れず、下へ落ち続けていた。
+            var world = FloorDoorAndHole();
+            var e = At(world, 0, new Cell(4, 1));
+            Assert.That(Until(e, Idle, x => x.Status != ExpeditionStatus.Playing || x.RoomIndex != 0, 300), Is.True, "落ち続けない");
+            Assert.That(e.Status, Is.EqualTo(ExpeditionStatus.Down));
+            Assert.That(e.RoomIndex, Is.Zero, "扉でない穴からは移らない");
+            Assert.That(e.Deaths, Is.EqualTo(1));
+        }
+
         [Test]
         public void ElapsedTicks_CountOnlyWhilePlaying()
         {

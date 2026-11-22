@@ -26,6 +26,16 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void Source_ReturnsACopyOfTheMap()
+        {
+            var (name, x, y, rows) = Rooms.Source(Rooms.Cave);
+            Assert.That((name, x, y), Is.EqualTo(("洞穴", 2, 0)));
+            Assert.That(Room.Parse(name, x, y, rows).Pickups, Has.Count.EqualTo(Real().Rooms[Rooms.Cave].Pickups.Count));
+            rows[0] = "changed";
+            Assert.That(Rooms.Source(Rooms.Cave).Rows[0], Is.Not.EqualTo("changed"), "複製を返すので元の地図は変わらない");
+        }
+
+        [Test]
         public void RealWorld_EachAbilityAppearsOnce()
         {
             var world = Real();

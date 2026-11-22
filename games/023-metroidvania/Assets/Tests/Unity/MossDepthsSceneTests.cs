@@ -138,6 +138,58 @@ namespace Game.Unity.Tests
         }
 
         [UnityTest]
+        public IEnumerator StageMismatch_DetectsMovedOrChangedObjects()
+        {
+            // レビュー P2-1：照合が物の数しか見ず、玉を 1 マス動かした地図でも Prefab をそのまま使っていた。
+            yield return null;
+            Assert.That(_game.StageAt(Rooms.Cave).Mismatch(Variant(Rooms.Cave, rows => rows)), Is.Null, "元の地図とは一致する");
+            Assert.That(_game.StageAt(Rooms.Cave).Mismatch(Variant(Rooms.Cave, rows => Move(rows, 'J', -1))), Does.Contain("アイテム").And.Contain("位置"), "玉を 1 マス動かす");
+            Assert.That(_game.StageAt(Rooms.Cave).Mismatch(Variant(Rooms.Cave, rows => Swap(rows, 'J', 'K'))), Does.Contain("絵"), "玉の種類を変える");
+            Assert.That(_game.StageAt(Rooms.Corridor).Mismatch(Variant(Rooms.Corridor, rows => Move(rows, 'w', -1))), Does.Contain("歩く敵"), "敵を 1 マス動かす");
+            Assert.That(_game.StageAt(Rooms.Hub).Mismatch(Variant(Rooms.Hub, rows => Move(rows, '$', 1))), Does.Contain("セーブ像"), "像を 1 マス動かす");
+            Assert.That(_game.StageAt(Rooms.Lair).Mismatch(Variant(Rooms.Lair, rows => Move(rows, 'M', -1))), Does.Contain("ボス"), "ボスを 1 マス動かす");
+        }
+
+        /// <summary>本番の部屋の文字の地図を変えて解析し直す。</summary>
+        private static Room Variant(int index, Func<string[], string[]> change)
+        {
+            var (name, x, y, rows) = Rooms.Source(index);
+            return Room.Parse(name, x, y, change(rows));
+        }
+
+        /// <summary>最初に見つかった記号を横に <paramref name="dx"/> マス動かす（動かした先は空きマスであること）。</summary>
+        private static string[] Move(string[] rows, char symbol, int dx)
+        {
+            for (var line = 0; line < rows.Length; line++)
+            {
+                var column = rows[line].IndexOf(symbol);
+                if (column < 0) { continue; }
+                var chars = rows[line].ToCharArray();
+                Assert.That(chars[column + dx], Is.EqualTo('.'), "動かした先は空きマス");
+                chars[column] = '.';
+                chars[column + dx] = symbol;
+                rows[line] = new string(chars);
+                return rows;
+            }
+
+            throw new InvalidOperationException($"'{symbol}' がありません。");
+        }
+
+        private static string[] Swap(string[] rows, char from, char to)
+        {
+            for (var line = 0; line < rows.Length; line++)
+            {
+                if (rows[line].IndexOf(from) >= 0)
+                {
+                    rows[line] = rows[line].Replace(from, to);
+                    return rows;
+                }
+            }
+
+            throw new InvalidOperationException($"'{from}' がありません。");
+        }
+
+        [UnityTest]
         public IEnumerator Camera_ShowsTheWholeRoomBelowTheHudBand()
         {
             yield return null;

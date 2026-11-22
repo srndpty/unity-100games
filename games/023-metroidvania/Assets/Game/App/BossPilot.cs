@@ -22,10 +22,23 @@ namespace Game.App
 
         private (int Horizontal, bool Jump) _current;
         private int _left;
+        private Expedition? _expedition;
+        private int _entry = -1;
 
         public PlayerInput InputFor(Expedition expedition)
         {
             if (expedition == null) { throw new ArgumentNullException(nameof(expedition)); }
+
+            // 判断の状態（選んだ手と残り Tick）は 1 回の部屋の滞在の中だけで使う。別の試合・入り直した部屋では捨てて選び直す
+            // （同じ操縦役で再戦しても、前の試合の計画を持ち越さない）。
+            if (!ReferenceEquals(expedition, _expedition) || expedition.RoomEntries != _entry)
+            {
+                _expedition = expedition;
+                _entry = expedition.RoomEntries;
+                _current = default;
+                _left = 0;
+            }
+
             if (expedition.Status != ExpeditionStatus.Playing) { return PlayerInput.None; }
             if (expedition.Run.Boss == null) { return Policy(expedition); }
             if (_left == 0)
