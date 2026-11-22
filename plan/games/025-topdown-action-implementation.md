@@ -1,0 +1,122 @@
+# 025 見下ろしアクション 実装計画
+
+## Context
+
+- `plan/progress.csv` の 25 番（見下ろしアクション、難易度3・Phase 2）が未着手。仕様書 [plan/games/025-topdown-action.md](./025-topdown-action.md) の中心課題は「**部屋遷移と進行フラグ**」、重点は「**攻撃 Hitbox と無敵フレーム**」。In scope：1 ダンジョンと鍵・扉、敵 3 種・攻撃と回避、ボス・宝箱、タイトル→操作説明→勝敗→再プレイ。
+- 題材固有テスト：鍵消費後のみ扉が開く／無敵中に二重ダメージなし／ボス撃破フラグを維持。完了判定：探索→鍵→ボスの一連体験、部屋跨ぎで状態一貫。
+- ユーザーと決めたこと：
+  - **6 部屋・小鍵 2 ＋ ボス鍵**（宝箱からボス鍵）
+  - **剣（Z）＋ 回避ロール（X）**、8 方向移動
+  - 体力 0 は **ダンジョン入口から再開**（鍵・扉・宝箱・ボス撃破は保持、体力満タン、死亡回数を数える）
+  - 部屋の切り替えは **短いスクロール**（遷移フェーズを Core の Tick で数える）
+
+作品名はオリジナル（仮）：**EMBER VAULT**。参考作品の名称・素材・演出は使わない。
+この計画は着手時に `plan/games/025-topdown-action-implementation.md` として保存し、各セッションの結果を追記する（023/024 と同じ）。
+
+---
+
+## セッション分割（progress.csv の記録/メモに区切りを残す）
+
+| セッション | 内容 | 終わりの状態 |
+|---|---|---|
+| 0（済） | `git switch -c feature/game025`（main から）・`dev new 025`・雛形と slnx 登録の最小コミット・tile-motion の参照・この計画の保存 | `dev lint/check/test` 通過 |
+| 1 | Core ＋ App とテスト（ルール表を README に固定） | Core/App テスト通過 |
+| 2 | Playable（生成ドット絵・6 部屋の Stage Prefab・HUD・音・シーン生成・撮影台本） | 人間が通しで遊べる |
+| 3 | Verification（PlayMode・ビルド・`dev capture`・再撮影の一致・README/evidence） | 状態「検証待ち」 |
+
+---
+
+## セッション1：ルール表（README に固定）と Core / App
+
+### ルール表（要点）
+
+| 項目 | 採用ルール |
+|---|---|
+| 単位 | 1 タイル = 256 単位の整数（tile-motion の `Units`）、60 Tick/秒、時間の設定は Tick 数。浮動小数点を使わない |
+| 部屋 | 6 部屋、各 20×11 タイルの 1 画面。壁の中央の開口が扉。開口の外へ出ると遷移 |
+| 地図 | 下図。扉は双方向で、鍵の扉は両側から同じ 1 枚（開けた状態を共有） |
+| 遷移 | 開口を越えた Tick に `Transition`（`TransitionTicks` 既定 30）。その間は入力・被弾・敵の動きなし、弾は消える。終わると隣の部屋の対応する開口の内側に立ち、その部屋の敵が出現位置から始まる |
+| 小鍵 | 個数で持つ。どの小扉にも使える。鍵を持って小扉に押し当てると **1 個消費して開く**（開いた扉は以後ずっと開いたまま）。持っていなければ固体のまま |
+| ボス鍵 | 宝箱から得るフラグ。ボス扉は持っていれば開く（消費しない）。**小鍵ではボス扉は開かず、ボス鍵では小扉は開かない** |
+| 宝箱 | 触れて Z で開ける。中身（小鍵・ボス鍵）を得る。開いた宝箱は二度と中身を出さない |
+| 部屋の全滅 | 部屋 2 は敵を全滅させると小鍵が出る。「出た」「取った」は保持（再入室で敵は戻るが鍵は二度出ない） |
+| 自機 | 8 方向移動（斜めは 181/256、最低 1）。向きは最後に押した軸。体力 6 |
+| 剣（Z） | `SwingTicks`（既定 16）。有効 Tick（既定 3〜10）だけ向いた方向の前に矩形の Hitbox。**1 振りで同じ敵には 1 回だけ**当たる。振り中は移動が遅い |
+| 回避ロール（X） | 入力方向（なければ向き）へ `RollTicks`（既定 18）高速移動。最初の `RollInvulnTicks` は無敵。終わった後 `RollCooldownTicks` は再使用不可。ロール中は剣を振れない。壁は `BodyMotion` で止まる |
+| 被弾 | 接触・弾で 1 ダメージ、ノックバック、`InvulnTicks`（既定 60）無敵。**同じ Tick の複数の被弾は 1 回**。無敵中は一切減らない。境界：無敵の最後の Tick は無敵、次の Tick から被弾 |
+| 敵の被弾 | 剣で 1 ダメージ・ノックバック・短い無敵（`EnemyInvulnTicks`）。体力 0 で消える |
+| 敵 3 種 | **スライム**（シード付き乱数で 4 方向に歩く、体力 2）／**射手**（その場に立ち、自機と縦横に並ぶと周期で弾を撃つ、体力 2、弾は壁で消える）／**突進兵**（自機と縦横に並び視線が通ると壁まで突進、壁に当たると気絶、体力 3） |
+| ボス | 部屋 6。体力 12。歩き → 8 方向弾 → 突進の周期（Tick で決まる）。撃破で **ボス撃破フラグ**、部屋の中央に秘宝が出る。秘宝に触れると勝利。部屋を出入り・ゲームオーバーしてもボスは復活せず秘宝は残る |
+| 接触判定 | 動く物どうしは 1 軸ずつの移動経路の掃引箱で判定（022 `Motion`・021 `EnemyContact` の知見）。Hitbox の判定と描画は同じ関数（`SwordHitbox`） |
+| 同じ Tick の順序 | 自機の移動 → 剣の当たり → 敵・弾の移動 → 被弾 → 扉・アイテム・遷移。**致死の被弾は遷移より先**（テストで場面を作る。023 で未テストだった点） |
+| 敗北 | 体力 0 → ゲームオーバー → Enter で部屋 1 の開始位置から再開。進行フラグ（小鍵の個数・開いた扉・宝箱・全滅の鍵・ボス鍵・ボス撃破・訪れた部屋）は保持 |
+| 勝利 | 秘宝 → 結果（遊んだ時間・死亡回数）→ Enter でタイトル。再戦は新しいシード（起動時の値から試合ごとに進める、010 の知見） |
+| 乱数 | 1 試合 = 1 シードの xorshift。部屋への入室ごとに「試合シード × 部屋 × 入室回数」から系列を分ける（015 の知見） |
+| 終了後 | 勝利・ゲームオーバー中の Tick と入力は状態を変えない |
+| 保存 | ファイルには保存しない |
+
+地図（2×3 の格子、HUD の小地図にも描く）：
+
+```
+ [4 宝物庫: 宝箱=ボス鍵] ─(小扉B)─ [5 前室: 突進兵・射手] ─(ボス扉)─ [6 ボスの間]
+                                          │(小扉A)
+ [2 西の回廊: スライム・全滅で小鍵1] ── [1 入口] ── [3 東の間: 射手・宝箱=小鍵2]
+```
+- 小鍵 2 本は 2・3 のどちらからでも取れ、小扉 A・B の順にどちらを使ってもよい（個数で持つため）。5 に入るには 1 本、4 に入るにはもう 1 本が要る
+
+### Core（`Assets/Game/Core/`、`com.games100.tile-motion` の `Box`・`Units`・`BodyMotion`・`ISolidGrid`・`Countdown`・`StateHash` を使用）
+- `TileMap`（`ISolidGrid`。小扉・ボス扉は「開いていなければ固体」）、`Rooms`（文字の地図から 6 部屋：壁・扉・宝箱・敵・開始位置）、`DungeonLayout`（部屋の格子と開口の対応、扉 ID）
+- `DungeonState`：部屋をまたいで保持する進行フラグ（上表）。`Clone()`・`Hash()`。鍵の消費・宝箱の開封は二重に起きない API（`TryOpenDoor`・`TryOpenChest` が false を返す）
+- `Hero`：移動・向き・剣・ロール・体力・無敵（`Countdown`）・ノックバック
+- `SwordHitbox`：自機の状態と Tick から Hitbox（なければ null）。描画・PlayMode でも使う
+- `Damage`：無敵・同 Tick の 1 回化・1 振り 1 回の規則（自機と敵で共通）
+- `Slime`・`Spitter`・`Charger`・`Boss`・`Projectile`
+- `RoomRun`：1 部屋の進行（自機・敵・弾・アイテム）。開口の通過・宝箱・扉を事象で返す
+- `Dungeon`：全体（現在の部屋・遷移フェーズ・`DungeonState`・再開・勝敗・経過 Tick・死亡回数）。`Tick(HeroInput)`・`Continue()`・`Clone()`・`Hash()`・テスト/撮影用の `StartAt(state, room, cell)`
+- `VaultConfig`：公開フィールド＋検証（有限・範囲・剣の届く距離・無敵 Tick ≥ 1・ロールの無敵 ≤ ロール長 など）。地図の進行可能性は設定に依らない（移動は 1 タイル幅の開口を通れる大きさであることを検証で保証）
+
+### App（`Assets/Game/App/`）
+- `VaultFlow`：Title / Playing / Paused / GameOver / Victory。時刻付き入力とフレーム単位の Tick 上限・遊んだ時間の分離を 023 の [ExploreFlow.cs](../../games/023-metroidvania/Assets/Game/App/ExploreFlow.cs) から移植
+- `Intent`・`HeldControls`：023 から移植（↑↓←→・Z・X・Esc・Enter）。再開と遷移の後は攻撃・ロールのキーを一度離すまで受け付けない（020 の知見）
+- `Autopilot`：小目標の列（鍵 1 → 宝箱 → 小扉 → … → ボス → 秘宝）。移動はタイルの BFS、戦闘は `Dungeon.Clone()` で数通りの操作を一定 Tick 先読みして被弾の少ない手を選ぶ（021 `Autopilot`・023 `BossPilot` の方式）。試合・入室ごとに判断状態を捨てる（023 の知見）
+
+### テスト（題材固有を優先）
+- **鍵消費後のみ扉が開く**：鍵 0 では押し当てても固体で通れない・個数不変／鍵 1 で開き個数 0・扉フラグが立つ／開いた扉は反対側からも開いている／2 枚目は鍵がなければ開かない／小鍵でボス扉は開かず、ボス鍵で小扉は開かない／同じ宝箱を 2 回開けても鍵は 1 本
+- **無敵中に二重ダメージなし**：2 体と同じ Tick に接触して 1 ダメージ／無敵の最後の Tick は無敵・次の Tick で被弾（境界）／ロールの無敵中は弾・接触が無効、無敵が切れた Tick から有効／剣の 1 振りで同じ敵は 1 回だけ、2 振り目で再び当たる
+- **ボス撃破フラグを維持**：撃破 → 部屋を出て戻ってもボスなし・秘宝あり／撃破後のゲームオーバー → 再開後も維持／`Clone()` した状態が以後の進行で変わらない
+- **部屋跨ぎで状態一貫**：鍵の個数・開いた扉・宝箱・全滅の鍵・ボス鍵が往復（複数回）で保持、敵は出現位置に戻る（保持しないものも明示）
+- **Hitbox**：4 方向それぞれの範囲、届く距離ちょうど・1 単位外、有効 Tick の始め・終わりの境界
+- **遷移**：遷移中の入力・被弾を無視、同じ Tick の致死の被弾と開口は被弾が先
+- 共通：状態遷移（開始→進行→終了→再戦・終了後の入力無視）、負テスト（未定義の操作・NaN/範囲外の設定・勝利後の Tick・同 Tick の二重押下）、再現性（同シード同入力で同ハッシュ・入室ごとの乱数系列の独立）、**完走**（`Autopilot` で 20 シードが上限 Tick 内に勝利、固定シードの最終ハッシュを .NET と Mono で照合）
+
+---
+
+## セッション2：Playable（Unity 層）
+
+- `EmberVaultGame`（時刻付き入力・カメラ・HUD・音）、`EmberVaultStage`（1 部屋の Tilemap・扉・宝箱・敵・秘宝）、`EmberVaultSettings`（ScriptableObject：速さ・Tick・体力・無敵・音量）。**コードの既定値を変えたら `.asset` も直す**（024 の知見）
+- 遷移中は Core の遷移の進み具合（Tick）からカメラを隣の部屋へずらす。撮影では補間せずその Tick の値
+- Editor：`EmberVaultArtGenerator`（ドット絵生成、1 タイル 32px・Point）、`EmberVaultSceneBuilder`（6 部屋の Stage Prefab を Core の地図から生成、既存 Prefab は上書きしない、種類と位置まで照合する `Mismatch` を 023 から移植、古いインスタンスは前方一致で消す）
+- 開いた扉・開いた宝箱・取った鍵・ボスの有無は再入室時に `DungeonState` から反映。タイトルへ戻ったら Core から作り直す（021 の知見）
+- HUD（PanelRenderer）：体力・小鍵の個数・ボス鍵・小地図（訪れた部屋・今の部屋）、タイトルに操作説明、ゲームオーバー・結果画面。作った直後に一度描画する
+- 音（剣・命中・被弾・扉・宝箱・遷移）は控えめ、`AudioPolicy.ShouldMute` で消音
+- 撮影台本 `EmberVaultCaptureScenario`：タイトル・入口・剣の命中・ロールで弾をすり抜け・鍵なしの扉・扉が開く・遷移の途中・宝箱のボス鍵・ボス戦・撃破後の再入室・ゲームオーバー・結果
+
+## セッション3：Verification
+
+- PlayMode：キー操作（移動・剣・ロール）、Hitbox の表示位置、扉に押し当てて開く表示、遷移のスクロールと部屋の切り替え、再入室で表示が保持、ゲームオーバー→入口から再開、勝利の結果画面、タイトルへ戻った表示が起動直後と一致、一時停止・フォーカス喪失、設定アセットの検証
+- `dev build 025`、`dev capture 025`、同一ビルドで 2 回撮影して SHA-256 一致（1 回目を README からリンクしてから 2 回目を撮る）
+- README（環境・操作・ルール表・設計上の選択・パッケージに委譲したもの・未実装範囲）、`evidence/README.md`、`progress.csv` を「検証待ち」へ
+
+---
+
+## 主なファイル
+
+- 新規：`games/025-topdown-action/**`、`plan/games/025-topdown-action-implementation.md`
+- 変更：`unity-100games.slnx`（dev new）、`plan/progress.csv`、`games/025-topdown-action/Packages/manifest.json`（tile-motion と testables）、`dotnet/G025.Core.csproj` から `TileMotion.csproj` を ProjectReference、AGENTS.md の tile-motion の行（025 も使う）
+- 流用元：[023 ExploreFlow.cs](../../games/023-metroidvania/Assets/Game/App/ExploreFlow.cs)・`HeldControls.cs`・`Intent.cs`・`BossPilot.cs`、[023 WorldState.cs](../../games/023-metroidvania/Assets/Game/Core/WorldState.cs)（進行フラグの持ち方）・`Expedition.cs`（`StartAt`・`Continue`）・`RoomRun.cs`、[021 Autopilot.cs](../../games/021-platformer-2d/Assets/Game/App/Autopilot.cs)、023 の SceneBuilder / ArtGenerator / CaptureScenario / `MossDepthsStage.Mismatch`、[packages/com.games100.tile-motion](../../packages/com.games100.tile-motion/Runtime/)
+
+## 検証
+
+- 各セッションの終わりに `dev lint` → `dev check` → `dev test`
+- Unity 層を触ったら `dev test 025 -Unity` と `dev test 025 -Unity -Mode PlayMode`（tile-motion のテストも Mono で流れる）
+- `dev build 025` → `dev capture 025` → 証跡を確認 → 「検証待ち」で人間に渡す（`dev run 025`）
