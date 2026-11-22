@@ -1,7 +1,7 @@
 {
   "name": "Game.App.Tests",
   "rootNamespace": "Game.App.Tests",
-  "references": ["Game.Core", "Game.App", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+  "references": ["Game.Core", "Game.App", "TileMotion", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
   "includePlatforms": ["Editor"],
   "excludePlatforms": [],
   "allowUnsafeCode": false,

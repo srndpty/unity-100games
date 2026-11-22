@@ -20,7 +20,7 @@
 | セッション | 内容 | 終わりの状態 |
 |---|---|---|
 | 0（済） | `git switch -c feature/game025`（main から）・`dev new 025`・雛形と slnx 登録の最小コミット・tile-motion の参照・この計画の保存 | `dev lint/check/test` 通過 |
-| 1 | Core ＋ App とテスト（ルール表を README に固定） | Core/App テスト通過 |
+| 1（済） | Core ＋ App とテスト（ルール表を README に固定） | Core/App テスト通過 |
 | 2 | Playable（生成ドット絵・6 部屋の Stage Prefab・HUD・音・シーン生成・撮影台本） | 人間が通しで遊べる |
 | 3 | Verification（PlayMode・ビルド・`dev capture`・再撮影の一致・README/evidence） | 状態「検証待ち」 |
 
@@ -120,3 +120,17 @@
 - 各セッションの終わりに `dev lint` → `dev check` → `dev test`
 - Unity 層を触ったら `dev test 025 -Unity` と `dev test 025 -Unity -Mode PlayMode`（tile-motion のテストも Mono で流れる）
 - `dev build 025` → `dev capture 025` → 証跡を確認 → 「検証待ち」で人間に渡す（`dev run 025`）
+
+---
+
+## セッション1の結果と計画との差（2026-11-23）
+
+- ルール表は [README](../../games/025-topdown-action/README.md) の「採用ルール」を正とする。
+- 無敵は「受けた Tick の次の Tick から `InvulnTicks` Tick」と定義し、受けた Tick は減らさず Tick の終わりに 1 減らす（境界をそのままテストできる）。剣が当たるのは敵の Step より前なので、敵の「受けた Tick」の印を Step で消すと 1 Tick 短くなる。印は Tick の終わり（`EndTick`）で消す。
+- 突進兵に構え（`ChargerWindupTicks` 20）を足した。並んだ瞬間に突進すると、避ける時間がない。
+- 鍵の扉は「両側で同じ 1 枚」の通路番号で持つ。`World` が出入口の組に番号を振る。
+- 宝箱は「体の前（剣の当たりの範囲）にあるとき Z」で開け、開いた宝箱の前では剣を振る。
+- テスト・撮影で場面を作るため `Dungeon.StartAt`（状態と位置を指定して始める）を足した。
+- 操縦役（`Autopilot`）は目標を状態から選ぶ方式にした（入力の列は作らない）。初版は 1 試合 13 秒かかった。原因は、危険が続く間に毎 Tick 先読みしていたこと・戦っている間ずっと「近くの敵」を危険としていたこと・方針 1 回に幅優先探索を 2 回していたこと。判断を `Decision` Tick 保つ、危険を「近づく弾と自機の帯での構え・突進」に絞る、目標の候補のマスすべてから 1 回だけ探索する、で 20 試合 4 秒になった。
+- 通し：20 シードすべて勝利（平均 2951 Tick、死亡 0）。シード 1 は 2923 Tick・ハッシュ `0xFCD220F3`（.NET と Mono で一致）。
+- 次（セッション2）：Unity 層（生成ドット絵・6 部屋の Stage Prefab・切り替えのスクロール・HUD と小地図・音・シーン生成・撮影台本）。
