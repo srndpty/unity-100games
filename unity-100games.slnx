@@ -149,6 +149,12 @@
     <Project Path="games/025-topdown-action/dotnet/Core.Tests/G025.Core.Tests.csproj" />
     <Project Path="games/025-topdown-action/dotnet/Core/G025.Core.csproj" />
   </Folder>
+  <Folder Name="/026-twin-stick/">
+    <Project Path="games/026-twin-stick/dotnet/App.Tests/G026.App.Tests.csproj" />
+    <Project Path="games/026-twin-stick/dotnet/App/G026.App.csproj" />
+    <Project Path="games/026-twin-stick/dotnet/Core.Tests/G026.Core.Tests.csproj" />
+    <Project Path="games/026-twin-stick/dotnet/Core/G026.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.tile-motion/dotnet~/TileMotion.Tests/TileMotion.Tests.csproj" />
     <Project Path="packages/com.games100.tile-motion/dotnet~/TileMotion/TileMotion.csproj" />
