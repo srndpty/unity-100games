@@ -16,7 +16,7 @@
 | セッション | 内容 | 終わりの状態 |
 |---|---|---|
 | 0（済） | 023 の完了記録・`dev new 024`・雛形の最小コミット・この計画 | `dev lint/check/test` 通過 |
-| 1 | Core ＋ App とテスト（ルール表の固定を含む） | Core/App テスト通過、README のルール表 |
+| 1（済） | Core ＋ App とテスト（ルール表の固定を含む） | Core/App テスト通過、README のルール表 |
 | 2 | Playable（Stage Prefab・HUD・音・シーン生成） | 人間が通しで遊べる |
 | 3 | Verification（PlayMode・ビルド・`dev capture`・README/evidence） | 状態「検証待ち」 |
 
@@ -97,3 +97,17 @@
 - 各セッションの終わりに `dev lint` → `dev check` → `dev test`
 - Unity 層を触ったら `dev test 024 -Unity` と `dev test 024 -Unity -Mode PlayMode`
 - `dev build 024` → `dev capture 024` → 証跡を確認 → 「検証待ち」で人間に渡す（`dev run 024`）
+
+---
+
+## セッション1の結果と計画との差（2026-11-22）
+
+- ルール表は [README](../../games/024-tennis/README.md) の「採用ルール」を正とする。
+- 打点は「振りの間に球が範囲に入った最初の Tick」ではなく「押してから `ImpactTicks` Tick 目」にした。最初の Tick に当てると早く押すほど常に早打ちになり、時機の意味が薄れるため。空振りの後の回復は振りの長さ（`SwingTicks`）で兼ねる。
+- バウンド前のサーブは「打ったら失点」ではなく「打てない（空振り）」にした（失点の理由を増やさない）。
+- 返球の失点に「1 回弾んだ球が壁の線を越える（NOT UP）」を足した（2 回目のバウンドの前にコートの外へ出る球）。
+- ショットは「最高速以下で、ネット＋余裕を満たすいちばん平らな弾道」を解く。遅打ちは余裕を減らしてネットにかける。サーブは高い打点から打つので余裕を減らすだけではかからず、遅いほど短く狙う（`ServeShortError`）。サーブの最高速は 50 m/s に上げた（余裕で弾道が決まるように）。
+- CPU の時機のぶれは ±1 Tick だとラリーが平均 129 本続いて終わらなかったので ±2 Tick（平均 5 本）にした。
+- `TennisMatch.StageRally`（打ち合いの場面を作る）をテスト・撮影用に足した。
+- 次（セッション2）：Unity 層（斜め見下ろしの投影 `CourtProjection`、生成ドット絵、Stage Prefab、HUD、音、シーン生成、撮影台本）。
+
