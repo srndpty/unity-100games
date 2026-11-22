@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace Game.Core
 {
     /// <summary>
@@ -15,6 +18,26 @@ namespace Game.Core
 
         /// <summary>1 回のジャンプで届く足場の段差（タイル）。</summary>
         public const int StepRise = 3;
+
+        /// <summary>
+        /// 本番の地図を進むのに越える必要がある段差と隙間（右向きに書く。左向きも同じ）。設定の検証が、設定の自機で実際に跳んで
+        /// 越えられるかを確かめる（<see cref="Traversal"/>）。高さだけでなく横の距離も見るので、横の速さが小さすぎる設定を拒否できる。
+        /// 地図を変えたら、ここも合わせて直す。
+        /// </summary>
+        public static readonly IReadOnlyList<Crossing> Crossings = Array.AsReadOnly(new[]
+        {
+            // 回廊の右の段（列 31〜33 の高さ 2 → 列 34〜39 の高さ 3 の段差。行 4 → 行 7）。最初は二段ジャンプを持っていない。
+            new Crossing("回廊の段", StepRise, 0, doubleJump: false),
+
+            // 拠点の床（行 2）→ 高い段（列 26〜33、上面 行 7）。洞穴の穴の壁（行 2 → 行 7）と塔の高い台（行 2 → 行 7）も同じ。
+            new Crossing("拠点の高い段・穴の壁・塔の台", GateRise, 0, doubleJump: true),
+
+            // 拠点の足場：高い段（列 26〜33）→ 足場（列 20〜24）は隙間 1、足場（列 20〜24）→ 足場（列 27〜31）は隙間 2、いずれも段差 3。
+            new Crossing("拠点の足場", StepRise, 2, doubleJump: true),
+
+            // 塔の床の穴（列 30〜32）。到着位置の左から右の通路へ渡る。
+            new Crossing("塔の床の穴", 0, 3, doubleJump: true),
+        });
 
         public const int Hub = 0;
         public const int Corridor = 1;

@@ -108,7 +108,8 @@ namespace Game.Core
 
         /// <summary>
         /// 範囲を確かめ、さらに能力のゲートが成り立つこと（二段ジャンプなしでは高い段に届かず、ありなら届く。
-        /// 段差の小さい足場は 1 回のジャンプで届く）を、自機を実際に動かして確かめる（<see cref="JumpReach"/>）。
+        /// 段差の小さい足場は 1 回のジャンプで届く）と、地図の段差と隙間を横の距離まで含めて越えられること（<see cref="Rooms.Crossings"/>）を、
+        /// 自機を実際に動かして確かめる（<see cref="JumpReach"/>・<see cref="Traversal"/>）。
         /// </summary>
         public void Validate()
         {
@@ -159,6 +160,15 @@ namespace Game.Core
             if (both < Rooms.GateRise * Units.Tile)
             {
                 throw new ArgumentException($"二段ジャンプでも {Rooms.GateRise} タイルの高い段に届きません（{both} 単位）。");
+            }
+
+            // 高さが足りても、横の速さが小さいと足場の間を越えられない。地図で越える必要がある段差と隙間を、自機を動かして確かめる。
+            foreach (var crossing in Rooms.Crossings)
+            {
+                if (!Traversal.CanCross(this, crossing))
+                {
+                    throw new ArgumentException($"{crossing} を設定の自機で越えられません。横の速さ・加速かジャンプを見直してください。");
+                }
             }
         }
 

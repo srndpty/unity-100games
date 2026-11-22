@@ -9,6 +9,7 @@ namespace Game.Core.Tests
     /// 状態はそのまま比べると位置と速さの組で数が爆発するので、位置を横 1/2・縦 1/4 タイル、速さを横 6・縦 8 単位にまとめ、
     /// 接地・二段ジャンプの使用・押下・能力・取ったアイテムはそのまま比べた鍵で 1 度だけ展開する
     /// （敵の位置、体力・無敵、接地猶予・入力バッファの残り Tick は鍵に含めない）。
+    /// 横の速さが小さい設定では 1 手で区画をまたがず探索が途中で切れるので、<c>fine</c> で 1 px・横の速さはそのままの細かい鍵にする。
     /// まとめた分だけ近似なので、「届かない」は届く高さに十分な差がある場面でだけ使う（段差 5 タイルに対し、1 回のジャンプは 3.3 タイル）。
     /// 目標の点が与えられれば近い順に（最良優先）、なければ全部を広げる。展開の上限に達したら <see cref="Capped"/> で、何も言わない。
     /// </summary>
@@ -36,14 +37,14 @@ namespace Game.Core.Tests
         /// <summary>探索の間に、開始した部屋で自機の足が届いた最も高い位置。</summary>
         public int HighestFeet { get; private set; } = int.MinValue;
 
-        public static Reachability Run(Expedition start, Func<Expedition, bool> goal, (int X, int Y)? target = null, int cap = 200_000)
+        public static Reachability Run(Expedition start, Func<Expedition, bool> goal, (int X, int Y)? target = null, int cap = 200_000, bool fine = false)
         {
             var result = new Reachability();
             var room = start.RoomIndex;
             var open = new PriorityQueue();
             var seen = new HashSet<(int, int, int, int, uint)>();
             open.Push(start.Clone(), 0);
-            seen.Add(Key(start));
+            seen.Add(Key(start, fine));
             while (open.Count > 0)
             {
                 if (result.Expanded >= cap)
@@ -69,7 +70,7 @@ namespace Game.Core.Tests
                         return result;
                     }
 
-                    if (next.Status != ExpeditionStatus.Playing || next.RoomIndex != room || !seen.Add(Key(next))) { continue; }
+                    if (next.Status != ExpeditionStatus.Playing || next.RoomIndex != room || !seen.Add(Key(next, fine))) { continue; }
                     var priority = 0.0;
                     if (target is (int x, int y))
                     {
@@ -86,7 +87,7 @@ namespace Game.Core.Tests
         }
 
         /// <summary>位置をまとめた自機と、世界の状態の鍵。</summary>
-        private static (int, int, int, int, uint) Key(Expedition expedition)
+        private static (int, int, int, int, uint) Key(Expedition expedition, bool fine)
         {
             var p = expedition.Player;
             var hash = StateHash.Start();
@@ -94,7 +95,9 @@ namespace Game.Core.Tests
             hash.Mix(p.Grounded);
             hash.Mix(p.JumpHeld);
             hash.Mix(p.AirJumpUsed);
-            return (p.Body.X / (2 * Grid), p.Body.Y / Grid, p.VelocityX / 6, p.VelocityY / 8, hash.Value);
+            return fine
+                ? (p.Body.X / Units.Pixel, p.Body.Y / Units.Pixel, p.VelocityX, p.VelocityY / 4, hash.Value)
+                : (p.Body.X / (2 * Grid), p.Body.Y / Grid, p.VelocityX / 6, p.VelocityY / 8, hash.Value);
         }
 
         /// <summary>優先度の小さい順（同じなら入れた順）に取り出す二分ヒープ。</summary>

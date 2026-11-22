@@ -46,6 +46,71 @@ namespace Game.Core.Tests
             Assert.That(() => low.Validate(), Throws.ArgumentException.With.Message.Contains("足場に届きません"));
         }
 
+        [Test]
+        public void Defaults_CrossEveryRequiredStepAndGap()
+        {
+            var config = Config();
+            foreach (var crossing in Rooms.Crossings)
+            {
+                Assert.That(Traversal.CanCross(config, crossing), Is.True, crossing.ToString());
+            }
+
+            Assert.That(Traversal.CanCross(config, new Crossing("二段なしの高い段", Rooms.GateRise, 0, doubleJump: false)), Is.False, "高い段は二段ジャンプでしか越えられない");
+            Assert.That(Traversal.CanCross(config, new Crossing("届かない隙間", 0, 30, doubleJump: true)), Is.False);
+        }
+
+        [Test]
+        public void Validate_RejectsTooSlowRunning()
+        {
+            // レビュー P1：MoveSpeed 1 は高さだけの検証を通り、拠点の足場の間（横 2 タイル）を越えられずに塔へ進めなかった。
+            var config = Config();
+            config.MoveSpeed = 1;
+            Assert.That(() => config.Validate(), Throws.ArgumentException.With.Message.Contains("拠点の足場").And.Message.Contains("越えられません"));
+        }
+
+        [Test]
+        public void SlowestAcceptedRunning_StillReachesTheTowerOnTheRealMap()
+        {
+            // 検証を通る最小の横の速さを探し、その 1 つ下は拒否されること、その値で本番の拠点を塔まで登れることを確かめる
+            // （検証の越え方が実際の地図と食い違っていない）。
+            var slowest = 0;
+            for (var speed = 1; speed <= Config().MoveSpeed && slowest == 0; speed++)
+            {
+                var candidate = Config();
+                candidate.MoveSpeed = speed;
+                try
+                {
+                    candidate.Validate();
+                    slowest = speed;
+                }
+                catch (ArgumentException)
+                {
+                }
+            }
+
+            TestContext.Out.WriteLine($"検証を通る最小の MoveSpeed：{slowest}");
+            Assert.That(slowest, Is.GreaterThan(1));
+            var below = Config();
+            below.MoveSpeed = slowest - 1;
+            Assert.Throws<ArgumentException>(below.Validate);
+
+            var config = Config();
+            config.MoveSpeed = slowest;
+            var climb = Reachability.Run(At(Real(), Rooms.Hub, new Cell(4, 2), Ability.DoubleJump, config), e => e.RoomIndex == Rooms.Tower, (31 * T, 21 * T), 400_000, fine: true);
+            Assert.That(climb.Found, Is.True, $"MoveSpeed {slowest} で塔へ登れる（{climb.Expanded} 手を展開）");
+            var corridor = Reachability.Run(At(Real(), Rooms.Corridor, new Cell(2, 2), Ability.None, config), e => e.RoomIndex == Rooms.Cave, (39 * T, 7 * T), 400_000, fine: true);
+            Assert.That(corridor.Found, Is.True, $"MoveSpeed {slowest} で回廊の段を登れる（{corridor.Expanded} 手を展開）");
+        }
+
+        [Test]
+        public void Crossing_RejectsInvalidShapes()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => _ = new Crossing("x", -1, 0, false));
+            Assert.Throws<ArgumentOutOfRangeException>(() => _ = new Crossing("x", 0, Room.Columns, false));
+            Assert.Throws<ArgumentException>(() => _ = new Crossing("x", 0, 0, false));
+            Assert.Throws<ArgumentNullException>(() => _ = new Crossing(null!, 1, 0, false));
+        }
+
         [TestCase(nameof(ExplorerConfig.MoveSpeed), 0)]
         [TestCase(nameof(ExplorerConfig.MoveSpeed), ExplorerConfig.MaxSpeed + 1)]
         [TestCase(nameof(ExplorerConfig.Gravity), 0)]
