@@ -137,6 +137,12 @@
     <Project Path="games/023-metroidvania/dotnet/Core.Tests/G023.Core.Tests.csproj" />
     <Project Path="games/023-metroidvania/dotnet/Core/G023.Core.csproj" />
   </Folder>
+  <Folder Name="/024-tennis/">
+    <Project Path="games/024-tennis/dotnet/App.Tests/G024.App.Tests.csproj" />
+    <Project Path="games/024-tennis/dotnet/App/G024.App.csproj" />
+    <Project Path="games/024-tennis/dotnet/Core.Tests/G024.Core.Tests.csproj" />
+    <Project Path="games/024-tennis/dotnet/Core/G024.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.tile-motion/dotnet~/TileMotion.Tests/TileMotion.Tests.csproj" />
     <Project Path="packages/com.games100.tile-motion/dotnet~/TileMotion/TileMotion.csproj" />
