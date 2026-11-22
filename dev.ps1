@@ -31,6 +31,9 @@ $ErrorActionPreference = 'Stop'
 
 $RepoRoot = $PSScriptRoot
 $GamesDir = Join-Path $RepoRoot 'games'
+# 3 題以上で使う共通コード (ローカル UPM パッケージ)。dotnet で検証する csproj は Unity が読まない dotnet~/ に置く。
+$PackagesDir = Join-Path $RepoRoot 'packages'
+$PackageDotnetDir = 'dotnet~'
 $Solution = Join-Path $RepoRoot 'unity-100games.slnx'
 $BuildTarget = 'StandaloneWindows64'
 $GeneratedDirs = 'Library', 'Temp', 'Logs', 'obj', 'Builds'
@@ -38,7 +41,8 @@ $CaptureTimeoutSeconds = 120
 # 変更されると全作品の検証結果が変わりうる共通ファイル (-Staged でもこれらが含まれれば全作品を対象にする)
 # ソリューションは壊れていないか・参照先が正しいかをソリューション全体のビルドでしか確かめられないので、ここに含める。
 # slnx が変わるのは実質 `dev new` だけなので、作品の作成直後に最小コミットしておけば、以降のコミットはその作品だけの検査になる。
-$SharedPathPattern = '^(build/|\.editorconfig$|global\.json$|unity-100games\.slnx$|dev\.ps1$)'
+# packages/ はどの作品が使っているかを辿らず、変わったら全作品を対象にする。
+$SharedPathPattern = '^(build/|packages/|\.editorconfig$|global\.json$|unity-100games\.slnx$|dev\.ps1$)'
 
 # 外部コマンドを実行し、失敗したらその終了コードで即終了する。
 # `--option` 形式の引数をそのまま渡すため、param ブロックを使わず $args で受ける。
@@ -52,6 +56,11 @@ function Invoke-Native {
 function Get-GameDirs {
     if (-not (Test-Path $GamesDir)) { return @() }
     @(Get-ChildItem $GamesDir -Directory | Where-Object Name -Match '^\d{3}-')
+}
+
+function Get-PackageDirs {
+    if (-not (Test-Path $PackagesDir)) { return @() }
+    @(Get-ChildItem $PackagesDir -Directory)
 }
 
 function Format-GameNumber([string]$Value) {
@@ -107,10 +116,11 @@ function Test-SolutionProjects {
     $registered = @($solution.SelectNodes('//Project') | ForEach-Object { $_.GetAttribute('Path') -replace '\\', '/' })
     $problems += $registered | Group-Object | Where-Object Count -gt 1 | ForEach-Object { "ソリューションに重複して登録: $($_.Name)" }
     $problems += $registered | Where-Object { -not (Test-Path -LiteralPath (Join-Path $RepoRoot $_)) } | ForEach-Object { "ソリューションに登録されているが存在しない: $_" }
-    $expected = foreach ($gameDir in Get-GameDirs) {
-        $dotnet = Join-Path $gameDir.FullName 'dotnet'
-        if (-not (Test-Path $dotnet)) { continue }
-        Get-ChildItem $dotnet -Recurse -Filter '*.csproj' | ForEach-Object { [IO.Path]::GetRelativePath($RepoRoot, $_.FullName) -replace '\\', '/' }
+    $dotnetDirs = @(Get-GameDirs | ForEach-Object { Join-Path $_.FullName 'dotnet' }) +
+        @(Get-PackageDirs | ForEach-Object { Join-Path $_.FullName $PackageDotnetDir })
+    $expected = foreach ($dotnet in $dotnetDirs) {
+        if (-not (Test-Path -LiteralPath $dotnet)) { continue }
+        Get-ChildItem -LiteralPath $dotnet -Recurse -Filter '*.csproj' | ForEach-Object { [IO.Path]::GetRelativePath($RepoRoot, $_.FullName) -replace '\\', '/' }
     }
     $problems += $expected | Where-Object { $_ -notin $registered } | ForEach-Object { "ソリューションに登録されていない: $_ (dotnet sln unity-100games.slnx add で登録する)" }
     if ($problems) {
@@ -119,11 +129,21 @@ function Test-SolutionProjects {
     }
 }
 
-# Assets 配下の全ファイル/フォルダに .meta があり、孤立した .meta がないことを検証する。
+# Unity が読み込むフォルダ (作品の Assets、パッケージ) の中を列挙する。
+# Unity が無視する名前 (末尾が ~ のもの) の中は .meta が不要なので降りない。
+function Get-UnityImportedItems([string]$Root) {
+    foreach ($item in Get-ChildItem -LiteralPath $Root -Force) {
+        if ($item.Name.EndsWith('~')) { continue }
+        $item
+        if ($item.PSIsContainer) { Get-UnityImportedItems $item.FullName }
+    }
+}
+
+# Assets 配下とパッケージの全ファイル/フォルダに .meta があり、孤立した .meta がないことを検証する。
 function Test-MetaFiles($GameDirs) {
-    $problems = foreach ($gameDir in $GameDirs) {
-        $assets = Join-Path $gameDir.FullName 'Assets'
-        foreach ($item in Get-ChildItem $assets -Recurse -Force) {
+    $roots = @($GameDirs | ForEach-Object { Join-Path $_.FullName 'Assets' }) + @(Get-PackageDirs | ForEach-Object FullName)
+    $problems = foreach ($root in $roots) {
+        foreach ($item in Get-UnityImportedItems $root) {
             if ($item.Extension -eq '.meta') {
                 $target = $item.FullName.Substring(0, $item.FullName.Length - '.meta'.Length)
                 if (-not (Test-Path -LiteralPath $target)) { "対象のない .meta: $($item.FullName)" }
@@ -139,13 +159,14 @@ function Test-MetaFiles($GameDirs) {
     }
 }
 
-# 作品の Assets 配下の .cs 全体 (Unity 層・PlayMode テストを含む) の空白整形を、1 回の起動でまとめて行う。
-# コンパイル不要なので速い。
+# 作品の Assets 配下とパッケージの .cs 全体 (Unity 層・PlayMode テストを含む) の空白整形を、1 回の起動でまとめて行う。
+# コンパイル不要なので速い。パッケージは小さいので、どの作品が対象でも常に含める。
 function Invoke-WhitespaceFormat($GameDirs, [switch]$Verify) {
-    if (-not $GameDirs) { return }
-    [string[]]$includes = $GameDirs | ForEach-Object { "$($_.Name)/Assets/" }
+    [string[]]$includes = @($GameDirs | ForEach-Object { "games/$($_.Name)/Assets/" }) +
+        @(Get-PackageDirs | ForEach-Object { "packages/$($_.Name)/" })
+    if (-not $includes) { return }
     [string[]]$verifyArgs = if ($Verify) { '--verify-no-changes' } else { @() }
-    Invoke-Native dotnet format whitespace $GamesDir --folder --include @includes @verifyArgs
+    Invoke-Native dotnet format whitespace $RepoRoot --folder --include @includes @verifyArgs
 }
 
 # lint はコンパイルしない検査 (.meta と空白) だけを行う。
@@ -209,7 +230,7 @@ function Invoke-Check {
 # 整形の適用。スタイル・アナライザーの自動修正もかけるため、こちらは dotnet format をソリューション全体に使う。
 function Invoke-Format {
     Invoke-Native dotnet format $Solution
-    Invoke-WhitespaceFormat (Get-GameDirs)
+    Invoke-WhitespaceFormat @(Get-GameDirs)
 }
 
 function Invoke-New {
@@ -269,14 +290,23 @@ function Invoke-New {
 function Invoke-Clean {
     $target = Find-GameDir
     $gameDirs = if ($target) { @($target) } else { Get-GameDirs }
+    $paths = @()
     foreach ($gameDir in $gameDirs) {
-        $paths = @($GeneratedDirs | ForEach-Object { Join-Path $gameDir.FullName $_ })
+        $paths += @($GeneratedDirs | ForEach-Object { Join-Path $gameDir.FullName $_ })
         $paths += @(Get-ChildItem (Join-Path $gameDir.FullName 'dotnet') -Directory -Recurse |
                 Where-Object Name -In 'bin', 'obj' | ForEach-Object FullName)
-        foreach ($path in $paths | Where-Object { Test-Path $_ }) {
-            Write-Host "削除: $path"
-            Remove-Item $path -Recurse -Force
+    }
+    if (-not $target) {
+        foreach ($packageDir in Get-PackageDirs) {
+            $dotnet = Join-Path $packageDir.FullName $PackageDotnetDir
+            if (-not (Test-Path -LiteralPath $dotnet)) { continue }
+            $paths += @(Get-ChildItem -LiteralPath $dotnet -Directory -Recurse |
+                    Where-Object Name -In 'bin', 'obj' | ForEach-Object FullName)
         }
+    }
+    foreach ($path in $paths | Where-Object { Test-Path -LiteralPath $_ }) {
+        Write-Host "削除: $path"
+        Remove-Item -LiteralPath $path -Recurse -Force
     }
 }
 

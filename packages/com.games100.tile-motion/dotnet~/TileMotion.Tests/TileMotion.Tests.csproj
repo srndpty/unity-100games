@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <SharedSourceDir>$(MSBuildProjectDirectory)/../../Tests</SharedSourceDir>
+  </PropertyGroup>
+  <Import Project="../../../../build/Game.Tests.props" />
+  <PropertyGroup>
+    <RootNamespace>TileMotion.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../TileMotion/TileMotion.csproj" />
+  </ItemGroup>
+</Project>

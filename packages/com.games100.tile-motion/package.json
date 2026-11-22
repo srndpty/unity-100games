@@ -1,0 +1,7 @@
+{
+  "name": "com.games100.tile-motion",
+  "version": "0.1.0",
+  "displayName": "Tile Motion",
+  "description": "タイルの地形と整数の箱の衝突解決（1 軸ずつ、途中の列を飛ばさない）・接地検出・残り Tick の猶予・状態ハッシュ。Unity API に依存しない。",
+  "unity": "6000.6"
+}

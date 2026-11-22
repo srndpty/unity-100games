@@ -2,6 +2,7 @@
   <!--
     Unity Test Framework (NUnit 3 系) と同じテストソースを dotnet test で実行するための共通設定。
     取り込む前に GameLayer (Core または App) を設定する。ソースは Assets/Tests/$(GameLayer)/ を Unity と共有する。
+    packages/ のパッケージは GameLayer の代わりに SharedSourceDir (共有するテストのフォルダ) を設定する。
   -->
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -13,9 +14,10 @@
     <RootNamespace>Game.$(GameLayer).Tests</RootNamespace>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <IsPackable>false</IsPackable>
+    <SharedSourceDir Condition="'$(SharedSourceDir)' == ''">$(MSBuildProjectDirectory)/../../Assets/Tests/$(GameLayer)</SharedSourceDir>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildProjectDirectory)/../../Assets/Tests/$(GameLayer)/**/*.cs" />
+    <Compile Include="$(SharedSourceDir)/**/*.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />

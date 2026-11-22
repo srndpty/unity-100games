@@ -19,6 +19,7 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 | `plan/TODO.md` | 作品をまたぐ課題や、完了済みの作品の未対応の問題 |
 | `games/NNN-name/` | 各作品の Unity プロジェクト |
 | `templates/game/` | `dev new` が新規作品に展開する雛形 |
+| `packages/` | 3題以上で使う共通コード（ローカル UPM パッケージ）。dotnet で検証する csproj は Unity が読まない `dotnet~/` に置く |
 | `build/*.props` | Core / App を dotnet で検証するための共通 MSBuild 設定（`GameLayer` で層を指定） |
 | `dev.ps1` | 開発用統一コマンド |
 
@@ -41,6 +42,9 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - Core・App は Nullable 有効・警告はエラー扱い。
 - 物理エンジンに密接な題材は完全分離を強制せず、何を物理エンジンに委譲したかを作品の README に書く。
 - 共通コードは、3題以上で再利用価値が明確になってから `packages/` にローカル UPM パッケージとして抽出する。
+  - 作品からは `Packages/manifest.json` に `"file:../../../packages/<名前>"` と `testables` を書き、`dev test NNN -Unity` でパッケージのテストも Mono で流す。dotnet 側は作品の Core の csproj から `ProjectReference` する。
+  - パッケージも Core と同じく Unity API に依存しない（`noEngineReferences`）。中身を変えると全作品が検査対象になる（`dev lint/check -Staged`）。
+  - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う。
 
 ## 技術スタック
 

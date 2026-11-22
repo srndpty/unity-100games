@@ -137,4 +137,8 @@
     <Project Path="games/023-metroidvania/dotnet/Core.Tests/G023.Core.Tests.csproj" />
     <Project Path="games/023-metroidvania/dotnet/Core/G023.Core.csproj" />
   </Folder>
+  <Folder Name="/packages/">
+    <Project Path="packages/com.games100.tile-motion/dotnet~/TileMotion.Tests/TileMotion.Tests.csproj" />
+    <Project Path="packages/com.games100.tile-motion/dotnet~/TileMotion/TileMotion.csproj" />
+  </Folder>
 </Solution>
