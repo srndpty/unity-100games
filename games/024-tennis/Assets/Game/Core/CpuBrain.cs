@@ -114,7 +114,9 @@ namespace Game.Core
                     {
                         _serveKey = serveKey;
                         _tossStep = nextStep + config.CpuServeWaitTicks;
-                        _serveOffset = _serve.Range(-config.CpuTimingJitter, config.CpuTimingJitter);
+                        // サーブの時機のぶれは当たる幅の内に収める。外れる値を引くと、トスを落として持ち直しても同じ値で空振りし続ける。
+                        var jitter = Math.Min(config.CpuTimingJitter, config.ServeTimingSpan);
+                        _serveOffset = _serve.Range(-jitter, jitter);
                         _serveAim = _serve.Range(-1, 1);
                     }
 

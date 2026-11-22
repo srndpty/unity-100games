@@ -61,6 +61,53 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void CpuServeConnectsEvenWhenItsTimingJitterIsWiderThanTheServeWindow()
+        {
+            var config = TestKit.Config();
+            config.CpuTimingJitter = 30;
+            config.ServeTimingSpan = 20;
+            config.Validate();
+            for (var seed = 1; seed <= 20; seed++)
+            {
+                var match = new TennisMatch(config, seed, firstServer: Side.Far);
+                for (var i = 0; i < 1500 && match.PointsPlayed == 0; i++)
+                {
+                    match.Step(AthleteCommand.Idle);
+                    Assert.That(match.TakeEvents() & MatchEvents.Whiff, Is.EqualTo(MatchEvents.None), $"シード {seed}：CPU がトスを空振りした");
+                }
+
+                Assert.That(match.PointsPlayed, Is.GreaterThan(0), $"シード {seed}：ポイントが進む");
+            }
+        }
+
+        [Test]
+        public void CpuTossesAgainAfterADroppedToss()
+        {
+            var config = TestKit.Config();
+            var match = new TennisMatch(config, seed: 1, firstServer: Side.Far);
+            CpuUntil(match, m => m.Rally.Phase == RallyPhase.Toss);
+
+            // CPU の入力を出さずに進め、トスを落とさせる。
+            TestKit.IdleUntil(match, m => m.Rally.Phase == RallyPhase.Ready);
+            Assert.That(match.Rally.ServeNumber, Is.EqualTo(1), "トスを落としてもフォルトにならない");
+
+            CpuUntil(match, m => m.Rally.Phase == RallyPhase.Toss);
+            CpuUntil(match, m => m.Rally.Phase == RallyPhase.InPlay || m.PointsPlayed > 0);
+        }
+
+        /// <summary>奥の CPU に操作させ、手前は何もしない Tick を条件まで進める。</summary>
+        private static void CpuUntil(TennisMatch match, Func<TennisMatch, bool> condition)
+        {
+            for (var i = 0; i < 2000; i++)
+            {
+                if (condition(match)) { return; }
+                match.Step(AthleteCommand.Idle);
+            }
+
+            Assert.Fail("条件を満たしませんでした。");
+        }
+
+        [Test]
         public void AthleteStaysOnItsOwnSide()
         {
             var config = TestKit.Config();

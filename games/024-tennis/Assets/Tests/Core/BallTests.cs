@@ -30,6 +30,21 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void BallReachingTheGroundExactlyAtTheEndOfTheTickBouncesInThatTick()
+        {
+            // 重力を足した後の縦の速さ -10g で、高さ 10g からちょうど地面に着く。
+            var g = Physics.Gravity;
+            var ball = new Ball(new Vec3(0, 50000, 10 * g), new Vec3(0, 0, (-10 * g) + g));
+            var e = ball.Step(Physics);
+            Assert.That(e.Kind, Is.EqualTo(BallEventKind.Bounce));
+            Assert.That(e.Point, Is.EqualTo(new Vec3(0, 50000, 0)));
+            Assert.That(ball.Position.Z, Is.Zero);
+            Assert.That(ball.Velocity.Z, Is.EqualTo(10 * g * Physics.RestitutionPercent / 100));
+            Assert.That(ball.Velocity.Z, Is.GreaterThanOrEqualTo(g), "前提：次の Tick は地面から上がる");
+            Assert.That(ball.Step(Physics).Kind, Is.EqualTo(BallEventKind.None), "地面から上がる球は続けてバウンドしない");
+        }
+
+        [Test]
         public void BallBelowTheNetTopStopsAtTheNet()
         {
             var ball = new Ball(new Vec3(0, -1000, Court.NetHeight - 1), new Vec3(0, 2000, Physics.Gravity));

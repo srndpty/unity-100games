@@ -256,7 +256,7 @@ namespace Game.Unity
             var verdict = VerdictLine(m);
             var guide = Guide(m, screen);
             var state = (screen, m?.Score.Points(Side.Near) ?? 0, m?.Score.Points(Side.Far) ?? 0, m?.Score.Games(Side.Near) ?? 0, m?.Score.Games(Side.Far) ?? 0,
-                m?.Rally.Server ?? Side.Near, m?.Score.InTiebreak ?? false, verdict, guide, TimingHint);
+                m == null ? Side.Near : ServingSide(m), m?.Score.InTiebreak ?? false, verdict, guide, TimingHint);
             if (Equals(_shownHud, state)) { return; }
             _shownHud = state;
 
@@ -266,8 +266,9 @@ namespace Game.Unity
                 var score = m.Score;
                 var showGames = score.TiebreakAtGames > 0;
                 _root.Q<Label>("format").text = FormatName(Flow.Config) + (showGames && score.InTiebreak ? "  ・  TIEBREAK" : string.Empty);
-                SetRow("near", score, Side.Near, showGames, m.Rally.Server == Side.Near);
-                SetRow("far", score, Side.Far, showGames, m.Rally.Server == Side.Far);
+                var serving = ServingSide(m);
+                SetRow("near", score, Side.Near, showGames, serving == Side.Near);
+                SetRow("far", score, Side.Far, showGames, serving == Side.Far);
             }
 
             var verdictLabel = _root.Q<Label>("verdict");
@@ -293,6 +294,9 @@ namespace Game.Unity
             Show("title", screen == AppScreen.Paused || screen == AppScreen.Result);
             Show("quit", screen == AppScreen.Title);
         }
+
+        /// <summary>得点板のサーブの印。ポイントの間は次のポイントのサーバー（得点で更新済み）を示す。</summary>
+        public static Side ServingSide(TennisMatch match) => match.Phase == MatchPhase.Gap ? match.Score.Server : match.Rally.Server;
 
         private void SetRow(string prefix, MatchScore score, Side side, bool showGames, bool serving)
         {

@@ -79,7 +79,8 @@ namespace Game.Core
             }
 
             long groundNum = 0, groundDen = 0;
-            if (p1.Z < 0)
+            // Tick の終わりにちょうど地面に着いた球もこの Tick でバウンドする。地面から上がっていく球は除く。
+            if (p1.Z <= 0 && p0.Z > p1.Z)
             {
                 groundNum = p0.Z;
                 groundDen = (long)p0.Z - p1.Z;

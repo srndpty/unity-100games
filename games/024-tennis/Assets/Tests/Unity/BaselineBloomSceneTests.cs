@@ -246,10 +246,13 @@ namespace Game.Unity.Tests
             Assert.That(Stage.BounceMark.enabled, Is.True);
             Assert.That(Stage.BounceMark.transform.position, Is.EqualTo(CourtProjection.ToWorld(M.LastBounce!.Value)));
             Assert.That(Text("far-points"), Is.EqualTo("1"));
+            Assert.That(M.Rally.Server, Is.EqualTo(Side.Near), "前提：終わったポイントのサーバーは手前");
+            Assert.That((Text("near-serve"), Text("far-serve")), Is.EqualTo((" ", "●")), "ポイントの間は次のサーバー（タイブレークの 2 点目は奥）に印");
 
             StepUntil(() => M.Phase == MatchPhase.Point);
             yield return null;
             Assert.That(IsShown("verdict"), Is.False, "次のポイントで消える");
+            Assert.That((Text("near-serve"), Text("far-serve")), Is.EqualTo((" ", "●")), "次のポイントでも同じ");
         }
 
         [UnityTest]

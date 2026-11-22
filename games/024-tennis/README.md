@@ -82,7 +82,7 @@ dev capture 024  # 証跡を evidence/ に撮る（画像は captures/<画像世
 
 | 種類 | 場所 | 件数 | 実行 |
 |---|---|---|---|
-| Core | `Assets/Tests/Core/` | 141 | `dev test`（.NET）／`dev test 024 -Unity`（Mono） |
+| Core | `Assets/Tests/Core/` | 144 | `dev test`（.NET）／`dev test 024 -Unity`（Mono） |
 | App | `Assets/Tests/App/` | 18 | 同上 |
 | パッケージ | `packages/com.games100.tile-motion/Tests/` | 10 | `dev test 024 -Unity`（Mono） |
 | PlayMode | `Assets/Tests/Unity/` | 33（実シーン 17、共通証跡公開 16） | `dev test 024 -Unity -Mode PlayMode` |
@@ -97,7 +97,7 @@ dev capture 024  # 証跡を evidence/ に撮る（画像は captures/<画像世
 - 実シーン（`BaselineBloomSceneTests`）：サーブ待ちのサーバーは ← → で横にだけ動き球も手と一緒に動く、Z でトス・頂点近くでもう一度 Z でサーブ、レシーバーは ← で動き離すと止まる、届く球は Z で返り時機の案内が出る、届かない球は返らない、X のロブは高い、アウトの判定と跡と得点板、ネットの向こうの球はネットの後ろに描く、自動操縦で結果の画面まで進み最後の得点が出る、タイトルへ戻った表示が起動直後と一致、一時停止・HUD のボタン・フォーカスの喪失、設定アセットの値で決着する。
 - 画面遷移（`TennisFlowTests`）：タイトル → 試合 → 結果 → 再戦（シードが進む）、結果では進まない、時刻を含む Tick から入力が効く、短い押下、処理落ちの上限、一時停止とフォーカス喪失でキーを持ち越さない、30・60・144・240fps と不規則な間隔で同じキー操作が同じハッシュ、途中でやめた試合の後でも自動操縦が同じ結果。
 
-証跡と検証の記録は [evidence/README.md](evidence/README.md)。
+証跡と検証の記録は [evidence/README.md](evidence/README.md)、振り返りは [retrospective.md](retrospective.md)。
 
 ## 未実装範囲
 

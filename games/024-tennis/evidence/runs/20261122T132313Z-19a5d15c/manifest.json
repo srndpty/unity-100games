@@ -2,9 +2,9 @@
     "Product": "BASELINE BLOOM",
     "Version": "1.0",
     "UnityVersion": "6000.6.9f1",
-    "BuildGuid": "80364662c10b4f8bbf5892f5fa9237b9",
+    "BuildGuid": "45df2573d743445a91c01fdb73138db0",
     "Seed": 1,
-    "CapturedAtUtc": "2026-11-22T10:17:28.8274386Z",
+    "CapturedAtUtc": "2026-11-22T13:23:12.2082864Z",
     "Info": [
         {
             "Key": "imageEncoding",
@@ -48,7 +48,7 @@
         },
         {
             "File": "07-point.jpg",
-            "Sha256": "ee49f18ffdddfb7a109058bfd3f5902a8f1e11c007cd1d5802ed7b29c0893e3f",
+            "Sha256": "b764af12296eed51a78614643e2daf6164ce2a74617403b8a9a4ebaf78b9e502",
             "Note": "ポイントが決まった。判定と得点した側を出し、最後のバウンドに跡を残す。Tick 385、得点 1-0、球 (-15061, 0, 7422)、手前 (287, -128523, 0)、奥 (-150, 135400, 0)"
         },
         {
@@ -73,7 +73,7 @@
         },
         {
             "File": "12-net.jpg",
-            "Sha256": "ee331b2e8a6df182afb07bd7df1d16ff099b185cbc103abb28890f3e74997d18",
+            "Sha256": "4de13f8ff0d9ad24fdf1f9a2cfe2c64a51368cd3899c7167b697756f094d46eb",
             "Note": "ネットにかかった（打った側の失点）。Tick 1307、得点 2-3、球 (2112, 0, 6544)、手前 (0, -112000, 0)、奥 (0, 127650, 0)"
         },
         {

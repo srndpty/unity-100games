@@ -1,6 +1,6 @@
 # 024 検証記録
 
-2026-11-22実施。自動検証まで通し、人間の動作確認待ち（検証待ち）。試遊で 2 回「難しすぎる」との指摘を受け、打ち方・届く範囲・補助・サーブを調整して全検証をやり直した（下の「試遊を受けた調整」）。
+2026-11-22実施。2026-11-22に人間の動作確認OKと完了承認を受領した。コードレビュー（P1-1：CPU のサーブの時機のぶれがサーブの幅を超える設定で、トスを落として持ち直しても同じ値で空振りし続ける、P3-1：ポイントの間の得点板のサーブの印が前のポイントのまま、P3-2：Tick の終わりにちょうど地面に着いた球のバウンドが 1 Tick 遅れる）を受けて修正し、全検証をやり直した。画像はポイントの間を撮った 07・12 だけが変わり、サーブの印が次のサーバーへ移った。試遊で 2 回「難しすぎる」との指摘を受け、打ち方・届く範囲・補助・サーブを調整して全検証をやり直した（下の「試遊を受けた調整」）。
 
 ## 自動検証
 
@@ -8,15 +8,15 @@
 |---|---|
 | dev lint | 成功 |
 | dev check | 成功（警告0・エラー0） |
-| dev test | 成功。024 Core 141/141、App 18/18 |
-| Unity EditMode | 169/169（tile-motion 10・Core 141・App 18、Mono） |
+| dev test | 成功。024 Core 144/144、App 18/18 |
+| Unity EditMode | 172/172（tile-motion 10・Core 144・App 18、Mono） |
 | Unity PlayMode | 33/33（実シーン17、共通証跡公開16） |
 | Windowsビルド | 成功、StandaloneWindows64 |
 | ビルド起動 | dev captureで起動・全場面撮影・正常終了 |
 | 証跡 | JPEG品質85、14枚 |
-| 撮影再現 | 同じビルド（Build GUID `80364662c10b4f8bbf5892f5fa9237b9`）を2回撮影し、14枚すべての SHA-256 が一致した（画像世代 a2580c480bb19984、撮影記録 `20261122T101648Z-a442e40e` と `20261122T101730Z-cca20121`（公開中）。照合した 1 回目の記録は次の公開で消える） |
+| 撮影再現 | 同じビルド（Build GUID `45df2573d743445a91c01fdb73138db0`）を2回撮影し、14枚すべての SHA-256 が一致した（画像世代 dce7bfec4a1fc86d、撮影記録 `20261122T132253Z-9f8a7402` と `20261122T132313Z-19a5d15c`（公開中）。照合した 1 回目の記録は次の公開で消える） |
 
-公開ポインタは[current.json](current.json)、実行記録は[manifest.json](runs/20261122T101730Z-cca20121/manifest.json)。試合のシードは撮影用の 1 で、台本は意図と Tick を順に渡すだけで場面を作る（実時間とキー入力を使わない）。早打ち・遅打ち・アウト・ネットの場面は `TennisMatch.StageRally` で球を置き直して作る。
+公開ポインタは[current.json](current.json)、実行記録は[manifest.json](runs/20261122T132313Z-19a5d15c/manifest.json)。試合のシードは撮影用の 1 で、台本は意図と Tick を順に渡すだけで場面を作る（実時間とキー入力を使わない）。早打ち・遅打ち・アウト・ネットの場面は `TennisMatch.StageRally` で球を置き直して作る。
 
 ## ルールの検証
 
@@ -64,22 +64,22 @@
 
 | タイトル | 開始（サーブ待ち） | トス |
 |---|---|---|
-| ![タイトル](captures/a2580c480bb19984/01-title.jpg) | ![開始](captures/a2580c480bb19984/02-start.jpg) | ![トス](captures/a2580c480bb19984/03-toss.jpg) |
+| ![タイトル](captures/dce7bfec4a1fc86d/01-title.jpg) | ![開始](captures/dce7bfec4a1fc86d/02-start.jpg) | ![トス](captures/dce7bfec4a1fc86d/03-toss.jpg) |
 
 | 遅いサーブのフォルト | セカンドサーブ | ラリー |
 |---|---|---|
-| ![フォルト](captures/a2580c480bb19984/04-fault.jpg) | ![サーブ](captures/a2580c480bb19984/05-serve.jpg) | ![ラリー](captures/a2580c480bb19984/06-rally.jpg) |
+| ![フォルト](captures/dce7bfec4a1fc86d/04-fault.jpg) | ![サーブ](captures/dce7bfec4a1fc86d/05-serve.jpg) | ![ラリー](captures/dce7bfec4a1fc86d/06-rally.jpg) |
 
 | ポイント | サーバーの交代 | 早打ち |
 |---|---|---|
-| ![ポイント](captures/a2580c480bb19984/07-point.jpg) | ![交代](captures/a2580c480bb19984/08-server-change.jpg) | ![早打ち](captures/a2580c480bb19984/09-early.jpg) |
+| ![ポイント](captures/dce7bfec4a1fc86d/07-point.jpg) | ![交代](captures/dce7bfec4a1fc86d/08-server-change.jpg) | ![早打ち](captures/dce7bfec4a1fc86d/09-early.jpg) |
 
 | 遅打ち | アウト | ネット |
 |---|---|---|
-| ![遅打ち](captures/a2580c480bb19984/10-late.jpg) | ![アウト](captures/a2580c480bb19984/11-out.jpg) | ![ネット](captures/a2580c480bb19984/12-net.jpg) |
+| ![遅打ち](captures/dce7bfec4a1fc86d/10-late.jpg) | ![アウト](captures/dce7bfec4a1fc86d/11-out.jpg) | ![ネット](captures/dce7bfec4a1fc86d/12-net.jpg) |
 
 | 一時停止 | 結果 |
 |---|---|
-| ![一時停止](captures/a2580c480bb19984/13-pause.jpg) | ![結果](captures/a2580c480bb19984/14-result.jpg) |
+| ![一時停止](captures/dce7bfec4a1fc86d/13-pause.jpg) | ![結果](captures/dce7bfec4a1fc86d/14-result.jpg) |
 
 Unityのビルドログにライセンスクライアントの検証メッセージが出たが、ビルドとPlayerの撮影起動は成功した。
