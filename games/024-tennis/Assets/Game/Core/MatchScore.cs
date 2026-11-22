@@ -110,20 +110,20 @@ namespace Game.Core
         {
             if (winner == Side.Near) { _nearGames++; } else { _farGames++; }
 
-            var wasTiebreak = InTiebreak;
-            _nearPoints = 0;
-            _farPoints = 0;
-
-            // 次のゲームのサーバー：通常は交代。タイブレークの後は試合が終わる。
-            GameServer = Court.Other(GameServer);
-
             var mine = Games(winner);
             var theirs = Games(Court.Other(winner));
-            if (wasTiebreak || (mine >= TiebreakAtGames && mine - theirs >= 2))
+            if (InTiebreak || (mine >= TiebreakAtGames && mine - theirs >= 2))
             {
+                // 最後のゲームの得点は結果の表示のために残す。
                 Winner = winner;
                 return ScoreChange.Game | ScoreChange.Set;
             }
+
+            _nearPoints = 0;
+            _farPoints = 0;
+
+            // 次のゲームのサーバー：ゲームごとに交代。
+            GameServer = Court.Other(GameServer);
 
             if (mine == TiebreakAtGames && theirs == TiebreakAtGames)
             {

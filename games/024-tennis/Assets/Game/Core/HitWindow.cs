@@ -7,7 +7,7 @@ namespace Game.Core
     {
         Ok,
 
-        /// <summary>水平の距離が届く範囲（<see cref="TennisConfig.Reach"/>）より遠い。</summary>
+        /// <summary>理想の打点からの水平の距離が届く範囲（<see cref="TennisConfig.Reach"/>）より遠い。</summary>
         TooFar,
 
         /// <summary>打てる高さ（<see cref="TennisConfig.MaxHitZ"/>）より高い。</summary>
@@ -28,8 +28,8 @@ namespace Game.Core
 
     /// <summary>
     /// 打点ウィンドウ：球を打てるかと、早打ち・遅打ちのずれ。
-    /// 理想の打点は選手の前方 <see cref="TennisConfig.ContactAhead"/>。打点で球がそれよりネット寄りなら早打ち（ずれが正）、後ろなら遅打ち（負）。
-    /// ずれは <see cref="TennisConfig.TimingSpan"/> で -1000〜1000（千分率）に正規化する。
+    /// 理想の打点は選手の前方 <see cref="TennisConfig.ContactAhead"/>。届く範囲はそこを中心にした円で、早打ち側と遅打ち側が同じ幅になる。
+    /// 打点で球がそれよりネット寄りなら早打ち（ずれが正）、後ろなら遅打ち（負）。ずれは <see cref="TennisConfig.TimingSpan"/> で -1000〜1000（千分率）に正規化する。
     /// </summary>
     public static class HitWindow
     {
@@ -45,7 +45,7 @@ namespace Game.Core
             var p = ball.Position;
             var forward = Court.Forward(athlete.Side);
             if (p.Y * forward >= 0 || ball.Velocity.Y * forward > 0) { return HitCheck.NotIncoming; }
-            if (p.FlatDistanceSquared(athlete.Position) > (long)config.Reach * config.Reach) { return HitCheck.TooFar; }
+            if (p.FlatDistanceSquared(IdealContact(athlete.Side, athlete.Position, config)) > (long)config.Reach * config.Reach) { return HitCheck.TooFar; }
             if (p.Z > config.MaxHitZ) { return HitCheck.TooHigh; }
             if (p.Z < config.MinHitZ) { return HitCheck.TooLow; }
             return HitCheck.Ok;

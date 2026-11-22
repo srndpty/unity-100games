@@ -7,6 +7,9 @@ namespace Game.Core.Tests
     {
         private static Vec3 Me => new(0, -110000, 0);
 
+        /// <summary>理想の打点（届く範囲の中心）。</summary>
+        private static Vec3 Ideal => HitWindow.IdealContact(Side.Near, Me, TestKit.Config());
+
         private static HitCheck Check(Vec3 ball, Vec3? velocity = null, bool incoming = true, bool unbouncedServe = false)
         {
             var athlete = new Athlete(Side.Near, Me);
@@ -18,17 +21,19 @@ namespace Game.Core.Tests
         public void BallAtTheEdgeOfReachCanBeHit()
         {
             var reach = TestKit.Config().Reach;
-            Assert.That(Check(new Vec3(reach, Me.Y, 5000)), Is.EqualTo(HitCheck.Ok));
-            Assert.That(Check(new Vec3(0, Me.Y + reach, 5000)), Is.EqualTo(HitCheck.Ok));
+            Assert.That(Check(new Vec3(reach, Ideal.Y, 5000)), Is.EqualTo(HitCheck.Ok));
+            Assert.That(Check(new Vec3(0, Ideal.Y + reach, 5000)), Is.EqualTo(HitCheck.Ok), "早打ち側の端");
+            Assert.That(Check(new Vec3(0, Ideal.Y - reach, 5000)), Is.EqualTo(HitCheck.Ok), "遅打ち側の端");
         }
 
         [Test]
         public void BallJustOutOfReachCannotBeHit()
         {
             var reach = TestKit.Config().Reach;
-            Assert.That(Check(new Vec3(reach + 1, Me.Y, 5000)), Is.EqualTo(HitCheck.TooFar));
-            Assert.That(Check(new Vec3(-reach - 1, Me.Y, 5000)), Is.EqualTo(HitCheck.TooFar));
-            Assert.That(Check(new Vec3(0, Me.Y - reach - 1, 5000)), Is.EqualTo(HitCheck.TooFar));
+            Assert.That(Check(new Vec3(reach + 1, Ideal.Y, 5000)), Is.EqualTo(HitCheck.TooFar));
+            Assert.That(Check(new Vec3(-reach - 1, Ideal.Y, 5000)), Is.EqualTo(HitCheck.TooFar));
+            Assert.That(Check(new Vec3(0, Ideal.Y - reach - 1, 5000)), Is.EqualTo(HitCheck.TooFar));
+            Assert.That(Check(new Vec3(0, Ideal.Y + reach + 1, 5000)), Is.EqualTo(HitCheck.TooFar));
         }
 
         [Test]

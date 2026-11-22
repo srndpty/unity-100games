@@ -17,7 +17,7 @@
 |---|---|---|
 | 0（済） | 023 の完了記録・`dev new 024`・雛形の最小コミット・この計画 | `dev lint/check/test` 通過 |
 | 1（済） | Core ＋ App とテスト（ルール表の固定を含む） | Core/App テスト通過、README のルール表 |
-| 2 | Playable（Stage Prefab・HUD・音・シーン生成） | 人間が通しで遊べる |
+| 2（済） | Playable（Stage Prefab・HUD・音・シーン生成） | 人間が通しで遊べる |
 | 3 | Verification（PlayMode・ビルド・`dev capture`・README/evidence） | 状態「検証待ち」 |
 
 ---
@@ -110,4 +110,11 @@
 - CPU の時機のぶれは ±1 Tick だとラリーが平均 129 本続いて終わらなかったので ±2 Tick（平均 5 本）にした。
 - `TennisMatch.StageRally`（打ち合いの場面を作る）をテスト・撮影用に足した。
 - 次（セッション2）：Unity 層（斜め見下ろしの投影 `CourtProjection`、生成ドット絵、Stage Prefab、HUD、音、シーン生成、撮影台本）。
+
+## セッション2の結果（2026-11-22）
+
+- Unity 層（`CourtProjection`・`BaselineBloomGame`・`BaselineBloomStage`・生成スクリプト・撮影台本 14 枚）を実装し、Windows ビルドと `dev capture` が通った。
+- 撮影で、早打ちが「ちょうど」にしかならないことに気づいた。届く範囲を体中心の円にしていたため、理想の打点（体の前 0.5 m）より前は 0.8 m しかなく、早打ちのずれが 400‰ を超えなかった。届く範囲を理想の打点を中心にした円にし、ずれの幅（`TimingSpan`）を届く範囲と同じ 1.3 m にした。CPU どうしのラリーは平均 6.7 本、最終ハッシュは `0x654DF9F6`（.NET と Mono で一致）。
+- 試合が終わると得点が 0 に戻り、結果の画面で最後の得点が見えなかったので、セットが決まったゲームの得点は残すようにした。
+- 次（セッション3）：PlayMode テスト（キー操作・サーブ・打球・空振り・判定の表示・結果・タイトルへ戻った表示・一時停止とフォーカス）、evidence/README、同一ビルドの再撮影の一致、状態を「検証待ち」へ。
 

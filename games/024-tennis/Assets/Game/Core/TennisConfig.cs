@@ -50,7 +50,7 @@ namespace Game.Core
         /// <summary>押してから打点（ラケットが球の位置を通る）までの Tick 数。</summary>
         public int ImpactTicks = 8;
 
-        /// <summary>届く範囲（選手からの水平距離、1.3 m）。</summary>
+        /// <summary>届く範囲（理想の打点からの水平距離、1.3 m）。</summary>
         public int Reach = 13000;
 
         /// <summary>打てる高さの下限（球の下端、0.1 m）。</summary>
@@ -62,8 +62,8 @@ namespace Game.Core
         /// <summary>理想の打点：体の前方（0.5 m）。</summary>
         public int ContactAhead = 5000;
 
-        /// <summary>早打ち・遅打ちのずれが最大（±1000）になる、理想の打点からの縦の距離（1.2 m）。</summary>
-        public int TimingSpan = 12000;
+        /// <summary>早打ち・遅打ちのずれが最大（±1000）になる、理想の打点からの縦の距離（1.3 m、届く範囲の端）。</summary>
+        public int TimingSpan = 13000;
 
         /// <summary>ネットに近づける距離の下限（1 m）。</summary>
         public int NetGap = 10000;
@@ -160,7 +160,7 @@ namespace Game.Core
         /// <summary>相手が打ってから動き始めるまで。</summary>
         public int CpuReactionTicks = 8;
 
-        /// <summary>打点の時機のぶれ（±Tick）。大きいほど早打ち・遅打ちのミスが増える（CPU どうしで 1 なら平均 129 本、2 なら 5 本、3 なら 2.5 本のラリー）。</summary>
+        /// <summary>打点の時機のぶれ（±Tick）。大きいほど早打ち・遅打ちのミスが増える（CPU どうしで 1 なら平均 129 本で決着しない、2 なら 6.7 本、3 なら 2.8 本のラリー）。</summary>
         public int CpuTimingJitter = 2;
 
         /// <summary>ロブを選ぶ割合（%）。相手がネットに近いときは必ずロブ。</summary>

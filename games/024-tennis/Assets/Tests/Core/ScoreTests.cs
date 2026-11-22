@@ -25,6 +25,7 @@ namespace Game.Core.Tests
             Assert.That(score.Award(A), Is.EqualTo(ScoreChange.Game | ScoreChange.Set));
             Assert.That(score.Winner, Is.EqualTo(A));
             Assert.That(score.Games(A), Is.EqualTo(1));
+            Assert.That(score.Points(A), Is.EqualTo(7), "最後のゲームの得点は残る");
         }
 
         [Test]

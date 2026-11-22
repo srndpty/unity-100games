@@ -1,0 +1,21 @@
+.hud { position: absolute; width: 100%; height: 100%; color: rgb(246, 244, 232); justify-content: center; align-items: center; }
+.topbar { position: absolute; left: 0; right: 0; top: 0; height: 110px; padding: 8px 24px; flex-direction: row; align-items: flex-start; }
+.scoreboard { padding: 6px 16px; background-color: rgba(20, 30, 46, 0.88); border-radius: 10px; border-width: 2px; border-color: rgb(120, 170, 210); }
+.format { font-size: 16px; color: rgb(190, 214, 236); margin-bottom: 2px; }
+.row { flex-direction: row; align-items: center; height: 34px; }
+.name { width: 64px; font-size: 24px; -unity-font-style: bold; }
+.near-name { color: rgb(130, 230, 200); }
+.far-name { color: rgb(255, 160, 140); }
+.serve { width: 26px; font-size: 18px; color: rgb(250, 230, 120); -unity-text-align: middle-center; }
+.games { width: 36px; font-size: 24px; -unity-font-style: bold; color: rgb(190, 214, 236); -unity-text-align: middle-center; }
+.points { width: 56px; font-size: 26px; -unity-font-style: bold; color: rgb(255, 246, 200); -unity-text-align: middle-right; }
+.pause { position: absolute; right: 20px; top: 12px; height: 46px; width: 190px; margin: 0; font-size: 20px; }
+.verdict { position: absolute; top: 130px; padding: 10px 32px; font-size: 34px; -unity-font-style: bold; color: rgb(255, 240, 170); background-color: rgba(20, 30, 46, 0.86); border-radius: 12px; border-width: 2px; border-color: rgb(230, 200, 110); }
+.guide { position: absolute; bottom: 28px; padding: 8px 24px; font-size: 24px; -unity-font-style: bold; color: rgb(240, 248, 255); background-color: rgba(20, 30, 46, 0.8); border-radius: 10px; }
+.panel { width: 820px; padding: 30px 40px; background-color: rgba(20, 30, 46, 0.94); border-radius: 18px; border-width: 2px; border-color: rgb(120, 170, 210); }
+.headline { font-size: 52px; -unity-font-style: bold; color: rgb(255, 230, 140); -unity-text-align: middle-center; white-space: normal; }
+.message { margin-top: 14px; margin-bottom: 14px; font-size: 22px; white-space: normal; -unity-text-align: middle-center; }
+.buttons { align-items: stretch; }
+Button { height: 52px; margin: 8px 0 0 0; font-size: 22px; color: rgb(246, 244, 232); background-color: rgb(44, 70, 104); border-color: rgb(120, 170, 210); border-width: 1px; border-radius: 10px; }
+Button:hover { background-color: rgb(56, 88, 128); }
+Button:active { background-color: rgb(70, 106, 150); }

@@ -143,7 +143,7 @@ namespace Game.Core.Tests
             Assert.That(match.Hash(), Is.EqualTo(ExpectedFinalHash), $"Tick {match.Tick}");
         }
 
-        private const uint ExpectedFinalHash = 0x2A9FD882u;
+        private const uint ExpectedFinalHash = 0x654DF9F6u;
 
         // ---- 設定 ----
 
