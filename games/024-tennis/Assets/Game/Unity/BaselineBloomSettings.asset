@@ -21,13 +21,14 @@ MonoBehaviour:
     MoveSpeed: 917
     CpuMoveSpeed: 850
     SwingMovePercent: 40
-    SwingTicks: 24
-    ImpactTicks: 8
-    Reach: 13000
+    SwingTicks: 16
+    SwingWaitTicks: 90
+    Reach: 18000
     MinHitZ: 1000
-    MaxHitZ: 22000
+    MaxHitZ: 26000
     ContactAhead: 5000
-    TimingSpan: 12000
+    TimingSpan: 18000
+    PlayerTimingAssistPercent: 50
     NetGap: 10000
     AthleteMargin: 5000
     StrokeSpeed: 6667
@@ -37,27 +38,27 @@ MonoBehaviour:
     LobClearance: 30000
     LobDepth: 95000
     AimWide: 26000
-    TimingShift: 40000
+    TimingShift: 30000
     LongError: 36000
-    NetError: 9000
+    ShortError: 80000
     TossZ: 20000
     TossSpeed: 735
-    ServeTimingSpan: 12
+    ServeTimingSpan: 20
     ServeSpeed: 8333
     ServeClearance: 2500
     ServeDepth: 55000
     ServeAim: 13000
     ServeShift: 12000
     ServeLongError: 20000
-    ServeShortError: 30000
-    ServeNetError: 8000
+    ServeShortError: 50000
     ServeBackOffset: 2000
     ServeSideOffset: 10000
+    ServeSideMin: 3000
     ReceiveBackOffset: 10000
     ReceiveSideOffset: 22000
     PointGapTicks: 90
     CpuReactionTicks: 8
-    CpuTimingJitter: 2
+    CpuTimingJitter: 5
     CpuLobPercent: 12
     CpuLobTrigger: 50000
     CpuServeWaitTicks: 40

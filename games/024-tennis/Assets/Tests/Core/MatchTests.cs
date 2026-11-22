@@ -21,14 +21,43 @@ namespace Game.Core.Tests
         }
 
         [Test]
-        public void ServerCannotMoveBeforeTheServeButTheReceiverCan()
+        public void ServerChoosesThePositionAlongTheBaseline_AndCannotMoveDuringTheToss()
         {
-            var match = new TennisMatch(TestKit.Config(), seed: 1);
-            var server = match.Near.Position;
+            var config = TestKit.Config();
+            var match = new TennisMatch(config, seed: 1);
+            var start = match.Near.Position;
             var receiver = match.Far.Position;
             match.Step(new AthleteCommand(1, 1, false, false), new AthleteCommand(1, 0, false, false));
-            Assert.That(match.Near.Position, Is.EqualTo(server));
+            Assert.That(match.Near.Position, Is.EqualTo(new Vec3(start.X + config.MoveSpeed, start.Y, 0)), "サーブ待ちは横にだけ動く");
+            Assert.That(match.Ball.Position, Is.EqualTo(match.Near.Position.WithZ(config.TossZ)), "球も手と一緒に動く");
             Assert.That(match.Far.Position.X, Is.GreaterThan(receiver.X));
+
+            for (var i = 0; i < 100; i++) { match.Step(new AthleteCommand(1, 0, false, false), AthleteCommand.Idle); }
+            Assert.That(match.Near.Position.X, Is.EqualTo(Court.HalfWidth), "サイドラインまで");
+            for (var i = 0; i < 100; i++) { match.Step(new AthleteCommand(-1, 0, false, false), AthleteCommand.Idle); }
+            Assert.That(match.Near.Position.X, Is.EqualTo(config.ServeSideMin), "センターマークの手前まで（反対のコートへは行けない）");
+
+            match.Step(TestKit.Press(), AthleteCommand.Idle);
+            var tossed = match.Near.Position;
+            match.Step(new AthleteCommand(1, 0, false, false), AthleteCommand.Idle);
+            Assert.That(match.Near.Position, Is.EqualTo(tossed), "トス中は動かない");
+        }
+
+        [Test]
+        public void ServeFromTheChosenPositionStillLandsInTheBox()
+        {
+            var config = TestKit.Config();
+            foreach (var moves in new[] { -100, 100 })
+            {
+                var match = new TennisMatch(config, seed: 1);
+                var dir = Math.Sign(moves);
+                for (var i = 0; i < Math.Abs(moves); i++) { match.Step(new AthleteCommand(dir, 0, false, false), AthleteCommand.Idle); }
+                match.Step(AthleteCommand.Idle, AthleteCommand.Idle);
+                TestKit.NearServe(match);
+                TestKit.IdleUntil(match, m => m.LastBounce.HasValue || m.Phase != MatchPhase.Point);
+                var bounce = match.LastBounce!.Value;
+                Assert.That(Court.InServiceBox(bounce.X, bounce.Y, Side.Near, ServeCourt.Deuce), Is.True, dir > 0 ? "サイドライン寄りから" : "センター寄りから");
+            }
         }
 
         [Test]
@@ -143,7 +172,7 @@ namespace Game.Core.Tests
             Assert.That(match.Hash(), Is.EqualTo(ExpectedFinalHash), $"Tick {match.Tick}");
         }
 
-        private const uint ExpectedFinalHash = 0x654DF9F6u;
+        private const uint ExpectedFinalHash = 0x346EBABBu;
 
         // ---- 設定 ----
 
@@ -159,7 +188,8 @@ namespace Game.Core.Tests
             Assert.Throws<ArgumentOutOfRangeException>(() => With(c => c.TiebreakAtGames = 7).Validate());
             Assert.Throws<ArgumentOutOfRangeException>(() => With(c => c.TiebreakPoints = 0).Validate());
             Assert.Throws<ArgumentOutOfRangeException>(() => With(c => c.Gravity = 0).Validate());
-            Assert.Throws<ArgumentOutOfRangeException>(() => With(c => c.ImpactTicks = c.SwingTicks).Validate());
+            Assert.Throws<ArgumentOutOfRangeException>(() => With(c => c.SwingWaitTicks = -1).Validate());
+            Assert.Throws<ArgumentOutOfRangeException>(() => With(c => c.ServeSideOffset = c.ServeSideMin - 1).Validate());
             Assert.Throws<ArgumentOutOfRangeException>(() => With(c => c.MaxHitZ = c.MinHitZ).Validate());
             Assert.Throws<ArgumentOutOfRangeException>(() => With(c => c.StrokeDepth = Court.HalfLength + 1).Validate());
             Assert.Throws<ArgumentOutOfRangeException>(() => With(c => c.MoveSpeed = -1).Validate());

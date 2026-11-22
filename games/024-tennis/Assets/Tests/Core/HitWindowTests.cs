@@ -84,9 +84,11 @@ namespace Game.Core.Tests
             var config = TestKit.Config();
             var match = Incoming(config, nearX: config.Reach * 3);
             match.TakeEvents();
-            SwingAndWaitForImpact(match);
+            match.Step(TestKit.Press(), AthleteCommand.Idle);
+            Assert.That(match.Near.IsReady, Is.True, "球が来るまで構えて待つ");
+            TestKit.IdleUntil(match, m => !m.Near.IsReady, 200);
             var events = match.TakeEvents();
-            Assert.That(events & MatchEvents.Whiff, Is.Not.EqualTo(MatchEvents.None));
+            Assert.That(events & MatchEvents.Whiff, Is.Not.EqualTo(MatchEvents.None), "届かないまま通り過ぎたら空振り");
             Assert.That(events & MatchEvents.Stroke, Is.EqualTo(MatchEvents.None));
             Assert.That(match.Rally.LastHitter, Is.EqualTo(Side.Far), "打っていない");
         }
@@ -110,10 +112,97 @@ namespace Game.Core.Tests
             var match = Incoming(config, nearX: 0);
             match.Step(TestKit.Press(), AthleteCommand.Idle);
             match.Step(AthleteCommand.Idle, AthleteCommand.Idle);
-            var tick = match.Near.SwingTick;
+            var waited = match.Near.Waited;
             match.Step(TestKit.Press(ShotKind.Lob), AthleteCommand.Idle);
-            Assert.That(match.Near.SwingTick, Is.EqualTo(tick + 1), "振り直さない");
+            Assert.That(match.Near.IsReady, Is.True);
+            Assert.That(match.Near.Waited, Is.EqualTo(waited + 1), "構え直さない");
             Assert.That(match.Near.SwingKind, Is.EqualTo(ShotKind.Stroke));
+        }
+
+        // ---- 構えて待つ・体の周りの球は返る・補助 ----
+
+        [Test]
+        public void AnyPressWhileTheBallIsComingOrWithinReachReturnsIt()
+        {
+            // 球が向かってくる間のどの Tick に押しても、届く範囲を通り過ぎる前なら返る。
+            var config = TestKit.Config();
+            var probe = Incoming(config, nearX: 0);
+            var last = TicksUntil(probe, HitWindow.IdealContact(Side.Near, probe.Near.Position, config).Y - config.Reach + 1000);
+            for (var press = 1; press <= last; press++)
+            {
+                var match = Incoming(config, nearX: 0);
+                TestKit.Idle(match, press - 1);
+                match.Step(TestKit.Press(), AthleteCommand.Idle);
+                TestKit.IdleUntil(match, m => m.Rally.LastHitter == Side.Near || !m.Near.IsReady || m.Phase != MatchPhase.Point, 200);
+                Assert.That(match.Rally.LastHitter, Is.EqualTo(Side.Near), $"{press} Tick 目に押した");
+            }
+        }
+
+        [Test]
+        public void EarlyPressWaitsAndHitsAtTheIdealContact()
+        {
+            var config = TestKit.Config();
+            var match = Incoming(config, nearX: 0);
+            match.Step(TestKit.Press(), AthleteCommand.Idle);
+            TestKit.Idle(match, 5);
+            Assert.That(match.Near.IsReady, Is.True, "球が来るまで構えて待つ");
+            TestKit.IdleUntil(match, m => m.Rally.LastHitter == Side.Near || m.Phase != MatchPhase.Point, 200);
+            Assert.That(match.Rally.LastHitter, Is.EqualTo(Side.Near));
+            Assert.That(System.Math.Abs(match.LastTiming), Is.LessThan(100), "待った振りは理想の打点で打つ");
+        }
+
+        [Test]
+        public void WaitingTooLongWhiffs()
+        {
+            var config = TestKit.Config();
+            config.SwingWaitTicks = 10;
+            var match = Incoming(config, nearX: 0);
+            match.TakeEvents();
+            match.Step(TestKit.Press(), AthleteCommand.Idle);
+            TestKit.IdleUntil(match, m => !m.Near.IsReady, 200);
+            Assert.That(match.TakeEvents() & MatchEvents.Whiff, Is.Not.EqualTo(MatchEvents.None));
+            Assert.That(match.Rally.LastHitter, Is.EqualTo(Side.Far));
+        }
+
+        [Test]
+        public void BallAtTheBodyCanStillBeReturned()
+        {
+            // 体の真横（理想の打点より 0.5 m 後ろ）に来てから押しても返る（遅打ち）。
+            var config = TestKit.Config();
+            var match = Incoming(config, nearX: 0);
+            var bodyTick = TicksUntil(match, match.Near.Position.Y);
+            TestKit.Idle(match, bodyTick - 1);
+            match.Step(TestKit.Press(), AthleteCommand.Idle);
+            Assert.That(match.Rally.LastHitter, Is.EqualTo(Side.Near), "その場で打つ");
+            Assert.That(match.LastTiming, Is.LessThan(0), "遅打ち");
+        }
+
+        [Test]
+        public void ShotSpeedDoesNotDependOnTiming()
+        {
+            // 時機がずれても同じ時間で飛ぶ（CPU だけ速い・遅いということがない）。
+            var config = TestKit.Config();
+            var contact = new Vec3(0, -110000, 8000);
+            var ticks = new System.Collections.Generic.List<int>();
+            foreach (var timing in new[] { -500, -250, 0, 250, 500 })
+            {
+                var ball = new Ball(contact, Shots.Plan(Side.Near, ShotKind.Stroke, 0, timing, contact, ServeCourt.Deuce, config));
+                ticks.Add(BallPredictor.NextEvent(ball, config.Physics, 600)!.Value.Ticks);
+            }
+
+            Assert.That(ticks, Is.All.EqualTo(ticks[2]), string.Join(", ", ticks));
+        }
+
+        [Test]
+        public void PlayerTimingIsSoftenedButCpuTimingIsNot()
+        {
+            var full = TestKit.Config();
+            full.PlayerTimingAssistPercent = 100;
+            var half = TestKit.Config();
+            HitAt(full, 2, out var raw);
+            HitAt(half, 2, out var assisted);
+            Assert.That(assisted, Is.EqualTo(raw * half.PlayerTimingAssistPercent / 100));
+            Assert.That(raw, Is.LessThan(0));
         }
 
         // ---- 早打ち・遅打ち ----
@@ -197,27 +286,26 @@ namespace Game.Core.Tests
             return match;
         }
 
-        /// <summary>理想の打点の Tick に打点が来るよう振り、打点の Tick まで進める。</summary>
+        /// <summary>球が理想の打点を通る Tick から <paramref name="shift"/> ずれた Tick に押す（届く範囲にあればその場で打つ）。</summary>
         private static void SwingAndWaitForImpact(TennisMatch match, int shift = 0)
         {
-            var config = match.Config;
-            var contactTick = IdealContactTick(match);
-            var pressAt = contactTick - config.ImpactTicks + shift;
+            var pressAt = IdealContactTick(match) + shift;
             TestKit.Idle(match, pressAt - 1);
             match.Step(TestKit.Press(), AthleteCommand.Idle);
-            TestKit.Idle(match, config.ImpactTicks);
         }
 
         /// <summary>球が手前の選手の理想の打点（の y）を通り過ぎる Tick（今から何 Tick 後か）。</summary>
-        private static int IdealContactTick(TennisMatch match)
+        private static int IdealContactTick(TennisMatch match) =>
+            TicksUntil(match, HitWindow.IdealContact(Side.Near, match.Near.Position, match.Config).Y);
+
+        /// <summary>球の y が <paramref name="y"/> 以下になる Tick（今から何 Tick 後か）。</summary>
+        private static int TicksUntil(TennisMatch match, int y)
         {
-            var config = match.Config;
-            var idealY = HitWindow.IdealContact(Side.Near, match.Near.Position, config).Y;
             var copy = match.Ball.Clone();
             for (var tick = 1; tick < 600; tick++)
             {
-                copy.Step(config.Physics);
-                if (copy.Position.Y <= idealY) { return tick; }
+                copy.Step(match.Config.Physics);
+                if (copy.Position.Y <= y) { return tick; }
             }
 
             throw new System.InvalidOperationException("球が来ません。");

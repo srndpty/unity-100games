@@ -197,12 +197,12 @@ namespace Game.Unity
             }
         }
 
-        /// <summary>早打ち・遅打ちの案内。ずれが 300‰ 未満なら「ちょうど」、600‰ 未満なら「少し」。</summary>
+        /// <summary>早打ち・遅打ちの案内（プレイヤーの補助の後のずれ）。150‰ 未満なら「ちょうど」、350‰ 未満なら「少し」。</summary>
         public static string TimingText(int timing)
         {
             var size = Math.Abs(timing);
-            if (size < 300) { return "ちょうど！"; }
-            var degree = size < 600 ? "少し" : string.Empty;
+            if (size < 150) { return "ちょうど！"; }
+            var degree = size < 350 ? "少し" : string.Empty;
             return timing > 0 ? $"{degree}早い  →  左へ・長く" : $"{degree}遅い  →  右へ・低く";
         }
 
@@ -326,7 +326,7 @@ namespace Game.Unity
             if (hint.Length > 0) { return hint; }
             if (m.Phase == MatchPhase.Point && m.Rally.Server == Side.Near)
             {
-                if (m.Rally.Phase == RallyPhase.Ready) { return "Z でトスを上げる"; }
+                if (m.Rally.Phase == RallyPhase.Ready) { return "← → で立ち位置を選び、Z でトスを上げる"; }
                 if (m.Rally.Phase == RallyPhase.Toss && !m.Rally.TossSwung) { return "球がいちばん高いところで、もう一度 Z（← → で狙い）"; }
             }
 
@@ -351,14 +351,14 @@ namespace Game.Unity
 
         public static string Message(AppScreen screen, TennisMatch match, TennisConfig config, long playedTicks)
         {
-            const string controls = "← → ↑ ↓：動く    Z：ストローク / サーブ    X：ロブ\n振った瞬間の ← → で左右に狙う    Esc：一時停止";
+            const string controls = "← → ↑ ↓：動く（サーブの前は ← → で立ち位置）    Z：ストローク / サーブ    X：ロブ\n押した瞬間の ← → で左右に狙う    Esc：一時停止";
             switch (screen)
             {
                 case AppScreen.Title:
                     var rule = config.TiebreakAtGames == 0
                         ? $"{config.TiebreakPoints} ポイントを先に取ったほうが勝ち（2 点差が必要）。"
                         : $"{config.TiebreakAtGames} ゲームを先に取ったほうが勝ち（2 ゲーム差、{config.TiebreakAtGames}-{config.TiebreakAtGames} でタイブレーク）。";
-                    return $"CPU とシングルスで 1 セット。{rule}\n球が体の少し前に来たときに振るのが「ちょうど」。\n早く振ると左へ長く、遅く振ると右へ低く飛ぶ。\n\n{controls}";
+                    return $"CPU とシングルスで 1 セット。{rule}\n球が来る前に Z を押しておけば、体の少し前に来たときに打つ。\n球が近づいてから押すと、早ければ左へ長く、遅ければ右へ低く飛ぶ。\n\n{controls}";
                 case AppScreen.Paused:
                     return controls + "\n\nR：最初から    T：タイトルへ";
                 case AppScreen.Result:

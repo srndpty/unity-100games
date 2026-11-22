@@ -27,7 +27,11 @@ namespace Game.Core
         /// <summary>飛行 Tick 数の上限（4 秒）。これでも余裕を満たせなければ上限の弾道で打つ。</summary>
         public const int MaxFlightTicks = 240;
 
-        public static Vec3 Solve(Vec3 from, int targetX, int targetY, int maxSpeed, int clearance, int gravity)
+        public static Vec3 Solve(Vec3 from, int targetX, int targetY, int maxSpeed, int clearance, int gravity) =>
+            Velocity(from, (long)targetX - from.X, (long)targetY - from.Y, FlightTicks(from, targetX, targetY, maxSpeed, clearance, gravity), gravity);
+
+        /// <summary>最高速を超えず、ネットの面を通る高さがネット＋余裕以上になる、いちばん短い飛行 Tick 数。</summary>
+        public static int FlightTicks(Vec3 from, int targetX, int targetY, int maxSpeed, int clearance, int gravity)
         {
             if (maxSpeed <= 0) { throw new ArgumentOutOfRangeException(nameof(maxSpeed), maxSpeed, "正の値にしてください。"); }
             if (gravity <= 0) { throw new ArgumentOutOfRangeException(nameof(gravity), gravity, "正の値にしてください。"); }
@@ -37,8 +41,7 @@ namespace Game.Core
             var distance = Units.Sqrt((dx * dx) + (dy * dy));
             var ticks = (int)Math.Max(1, Math.Min(MaxFlightTicks, Units.CeilDiv(distance, maxSpeed)));
             while (ticks < MaxFlightTicks && !Clears(from, dy, ticks, clearance, gravity)) { ticks++; }
-
-            return Velocity(from, dx, dy, ticks, gravity);
+            return ticks;
         }
 
         /// <summary>T Tick で着地する初速。</summary>
@@ -70,12 +73,12 @@ namespace Game.Core
     }
 
     /// <summary>
-    /// 打球の狙い：ショットの種類・左右の狙い・早打ち/遅打ちのずれから、着地点とネットの余裕を決めて初速を解く。
+    /// 打球の狙い：ショットの種類・左右の狙い・早打ち/遅打ちのずれから着地点を決め、初速を解く。
     /// <list type="bullet">
     /// <item>横：狙い × <see cref="TennisConfig.AimWide"/> に、ずれ × <see cref="TennisConfig.TimingShift"/> を打つ人の左（早打ち＝引っ張り）へ足す。</item>
-    /// <item>深さ：早打ち（正）ほど長く（<see cref="TennisConfig.LongError"/>）、アウトしうる。</item>
-    /// <item>ネットの余裕：遅打ち（負）ほど小さく（<see cref="TennisConfig.NetError"/>）、負になるとネットにかかる。</item>
-    /// <item>サーブは高い打点から打つので余裕を減らすだけではネットにかからない。遅打ちほど短く（<see cref="TennisConfig.ServeShortError"/>）、急に落ちる。</item>
+    /// <item>深さ：早打ち（正）ほど長く（<see cref="TennisConfig.LongError"/>）、遅打ち（負）ほど短く（<see cref="TennisConfig.ShortError"/>）。</item>
+    /// <item>飛行 Tick 数は、ずれ 0 の狙いへの弾道（最高速以下でネット＋余裕を越える、いちばん平らな弾道）で決める。
+    /// ずれのある球も同じ時間で飛ぶので、時機で球の速さは変わらない。長い球はアウトになり、短い球は同じ高さの弧のまま手前に落ちるのでネットにかかりうる。</item>
     /// </list>
     /// ずれが 0 なら狙いどおり（設定の検証で、コートの中に入ることを実際に飛ばして確かめる）。
     /// </summary>
@@ -86,28 +89,18 @@ namespace Game.Core
             if (aim < -1 || aim > 1) { throw new ArgumentOutOfRangeException(nameof(aim), aim, "-1・0・1 のどれかにしてください。"); }
             if (timing < -HitWindow.MaxTiming || timing > HitWindow.MaxTiming) { throw new ArgumentOutOfRangeException(nameof(timing), timing, "-1000〜1000 にしてください。"); }
 
-            var target = Target(hitter, kind, aim, timing, serveCourt, config);
-            var late = Math.Max(-timing, 0);
-            int speed, clearance;
-            switch (kind)
+            var (speed, clearance) = kind switch
             {
-                case ShotKind.Stroke:
-                    speed = config.StrokeSpeed;
-                    clearance = config.StrokeClearance - (late * config.NetError / HitWindow.MaxTiming);
-                    break;
-                case ShotKind.Lob:
-                    speed = config.LobSpeed;
-                    clearance = config.LobClearance - (late * config.NetError / HitWindow.MaxTiming);
-                    break;
-                case ShotKind.Serve:
-                    speed = config.ServeSpeed;
-                    clearance = config.ServeClearance - (late * config.ServeNetError / HitWindow.MaxTiming);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(kind), kind, "未定義のショットです。");
-            }
+                ShotKind.Stroke => (config.StrokeSpeed, config.StrokeClearance),
+                ShotKind.Lob => (config.LobSpeed, config.LobClearance),
+                ShotKind.Serve => (config.ServeSpeed, config.ServeClearance),
+                _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "未定義のショットです。"),
+            };
 
-            return ShotSolver.Solve(contact, target.X, target.Y, speed, clearance, config.Gravity);
+            var aimed = Target(hitter, kind, aim, 0, serveCourt, config);
+            var ticks = ShotSolver.FlightTicks(contact, aimed.X, aimed.Y, speed, clearance, config.Gravity);
+            var target = Target(hitter, kind, aim, timing, serveCourt, config);
+            return ShotSolver.Velocity(contact, (long)target.X - contact.X, (long)target.Y - contact.Y, ticks, config.Gravity);
         }
 
         /// <summary>狙う着地点（z は 0）。</summary>
@@ -116,19 +109,19 @@ namespace Game.Core
             var forward = Court.Forward(hitter);
             var right = Court.RightOf(hitter);
             var early = Math.Max(timing, 0);
+            var late = Math.Max(-timing, 0);
             int x, depth;
             switch (kind)
             {
                 case ShotKind.Stroke:
                 case ShotKind.Lob:
                     x = (aim * config.AimWide * right) - (timing * config.TimingShift / HitWindow.MaxTiming * right);
-                    depth = (kind == ShotKind.Stroke ? config.StrokeDepth : config.LobDepth) + (early * config.LongError / HitWindow.MaxTiming);
+                    depth = (kind == ShotKind.Stroke ? config.StrokeDepth : config.LobDepth) + (early * config.LongError / HitWindow.MaxTiming) - (late * config.ShortError / HitWindow.MaxTiming);
                     break;
                 case ShotKind.Serve:
                     var receiver = Court.Other(hitter);
                     var boxCenter = Court.CourtSign(receiver, serveCourt) * Court.HalfWidth / 2;
                     x = boxCenter + (aim * config.ServeAim * right) - (timing * config.ServeShift / HitWindow.MaxTiming * right);
-                    var late = Math.Max(-timing, 0);
                     depth = config.ServeDepth + (early * config.ServeLongError / HitWindow.MaxTiming) - (late * config.ServeShortError / HitWindow.MaxTiming);
                     break;
                 default:

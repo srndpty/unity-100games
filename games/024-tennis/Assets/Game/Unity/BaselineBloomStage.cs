@@ -54,6 +54,10 @@ namespace Game.Unity
             var receiver = Positions.Receive(Side.Far, ServeCourt.Deuce, config);
             PlaceAthlete(_near, _nearPoses, server, 0);
             PlaceAthlete(_far, _farPoses, receiver, 0);
+
+            // 試合中に変えた向きも戻す（タイトルへ戻ったとき、前の試合の向きで残らない）。
+            _near.flipX = false;
+            _far.flipX = false;
             PlaceBall(server.WithZ(config.TossZ), true);
             _bounceMark.enabled = false;
         }
@@ -91,7 +95,7 @@ namespace Game.Unity
                 if (rally.Phase == RallyPhase.Ready) { return 0; }
             }
 
-            if (athlete.IsSwinging) { return athlete.SwingTick < match.Config.ImpactTicks ? 2 : 3; }
+            if (athlete.IsSwinging) { return athlete.IsReady ? 2 : 3; }
             var stride = (Math.Abs(athlete.Position.X) + Math.Abs(athlete.Position.Y)) / StrideUnits;
             return stride % 2;
         }

@@ -44,9 +44,9 @@ namespace Game.Core
     }
 
     /// <summary>
-    /// 選手。位置（地面）、振りの進み具合、直前に押していたキー。
-    /// 振りは押し始めの Tick を 0 として <see cref="TennisConfig.ImpactTicks"/> Tick 目にラケットが球の位置を通り（打点）、
-    /// <see cref="TennisConfig.SwingTicks"/> Tick で終わる。振りの途中は次の振りを始められず、移動も遅くなる。
+    /// 選手。位置（地面）、振りの状態、直前に押していたキー。
+    /// 振り：押すと構え、球が打てる所に来たら打ち（届かなければ空振り）、振り抜いて <see cref="TennisConfig.SwingTicks"/> Tick で終わる。
+    /// 構えは最大 <see cref="TennisConfig.SwingWaitTicks"/> Tick 待てる。振りの途中は次の振りを始められず、移動も遅くなる。
     /// </summary>
     public sealed class Athlete
     {
@@ -60,12 +60,18 @@ namespace Game.Core
 
         public Vec3 Position { get; private set; }
 
-        /// <summary>振り始めてからの Tick 数。振っていなければ -1。</summary>
+        /// <summary>振りの段階：-1 = 振っていない、0 = 構え（球を待つ）、1 以上 = 振り抜きの何 Tick 目か。</summary>
         public int SwingTick { get; private set; } = -1;
 
         public bool IsSwinging => SwingTick >= 0;
 
+        /// <summary>構えて球を待っている。</summary>
+        public bool IsReady => SwingTick == 0;
+
         public ShotKind SwingKind { get; private set; }
+
+        /// <summary>構えてから待った Tick 数（押した Tick は 0）。</summary>
+        public int Waited { get; private set; }
 
         /// <summary>振ったときの狙い（左右の入力、-1・0・1）。</summary>
         public int SwingAim { get; private set; }
@@ -84,7 +90,7 @@ namespace Game.Core
         public void Reset(Vec3 position)
         {
             Position = position;
-            SwingTick = -1;
+            StopSwing();
             Facing = 0;
         }
 
@@ -100,25 +106,53 @@ namespace Game.Core
             return null;
         }
 
-        /// <summary>振り始める。振っている途中なら何もしない（false）。</summary>
+        /// <summary>構える。振っている途中なら何もしない（false）。</summary>
         public bool StartSwing(ShotKind kind, int aim)
         {
             if (IsSwinging) { return false; }
             SwingTick = 0;
             SwingKind = kind;
             SwingAim = aim;
+            Waited = 0;
             return true;
         }
 
-        /// <summary>振りを 1 Tick 進める。終わったら振っていない状態に戻る。</summary>
+        /// <summary>構えから振り抜く（打った・空振りした）。</summary>
+        public void Release()
+        {
+            if (IsReady) { SwingTick = 1; }
+        }
+
+        /// <summary>振りを 1 Tick 進める。構えの間は待った Tick を数え、振り抜きは終わったら振っていない状態に戻る。</summary>
         public void AdvanceSwing(int swingTicks)
         {
             if (!IsSwinging) { return; }
+            if (IsReady)
+            {
+                Waited++;
+                return;
+            }
+
             SwingTick++;
             if (SwingTick >= swingTicks) { SwingTick = -1; }
         }
 
-        public void StopSwing() => SwingTick = -1;
+        public void StopSwing()
+        {
+            SwingTick = -1;
+            Waited = 0;
+        }
+
+        /// <summary>サーブ待ちのサーバーを横にだけ動かす（センターマークの近くからサイドラインまで）。</summary>
+        public void MoveAlongBaseline(int moveX, int speed, ServeCourt court, TennisConfig config)
+        {
+            if (moveX == 0) { return; }
+            var sign = Court.CourtSign(Side, court);
+            var lateral = (Position.X + (moveX * speed)) * sign;
+            lateral = Math.Max(config.ServeSideMin, Math.Min(Court.HalfWidth, lateral));
+            Position = new Vec3(lateral * sign, Position.Y, 0);
+            Facing = moveX;
+        }
 
         /// <summary>
         /// 8 方向に動く。斜めは各成分を 181/256 倍（最低 1）。自分の側の範囲（ネットから <see cref="TennisConfig.NetGap"/> 以上離れ、壁の線の内側）に収める。

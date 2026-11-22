@@ -58,9 +58,9 @@ namespace Game.Unity
             StepUntil(() => M.Phase == MatchPhase.Point && M.PointsPlayed == 1 && M.Rally.Phase == RallyPhase.Toss, "サーブの交代");
             await Shoot(capture, "08-server-change", "1 ポイント後、タイブレークの順で CPU のサーブ（アドサイド）。得点板の ● がサーバー");
 
-            // 早打ちと遅打ち：同じ入球を、理想の Tick より 3 Tick 早く・2 Tick 遅く打つ（3 Tick 遅いとネットにかかる）。
-            await TimedHit(capture, -3, "09-early", "早打ち。理想の打点よりネット寄りで打ち、左へ長く飛ぶ（案内：早い）");
-            await TimedHit(capture, 2, "10-late", "遅打ち。体の横で打ち、右へ低く飛ぶ（案内：遅い）");
+            // 早打ちと遅打ち：同じ入球が届く範囲に入ってから、理想の Tick より 6 Tick 早く・5 Tick 遅く押す（その場で打つ）。
+            await TimedHit(capture, -6, "09-early", "早打ち。理想の打点よりネット寄りで打ち、左へ長く飛ぶ（案内：早い）");
+            await TimedHit(capture, 5, "10-late", "遅打ち。体の横で打ち、右へ低く飛ぶ（案内：遅い）");
 
             // 判定：アウトとネット。
             _game.Flow.Pilot = new IdlePilot();
@@ -115,7 +115,7 @@ namespace Game.Unity
                 contact++;
             }
 
-            _game.Flow.Pilot = new TimedSwingPilot(M.Tick + contact - config.ImpactTicks + shift);
+            _game.Flow.Pilot = new TimedSwingPilot(M.Tick + contact + shift);
             StepUntil(() => M.Rally.LastHitter == Side.Near && M.Ball.Position.Y > 30000, name);
             await Shoot(capture, name, scene);
             StepUntil(() => M.Phase == MatchPhase.Point && M.Rally.Phase != RallyPhase.InPlay, "次のポイント");

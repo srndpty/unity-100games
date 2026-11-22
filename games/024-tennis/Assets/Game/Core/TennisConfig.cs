@@ -41,29 +41,32 @@ namespace Game.Core
         /// <summary>CPU の移動の速さ（5.1 m/s）。</summary>
         public int CpuMoveSpeed = 850;
 
-        /// <summary>振っている間の移動の速さ（%）。</summary>
+        /// <summary>振り抜いている間の移動の速さ（%）。構えて待つ間はふつうに動ける。</summary>
         public int SwingMovePercent = 40;
 
-        /// <summary>振りの長さ。終わるまで次は振れない。</summary>
-        public int SwingTicks = 24;
+        /// <summary>打った（空振りした）後の振り抜きの長さ。終わるまで次は振れない。</summary>
+        public int SwingTicks = 16;
 
-        /// <summary>押してから打点（ラケットが球の位置を通る）までの Tick 数。</summary>
-        public int ImpactTicks = 8;
+        /// <summary>構えて球を待てる Tick 数（1.5 秒）。押した瞬間に球が届く範囲にあればその場で打ち、まだ来ていなければ理想の打点に来るまで待つ。</summary>
+        public int SwingWaitTicks = 90;
 
-        /// <summary>届く範囲（理想の打点からの水平距離、1.3 m）。</summary>
-        public int Reach = 13000;
+        /// <summary>届く範囲（理想の打点からの水平距離、1.8 m）。</summary>
+        public int Reach = 18000;
 
         /// <summary>打てる高さの下限（球の下端、0.1 m）。</summary>
         public int MinHitZ = 1000;
 
-        /// <summary>打てる高さの上限（2.2 m）。</summary>
-        public int MaxHitZ = 22000;
+        /// <summary>打てる高さの上限（2.6 m）。</summary>
+        public int MaxHitZ = 26000;
 
         /// <summary>理想の打点：体の前方（0.5 m）。</summary>
         public int ContactAhead = 5000;
 
-        /// <summary>早打ち・遅打ちのずれが最大（±1000）になる、理想の打点からの縦の距離（1.3 m、届く範囲の端）。</summary>
-        public int TimingSpan = 13000;
+        /// <summary>早打ち・遅打ちのずれが最大（±1000）になる、理想の打点からの縦の距離（1.8 m、届く範囲の端）。</summary>
+        public int TimingSpan = 18000;
+
+        /// <summary>プレイヤーの打球（サーブを含む）の早打ち・遅打ちのずれを何 % に弱めるか（CPU は 100% のまま）。</summary>
+        public int PlayerTimingAssistPercent = 50;
 
         /// <summary>ネットに近づける距離の下限（1 m）。</summary>
         public int NetGap = 10000;
@@ -94,14 +97,14 @@ namespace Game.Core
         /// <summary>左右に狙ったときの横の位置（2.6 m）。</summary>
         public int AimWide = 26000;
 
-        /// <summary>ずれが最大のときの横のずれ（早打ちは打つ人の左、遅打ちは右へ、4 m）。</summary>
-        public int TimingShift = 40000;
+        /// <summary>ずれが最大のときの横のずれ（早打ちは打つ人の左、遅打ちは右へ、3 m）。</summary>
+        public int TimingShift = 30000;
 
         /// <summary>早打ちが最大のときに伸びる深さ（3.6 m）。</summary>
         public int LongError = 36000;
 
-        /// <summary>遅打ちが最大のときに減るネットの余裕（0.9 m）。</summary>
-        public int NetError = 9000;
+        /// <summary>遅打ちが最大のときに縮む深さ（8 m）。同じ時間で手前に落ちるので、低くなってネットにかかりうる。</summary>
+        public int ShortError = 80000;
 
         // ---- サーブ ----
 
@@ -112,7 +115,7 @@ namespace Game.Core
         public int TossSpeed = 735;
 
         /// <summary>サーブを打てるのは、トスの頂点からこの Tick 数以内。ずれはこの幅で ±1000 になる。</summary>
-        public int ServeTimingSpan = 12;
+        public int ServeTimingSpan = 20;
 
         /// <summary>サーブの最高速（50 m/s）。ネットの余裕を満たす中でいちばん平らに打つので、実際はこれより遅い。</summary>
         public int ServeSpeed = 8333;
@@ -132,17 +135,17 @@ namespace Game.Core
         /// <summary>サーブの早打ちが最大のときに伸びる深さ（2 m）。</summary>
         public int ServeLongError = 20000;
 
-        /// <summary>サーブの遅打ちが最大のときに縮む深さ（3 m）。高い打点から短く打つと急に落ちてネットにかかる。</summary>
-        public int ServeShortError = 30000;
-
-        /// <summary>サーブの遅打ちが最大のときに減るネットの余裕（0.8 m）。</summary>
-        public int ServeNetError = 8000;
+        /// <summary>サーブの遅打ちが最大のときに縮む深さ（5 m）。同じ時間で手前に落ちるので、急に落ちてネットにかかる。</summary>
+        public int ServeShortError = 50000;
 
         /// <summary>サーバーの位置：ベースラインの後ろ（0.2 m）。</summary>
         public int ServeBackOffset = 2000;
 
-        /// <summary>サーバーの位置：センターからの横（1 m）。</summary>
+        /// <summary>サーバーの位置：センターからの横（1 m）。ポイントの始めに置く位置。</summary>
         public int ServeSideOffset = 10000;
+
+        /// <summary>サーブ待ちに横へ動けるのは、センターからこの距離（0.3 m）からサイドラインまで。</summary>
+        public int ServeSideMin = 3000;
 
         /// <summary>レシーバーの位置：ベースラインの後ろ（1 m）。</summary>
         public int ReceiveBackOffset = 10000;
@@ -160,8 +163,11 @@ namespace Game.Core
         /// <summary>相手が打ってから動き始めるまで。</summary>
         public int CpuReactionTicks = 8;
 
-        /// <summary>打点の時機のぶれ（±Tick）。大きいほど早打ち・遅打ちのミスが増える（CPU どうしで 1 なら平均 129 本で決着しない、2 なら 6.7 本、3 なら 2.8 本のラリー）。</summary>
-        public int CpuTimingJitter = 2;
+        /// <summary>
+        /// 打点の時機のぶれ（±Tick）。早すぎる分は構えて待つので、ミスは遅れたとき（ネット・右へのアウト）になる。
+        /// 補助つきの自動操縦との 20 試合で、4 なら平均 31 本のラリー、5 なら 15 本（1 試合約 3 分）、6 なら 8 本。
+        /// </summary>
+        public int CpuTimingJitter = 5;
 
         /// <summary>ロブを選ぶ割合（%）。相手がネットに近いときは必ずロブ。</summary>
         public int CpuLobPercent = 12;
@@ -190,12 +196,13 @@ namespace Game.Core
             Require(CpuMoveSpeed, 1, MaxBallSpeed, nameof(CpuMoveSpeed));
             Require(SwingMovePercent, 0, 100, nameof(SwingMovePercent));
             Require(SwingTicks, 1, MaxTicks, nameof(SwingTicks));
-            Require(ImpactTicks, 0, SwingTicks - 1, nameof(ImpactTicks));
+            Require(SwingWaitTicks, 0, MaxTicks, nameof(SwingWaitTicks));
             Require(Reach, 1000, 50000, nameof(Reach));
             Require(MinHitZ, 0, 50000, nameof(MinHitZ));
             Require(MaxHitZ, MinHitZ + 1, 50000, nameof(MaxHitZ));
             Require(ContactAhead, 0, Reach, nameof(ContactAhead));
             Require(TimingSpan, 1, 50000, nameof(TimingSpan));
+            Require(PlayerTimingAssistPercent, 0, 100, nameof(PlayerTimingAssistPercent));
             Require(NetGap, 0, Court.HalfLength, nameof(NetGap));
             Require(AthleteMargin, 0, Court.FenceX - Court.HalfWidth, nameof(AthleteMargin));
             Require(StrokeSpeed, 1, MaxBallSpeed, nameof(StrokeSpeed));
@@ -207,7 +214,7 @@ namespace Game.Core
             Require(AimWide, 0, Court.HalfWidth, nameof(AimWide));
             Require(TimingShift, 0, Court.FenceX, nameof(TimingShift));
             Require(LongError, 0, Court.FenceY, nameof(LongError));
-            Require(NetError, 0, 50000, nameof(NetError));
+            Require(ShortError, 0, Math.Min(StrokeDepth, LobDepth) - 1, nameof(ShortError));
             Require(TossZ, 1, 50000, nameof(TossZ));
             Require(TossSpeed, Gravity, MaxBallSpeed, nameof(TossSpeed));
             Require(ServeTimingSpan, 1, TossApexTick, nameof(ServeTimingSpan));
@@ -218,9 +225,9 @@ namespace Game.Core
             Require(ServeShift, 0, Court.FenceX, nameof(ServeShift));
             Require(ServeLongError, 0, Court.FenceY, nameof(ServeLongError));
             Require(ServeShortError, 0, ServeDepth - 1, nameof(ServeShortError));
-            Require(ServeNetError, 0, 50000, nameof(ServeNetError));
             Require(ServeBackOffset, 0, Court.FenceY - Court.HalfLength - AthleteMargin, nameof(ServeBackOffset));
-            Require(ServeSideOffset, 0, Court.HalfWidth, nameof(ServeSideOffset));
+            Require(ServeSideMin, 0, Court.HalfWidth, nameof(ServeSideMin));
+            Require(ServeSideOffset, ServeSideMin, Court.HalfWidth, nameof(ServeSideOffset));
             Require(ReceiveBackOffset, 0, Court.FenceY - Court.HalfLength - AthleteMargin, nameof(ReceiveBackOffset));
             Require(ReceiveSideOffset, 0, Court.HalfWidth, nameof(ReceiveSideOffset));
             Require(PointGapTicks, 1, MaxTicks, nameof(PointGapTicks));

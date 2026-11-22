@@ -6,7 +6,7 @@ namespace Game.Core
     /// <summary>
     /// CPU の判断。相手が打つと、反応の遅れの後に球の軌跡を予測し（<see cref="BallPredictor"/>、本番と同じ <see cref="Ball.Step"/>）、
     /// 自分のコートで 1 回弾んだ後に打てる高さへ下りてくる Tick を打点に選ぶ。そこを理想の打点にできる位置へ動き、
-    /// 打点の <see cref="TennisConfig.ImpactTicks"/> Tick 前（±ぶれ）に振る。予測でアウト・フォルトになる球は見送る。
+    /// 球が打点に来る Tick（±ぶれ）に振る（早い分は構えて待つので、ミスになるのは遅れたとき）。予測でアウト・フォルトになる球は見送る。
     /// 自分が打った後はベースラインの中央へ戻る。プレイヤー側の自動操縦（App の Autopilot）も同じ判断を使う。
     /// <para>乱数は判断（ぶれ・狙い・ロブ）とサーブで系列を分ける。</para>
     /// </summary>
@@ -173,7 +173,7 @@ namespace Game.Core
             var contact = prediction.Value;
             _stand = me.Clamp(new Vec3(contact.Position.X, contact.Position.Y - (config.ContactAhead * Court.Forward(_side)), 0), config);
             var jitter = _decide.Range(-config.CpuTimingJitter, config.CpuTimingJitter);
-            _pressStep = match.Tick + contact.Ticks - config.ImpactTicks + jitter;
+            _pressStep = match.Tick + contact.Ticks + jitter;
             _aim = _decide.Range(-1, 1);
             var opponent = match.AthleteOf(Court.Other(_side));
             var opponentAtNet = Math.Abs(opponent.Position.Y) < config.CpuLobTrigger;

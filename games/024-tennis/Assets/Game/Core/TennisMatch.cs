@@ -38,9 +38,9 @@ namespace Game.Core
     /// <summary>
     /// 試合：両選手・球・1 ポイントの状態機械（<see cref="Rally"/>）・得点（<see cref="MatchScore"/>）・CPU。
     /// <para>
-    /// 1 Tick の順序：押し始めの判定（サーブ待ちならトス、トス中なら打つ、打ち合いなら振り始め）→ 移動 → 球の 1 Tick と判定
-    /// （トス中に地面に落ちたら持ち直す、打ち合いならネット・バウンド・壁の線）→ 打点の Tick の選手の当たり判定と打球 → 振りを進める
-    /// → ポイントが決まっていれば得点を入れて間を置く。
+    /// 1 Tick の順序：押し始めの判定（サーブ待ちならトス、トス中なら打つ、打ち合いなら構える）→ 移動（サーブ待ちのサーバーは横だけ）
+    /// → 球の 1 Tick と判定（トス中に地面に落ちたら持ち直す、打ち合いならネット・バウンド・壁の線）→ 構えている選手の当たり判定と打球
+    /// → 振りを進める → ポイントが決まっていれば得点を入れて間を置く。
     /// </para>
     /// 乱数は CPU だけが使う（試合のシードから判断とサーブの系列を分ける）。
     /// </summary>
@@ -151,8 +151,8 @@ namespace Game.Core
             Move(Near, near);
             Move(Far, far);
             StepBall();
-            Impact(Near);
-            Impact(Far);
+            Resolve(Near);
+            Resolve(Far);
             Near.AdvanceSwing(_config.SwingTicks);
             Far.AdvanceSwing(_config.SwingTicks);
             if (Rally.Phase == RallyPhase.Over) { EndPoint(); }
@@ -207,6 +207,7 @@ namespace Game.Core
             h.Mix(athlete.SwingTick);
             h.Mix((int)athlete.SwingKind);
             h.Mix(athlete.SwingAim);
+            h.Mix(athlete.Waited);
             h.Mix(athlete.StrokeHeld);
             h.Mix(athlete.LobHeld);
         }
@@ -271,7 +272,7 @@ namespace Game.Core
             }
 
             var server = Rally.Server;
-            var timing = offset * HitWindow.MaxTiming / _config.ServeTimingSpan;
+            var timing = Assist(server, offset * HitWindow.MaxTiming / _config.ServeTimingSpan);
             var aim = command.MoveX * Court.RightOf(server);
             var velocity = Shots.Plan(server, ShotKind.Serve, aim, timing, Ball.Position, Rally.ServeCourt, _config);
             Ball.Place(Ball.Position, velocity);
@@ -281,11 +282,22 @@ namespace Game.Core
 
         private void Move(Athlete athlete, AthleteCommand command)
         {
-            // サーバーはサーブを打つまで動かない。
-            if (athlete.Side == Rally.Server && (Rally.Phase == RallyPhase.Ready || Rally.Phase == RallyPhase.Toss)) { return; }
-
             var speed = athlete.Side == Side.Near ? _config.MoveSpeed : _config.CpuMoveSpeed;
-            if (athlete.IsSwinging) { speed = Math.Max(1, speed * _config.SwingMovePercent / 100); }
+            if (athlete.Side == Rally.Server)
+            {
+                // サーブ待ちのサーバーはベースラインに沿って横にだけ動き（立ち位置を選ぶ）、球も手と一緒に動く。トス中は動かない。
+                if (Rally.Phase == RallyPhase.Ready)
+                {
+                    athlete.MoveAlongBaseline(command.MoveX, speed, Rally.ServeCourt, _config);
+                    Ball.Place(athlete.Position.WithZ(_config.TossZ), Vec3.Zero);
+                    return;
+                }
+
+                if (Rally.Phase == RallyPhase.Toss) { return; }
+            }
+
+            // 振り抜いている間だけ遅くなる（構えて待つ間はふつうに動ける）。
+            if (athlete.IsSwinging && !athlete.IsReady) { speed = Math.Max(1, speed * _config.SwingMovePercent / 100); }
             athlete.Move(command.MoveX, command.MoveY, speed, _config);
         }
 
@@ -322,24 +334,49 @@ namespace Game.Core
             }
         }
 
-        private void Impact(Athlete athlete)
+        /// <summary>
+        /// 構えている選手の当たり判定。押した Tick に球が届く範囲にあればその場で打つ（球の位置で早打ち・遅打ち）。
+        /// まだ向かってくる途中なら待ち、球が理想の打点に来たら打つ。届かないまま通り過ぎた・待ちきれなかったら空振り。
+        /// </summary>
+        private void Resolve(Athlete athlete)
         {
-            if (athlete.SwingTick != _config.ImpactTicks || Rally.Phase != RallyPhase.InPlay) { return; }
-
-            var check = HitWindow.Check(athlete, Ball, Rally.Incoming == athlete.Side, Rally.ServeInFlight, _config);
-            if (check != HitCheck.Ok)
+            if (!athlete.IsReady) { return; }
+            if (Rally.Phase != RallyPhase.InPlay)
             {
-                _events |= MatchEvents.Whiff;
+                athlete.Release();
                 return;
             }
 
-            var timing = HitWindow.Timing(athlete, Ball.Position, _config);
-            var velocity = Shots.Plan(athlete.Side, athlete.SwingKind, athlete.SwingAim, timing, Ball.Position, Rally.ServeCourt, _config);
-            Ball.Place(Ball.Position, velocity);
-            Rally.Hit(athlete.Side);
-            LastTiming = timing;
-            _events |= athlete.SwingKind == ShotKind.Lob ? MatchEvents.Lob : MatchEvents.Stroke;
+            var check = HitWindow.Check(athlete, Ball, Rally.Incoming == athlete.Side, Rally.ServeInFlight, _config);
+            var coming = StillComing(athlete);
+            if (check == HitCheck.Ok && (athlete.Waited == 0 || !coming))
+            {
+                var timing = Assist(athlete.Side, HitWindow.Timing(athlete, Ball.Position, _config));
+                var velocity = Shots.Plan(athlete.Side, athlete.SwingKind, athlete.SwingAim, timing, Ball.Position, Rally.ServeCourt, _config);
+                Ball.Place(Ball.Position, velocity);
+                Rally.Hit(athlete.Side);
+                LastTiming = timing;
+                athlete.Release();
+                _events |= athlete.SwingKind == ShotKind.Lob ? MatchEvents.Lob : MatchEvents.Stroke;
+                return;
+            }
+
+            if (coming && athlete.Waited < _config.SwingWaitTicks) { return; }
+            athlete.Release();
+            _events |= MatchEvents.Whiff;
         }
+
+        /// <summary>球が選手へ向かってくる途中で、まだ理想の打点より前（ネット寄り）にあるか。</summary>
+        private bool StillComing(Athlete athlete)
+        {
+            if (Rally.Incoming != athlete.Side || Ball.IsDead) { return false; }
+            var forward = Court.Forward(athlete.Side);
+            var ahead = ((long)Ball.Position.Y - athlete.Position.Y) * forward;
+            return ahead > _config.ContactAhead && Ball.Velocity.Y * forward < 0;
+        }
+
+        /// <summary>プレイヤー（手前）の打球のずれを補助で弱める。CPU はそのまま。</summary>
+        private int Assist(Side side, int timing) => side == Side.Near ? timing * _config.PlayerTimingAssistPercent / 100 : timing;
 
         private void EndPoint()
         {
