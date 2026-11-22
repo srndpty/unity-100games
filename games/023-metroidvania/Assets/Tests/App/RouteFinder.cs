@@ -38,7 +38,7 @@ namespace Game.App.Tests
             new[]
             {
                 new Goal("破壊ショットを取る", e => e.State.Has(Ability.BreakShot), 11, 7),
-                new Goal("セーブ像に触れる", e => e.Save.Room == Rooms.Tower, 20, 2),
+                new Goal("破壊ショットを持ってセーブ像に触れる", e => e.Save.Room == Rooms.Tower && e.Save.State.Has(Ability.BreakShot), 20, 2),
                 new Goal("ボスの部屋へ", e => e.RoomIndex == Rooms.Lair, 39, 2),
             },
         };

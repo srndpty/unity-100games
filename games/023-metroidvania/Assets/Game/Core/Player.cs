@@ -142,6 +142,9 @@ namespace Game.Core
         /// <summary>無敵の残り Tick 数（被弾の直後）。</summary>
         public int InvincibleRemaining => _invincible.Remaining;
 
+        /// <summary>押し戻しの残り Tick 数（横入力が効かない間。描画では被弾の姿にする）。</summary>
+        public int KnockbackRemaining => _knockback.Remaining;
+
         /// <summary>空中で二段ジャンプを使ったか（接地で戻る）。</summary>
         public bool AirJumpUsed => _airJumpUsed;
 

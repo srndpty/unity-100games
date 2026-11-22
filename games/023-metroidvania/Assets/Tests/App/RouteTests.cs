@@ -38,10 +38,12 @@ namespace Game.App.Tests
             Assert.That(e.Deaths, Is.Zero);
             Assert.That(e.State.Has(Ability.DoubleJump | Ability.BreakShot), Is.True);
             Assert.That(e.Save.Room, Is.EqualTo(Rooms.Tower), "塔の像でセーブした");
+            Assert.That(e.Save.State.Has(Ability.BreakShot), Is.True, "破壊ショットを取ってからセーブした");
+            Assert.That(e.Save.State.BrokenCount, Is.Zero, "ひびの壁はセーブの後に壊した");
 
             // 整数だけで動くので、.NET と Mono（Unity）で同じ最終状態になる。
-            Assert.That(e.ElapsedTicks, Is.EqualTo(2542));
-            Assert.That(e.Hash(), Is.EqualTo(0x905458DBu));
+            Assert.That(e.ElapsedTicks, Is.EqualTo(2565));
+            Assert.That(e.Hash(), Is.EqualTo(0xD0072BE8u));
         }
 
         [Test]
