@@ -71,7 +71,7 @@ namespace Game.Core
 
             // 押し始めでしか振れないので、続けて押すときは 1 Tick 離す。
             var press = command.Stroke || command.Lob;
-            if (press && _pressedLast) { command = new AthleteCommand(command.MoveX, command.MoveY, false, false); press = false; }
+            if (press && _pressedLast) { command = new AthleteCommand(command.MoveX, command.MoveY, false, false, command.AimX); press = false; }
             _pressedLast = press;
             return command;
         }

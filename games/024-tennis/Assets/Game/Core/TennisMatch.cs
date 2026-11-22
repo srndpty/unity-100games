@@ -255,7 +255,7 @@ namespace Game.Core
                     HitServe(command);
                     break;
                 case RallyPhase.InPlay:
-                    athlete.StartSwing(press.Value, command.MoveX * Court.RightOf(athlete.Side));
+                    athlete.StartSwing(press.Value, command.AimX * Court.RightOf(athlete.Side));
                     break;
             }
         }
@@ -273,7 +273,7 @@ namespace Game.Core
 
             var server = Rally.Server;
             var timing = Assist(server, offset * HitWindow.MaxTiming / _config.ServeTimingSpan);
-            var aim = command.MoveX * Court.RightOf(server);
+            var aim = command.AimX * Court.RightOf(server);
             var velocity = Shots.Plan(server, ShotKind.Serve, aim, timing, Ball.Position, Rally.ServeCourt, _config);
             Ball.Place(Ball.Position, velocity);
             LastTiming = timing;

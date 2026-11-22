@@ -24,7 +24,7 @@ dev capture 024  # 証跡を evidence/ に撮る（画像は captures/<画像世
 
 | 入力 | タイトル | プレイ中 | 一時停止 | 結果 |
 |---|---|---|---|---|
-| ← → ↑ ↓ / A D W S | — | 動く。サーブ待ちのサーバーは ← → でベースラインに沿って立ち位置を選ぶ（トスを上げたら動けない）。押した瞬間の ← → は狙い | — | — |
+| ← → ↑ ↓ / A D W S | — | 動く。サーブ待ちのサーバーは ← → でベースラインに沿って立ち位置を選ぶ（トスを上げたら動けない）。打球キーを押した瞬間の ← → は狙い（同じ Tick の中で後から変えても狙いは変わらない） | — | — |
 | Z / J | — | ストローク（球が来る前に押せば構えて待つ）。サーブ待ちではトスを上げ、トス中にもう一度でサーブ | — | — |
 | X / K | — | ロブ | — | — |
 | Enter | はじめる | — | つづける | もう一度 |
@@ -82,8 +82,8 @@ dev capture 024  # 証跡を evidence/ に撮る（画像は captures/<画像世
 
 | 種類 | 場所 | 件数 | 実行 |
 |---|---|---|---|
-| Core | `Assets/Tests/Core/` | 144 | `dev test`（.NET）／`dev test 024 -Unity`（Mono） |
-| App | `Assets/Tests/App/` | 18 | 同上 |
+| Core | `Assets/Tests/Core/` | 146 | `dev test`（.NET）／`dev test 024 -Unity`（Mono） |
+| App | `Assets/Tests/App/` | 23 | 同上 |
 | パッケージ | `packages/com.games100.tile-motion/Tests/` | 10 | `dev test 024 -Unity`（Mono） |
 | PlayMode | `Assets/Tests/Unity/` | 33（実シーン 17、共通証跡公開 16） | `dev test 024 -Unity -Mode PlayMode` |
 

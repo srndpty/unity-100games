@@ -8,11 +8,15 @@ namespace Game.Core
     /// </summary>
     public readonly struct AthleteCommand : IEquatable<AthleteCommand>
     {
-        public AthleteCommand(int moveX, int moveY, bool stroke, bool lob)
+        /// <param name="aimX">押し始めの Tick に使う狙いの左右。省略すると <paramref name="moveX"/> と同じ。</param>
+        public AthleteCommand(int moveX, int moveY, bool stroke, bool lob, int? aimX = null)
         {
             if (moveX < -1 || moveX > 1) { throw new ArgumentOutOfRangeException(nameof(moveX), moveX, "-1・0・1 のどれかにしてください。"); }
             if (moveY < -1 || moveY > 1) { throw new ArgumentOutOfRangeException(nameof(moveY), moveY, "-1・0・1 のどれかにしてください。"); }
+            var aim = aimX ?? moveX;
+            if (aim < -1 || aim > 1) { throw new ArgumentOutOfRangeException(nameof(aimX), aim, "-1・0・1 のどれかにしてください。"); }
             MoveX = moveX;
+            AimX = aim;
             MoveY = moveY;
             Stroke = stroke;
             Lob = lob;
@@ -20,6 +24,9 @@ namespace Game.Core
 
         /// <summary>画面の左 -1・右 1（x の向き）。</summary>
         public int MoveX { get; }
+
+        /// <summary>ストローク・ロブ・サーブを押した瞬間の狙い。画面の左 -1・右 1。移動の向きとは別に、押した時点の ← → を保つ。</summary>
+        public int AimX { get; }
 
         /// <summary>手前 -1・奥 1（y の向き）。</summary>
         public int MoveY { get; }
@@ -32,11 +39,11 @@ namespace Game.Core
 
         public static AthleteCommand Idle => default;
 
-        public bool Equals(AthleteCommand other) => MoveX == other.MoveX && MoveY == other.MoveY && Stroke == other.Stroke && Lob == other.Lob;
+        public bool Equals(AthleteCommand other) => MoveX == other.MoveX && MoveY == other.MoveY && Stroke == other.Stroke && Lob == other.Lob && AimX == other.AimX;
 
         public override bool Equals(object? obj) => obj is AthleteCommand other && Equals(other);
 
-        public override int GetHashCode() => HashCode.Combine(MoveX, MoveY, Stroke, Lob);
+        public override int GetHashCode() => HashCode.Combine(MoveX, MoveY, Stroke, Lob, AimX);
 
         public static bool operator ==(AthleteCommand left, AthleteCommand right) => left.Equals(right);
 

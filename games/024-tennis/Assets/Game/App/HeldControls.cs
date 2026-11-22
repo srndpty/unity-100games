@@ -8,6 +8,7 @@ namespace Game.App
     /// 押している操作キーを、Tick ごとの <see cref="AthleteCommand"/> に変える。
     /// 左右（上下）を両方押しているときは後から押したほうを使う（離すと、まだ押しているほうに戻る）。
     /// ストロークとロブは、次の Tick までに押して離しても 1 Tick は押したことにする（短い押下を取りこぼさない）。
+    /// 狙いの左右は、その Tick で最初にストロークかロブを押した時点の左右を使う（同じ Tick の中で後から方向を変えても狙いは変わらない）。
     /// </summary>
     public sealed class HeldControls
     {
@@ -17,6 +18,7 @@ namespace Game.App
         private bool _strokeLatched;
         private bool _lobHeld;
         private bool _lobLatched;
+        private int? _aim;
 
         /// <summary>左 -1・なし 0・右 1。</summary>
         public int Horizontal => _horizontal.Count == 0 ? 0 : _horizontal[_horizontal.Count - 1];
@@ -29,10 +31,12 @@ namespace Game.App
             switch (control)
             {
                 case Control.Stroke:
+                    _aim ??= Horizontal;
                     _strokeHeld = true;
                     _strokeLatched = true;
                     break;
                 case Control.Lob:
+                    _aim ??= Horizontal;
                     _lobHeld = true;
                     _lobLatched = true;
                     break;
@@ -75,9 +79,10 @@ namespace Game.App
         /// <summary>この Tick の操作を取り出す。短い押下の記録はここで消える。</summary>
         public AthleteCommand TakeTickCommand()
         {
-            var command = new AthleteCommand(Horizontal, Vertical, _strokeHeld || _strokeLatched, _lobHeld || _lobLatched);
+            var command = new AthleteCommand(Horizontal, Vertical, _strokeHeld || _strokeLatched, _lobHeld || _lobLatched, _aim);
             _strokeLatched = false;
             _lobLatched = false;
+            _aim = null;
             return command;
         }
 
@@ -89,6 +94,7 @@ namespace Game.App
             _strokeLatched = false;
             _lobHeld = false;
             _lobLatched = false;
+            _aim = null;
         }
 
         private static void Push(List<int> list, int value)

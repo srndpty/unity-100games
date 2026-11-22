@@ -29,8 +29,9 @@ namespace Game.Core.Tests
 
         /// <summary>
         /// 手前の選手のサーブ待ちから、トスを上げて頂点から <paramref name="offset"/> Tick ずらした Tick に打つ。奥は何もしない。
+        /// <paramref name="hit"/> を渡すと、打つ Tick の操作をそれにする。
         /// </summary>
-        public static void NearServe(TennisMatch match, int offset = 0, int aim = 0)
+        public static void NearServe(TennisMatch match, int offset = 0, int aim = 0, AthleteCommand? hit = null)
         {
             if (match.Rally.Phase != RallyPhase.Ready || match.Rally.Server != Side.Near) { throw new InvalidOperationException("手前のサーブ待ちではありません。"); }
             match.Step(Press(), AthleteCommand.Idle);
@@ -40,7 +41,7 @@ namespace Game.Core.Tests
                 match.Step(AthleteCommand.Idle, AthleteCommand.Idle);
             }
 
-            match.Step(Press(ShotKind.Stroke, aim), AthleteCommand.Idle);
+            match.Step(hit ?? Press(ShotKind.Stroke, aim), AthleteCommand.Idle);
         }
 
         /// <summary>球だけを飛ばし、最初の出来事を返す。</summary>

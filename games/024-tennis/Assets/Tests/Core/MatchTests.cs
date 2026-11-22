@@ -108,6 +108,35 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void ShotAimUsesTheAimOfThePress_NotTheMoveDirection()
+        {
+            static Vec3 ServeBounce(AthleteCommand hit)
+            {
+                var match = new TennisMatch(TestKit.Config(), seed: 1);
+                TestKit.NearServe(match, hit: hit);
+                TestKit.IdleUntil(match, m => m.LastBounce.HasValue || m.Phase != MatchPhase.Point);
+                return match.LastBounce!.Value;
+            }
+
+            var right = ServeBounce(TestKit.Press(ShotKind.Stroke, 1));
+            var center = ServeBounce(TestKit.Press(ShotKind.Stroke, 0));
+            Assert.That(right.X, Is.Not.EqualTo(center.X), "前提：狙いで着地が変わる");
+            Assert.That(ServeBounce(new AthleteCommand(0, 0, true, false, aimX: 1)), Is.EqualTo(right), "移動なし・狙い右");
+            Assert.That(ServeBounce(new AthleteCommand(1, 0, true, false, aimX: 0)), Is.EqualTo(center), "移動右・狙い中央");
+
+            var match = new TennisMatch(TestKit.Config(), seed: 1);
+            match.StageRally(Side.Far, new Vec3(0, 100000, 9000), new Vec3(0, -500, 0), new Vec3(0, -112000, 0), new Vec3(0, 120000, 0));
+            match.Step(new AthleteCommand(-1, 0, true, false, aimX: 1), AthleteCommand.Idle);
+            Assert.That(match.Near.SwingAim, Is.EqualTo(Court.RightOf(Side.Near)), "ストロークも押した瞬間の狙い");
+        }
+
+        [Test]
+        public void AimOutsideTheRangeIsRejected()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => _ = new AthleteCommand(0, 0, true, false, aimX: 2));
+        }
+
+        [Test]
         public void AthleteStaysOnItsOwnSide()
         {
             var config = TestKit.Config();
