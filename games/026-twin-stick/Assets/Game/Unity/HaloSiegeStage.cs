@@ -31,8 +31,8 @@ namespace Game.Unity
         [SerializeField] private Sprite _bouncer;
         [SerializeField] private Sprite _lancer;
 
-        /// <summary>撃たれた直後の敵の色。</summary>
-        [SerializeField] private Color _flashTint = new(1f, 1f, 1f, 1f);
+        /// <summary>撃たれた直後の敵の色（通常の白と見分けられる色にする）。</summary>
+        [SerializeField] private Color _flashTint = new(1f, .3f, .3f, 1f);
 
         /// <summary>予告の色（<see cref="EnemyKind"/> の順）。</summary>
         [SerializeField] private Color[] _warningTints = { new(1f, .35f, .8f, 1f), new(.4f, 1f, .5f, 1f), new(1f, .6f, .2f, 1f) };

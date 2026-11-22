@@ -242,6 +242,45 @@ namespace Game.Unity.Tests
             Assert.That(Stage.VisibleWarnings + Stage.VisibleEnemies, Is.EqualTo(R.Enemies.Count));
         }
 
+        /// <summary>撃たれた敵は点滅の間だけ色が変わる（Prefab に保存した色で確かめる。レビュー P3-1）。</summary>
+        [UnityTest]
+        public IEnumerator HitEnemy_IsTintedWhileFlashing()
+        {
+            yield return StartGame();
+            Time.timeScale = 0;
+            var lancer = R.Place(EnemyKind.Lancer, R.Ship.Position + new Vec2i(3 * Units.Tile, 0));
+            Step(1);
+            var body = EnemyRenderer(lancer);
+            Assert.That(body.color, Is.EqualTo(Color.white), "撃たれる前は通常の色");
+
+            for (var i = 0; i < 60 && !lancer.IsFlashing; i++)
+            {
+                R.Step(new ShipCommand(0, 0, true, lancer.Position));
+                _game.Render();
+            }
+
+            Assert.That(lancer.IsFlashing, Is.True);
+            Assert.That(R.Enemies, Has.Member(lancer), "体力 3 の Lancer は 1 発では倒れない");
+            Assert.That(EnemyRenderer(lancer).color, Is.Not.EqualTo(Color.white), "撃たれた直後は色が変わる");
+
+            while (lancer.IsFlashing) { R.Step(new ShipCommand(0, 0, false, lancer.Position)); }
+            _game.Render();
+            Assert.That(EnemyRenderer(lancer).color, Is.EqualTo(Color.white), "点滅が終われば戻る");
+        }
+
+        /// <summary>敵の位置に描かれている SpriteRenderer。</summary>
+        private SpriteRenderer EnemyRenderer(Enemy enemy)
+        {
+            var at = Stage.transform.TransformPoint(HaloSiegeStage.Local(enemy.Position));
+            foreach (var renderer in Stage.GetComponentsInChildren<SpriteRenderer>())
+            {
+                if (renderer.enabled && renderer.sprite == Stage.EnemySprite(enemy.Kind) && Vector2.Distance(renderer.transform.position, at) < .001f) { return renderer; }
+            }
+
+            Assert.Fail("敵が描かれていない");
+            return null;
+        }
+
         [UnityTest]
         public IEnumerator Hurt_DimsTheShipWhileInvincible_AndTheHudShowsLives()
         {

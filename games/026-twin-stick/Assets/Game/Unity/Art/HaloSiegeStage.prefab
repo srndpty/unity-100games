@@ -15378,7 +15378,7 @@ MonoBehaviour:
   _chaser: {fileID: 21300000, guid: de08c53d09f1b9e4da40d5849abaadf8, type: 3}
   _bouncer: {fileID: 21300000, guid: 9fd30489775bfca49ba3fcaaa5d03fac, type: 3}
   _lancer: {fileID: 21300000, guid: 7c69cc483fc12e547b530d2a8c1c06a1, type: 3}
-  _flashTint: {r: 1, g: 1, b: 1, a: 1}
+  _flashTint: {r: 1, g: 0.3, b: 0.3, a: 1}
   _warningTints:
   - {r: 1, g: 0.35, b: 0.8, a: 1}
   - {r: 0.4, g: 1, b: 0.5, a: 1}

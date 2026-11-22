@@ -250,43 +250,66 @@ namespace Game.Core
             _events |= RunEvents.Fired;
         }
 
-        /// <summary>弾ごとに、Tick の中で最初に触れた敵 1 体にだけ当てる。当たった弾はアリーナの外に出た弾と一緒に消す。</summary>
+        /// <summary>
+        /// 弾の当たりを、Tick の中で触れた時刻の順に解決する。弾 1 発は最初に触れた敵 1 体にだけ当たって消える。
+        /// 弾ごとに最初の接触の候補を求め、全弾の候補からいちばん早いものを当てる。その敵が倒れたら、同じ敵を狙っていた弾だけ
+        /// 次の候補を探し直す（倒れた敵は素通りする）。同じ時刻なら古い弾（リストの前）を先に、1 発の弾が同じ時刻に 2 体へ触れるなら
+        /// 先に出た敵（リストの前）に当てる。当たらずにアリーナの外に出た弾も消す。
+        /// </summary>
         private void ResolveBullets(Vec2i[] bulletStarts, Vec2i[] enemyStarts)
         {
+            var count = _bullets.Count;
+            var spent = new bool[count];
+            var touches = new Touch[count];
+            var targets = new int[count];
+            for (var b = 0; b < count; b++) { targets[b] = FirstTarget(b, bulletStarts, enemyStarts, out touches[b]); }
+
+            while (true)
+            {
+                var next = -1;
+                for (var b = 0; b < count; b++)
+                {
+                    if (!spent[b] && targets[b] >= 0 && (next < 0 || touches[b].IsEarlierThan(touches[next]))) { next = b; }
+                }
+
+                if (next < 0) { break; }
+                var enemy = targets[next];
+                spent[next] = true;
+                targets[next] = -1;
+                Damage(_enemies[enemy]);
+                if (_enemies[enemy].Health > 0) { continue; }
+                for (var b = 0; b < count; b++)
+                {
+                    if (!spent[b] && targets[b] == enemy) { targets[b] = FirstTarget(b, bulletStarts, enemyStarts, out touches[b]); }
+                }
+            }
+
             var arena = new Rect(0, 0, _config.ArenaWidth, _config.ArenaHeight);
-            var spent = new bool[_bullets.Count];
-            for (var b = 0; b < _bullets.Count; b++)
+            for (var b = count - 1; b >= 0; b--)
             {
-                var bullet = _bullets[b];
-                var target = -1;
-                var first = Touch.None;
-                for (var e = 0; e < _enemies.Count; e++)
-                {
-                    var enemy = _enemies[e];
-                    if (!enemy.IsActive || enemy.Health <= 0) { continue; }
-                    var touch = Sweep.First(bulletStarts[b], bullet.Position, enemyStarts[e], enemy.Position, _config.BulletRadius + enemy.Radius);
-                    if (touch.IsEarlierThan(first))
-                    {
-                        first = touch;
-                        target = e;
-                    }
-                }
+                if (spent[b] || !arena.Contains(_bullets[b].Position)) { _bullets.RemoveAt(b); }
+            }
+        }
 
-                if (target >= 0)
+        /// <summary>弾 <paramref name="b"/> が Tick の中で最初に触れる、生きている敵の番号（なければ -1）。</summary>
+        private int FirstTarget(int b, Vec2i[] bulletStarts, Vec2i[] enemyStarts, out Touch first)
+        {
+            var bullet = _bullets[b];
+            var target = -1;
+            first = Touch.None;
+            for (var e = 0; e < _enemies.Count; e++)
+            {
+                var enemy = _enemies[e];
+                if (!enemy.IsActive || enemy.Health <= 0) { continue; }
+                var touch = Sweep.First(bulletStarts[b], bullet.Position, enemyStarts[e], enemy.Position, _config.BulletRadius + enemy.Radius);
+                if (touch.IsEarlierThan(first))
                 {
-                    spent[b] = true;
-                    Damage(_enemies[target]);
-                }
-                else if (!arena.Contains(bullet.Position))
-                {
-                    spent[b] = true;
+                    first = touch;
+                    target = e;
                 }
             }
 
-            for (var b = _bullets.Count - 1; b >= 0; b--)
-            {
-                if (spent[b]) { _bullets.RemoveAt(b); }
-            }
+            return target;
         }
 
         private void Damage(Enemy enemy)

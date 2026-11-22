@@ -211,7 +211,8 @@ namespace Game.Core
             Require(DurationTicks, 1, MaxDurationTicks, nameof(DurationTicks));
             Require(Lives, 1, MaxLives, nameof(Lives));
             Require(InvincibleTicks, 1, MaxStatusTicks, nameof(InvincibleTicks));
-            Require(ShipRadius, 1, MaxRadius, nameof(ShipRadius));
+            // 自機はアリーナの外周で止める（中心を [半径, 幅 - 半径] に制限する）。上下限が逆転しないよう、直径はアリーナの短いほうの辺以下にする。
+            Require(ShipRadius, 1, Math.Min(MaxRadius, Math.Min(ArenaWidth, ArenaHeight) / 2), nameof(ShipRadius));
             Require(ShipSpeed, 1, MaxSpeed, nameof(ShipSpeed));
             Require(FireIntervalTicks, 1, MaxStatusTicks, nameof(FireIntervalTicks));
             Require(BulletSpeed, 1, MaxSpeed, nameof(BulletSpeed));
