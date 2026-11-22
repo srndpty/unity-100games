@@ -1,0 +1,27 @@
+.hud { position: absolute; width: 100%; height: 100%; color: rgb(250, 236, 214); justify-content: center; align-items: center; }
+.stats { position: absolute; left: 0; right: 0; top: 0; height: 60px; padding: 0 24px; flex-direction: row; align-items: center; background-color: rgba(28, 14, 10, 0.86); border-bottom-width: 2px; border-color: rgb(170, 100, 60); }
+.stat { font-size: 24px; -unity-font-style: bold; margin-right: 30px; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(14, 8, 6); }
+.room { color: rgb(255, 214, 140); min-width: 120px; }
+.health { color: rgb(255, 110, 110); letter-spacing: 2px; }
+.keys { color: rgb(255, 214, 90); }
+.boss-key { color: rgb(110, 90, 80); font-size: 20px; padding: 2px 10px; border-width: 1px; border-color: rgb(90, 70, 60); border-radius: 8px; }
+.boss-key.owned { color: rgb(255, 190, 170); border-color: rgb(230, 90, 80); background-color: rgba(140, 40, 40, 0.6); }
+.pause { position: absolute; right: 20px; top: 7px; height: 46px; width: 170px; margin: 0; font-size: 20px; }
+.map { position: relative; flex-shrink: 0; }
+.minimap { position: absolute; right: 210px; top: 6px; }
+.bigmap { align-self: center; margin-top: 20px; margin-bottom: 8px; }
+.map-room { position: absolute; background-color: rgb(90, 56, 40); border-width: 2px; border-color: rgb(170, 110, 70); border-radius: 3px; }
+.map-boss { background-color: rgb(120, 30, 40); border-color: rgb(220, 90, 90); }
+.map-cleared { background-color: rgb(90, 80, 40); border-color: rgb(230, 200, 110); }
+.map-current { background-color: rgb(255, 214, 140); border-color: rgb(255, 250, 220); }
+.map-link { position: absolute; background-color: rgb(190, 140, 90); }
+.map-link-locked { background-color: rgb(255, 210, 60); }
+.map-link-boss { background-color: rgb(230, 50, 50); }
+.toast { position: absolute; top: 76px; padding: 10px 28px; font-size: 24px; -unity-font-style: bold; color: rgb(255, 236, 190); background-color: rgba(28, 14, 10, 0.9); border-radius: 12px; border-width: 2px; border-color: rgb(220, 160, 90); }
+.panel { width: 760px; padding: 30px 40px; background-color: rgba(32, 16, 12, 0.94); border-radius: 18px; border-width: 2px; border-color: rgb(190, 110, 70); }
+.headline { font-size: 52px; -unity-font-style: bold; color: rgb(255, 200, 120); -unity-text-align: middle-center; white-space: normal; }
+.message { margin-top: 14px; margin-bottom: 14px; font-size: 22px; white-space: normal; -unity-text-align: middle-center; }
+.buttons { align-items: stretch; }
+Button { height: 52px; margin: 8px 0 0 0; font-size: 22px; color: rgb(250, 236, 214); background-color: rgb(96, 50, 34); border-color: rgb(190, 120, 80); border-width: 1px; border-radius: 10px; }
+Button:hover { background-color: rgb(116, 62, 42); }
+Button:active { background-color: rgb(136, 74, 50); }

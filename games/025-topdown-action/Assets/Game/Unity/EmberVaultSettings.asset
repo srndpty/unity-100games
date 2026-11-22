@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 403c97cb868a87243a2f05a458cb3ec9, type: 3}
+  m_Name: EmberVaultSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.EmberVaultSettings
+  Rules:
+    HeroSpeed: 22
+    SwingMoveSpeed: 6
+    MaxHealth: 6
+    SwingTicks: 16
+    SwingActiveFrom: 3
+    SwingActiveTo: 10
+    SwordReach: 224
+    SwordWidth: 320
+    RollTicks: 18
+    RollSpeed: 40
+    RollInvulnTicks: 12
+    RollCooldownTicks: 20
+    InvulnTicks: 60
+    KnockbackTicks: 8
+    KnockbackSpeed: 40
+    EnemyInvulnTicks: 12
+    EnemyKnockbackTicks: 6
+    EnemyKnockbackSpeed: 40
+    ContactDamage: 1
+    ShotDamage: 1
+    SwordDamage: 1
+    SlimeHealth: 2
+    SlimeSpeed: 8
+    SlimeMinTicks: 20
+    SlimeMaxTicks: 60
+    SpitterHealth: 2
+    SpitterFireTicks: 90
+    SpitterShotSpeed: 36
+    ChargerHealth: 3
+    ChargerWindupTicks: 20
+    ChargerSpeed: 56
+    ChargerStunTicks: 50
+    BossHealth: 12
+    BossWalkTicks: 120
+    BossWalkSpeed: 10
+    BossVolleyTicks: 50
+    BossShotSpeed: 32
+    BossWindupTicks: 30
+    BossChargeSpeed: 64
+    BossStunTicks: 70
+    TransitionTicks: 30
+  Volume: 0.12
+  ToastTicks: 150

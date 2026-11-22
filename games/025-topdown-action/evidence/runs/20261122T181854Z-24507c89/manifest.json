@@ -1,0 +1,95 @@
+{
+    "Product": "EMBER VAULT",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "b9abe520e1cd45e3933380a5b7b52dfc",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-22T18:18:52.8699740Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"HeroSpeed\":22,\"SwingMoveSpeed\":6,\"MaxHealth\":6,\"SwingTicks\":16,\"SwingActiveFrom\":3,\"SwingActiveTo\":10,\"SwordReach\":224,\"SwordWidth\":320,\"RollTicks\":18,\"RollSpeed\":40,\"RollInvulnTicks\":12,\"RollCooldownTicks\":20,\"InvulnTicks\":60,\"KnockbackTicks\":8,\"KnockbackSpeed\":40,\"EnemyInvulnTicks\":12,\"EnemyKnockbackTicks\":6,\"EnemyKnockbackSpeed\":40,\"ContactDamage\":1,\"ShotDamage\":1,\"SwordDamage\":1,\"SlimeHealth\":2,\"SlimeSpeed\":8,\"SlimeMinTicks\":20,\"SlimeMaxTicks\":60,\"SpitterHealth\":2,\"SpitterFireTicks\":90,\"SpitterShotSpeed\":36,\"ChargerHealth\":3,\"ChargerWindupTicks\":20,\"ChargerSpeed\":56,\"ChargerStunTicks\":50,\"BossHealth\":12,\"BossWalkTicks\":120,\"BossWalkSpeed\":10,\"BossVolleyTicks\":50,\"BossShotSpeed\":32,\"BossWindupTicks\":30,\"BossChargeSpeed\":64,\"BossStunTicks\":70,\"TransitionTicks\":30},\"Volume\":0.11999999731779099,\"ToastTicks\":150}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "b62203b9f2f85c3ce140d7bba4b8625662c7815ebe36ce3cb4035866fd61d362",
+            "Note": "タイトル（入口の配置を Stage Prefab のまま描く。試合はまだない）"
+        },
+        {
+            "File": "02-start.jpg",
+            "Sha256": "14ac160ed0faa75f877c8d872e20b60e4ad8a522d3b0e9672464844444528f7e",
+            "Note": "入口、試合の開始直後。入口、経過 0 Tick、自機 (2592, 288)、体力 6、小鍵 0、倒れた 0"
+        },
+        {
+            "File": "03-roll.jpg",
+            "Sha256": "cc599b9f00d2587543a51de6a61532e5e81fdfdec527f6338ad7bd103d9fc1a4",
+            "Note": "東の間。射手の弾を回避ロールでかわす（ロールの始めの 12 Tick は無敵）。東の間、経過 183 Tick、自機 (514, 1312)、体力 6、小鍵 0、倒れた 0"
+        },
+        {
+            "File": "04-chest.jpg",
+            "Sha256": "a5dc86f9e748db1e19b4e5c26e15b8cea04230fafe7ec2fbbff80bfa0c5087aa",
+            "Note": "東の間の宝箱を開けて小鍵を手に入れた。東の間、経過 371 Tick、自機 (2549, 1637)、体力 6、小鍵 1、倒れた 0"
+        },
+        {
+            "File": "05-transition.jpg",
+            "Sha256": "97996c434b57677b55d8f82391f98a13fc730a9a9c68f6fcf7f8fa2bb1538ebb",
+            "Note": "部屋の切り替え（スクロール）の途中。入力・被弾・敵の動きは止まる。入口、経過 502 Tick、自機 (4896, 1312)、体力 6、小鍵 1、倒れた 0"
+        },
+        {
+            "File": "06-sword.jpg",
+            "Sha256": "16c2360617219171049abf56ce9a547e7589f027096389ce1e663d1243a6fe60",
+            "Note": "西の回廊。剣の当たる Tick（不透明の弧）でスライムに命中。西の回廊、経過 809 Tick、自機 (3862, 1334)、体力 6、小鍵 1、倒れた 0"
+        },
+        {
+            "File": "07-reward.jpg",
+            "Sha256": "64897284e398afff4baeeebff1cf49aad8ceb249f1933561d802025eb3126e9b",
+            "Note": "西の回廊の敵を全滅させ、中央に小鍵が現れた。西の回廊、経過 1175 Tick、自機 (787, 1532)、体力 6、小鍵 1、倒れた 0"
+        },
+        {
+            "File": "08-door.jpg",
+            "Sha256": "6bcae5550385e6cb100eb17870ea4945a71c55c137a549471020a23d0a9d31f9",
+            "Note": "入口の上の小扉を小鍵 1 本で開けた。前室、経過 1562 Tick、自機 (2592, 288)、体力 6、小鍵 1、倒れた 0"
+        },
+        {
+            "File": "09-map.jpg",
+            "Sha256": "c08140734b48dc02ee1642f27dcbc3e6581f24b613a939aa58ae3980853907a5",
+            "Note": "前室に着いて一時停止した地図（訪れた部屋・開いた扉・閉じた小扉（黄）とボス扉（赤））。前室、経過 1589 Tick、自機 (2592, 288)、体力 6、小鍵 1、倒れた 0"
+        },
+        {
+            "File": "10-boss-key.jpg",
+            "Sha256": "c3e7d5580bb86c6357a2eb06710f474c3a93c37cc8bfefb00a176d05eff3a8f7",
+            "Note": "宝物庫の宝箱からボス鍵を手に入れた。宝物庫、経過 2085 Tick、自機 (1366, 1551)、体力 6、小鍵 0、倒れた 0"
+        },
+        {
+            "File": "11-boss.jpg",
+            "Sha256": "f567e30994d423fab97d70b71cdf3ad2c73da91634f82529171da096f669a0ab",
+            "Note": "ボスの間。番人の 8 方向の弾。ボスの間、経過 2710 Tick、自機 (1398, 1312)、体力 5、小鍵 0、倒れた 0"
+        },
+        {
+            "File": "12-boss-defeated.jpg",
+            "Sha256": "9d0e51f908f643cc9fac1183f5162e094fe5aa128bf1f327c59b00504e5e0255",
+            "Note": "番人を倒した。いた場所に秘宝が現れた。ボスの間、経過 2827 Tick、自機 (694, 1312)、体力 3、小鍵 0、倒れた 0"
+        },
+        {
+            "File": "13-victory.jpg",
+            "Sha256": "f4fef1e60b866742a9e69936ac454301f63e9764c0bc50c2f5061185101ec83b",
+            "Note": "秘宝を取った結果（タイム・倒れた回数）。ボスの間、経過 2923 Tick、自機 (2694, 1312)、体力 3、小鍵 0、倒れた 0"
+        },
+        {
+            "File": "14-game-over.jpg",
+            "Sha256": "0862b65dae54c05d5dfc74bb596b4998e70fa7319840643debd92f6d39566b1c",
+            "Note": "敵に当たり続けて倒れた。入口から再開できる。東の間、経過 497 Tick、自機 (533, 2083)、体力 0、小鍵 0、倒れた 1"
+        },
+        {
+            "File": "15-continue.jpg",
+            "Sha256": "cb8bd965184485e32728df166fa2804a1303e7f118b92832160ae216144c59c6",
+            "Note": "入口から体力満タンで再開（手に入れた鍵・開けた宝箱はそのまま）。入口、経過 499 Tick、自機 (2636, 288)、体力 6、小鍵 0、倒れた 1"
+        }
+    ]
+}
