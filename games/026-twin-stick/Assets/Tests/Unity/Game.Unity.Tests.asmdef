@@ -5,6 +5,7 @@
     "Game.Core",
     "Game.App",
     "Game.Unity",
+    "TileMotion",
     "Unity.InputSystem",
     "UnityEngine.TestRunner",
     "UnityEditor.TestRunner"

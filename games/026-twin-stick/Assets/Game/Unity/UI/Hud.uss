@@ -1,0 +1,15 @@
+.hud { position: absolute; width: 100%; height: 100%; color: rgb(220, 236, 255); justify-content: center; align-items: center; }
+.stats { position: absolute; left: 0; right: 0; top: 0; height: 56px; padding: 0 24px; flex-direction: row; align-items: center; background-color: rgba(6, 10, 26, 0.72); border-bottom-width: 2px; border-color: rgb(70, 110, 200); }
+.stat { font-size: 24px; -unity-font-style: bold; margin-right: 36px; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(4, 6, 14); }
+.time { color: rgb(150, 230, 255); min-width: 150px; }
+.score { color: rgb(255, 230, 120); min-width: 200px; }
+.lives { color: rgb(120, 220, 255); letter-spacing: 4px; }
+.enemies { color: rgb(200, 180, 255); font-size: 20px; }
+.pause { position: absolute; right: 20px; top: 6px; height: 44px; width: 190px; margin: 0; font-size: 20px; }
+.panel { width: 820px; padding: 30px 40px; background-color: rgba(8, 12, 30, 0.94); border-radius: 18px; border-width: 2px; border-color: rgb(80, 130, 230); }
+.headline { font-size: 56px; -unity-font-style: bold; color: rgb(140, 220, 255); -unity-text-align: middle-center; white-space: normal; }
+.message { margin-top: 14px; margin-bottom: 14px; font-size: 22px; white-space: normal; -unity-text-align: middle-center; }
+.buttons { align-items: stretch; }
+Button { height: 52px; margin: 8px 0 0 0; font-size: 22px; color: rgb(220, 236, 255); background-color: rgb(28, 44, 96); border-color: rgb(90, 140, 230); border-width: 1px; border-radius: 10px; }
+Button:hover { background-color: rgb(36, 58, 122); }
+Button:active { background-color: rgb(46, 74, 150); }

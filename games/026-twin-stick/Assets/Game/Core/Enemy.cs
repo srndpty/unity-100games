@@ -64,6 +64,9 @@ namespace Game.Core
 
         public bool IsActive => Phase == EnemyPhase.Active;
 
+        /// <summary>予告の残り Tick（この Tick を含む。動いている敵は 0）。</summary>
+        public int WarnRemaining => WarnTimer.Remaining;
+
         /// <summary>撃たれた直後の点滅中か（表示用）。</summary>
         public bool IsFlashing => FlashTimer.IsActive;
 

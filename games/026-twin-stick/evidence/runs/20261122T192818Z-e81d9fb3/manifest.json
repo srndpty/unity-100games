@@ -1,0 +1,75 @@
+{
+    "Product": "HALO SIEGE",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "453a53bd5f044de28b5a399c79939533",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-22T19:28:16.8843977Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"ArenaWidthCells\":48,\"ArenaHeightCells\":27,\"ViewWidthCells\":32,\"ViewHeightCells\":18,\"DurationTicks\":18000,\"Lives\":3,\"InvincibleTicks\":120,\"ShipRadius\":72,\"ShipSpeed\":28,\"FireIntervalTicks\":6,\"BulletSpeed\":96,\"BulletRadius\":32,\"BulletLifeTicks\":50,\"Chaser\":{\"Radius\":96,\"Speed\":14,\"Health\":1,\"Score\":10},\"Bouncer\":{\"Radius\":104,\"Speed\":20,\"Health\":1,\"Score\":20},\"Lancer\":{\"Radius\":120,\"Speed\":6,\"Health\":3,\"Score\":50},\"LancerRestTicks\":60,\"LancerAimTicks\":30,\"LancerDashTicks\":24,\"LancerDashSpeed\":64,\"SpawnWarnTicks\":45,\"SafeRadius\":1280,\"SpawnAttempts\":8,\"MaxAlive\":36,\"OffscreenLimitTicks\":180,\"StageTicks\":3600,\"Stages\":[{\"IntervalTicks\":75,\"ChaserWeight\":3,\"BouncerWeight\":1,\"LancerWeight\":0},{\"IntervalTicks\":55,\"ChaserWeight\":3,\"BouncerWeight\":2,\"LancerWeight\":1},{\"IntervalTicks\":40,\"ChaserWeight\":3,\"BouncerWeight\":2,\"LancerWeight\":1},{\"IntervalTicks\":30,\"ChaserWeight\":2,\"BouncerWeight\":2,\"LancerWeight\":2},{\"IntervalTicks\":22,\"ChaserWeight\":2,\"BouncerWeight\":2,\"LancerWeight\":2}],\"LifeBonus\":500},\"Volume\":0.11999999731779099}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "d7945a3b9d7a58b463c4ba7a357a5469f9968c9e0302fd7dd1e9520949635aea",
+            "Note": "タイトル（アリーナの中央に自機。試合はまだない）"
+        },
+        {
+            "File": "02-move-and-aim.jpg",
+            "Sha256": "47bddd0ea6b248bec4f2e31c2c2a8a8299235374c47cf7ef5a3d6b834a400727",
+            "Note": "右上へ動きながら、照準（カーソル）の左下へ撃つ。移動と射撃の向きは独立。経過 36 Tick、自機 (6828, 4140)、残機 3、得点 0、敵 0"
+        },
+        {
+            "File": "03-warning.jpg",
+            "Sha256": "7c23c88cb892e1e54c49b063f2cf3708642a0e514017ef8c63bea8d2c985904b",
+            "Note": "光の輪が出現の予告（予告中は動かず当たらない）。自動操縦が近い敵を撃つ。経過 1125 Tick、自機 (6220, 3532)、残機 3、得点 140、敵 3"
+        },
+        {
+            "File": "04-three-kinds.jpg",
+            "Sha256": "5d0aa696109df3ff5b3e8c4aa29f6e35acd65130bf91ffbeceb48f4ac2067507",
+            "Note": "画面に敵 3 種（桃：Chaser、緑：Bouncer、橙：Lancer）。経過 11810 Tick、自機 (6125, 3475)、残機 3、得点 4510、敵 5"
+        },
+        {
+            "File": "05-lancer-aim.jpg",
+            "Sha256": "59e7a4ed3c7b0c65982e557b048d482129931a877996156a4896a7e81bd94373",
+            "Note": "Lancer が止まって狙う間、突進の通り道を筋で示す。経過 12717 Tick、自機 (6144, 3456)、残機 3、得点 5220、敵 4"
+        },
+        {
+            "File": "06-hurt.jpg",
+            "Sha256": "ab0e32c91ed8a7a4176e1467ae01cba29550e7ca150879770f2a66af315db0da",
+            "Note": "敵に触れて残機が 1 減った。被弾した Tick を含めて 120 Tick は無敵（自機が点滅）。経過 12791 Tick、自機 (7132, 3304)、残機 2、得点 5240、敵 5"
+        },
+        {
+            "File": "07-pause.jpg",
+            "Sha256": "d13086fccb78c939ad7086d3e5a172e0eb8c23b1019d75768aa09b9bc7f352d0",
+            "Note": "一時停止。経過 12791 Tick、自機 (7132, 3304)、残機 2、得点 5240、敵 5"
+        },
+        {
+            "File": "08-density-cap.jpg",
+            "Sha256": "4f5eca9170af6f620e34e6b15203f9cddf5bb9aa55cc50a2060353d8e6e749e9",
+            "Note": "敵を上限の 36 体まで置いた場面（台本で配置）。上限の間は新しい敵が出ない。経過 12821 Tick、自機 (7132, 3304)、残機 2、得点 5240、敵 36"
+        },
+        {
+            "File": "09-late.jpg",
+            "Sha256": "8eef24afd9d6c3cf68b2de2fcd044cfc945e153be664c692f1bc9208da143f4a",
+            "Note": "4 分過ぎ。出現の間隔が短くなった終盤。経過 14520 Tick、自機 (6336, 3588)、残機 2、得点 7460、敵 5"
+        },
+        {
+            "File": "10-victory.jpg",
+            "Sha256": "34643a2762800a87cb5f277945533920b4b7e661efa59e6a7c3da2395fa5e71a",
+            "Note": "5 分生き残った結果（得点・生き残った時間・撃破数・残機ボーナス）。経過 18000 Tick、自機 (6080, 3438)、残機 2、得点 12460、敵 5"
+        },
+        {
+            "File": "11-defeat.jpg",
+            "Sha256": "7fba35d00ea356db731587c07df17331d0d37e6dd0d761004b1e6c88c9d86996",
+            "Note": "撃たずに敵へ向かい続けて残機 0。負けの結果。経過 537 Tick、自機 (11383, 3969)、残機 0、得点 0、敵 4"
+        }
+    ]
+}

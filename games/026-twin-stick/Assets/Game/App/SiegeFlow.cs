@@ -73,6 +73,9 @@ namespace Game.App
         /// <summary>今の照準点（アリーナ座標）。</summary>
         public Vec2i Aim => _aim;
 
+        /// <summary>直前の Tick に Core へ渡した操作（操縦役の狙いを描くのに使う）。</summary>
+        public ShipCommand LastCommand { get; private set; }
+
         public void Apply(Intent intent)
         {
             if (!_hasFocus) { return; }
@@ -153,6 +156,7 @@ namespace Game.App
         {
             var run = Run!;
             var command = Pilot?.CommandFor(run) ?? new ShipCommand(_held.Horizontal, _held.Vertical, _held.TakeFire(), _aim);
+            LastCommand = command;
             run.Step(command);
             _events |= (FlowEvents)((int)run.TakeEvents() << 1);
             if (run.IsOver) { SwitchTo(AppScreen.Result); }
