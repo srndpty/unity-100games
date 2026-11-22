@@ -17,7 +17,7 @@ MonoBehaviour:
     ArenaHeightCells: 27
     ViewWidthCells: 32
     ViewHeightCells: 18
-    DurationTicks: 18000
+    DurationTicks: 3600
     Lives: 3
     InvincibleTicks: 120
     ShipRadius: 72
@@ -50,25 +50,29 @@ MonoBehaviour:
     SpawnAttempts: 8
     MaxAlive: 36
     OffscreenLimitTicks: 180
-    StageTicks: 3600
+    StageTicks: 600
     Stages:
     - IntervalTicks: 75
       ChaserWeight: 3
       BouncerWeight: 1
       LancerWeight: 0
-    - IntervalTicks: 55
+    - IntervalTicks: 62
       ChaserWeight: 3
       BouncerWeight: 2
       LancerWeight: 1
-    - IntervalTicks: 40
+    - IntervalTicks: 51
       ChaserWeight: 3
       BouncerWeight: 2
       LancerWeight: 1
-    - IntervalTicks: 30
+    - IntervalTicks: 42
       ChaserWeight: 2
       BouncerWeight: 2
       LancerWeight: 2
-    - IntervalTicks: 22
+    - IntervalTicks: 33
+      ChaserWeight: 2
+      BouncerWeight: 2
+      LancerWeight: 2
+    - IntervalTicks: 25
       ChaserWeight: 2
       BouncerWeight: 2
       LancerWeight: 2

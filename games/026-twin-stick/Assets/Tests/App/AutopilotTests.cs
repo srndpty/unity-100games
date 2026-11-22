@@ -4,11 +4,11 @@ using NUnit.Framework;
 
 namespace Game.App.Tests
 {
-    /// <summary>自動操縦で 5 分の試合を通す（完走・不変条件・再現性）。</summary>
+    /// <summary>自動操縦で 1 分の試合を通す（完走・不変条件・再現性）。</summary>
     public sealed class AutopilotTests
     {
         /// <summary>シード 1 を自動操縦で最後まで進めた最終ハッシュ。.NET と Mono の両方で一致する（整数だけで計算するため）。</summary>
-        private const uint SeedOneFinalHash = 0xC45939FCu;
+        private const uint SeedOneFinalHash = 0xE8B259C2u;
 
         private static SiegeRun Play(int seed, out int maxAlive)
         {
@@ -35,7 +35,7 @@ namespace Game.App.Tests
             var wins = 0;
             var peak = 0;
             long totalScore = 0;
-            const int Seeds = 8;
+            const int Seeds = 30;
             for (var seed = 1; seed <= Seeds; seed++)
             {
                 var run = Play(seed, out var maxAlive);

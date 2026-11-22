@@ -139,7 +139,8 @@ namespace Game.Core.Tests
         public void DefaultConfig_IsValid()
         {
             Assert.That(() => Config().Validate(), Throws.Nothing);
-            Assert.That(Config().DurationTicks, Is.EqualTo(18000), "5 分");
+            Assert.That(Config().DurationTicks, Is.EqualTo(3600), "1 分");
+            Assert.That(Config().Stages[0].IntervalTicks, Is.EqualTo(Config().Stages[Config().Stages.Length - 1].IntervalTicks * 3), "最後の区間は最初の 3 倍の頻度");
         }
 
         [TestCase(nameof(SiegeConfig.ShipSpeed), 0)]

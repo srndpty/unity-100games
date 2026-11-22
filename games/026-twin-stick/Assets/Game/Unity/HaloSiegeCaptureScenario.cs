@@ -43,31 +43,29 @@ namespace Game.Unity
             StepUntil(() => R.Enemies.Any(e => e.Kind == EnemyKind.Lancer && e.Mode == LancerMode.Aim && e.ModeTicks >= 8 && R.View.Overlaps(e.Position, e.Radius)), "Lancer の狙い");
             await Shoot(capture, "05-lancer-aim", "Lancer が止まって狙う間、突進の通り道を筋で示す");
 
+            StepUntil(() => R.Elapsed >= 50 * Units.TickRate && R.Enemies.Count >= 5, "終盤");
+            await Shoot(capture, "09-late", "50 秒過ぎ。出現の間隔が最初の 3 倍の頻度になった終盤");
+
+            StepUntil(() => _game.Flow.Screen == AppScreen.Result, "勝利");
+            await Shoot(capture, "10-victory", "1 分生き残った結果（得点・生き残った時間・撃破数・残機ボーナス）");
+
+            // 新しい試合（シード 2）で、撃たずに敵へ向かい続ける。
+            Apply(Intent.Of(IntentKind.Restart, ClockTime));
             _game.Flow.Pilot = new ChasePilot();
             StepUntil(() => Happened(FlowEvents.Hurt), "被弾");
             Step(10);
-            await Shoot(capture, "06-hurt", "敵に触れて残機が 1 減った。被弾した Tick を含めて 120 Tick は無敵（自機が点滅）");
+            await Shoot(capture, "06-hurt", "敵に触れて残機が 1 減った。被弾した Tick を含めて 120 Tick は無敵（自機が半透明に点滅）");
 
             Apply(Intent.Of(IntentKind.TogglePause, ClockTime));
             await Shoot(capture, "07-pause", "一時停止");
             Apply(Intent.Of(IntentKind.Submit, ClockTime));
 
-            // 敵の密度の上限：台本で敵を画面の内側に置いて上限まで満たす。上限の間は新しい予告が出ない。
+            // 敵の密度の上限：無敵の間に、台本で敵を画面の内側に置いて上限まで満たす。上限の間は新しい予告が出ない。
             _game.Flow.Pilot = new FixedPilot(0, 0, false, new Vec2i(Units.Tile, 0));
             FillToCap();
             Step(30);
             await Shoot(capture, "08-density-cap", $"敵を上限の {rules.MaxAlive} 体まで置いた場面（台本で配置）。上限の間は新しい敵が出ない");
 
-            // 新しい試合を自動操縦で 5 分通す。
-            Apply(Intent.Of(IntentKind.Restart, ClockTime));
-            _game.Flow.Pilot = new Autopilot();
-            StepUntil(() => R.Elapsed >= 4 * 60 * Units.TickRate && R.Enemies.Count >= 5, "終盤");
-            await Shoot(capture, "09-late", "4 分過ぎ。出現の間隔が短くなった終盤");
-
-            StepUntil(() => _game.Flow.Screen == AppScreen.Result, "勝利");
-            await Shoot(capture, "10-victory", "5 分生き残った結果（得点・生き残った時間・撃破数・残機ボーナス）");
-
-            Apply(Intent.Of(IntentKind.Restart, ClockTime));
             _game.Flow.Pilot = new ChasePilot();
             StepUntil(() => _game.Flow.Screen == AppScreen.Result, "敗北");
             await Shoot(capture, "11-defeat", "撃たずに敵へ向かい続けて残機 0。負けの結果");

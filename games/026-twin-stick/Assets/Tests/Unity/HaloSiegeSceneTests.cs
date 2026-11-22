@@ -408,7 +408,7 @@ namespace Game.Unity.Tests
             var run = new SiegeRun(Rules, 1);
             var pilot = new Autopilot();
             while (!run.IsOver) { run.Step(pilot.CommandFor(run)); }
-            Assert.That(run.Hash(), Is.EqualTo(0xC45939FCu), "シード 1 は App テストの固定値と同じ");
+            Assert.That(run.Hash(), Is.EqualTo(0xE8B259C2u), "シード 1 は App テストの固定値と同じ");
         }
 
         /// <summary>

@@ -102,8 +102,8 @@ namespace Game.Core
 
         public int ViewHeightCells = 18;
 
-        /// <summary>試合の長さ（Tick）。生き残れば勝ち。既定は 5 分。</summary>
-        public int DurationTicks = 5 * 60 * Units.TickRate;
+        /// <summary>試合の長さ（Tick）。生き残れば勝ち。既定は 1 分。</summary>
+        public int DurationTicks = 60 * Units.TickRate;
 
         public int Lives = 3;
 
@@ -155,16 +155,18 @@ namespace Game.Core
         /// <summary>画面外にこの Tick 数続けて居た敵は、得点なしで消える。</summary>
         public int OffscreenLimitTicks = 180;
 
-        /// <summary>出現の区間 1 つの長さ（Tick）。</summary>
-        public int StageTicks = 60 * Units.TickRate;
+        /// <summary>出現の区間 1 つの長さ（Tick）。既定は 10 秒。</summary>
+        public int StageTicks = 10 * Units.TickRate;
 
+        /// <summary>区間ごとの出現の間隔と種類の重み。既定は間隔を 10 秒ごとに縮め、最後の区間で最初の 3 倍の頻度にする。</summary>
         public SpawnStage[] Stages =
         {
             new() { IntervalTicks = 75, ChaserWeight = 3, BouncerWeight = 1, LancerWeight = 0 },
-            new() { IntervalTicks = 55, ChaserWeight = 3, BouncerWeight = 2, LancerWeight = 1 },
-            new() { IntervalTicks = 40, ChaserWeight = 3, BouncerWeight = 2, LancerWeight = 1 },
-            new() { IntervalTicks = 30, ChaserWeight = 2, BouncerWeight = 2, LancerWeight = 2 },
-            new() { IntervalTicks = 22, ChaserWeight = 2, BouncerWeight = 2, LancerWeight = 2 },
+            new() { IntervalTicks = 62, ChaserWeight = 3, BouncerWeight = 2, LancerWeight = 1 },
+            new() { IntervalTicks = 51, ChaserWeight = 3, BouncerWeight = 2, LancerWeight = 1 },
+            new() { IntervalTicks = 42, ChaserWeight = 2, BouncerWeight = 2, LancerWeight = 2 },
+            new() { IntervalTicks = 33, ChaserWeight = 2, BouncerWeight = 2, LancerWeight = 2 },
+            new() { IntervalTicks = 25, ChaserWeight = 2, BouncerWeight = 2, LancerWeight = 2 },
         };
 
         /// <summary>勝ったときに残機 1 つにつき足す点。</summary>

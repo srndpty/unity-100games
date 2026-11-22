@@ -1,0 +1,75 @@
+{
+    "Product": "HALO SIEGE",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "fa766b4382f240e393b71ce938ebed67",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-22T19:38:07.8434852Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"ArenaWidthCells\":48,\"ArenaHeightCells\":27,\"ViewWidthCells\":32,\"ViewHeightCells\":18,\"DurationTicks\":3600,\"Lives\":3,\"InvincibleTicks\":120,\"ShipRadius\":72,\"ShipSpeed\":28,\"FireIntervalTicks\":6,\"BulletSpeed\":96,\"BulletRadius\":32,\"BulletLifeTicks\":50,\"Chaser\":{\"Radius\":96,\"Speed\":14,\"Health\":1,\"Score\":10},\"Bouncer\":{\"Radius\":104,\"Speed\":20,\"Health\":1,\"Score\":20},\"Lancer\":{\"Radius\":120,\"Speed\":6,\"Health\":3,\"Score\":50},\"LancerRestTicks\":60,\"LancerAimTicks\":30,\"LancerDashTicks\":24,\"LancerDashSpeed\":64,\"SpawnWarnTicks\":45,\"SafeRadius\":1280,\"SpawnAttempts\":8,\"MaxAlive\":36,\"OffscreenLimitTicks\":180,\"StageTicks\":600,\"Stages\":[{\"IntervalTicks\":75,\"ChaserWeight\":3,\"BouncerWeight\":1,\"LancerWeight\":0},{\"IntervalTicks\":62,\"ChaserWeight\":3,\"BouncerWeight\":2,\"LancerWeight\":1},{\"IntervalTicks\":51,\"ChaserWeight\":3,\"BouncerWeight\":2,\"LancerWeight\":1},{\"IntervalTicks\":42,\"ChaserWeight\":2,\"BouncerWeight\":2,\"LancerWeight\":2},{\"IntervalTicks\":33,\"ChaserWeight\":2,\"BouncerWeight\":2,\"LancerWeight\":2},{\"IntervalTicks\":25,\"ChaserWeight\":2,\"BouncerWeight\":2,\"LancerWeight\":2}],\"LifeBonus\":500},\"Volume\":0.11999999731779099}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "e614d4a9a16ebc4130dce0b0374bbf5d880915def6c346670e03ed50b035f12e",
+            "Note": "タイトル（アリーナの中央に自機。試合はまだない）"
+        },
+        {
+            "File": "02-move-and-aim.jpg",
+            "Sha256": "8c30151671747b8e646e453f64b4dc9063fa592480970883b89b0d2ad03d0e9b",
+            "Note": "右上へ動きながら、照準（カーソル）の左下へ撃つ。移動と射撃の向きは独立。経過 36 Tick、自機 (6828, 4140)、残機 3、得点 0、敵 0"
+        },
+        {
+            "File": "03-warning.jpg",
+            "Sha256": "c8555625d14dec97254e873ae30d4d3eb4c73294fb1df12869eb81fd14faf25e",
+            "Note": "光の輪が出現の予告（予告中は動かず当たらない）。自動操縦が近い敵を撃つ。経過 1770 Tick、自機 (6220, 3532)、残機 3、得点 520、敵 3"
+        },
+        {
+            "File": "04-three-kinds.jpg",
+            "Sha256": "60105de0546a59d90b52ebb9ad936c7452304b30caf79c96ab019f5399298fb8",
+            "Note": "画面に敵 3 種（桃：Chaser、緑：Bouncer、橙：Lancer）。経過 3589 Tick、自機 (6106, 3456)、残機 3、得点 2060、敵 4"
+        },
+        {
+            "File": "05-lancer-aim.jpg",
+            "Sha256": "60105de0546a59d90b52ebb9ad936c7452304b30caf79c96ab019f5399298fb8",
+            "Note": "Lancer が止まって狙う間、突進の通り道を筋で示す。経過 3589 Tick、自機 (6106, 3456)、残機 3、得点 2060、敵 4"
+        },
+        {
+            "File": "09-late.jpg",
+            "Sha256": "05acbdeb29955bd111e227667dbec903795c3abc916700025b3c53149dae4834",
+            "Note": "50 秒過ぎ。出現の間隔が最初の 3 倍の頻度になった終盤。経過 3594 Tick、自機 (6106, 3456)、残機 3、得点 2060、敵 5"
+        },
+        {
+            "File": "10-victory.jpg",
+            "Sha256": "728769841f25f219c3955c670be66bb6664172171096d5d88939be199b8e97df",
+            "Note": "1 分生き残った結果（得点・生き残った時間・撃破数・残機ボーナス）。経過 3600 Tick、自機 (6106, 3456)、残機 3、得点 3560、敵 5"
+        },
+        {
+            "File": "06-hurt.jpg",
+            "Sha256": "cfeb73c08f04a402bc0136eff11b6f752644c287e1d92e08d4283ef85902cee1",
+            "Note": "敵に触れて残機が 1 減った。被弾した Tick を含めて 120 Tick は無敵（自機が半透明に点滅）。経過 242 Tick、自機 (8462, 2126)、残機 2、得点 0、敵 2"
+        },
+        {
+            "File": "07-pause.jpg",
+            "Sha256": "daec4d0e21046e3eebef481e9698ba9531ceb5c724fe3fbdd1a511ffbdf8b05e",
+            "Note": "一時停止。経過 242 Tick、自機 (8462, 2126)、残機 2、得点 0、敵 2"
+        },
+        {
+            "File": "08-density-cap.jpg",
+            "Sha256": "b3b5635809a765b61cd57b7fb111514f5294bf2515900267bbf8aac61578e53e",
+            "Note": "敵を上限の 36 体まで置いた場面（台本で配置）。上限の間は新しい敵が出ない。経過 272 Tick、自機 (8462, 2126)、残機 2、得点 0、敵 36"
+        },
+        {
+            "File": "11-defeat.jpg",
+            "Sha256": "c188db6f7a27dec48e2d872815941b2b38819e2abe0763610866d68f8ab14a1f",
+            "Note": "撃たずに敵へ向かい続けて残機 0。負けの結果。経過 472 Tick、自機 (9374, 2672)、残機 0、得点 0、敵 35"
+        }
+    ]
+}
