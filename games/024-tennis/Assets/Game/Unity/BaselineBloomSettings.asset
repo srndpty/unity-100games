@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3decde5dd6160b42b58796b4212aced, type: 3}
+  m_Name: BaselineBloomSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.BaselineBloomSettings
+  Rules:
+    TiebreakAtGames: 0
+    TiebreakPoints: 7
+    Gravity: 27
+    RestitutionPercent: 72
+    FrictionPercent: 70
+    MoveSpeed: 917
+    CpuMoveSpeed: 850
+    SwingMovePercent: 40
+    SwingTicks: 16
+    SwingWaitTicks: 90
+    Reach: 18000
+    MinHitZ: 1000
+    MaxHitZ: 26000
+    ContactAhead: 5000
+    TimingSpan: 18000
+    PlayerTimingAssistPercent: 50
+    NetGap: 10000
+    AthleteMargin: 5000
+    StrokeSpeed: 6667
+    StrokeClearance: 5000
+    StrokeDepth: 85000
+    LobSpeed: 2500
+    LobClearance: 30000
+    LobDepth: 95000
+    AimWide: 26000
+    TimingShift: 30000
+    LongError: 36000
+    ShortError: 80000
+    TossZ: 20000
+    TossSpeed: 735
+    ServeTimingSpan: 20
+    ServeSpeed: 8333
+    ServeClearance: 2500
+    ServeDepth: 55000
+    ServeAim: 13000
+    ServeShift: 12000
+    ServeLongError: 20000
+    ServeShortError: 50000
+    ServeBackOffset: 2000
+    ServeSideOffset: 10000
+    ServeSideMin: 3000
+    ReceiveBackOffset: 10000
+    ReceiveSideOffset: 22000
+    PointGapTicks: 90
+    CpuReactionTicks: 8
+    CpuTimingJitter: 5
+    CpuLobPercent: 12
+    CpuLobTrigger: 50000
+    CpuServeWaitTicks: 40
+  Volume: 0.12
+  TimingHintTicks: 75

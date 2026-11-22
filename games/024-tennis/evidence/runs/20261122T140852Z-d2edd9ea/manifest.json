@@ -1,0 +1,90 @@
+{
+    "Product": "BASELINE BLOOM",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "947322aeaed549fda21799b58c8142e6",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-22T14:08:50.8656573Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"TiebreakAtGames\":0,\"TiebreakPoints\":7,\"Gravity\":27,\"RestitutionPercent\":72,\"FrictionPercent\":70,\"MoveSpeed\":917,\"CpuMoveSpeed\":850,\"SwingMovePercent\":40,\"SwingTicks\":16,\"SwingWaitTicks\":90,\"Reach\":18000,\"MinHitZ\":1000,\"MaxHitZ\":26000,\"ContactAhead\":5000,\"TimingSpan\":18000,\"PlayerTimingAssistPercent\":50,\"NetGap\":10000,\"AthleteMargin\":5000,\"StrokeSpeed\":6667,\"StrokeClearance\":5000,\"StrokeDepth\":85000,\"LobSpeed\":2500,\"LobClearance\":30000,\"LobDepth\":95000,\"AimWide\":26000,\"TimingShift\":30000,\"LongError\":36000,\"ShortError\":80000,\"TossZ\":20000,\"TossSpeed\":735,\"ServeTimingSpan\":20,\"ServeSpeed\":8333,\"ServeClearance\":2500,\"ServeDepth\":55000,\"ServeAim\":13000,\"ServeShift\":12000,\"ServeLongError\":20000,\"ServeShortError\":50000,\"ServeBackOffset\":2000,\"ServeSideOffset\":10000,\"ServeSideMin\":3000,\"ReceiveBackOffset\":10000,\"ReceiveSideOffset\":22000,\"PointGapTicks\":90,\"CpuReactionTicks\":8,\"CpuTimingJitter\":5,\"CpuLobPercent\":12,\"CpuLobTrigger\":50000,\"CpuServeWaitTicks\":40},\"Volume\":0.11999999731779099,\"TimingHintTicks\":75}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "2ad02f7bfe5e832bd00c52ed3b54b558518a4a8aa5d93de08ee7a43fa53e5981",
+            "Note": "タイトル（最初のポイントの立ち位置を描く。試合はまだない）"
+        },
+        {
+            "File": "02-start.jpg",
+            "Sha256": "1c57b16ba1ef7ae1e7310ff67ded9ac68e4ea905ca957c9978a407b00c85a97c",
+            "Note": "試合の開始。プレイヤーがデュースサイドからサーブ（案内：Z でトス）。Tick 0、得点 0-0、球 (10000, -120850, 20000)、手前 (10000, -120850, 0)、奥 (-22000, 128850, 0)"
+        },
+        {
+            "File": "03-toss.jpg",
+            "Sha256": "5c99c823617b48940ed88dcf17df01e328d1ae2fbe8d653559bcc193278f52c0",
+            "Note": "トスが頂点の手前。もう一度 Z で打つ。Tick 24、得点 0-0、球 (10000, -120850, 29540)、手前 (10000, -120850, 0)、奥 (-22000, 128850, 0)"
+        },
+        {
+            "File": "04-fault.jpg",
+            "Sha256": "77efa22d4c2ef6196759c627bcac06ff60435477fa8e09501b16392e08f6aa76",
+            "Note": "頂点より遅く打ったサーブがネットにかかり FAULT。セカンドサーブへ。Tick 78、得点 0-0、球 (10000, -120850, 20000)、手前 (10000, -120850, 0)、奥 (-3300, 128850, 0)"
+        },
+        {
+            "File": "05-serve.jpg",
+            "Sha256": "00d0fa32cb50f943c7e605c5be4c63510a7b0ddac2fdf6229edb2b4ea06c8070",
+            "Note": "頂点で打ったセカンドサーブが対角のサービスボックスへ飛ぶ。Tick 116、得点 0-0、球 (-1594, -54157, 21070)、手前 (10000, -120850, 0)、奥 (-4500, 127650, 0)"
+        },
+        {
+            "File": "06-rally.jpg",
+            "Sha256": "c68ab23596f7a3e6073984193ffa7496107e98bf9be3b772d98dc4248e20bcc6",
+            "Note": "ラリー。球の高さは影との離れで表す。Tick 239、得点 0-0、球 (8910, -60539, 15188)、手前 (935, -136507, 0)、奥 (6210, 134960, 0)"
+        },
+        {
+            "File": "07-point.jpg",
+            "Sha256": "b764af12296eed51a78614643e2daf6164ce2a74617403b8a9a4ebaf78b9e502",
+            "Note": "ポイントが決まった。判定と得点した側を出し、最後のバウンドに跡を残す。Tick 385、得点 1-0、球 (-15061, 0, 7422)、手前 (287, -128523, 0)、奥 (-150, 135400, 0)"
+        },
+        {
+            "File": "08-server-change.jpg",
+            "Sha256": "e19e119661401309a5f42e1eef3a57fd5704dbdefe53929e6ecbf7b9e071378e",
+            "Note": "1 ポイント後、タイブレークの順で CPU のサーブ（アドサイド）。得点板の ● がサーバー。Tick 496、得点 1-0、球 (10000, 120850, 20708)、手前 (-22000, -128850, 0)、奥 (10000, 120850, 0)"
+        },
+        {
+            "File": "09-early.jpg",
+            "Sha256": "2f87b722c941c1e2a19fcf068908d31d43876224eb595df408b2db6ea644d9d5",
+            "Note": "早打ち。理想の打点よりネット寄りで打ち、左へ長く飛ぶ（案内：早い）。Tick 599、得点 1-0、球 (-6160, 30201, 12645)、手前 (0, -112000, 0)、奥 (-12000, 151100, 0)"
+        },
+        {
+            "File": "10-late.jpg",
+            "Sha256": "c218cf43893683e2c2e84c435ba1454b909cddc19b1d9aa8e4362df463772ed2",
+            "Note": "遅打ち。体の横で打ち、右へ低く飛ぶ（案内：遅い）。Tick 962、得点 1-1、球 (9639, 31409, 6451)、手前 (0, -112000, 0)、奥 (14400, 111950, 0)"
+        },
+        {
+            "File": "11-out.jpg",
+            "Sha256": "30a0f810eb870e2b8650d2a4ff12928ffcf3f86e2b032830576b9317fdd3a269",
+            "Note": "ベースラインの外に落ちてアウト（打った側の失点）。跡がラインの外にある。Tick 1200、得点 2-2、球 (16272, 165983, 4792)、手前 (0, -112000, 0)、奥 (0, 128500, 0)"
+        },
+        {
+            "File": "12-net.jpg",
+            "Sha256": "4de13f8ff0d9ad24fdf1f9a2cfe2c64a51368cd3899c7167b697756f094d46eb",
+            "Note": "ネットにかかった（打った側の失点）。Tick 1307、得点 2-3、球 (2112, 0, 6544)、手前 (0, -112000, 0)、奥 (0, 127650, 0)"
+        },
+        {
+            "File": "13-pause.jpg",
+            "Sha256": "055f17351f591a589ad595f3ca4394b99ca2d66243e4074c236032d49ccc2452",
+            "Note": "一時停止（操作の説明）。Tick 1387、得点 2-3、球 (10000, 120850, 20000)、手前 (-22000, -128850, 0)、奥 (10000, 120850, 0)"
+        },
+        {
+            "File": "14-result.jpg",
+            "Sha256": "bbbae21c93c8dab282bb719aeca134eeee4d39ff45ec5e48176d848d808f81f1",
+            "Note": "試合終了の結果（勝者・ポイント数・いちばん長いラリー・試合時間）。Tick 10051、得点 7-3、球 (67675, -318890, 1719)、手前 (-49, -129176, 0)、奥 (380, 128530, 0)"
+        }
+    ]
+}
