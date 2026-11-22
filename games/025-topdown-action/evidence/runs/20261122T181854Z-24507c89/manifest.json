@@ -2,9 +2,9 @@
     "Product": "EMBER VAULT",
     "Version": "1.0",
     "UnityVersion": "6000.6.9f1",
-    "BuildGuid": "87c89a7b075e45d4984db81d16549765",
+    "BuildGuid": "b9abe520e1cd45e3933380a5b7b52dfc",
     "Seed": 1,
-    "CapturedAtUtc": "2026-11-22T15:57:19.8019085Z",
+    "CapturedAtUtc": "2026-11-22T18:18:52.8699740Z",
     "Info": [
         {
             "Key": "imageEncoding",
@@ -18,7 +18,7 @@
     "Shots": [
         {
             "File": "01-title.jpg",
-            "Sha256": "27b7cae7fd469c6d0c13f0b66088142b90e57fb9856c29a19eb42055f4adc5b5",
+            "Sha256": "b62203b9f2f85c3ce140d7bba4b8625662c7815ebe36ce3cb4035866fd61d362",
             "Note": "タイトル（入口の配置を Stage Prefab のまま描く。試合はまだない）"
         },
         {
@@ -78,7 +78,7 @@
         },
         {
             "File": "13-victory.jpg",
-            "Sha256": "35a0a4f5dcbd472485346b9b89f5873d4f4893810a572b9c086892863750c7a1",
+            "Sha256": "f4fef1e60b866742a9e69936ac454301f63e9764c0bc50c2f5061185101ec83b",
             "Note": "秘宝を取った結果（タイム・倒れた回数）。ボスの間、経過 2923 Tick、自機 (2694, 1312)、体力 3、小鍵 0、倒れた 0"
         },
         {

@@ -469,7 +469,7 @@ namespace Game.Unity
             switch (screen)
             {
                 case AppScreen.Title:
-                    return "燠火の宝物殿の奥に、番人が守る秘宝が眠っている。\n小鍵で扉を開け、宝箱のボス鍵で番人の間へ。\n回避ロールの間は攻撃を受けない。\n\n" + controls;
+                    return "燠火の宝物殿の奥に、番人が守る秘宝が眠っている。\n小鍵で扉を開け、宝箱のボス鍵で番人の間へ。\n回避ロールは転がり始めの短い間だけ攻撃を受けない。\n\n" + controls;
                 case AppScreen.Paused:
                     return "黄：小扉    赤：ボス扉\nR：最初から    T：タイトルへ";
                 case AppScreen.GameOver:

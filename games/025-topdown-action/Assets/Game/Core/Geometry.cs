@@ -151,6 +151,35 @@ namespace Game.Core
     /// </summary>
     public static class Sweep
     {
+        /// <summary>
+        /// 自機の経路 <paramref name="a"/>（横 → 縦）と、直線で動く <paramref name="bStart"/> → <paramref name="bEnd"/> の最初の接触。
+        /// 自機は経路を一定の速さで進むとみなし、Tick を横の区間（横の移動量の割合）と縦の区間に分ける。相手はその分け目の時刻の位置へ補間し、
+        /// 区間ごとに同じ時間の範囲で比べる（地形の解決と被弾の判定が同じ経路を使う）。片方の軸が 0 なら 1 本の直線と同じ。
+        /// </summary>
+        public static Touch Along(Motion a, Box bStart, Box bEnd)
+        {
+            long first = Math.Abs(a.Corner.X - a.Start.X);
+            long second = Math.Abs(a.End.Y - a.Corner.Y);
+            if (first == 0 || second == 0) { return First(a.Start, a.End, bStart, bEnd); }
+
+            // 分け目の時刻は first / total。座標を total 倍すると相手の分け目の位置も整数になる。
+            // 速さは Tile 未満（VaultConfig.MaxSpeed）なので、total 倍しても int に収まる。
+            var total = (int)(first + second);
+            var split = new Box(
+                (bStart.X * total) + ((bEnd.X - bStart.X) * (int)first),
+                (bStart.Y * total) + ((bEnd.Y - bStart.Y) * (int)first),
+                bStart.Width * total,
+                bStart.Height * total);
+            var horizontal = First(Scale(a.Start, total), Scale(a.Corner, total), Scale(bStart, total), split);
+            if (horizontal.Hit) { return Touch.At(first * horizontal.Numerator, total * horizontal.Denominator); }
+
+            var vertical = First(Scale(a.Corner, total), Scale(a.End, total), split, Scale(bEnd, total));
+            if (!vertical.Hit) { return Touch.None; }
+            return Touch.At((first * vertical.Denominator) + (second * vertical.Numerator), total * vertical.Denominator);
+        }
+
+        private static Box Scale(Box box, int factor) => new(box.X * factor, box.Y * factor, box.Width * factor, box.Height * factor);
+
         public static Touch First(Box aStart, Box aEnd, Box bStart, Box bEnd)
         {
             var rx = (long)(aEnd.X - aStart.X) - (bEnd.X - bStart.X);

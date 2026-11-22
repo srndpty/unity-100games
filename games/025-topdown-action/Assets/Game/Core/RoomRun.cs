@@ -305,13 +305,13 @@ namespace Game.Core
             foreach (var enemy in _enemies)
             {
                 if (!enemy.IsAlive) { continue; }
-                Consider(Sweep.First(motion.Start, motion.End, enemy.Previous, enemy.Body), _config.ContactDamage, enemy.Body, -1);
+                Consider(Sweep.Along(motion, enemy.Previous, enemy.Body), _config.ContactDamage, enemy.Body, -1);
             }
 
             for (var i = 0; i < _projectiles.Count; i++)
             {
                 var projectile = _projectiles[i];
-                Consider(Sweep.First(motion.Start, motion.End, projectile.Previous, projectile.Body), _config.ShotDamage, projectile.Previous, i);
+                Consider(Sweep.Along(motion, projectile.Previous, projectile.Body), _config.ShotDamage, projectile.Previous, i);
             }
 
             if (best.Hit && Hero.Hurt(damage, source.CenterX, Boxes.CenterY(source)))
