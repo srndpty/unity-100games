@@ -146,6 +146,23 @@ namespace Game.Core
             return new Span(new Moment((long)start - other - otherSize, e), new Moment((long)start + size - other, e));
         }
 
+        /// <summary>
+        /// 踏み越えられる障害物（Hurdle）との当たり：前・横から触れたときだけ当たりにする。
+        /// 上から触れた（高さの軸が最後に、下向きに重なり始めた）ときと、Tick の始めにもう重なっている（前の Tick に上から入った）ときは当たりにしない。
+        /// 高さの軸とほかの軸が同時に重なり始めた（角に触れた）ときは当たり。
+        /// </summary>
+        public static bool HitsFromFrontOrSide(Box3 from, Box3 to, Box3 obstacle, out Moment contact)
+        {
+            var z = Axis(from.Z, to.Z, from.Depth, obstacle.Z, obstacle.Depth);
+            var x = Axis(from.X, to.X, from.Width, obstacle.X, obstacle.Width);
+            var y = Axis(from.Y, to.Y, from.Height, obstacle.Y, obstacle.Height);
+            var all = z.Intersect(x).Intersect(y);
+            contact = all.Contact;
+            if (!all.Hits || all.Lo < Moment.Zero) { return false; }
+            var fromAbove = to.Y < from.Y && y.Lo > Moment.Max(z.Lo, x.Lo);
+            return !fromAbove;
+        }
+
         /// <summary><paramref name="from"/> から <paramref name="to"/>（同じ大きさ）へ動く箱と、止まっている箱の重なる時刻。</summary>
         public static Span Boxes(Box3 from, Box3 to, Box3 obstacle)
         {

@@ -58,6 +58,35 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void LandingOnTopOfAHurdle_IsSafe_ButRunningIntoItIsNot()
+        {
+            // 早く跳びすぎて Hurdle の上に降りてくる Tick を探す（自機の箱が Hurdle と重なるのに、試合は続く）。
+            var config = TestKit.Only(_hurdles).Config;
+            var hurdle = new Obstacle(ObstacleKind.Hurdle, 1, 2).Box(config);
+            var landed = 0;
+            for (long jump = 1; jump < 400; jump++)
+            {
+                var run = new RunnerRun(TestKit.Only(_hurdles), 1);
+                var exit = run.Chunks.RunwayEnd + (_hurdles.Length * config.RowLength);
+                var touched = false;
+                while (run.Z < exit && !run.IsOver)
+                {
+                    run.Step(run.Ticks + 1 == jump ? TestKit.Do(leap: Leap.Jump) : Command.None);
+                    var start = run.Chunks.RunwayEnd;
+                    var from = RunnerShape.From(config, run.Body.Lane, run.Body.Vertical, (int)(run.PrevZ - start));
+                    var to = RunnerShape.To(config, run.Body.Lane, run.Body.Vertical, (int)(run.Z - start));
+                    touched |= Sweep3.Boxes(from, to, hurdle).Hits;
+                }
+
+                if (touched && !run.IsOver) { landed++; }
+                if (touched && run.IsOver) { Assert.That(run.CrashKind, Is.EqualTo(ObstacleKind.Hurdle)); }
+            }
+
+            Assert.That(landed, Is.GreaterThan(0), "上から降りて触れても続く跳び方がある");
+            Assert.That(Survives(_hurdles, _ => Command.None), Is.False, "跳ばずに前から触れればぶつかる");
+        }
+
+        [Test]
         public void SteeringIntoTheSideOfAWall_Crashes()
         {
             // 左のレーンに並んだ壁の 1 枚の横を走っている途中で左へ動く。

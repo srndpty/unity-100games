@@ -53,6 +53,34 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void Hurdle_FromAbove_IsNotAHit_ButFromTheFrontOrACornerIs()
+        {
+            var hurdle = new Box3(0, 0, 0, 10, 10, 10);
+
+            // 真上から降りてきて上の面に触れる：厳しい判定では当たるが、踏み越えられる障害物では当たりにしない。
+            var above = new Box3(0, 20, 0, 10, 10, 10);
+            var down = new Box3(0, 5, 3, 10, 10, 10);
+            Assert.That(Sweep3.Boxes(above, down, hurdle).Hits, Is.True);
+            Assert.That(Sweep3.HitsFromFrontOrSide(above, down, hurdle, out _), Is.False);
+
+            // もう重なっている（前の Tick に上から入った）ときも当たりにしない。
+            Assert.That(Sweep3.HitsFromFrontOrSide(down, new Box3(0, 0, 6, 10, 10, 10), hurdle, out _), Is.False);
+
+            // 前から：当たり。触れた時刻も厳しい判定と同じ。
+            var front = new Box3(0, 0, -20, 10, 10, 10);
+            var into = new Box3(0, 0, 0, 10, 10, 10);
+            Assert.That(Sweep3.HitsFromFrontOrSide(front, into, hurdle, out var contact), Is.True);
+            Assert.That(contact, Is.EqualTo(Sweep3.Boxes(front, into, hurdle).Contact));
+
+            // 横から（レーン移動）：当たり。
+            Assert.That(Sweep3.HitsFromFrontOrSide(new Box3(-20, 0, 0, 10, 10, 10), new Box3(0, 0, 0, 10, 10, 10), hurdle, out _), Is.True);
+
+            // 前の面と上の面に同時に触れる（角）：当たり。
+            Assert.That(Sweep3.HitsFromFrontOrSide(new Box3(0, 20, -20, 10, 10, 10), new Box3(0, 0, 0, 10, 10, 10), hurdle, out _), Is.True);
+
+        }
+
+        [Test]
         public void RandomBoxes_MatchEventPointReference()
         {
             var random = new SeededRandom(29);

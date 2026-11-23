@@ -135,10 +135,24 @@ namespace Game.Core
                 var to = RunnerShape.To(config, lane, vertical, (int)(Z - start));
                 foreach (var obstacle in chunk.Obstacles)
                 {
-                    var span = Sweep3.Boxes(from, to, obstacle.Box(config));
-                    if (!span.Hits || (hit && span.Contact >= earliest)) { continue; }
+                    // Hurdle は上から触れても当たりにしない（踏み越えた扱い）。自動操縦とチャンクの検証（Planner）は、
+                    // 上から触れない厳しい判定で道を求めるので、この判定でも必ず通れる。
+                    bool touches;
+                    Moment contact;
+                    if (obstacle.Kind == ObstacleKind.Hurdle)
+                    {
+                        touches = Sweep3.HitsFromFrontOrSide(from, to, obstacle.Box(config), out contact);
+                    }
+                    else
+                    {
+                        var span = Sweep3.Boxes(from, to, obstacle.Box(config));
+                        touches = span.Hits;
+                        contact = span.Contact;
+                    }
+
+                    if (!touches || (hit && contact >= earliest)) { continue; }
                     hit = true;
-                    earliest = span.Contact;
+                    earliest = contact;
                     CrashKind = obstacle.Kind;
                 }
             }
