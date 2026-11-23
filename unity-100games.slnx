@@ -179,6 +179,12 @@
     <Project Path="games/030-stealth/dotnet/Core.Tests/G030.Core.Tests.csproj" />
     <Project Path="games/030-stealth/dotnet/Core/G030.Core.csproj" />
   </Folder>
+  <Folder Name="/031-rhythm-notes/">
+    <Project Path="games/031-rhythm-notes/dotnet/App.Tests/G031.App.Tests.csproj" />
+    <Project Path="games/031-rhythm-notes/dotnet/App/G031.App.csproj" />
+    <Project Path="games/031-rhythm-notes/dotnet/Core.Tests/G031.Core.Tests.csproj" />
+    <Project Path="games/031-rhythm-notes/dotnet/Core/G031.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />
