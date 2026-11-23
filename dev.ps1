@@ -252,6 +252,8 @@ function Invoke-New {
         'Assets/Welcome', 'Assets/Welcome.meta'
         'Assets/Settings/Lit2DSceneTemplate.scenetemplate', 'Assets/Settings/Lit2DSceneTemplate.scenetemplate.meta'
         'Assets/Settings/Scenes', 'Assets/Settings/Scenes.meta'
+        # 3D テンプレートの Readme（Inspector 用のエディタスクリプトとアイコン）
+        'Assets/TutorialInfo', 'Assets/TutorialInfo.meta', 'Assets/Readme.asset', 'Assets/Readme.asset.meta'
         'ProjectSettings/Packages/com.unity.learn.iet-framework'
     )
     $unneeded | ForEach-Object { Join-Path $gameDir $_ } | Where-Object { Test-Path $_ } | Remove-Item -Recurse -Force

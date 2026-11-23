@@ -167,6 +167,12 @@
     <Project Path="games/028-survivors/dotnet/Core.Tests/G028.Core.Tests.csproj" />
     <Project Path="games/028-survivors/dotnet/Core/G028.Core.csproj" />
   </Folder>
+  <Folder Name="/029-endless-runner/">
+    <Project Path="games/029-endless-runner/dotnet/App.Tests/G029.App.Tests.csproj" />
+    <Project Path="games/029-endless-runner/dotnet/App/G029.App.csproj" />
+    <Project Path="games/029-endless-runner/dotnet/Core.Tests/G029.Core.Tests.csproj" />
+    <Project Path="games/029-endless-runner/dotnet/Core/G029.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />
