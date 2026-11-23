@@ -73,6 +73,33 @@ Button:hover, Button.selected {
     margin-left: -1px;
     background-color: rgba(231, 247, 250, 0.28);
 }
+.timing {
+    font-size: 26px;
+    margin: 16px 0 16px 22px;
+    -unity-font-style: bold;
+    letter-spacing: 3px;
+}
+.banner-layer {
+    justify-content: center;
+    align-items: center;
+}
+.full-combo-flash {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 30%;
+    bottom: 30%;
+    background-color: rgba(255, 236, 160, 0.85);
+}
+.full-combo {
+    font-size: 78px;
+    -unity-font-style: bold;
+    letter-spacing: 10px;
+    color: #ffd75e;
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: #5a3a00;
+    text-shadow: 0 0 12px rgba(255, 200, 80, 0.9);
+}
 .burst {
     position: absolute;
     width: 0;

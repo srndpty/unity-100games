@@ -25,6 +25,47 @@ namespace Game.Core.Tests
             Assert.That(score.Hit(Beat + error, Strike.Pulse), Is.EqualTo(expected));
         }
 
+        [TestCase(-FairWindow, Timing.Fast)]
+        [TestCase(-(GoodWindow + 1), Timing.Fast)]
+        [TestCase(-GoodWindow, Timing.None)]
+        [TestCase(0, Timing.None)]
+        [TestCase(GoodWindow, Timing.None)]
+        [TestCase(GoodWindow + 1, Timing.Slow)]
+        [TestCase(FairWindow, Timing.Slow)]
+        public void FairHitsAreMarkedFastOrSlow(int error, Timing expected)
+        {
+            var score = NewScore(new Note(Beat, Strike.Pulse));
+            score.Hit(Beat + error, Strike.Pulse);
+            Assert.That(score.LastTiming, Is.EqualTo(expected));
+            Assert.That(score.Fast, Is.EqualTo(expected == Timing.Fast ? 1 : 0));
+            Assert.That(score.Slow, Is.EqualTo(expected == Timing.Slow ? 1 : 0));
+        }
+
+        [Test]
+        public void MissClearsTheTimingAndBreaksTheFullCombo()
+        {
+            var score = NewScore(new Note(Beat, Strike.Pulse), new Note(2 * Beat, Strike.Spark));
+            score.Hit(Beat + FairWindow, Strike.Pulse);
+            Assert.That(score.LastTiming, Is.EqualTo(Timing.Slow));
+            Assert.That(score.FullCombo, Is.False, "判定前のノーツが残る");
+            score.Advance(2 * Beat + FairWindow + 1);
+            Assert.That(score.LastTiming, Is.EqualTo(Timing.None));
+            Assert.That(score.Complete, Is.True);
+            Assert.That(score.FullCombo, Is.False);
+        }
+
+        [Test]
+        public void FullComboCountsFairHits()
+        {
+            var score = NewScore(new Note(Beat, Strike.Pulse), new Note(2 * Beat, Strike.Spark));
+            score.Hit(Beat - FairWindow, Strike.Pulse);
+            Assert.That(score.FullCombo, Is.False);
+            score.Hit(2 * Beat, Strike.Spark);
+            Assert.That(score.FullCombo, Is.True);
+            Assert.That(score.Fast, Is.EqualTo(1));
+            Assert.That(score.Slow, Is.Zero);
+        }
+
         [Test]
         public void MatchingConsumesOnlyTheNearestSameStrikeAndBreaksTiesEarly()
         {

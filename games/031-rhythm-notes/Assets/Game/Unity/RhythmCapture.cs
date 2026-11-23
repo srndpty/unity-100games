@@ -11,6 +11,7 @@ namespace Game.Unity
         private const double FairLate = .05;
         private const double BurstAge = .08;
         private const double CalibrationLate = .15;
+        private const double FullComboAge = .35;
 
         public async Awaitable RunAsync(CaptureContext capture)
         {
@@ -21,7 +22,7 @@ namespace Game.Unity
             capture.Record("song", song.Name);
             capture.Record("inputOffsetMs", "0");
 
-            // 7個目は 50 ms 遅らせて「可」、8個目はぴったりで「良」。それぞれ判定の 80 ms 後の破壊演出を撮る。
+            // 7個目は 50 ms 遅らせて「可」（SLOW）、8個目はぴったりで「良」。それぞれ判定の 80 ms 後の破壊演出を撮る。
             for (var i = 0; i < song.Notes.Count; i++)
             {
                 var note = song.Notes[i];
@@ -34,6 +35,11 @@ namespace Game.Unity
                     await capture.ShootAsync(i == 6 ? "burst-fair" : "burst-good", $"曲内サンプル {game.Session.Position}");
                 }
             }
+
+            // 最後のノーツの判定でフルコンボ（ミスなし）が決まる。曲の余韻の間に演出を撮る。
+            var last = (double)song.Notes[song.Notes.Count - 1].Sample / Song.SampleRate;
+            game.CaptureAt(last + Confirm + FullComboAge);
+            await capture.ShootAsync("full-combo", $"曲内サンプル {game.Session.Position}");
 
             game.CaptureAt((double)song.Length / Song.SampleRate);
             await capture.ShootAsync("result", $"曲内サンプル {game.Session.Position}");

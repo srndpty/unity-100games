@@ -7,6 +7,9 @@ namespace Game.Core
 
     public enum Grade { None, Good, Fair, Miss }
 
+    // 「可」の打鍵がノーツより早かったか遅かったか。「良」とミスには付けない。
+    public enum Timing { None, Fast, Slow }
+
     public readonly struct Note
     {
         public Note(int sample, Strike strike)
@@ -114,8 +117,14 @@ namespace Game.Core
         public int Miss { get; private set; }
         public int Combo { get; private set; }
         public int BestCombo { get; private set; }
+        public int Fast { get; private set; }
+        public int Slow { get; private set; }
         public Grade Last { get; private set; }
+        public Timing LastTiming { get; private set; }
         public bool Complete => _first == _grades.Length;
+
+        // 全ノーツを判定し終え、ミスが1つもない。
+        public bool FullCombo => Complete && Miss == 0;
 
         public Grade GradeAt(int index) => _grades[index];
 
@@ -123,7 +132,7 @@ namespace Game.Core
         {
             while (_first < _grades.Length && sample > (long)Song.Notes[_first].Sample + _fairWindow)
             {
-                Resolve(_first, Grade.Miss);
+                Resolve(_first, Grade.Miss, Timing.None);
             }
         }
 
@@ -137,6 +146,7 @@ namespace Game.Core
             Advance(sample);
             var index = -1;
             var best = (long)_fairWindow + 1;
+            var error = 0L;
             for (var i = _first; i < _grades.Length; i++)
             {
                 var note = Song.Notes[i];
@@ -147,20 +157,24 @@ namespace Game.Core
                 {
                     index = i;
                     best = distance;
+                    error = sample - note.Sample;
                 }
             }
 
             if (index < 0) { return Grade.None; }
 
             var grade = best <= _goodWindow ? Grade.Good : Grade.Fair;
-            Resolve(index, grade);
+            Resolve(index, grade, grade == Grade.Fair ? (error < 0 ? Timing.Fast : Timing.Slow) : Timing.None);
             return grade;
         }
 
-        private void Resolve(int index, Grade grade)
+        private void Resolve(int index, Grade grade, Timing timing)
         {
             _grades[index] = grade;
             Last = grade;
+            LastTiming = timing;
+            if (timing == Timing.Fast) { Fast++; }
+            if (timing == Timing.Slow) { Slow++; }
             switch (grade)
             {
                 case Grade.Good:

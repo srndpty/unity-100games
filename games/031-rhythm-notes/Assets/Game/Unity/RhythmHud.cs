@@ -15,6 +15,10 @@ namespace Game.Unity
         private static readonly Color Ink = new(.035f, .066f, .11f);
         private static readonly Color Pulse = new(.21f, .89f, .83f);
         private static readonly Color Spark = new(1f, .66f, .37f);
+        private static readonly Color FastColor = new(.45f, .72f, 1f);
+        private static readonly Color SlowColor = new(1f, .45f, .42f);
+        private const int FullComboPopSamples = 280 * Song.SamplesPerMillisecond;
+        private const int FullComboFlashSamples = 520 * Song.SamplesPerMillisecond;
         private readonly VisualElement _selection;
         private readonly VisualElement _play;
         private readonly VisualElement _calibration;
@@ -23,6 +27,10 @@ namespace Game.Unity
         private readonly Label _offset;
         private readonly Label _song;
         private readonly Label _judgement;
+        private readonly Label _timing;
+        private readonly VisualElement _fullComboLayer;
+        private readonly VisualElement _fullComboFlash;
+        private readonly Label _fullCombo;
         private readonly Label _score;
         private readonly Label _taps;
         private readonly Label _summary;
@@ -35,6 +43,7 @@ namespace Game.Unity
         private readonly List<NoteBurst> _bursts = new();
         private Grade[] _seen = Array.Empty<Grade>();
         private Scorecard _shownScore;
+        private long? _fullComboBorn;
 
         public RhythmHud(VisualElement root, Font font, IReadOnlyList<Arrangement> tracks, Action<int> choose,
             Action<int> offset, Action submit, Action calibrate, Action pause, Action select)
@@ -80,7 +89,16 @@ namespace Game.Unity
             var sparkLane = Lane(field, "J", Spark);
             _lanes = new[] { pulseLane.Notes, sparkLane.Notes };
             _laneBursts = new[] { pulseLane.Bursts, sparkLane.Bursts };
-            _judgement = Text(_play, "", "judgement");
+            _fullComboLayer = Layer(field);
+            _fullComboLayer.AddToClassList("banner-layer");
+            _fullComboFlash = new VisualElement { pickingMode = PickingMode.Ignore };
+            _fullComboFlash.AddToClassList("full-combo-flash");
+            _fullComboLayer.Add(_fullComboFlash);
+            _fullCombo = Text(_fullComboLayer, "FULL COMBO", "full-combo");
+            _fullCombo.pickingMode = PickingMode.Ignore;
+            var judgementRow = Row(_play);
+            _judgement = Text(judgementRow, "", "judgement");
+            _timing = Text(judgementRow, "", "timing");
 
             _calibration = Section(shell);
             var calibrationTop = Row(_calibration);
@@ -144,6 +162,13 @@ namespace Game.Unity
                 Grade.Miss => "ミス",
                 _ => "",
             };
+            _timing.text = score.LastTiming switch
+            {
+                Timing.Fast => "FAST",
+                Timing.Slow => "SLOW",
+                _ => "",
+            };
+            _timing.style.color = score.LastTiming == Timing.Fast ? FastColor : SlowColor;
             var lead = leadSeconds * Song.SampleRate;
             for (var i = 0; i < _notes.Count; i++)
             {
@@ -172,6 +197,28 @@ namespace Game.Unity
                     _bursts.RemoveAt(i);
                 }
             }
+
+            if (score.FullCombo && _fullComboBorn == null) { _fullComboBorn = session.Position; }
+            RenderFullCombo(session.Position);
+        }
+
+        // 最後のノーツでフルコンボが決まった瞬間から、文字が縮みながら現れ、背後の帯が光って消える。
+        // 経過は曲内サンプルで数える（一時停止で止まり、撮影でも同じ絵になる）。
+        private void RenderFullCombo(long position)
+        {
+            Show(_fullComboLayer, _fullComboBorn != null);
+            if (_fullComboBorn is not { } born) { return; }
+
+            var age = Math.Max(0, position - born);
+            var pop = Mathf.Clamp01((float)age / FullComboPopSamples);
+            var ease = 1 - (1 - pop) * (1 - pop) * (1 - pop);
+            var beat = pop < 1 ? 0 : .04f * Mathf.Sin((age - FullComboPopSamples) * 2 * Mathf.PI / (Song.SampleRate / 2f));
+            var scale = 2.2f - 1.2f * ease + beat;
+            _fullCombo.style.scale = new Scale(new Vector2(scale, scale));
+            _fullCombo.style.opacity = ease;
+            var flash = Mathf.Clamp01((float)age / FullComboFlashSamples);
+            _fullComboFlash.style.opacity = .9f * (1 - flash);
+            _fullComboFlash.style.scale = new Scale(new Vector2(1, .2f + .8f * Mathf.Sqrt(flash)));
         }
 
         private static void Place(VisualElement element, bool alive, float distance, float lead)
@@ -182,7 +229,8 @@ namespace Game.Unity
         }
 
         private static string ScoreSummary(Scorecard score) =>
-            $"{score.Song.Name}\n{score.Points:N0} 点\n良 {score.Good}    可 {score.Fair}    ミス {score.Miss}\n最大コンボ {score.BestCombo}";
+            $"{score.Song.Name}{(score.FullCombo ? "    FULL COMBO" : "")}\n{score.Points:N0} 点\n" +
+            $"良 {score.Good}    可 {score.Fair}（FAST {score.Fast} / SLOW {score.Slow}）    ミス {score.Miss}\n最大コンボ {score.BestCombo}";
 
         private static string CalibrationSummary(RhythmSession session) => session.Measured is { } measured
             ? $"補正テスト\n打鍵 {session.TapCount} 回から測ったずれ {measured:+0;-0;0} ms\n音ずれ補正を {session.Offset:+0;-0;0} ms に設定した"
@@ -197,6 +245,7 @@ namespace Game.Unity
             _bars.Clear();
             _bursts.Clear();
             _shownScore = score;
+            _fullComboBorn = null;
             _seen = new Grade[score.Song.Notes.Count];
             foreach (var note in score.Song.Notes)
             {
