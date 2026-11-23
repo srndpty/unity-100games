@@ -13,7 +13,8 @@ namespace IntGeometry
 
             // ニュートン法。初期値を大きめに取ると単調に減って収束する。
             var x = value;
-            var y = (x + 1) / 2;
+            // (x + 1) / 2 は long.MaxValue で桁あふれするので、同じ値（切り上げの半分）を足し算なしで作る。
+            var y = (x >> 1) + (x & 1);
             while (y < x)
             {
                 x = y;

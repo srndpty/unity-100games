@@ -225,7 +225,7 @@ namespace Game.Core
         public int Level { get; private set; }
 
         /// <summary>今のレベルで貯めた経験値（次のレベルで 0 から数え直す）。</summary>
-        public int Experience { get; private set; }
+        public long Experience { get; private set; }
 
         public int ExperienceToNext => _config.ExperienceToNext(Level);
 
@@ -477,10 +477,14 @@ namespace Game.Core
             PlayerStart = position;
         }
 
-        /// <summary>武器のレベルを直接決める（テスト・撮影用。0 で手放す）。発動までの Tick は 0 にする。</summary>
+        /// <summary>
+        /// 武器のレベルを直接決める（テスト・撮影用。0 で手放す）。発動までの Tick は 0 にする。
+        /// レベルを下げたり待ちを縮めたりできるので、弾の容量の上界（<see cref="TideConfig.ProjectileCapacityOf"/>）を守るため、弾が残っている間は拒否する。
+        /// </summary>
         public void SetWeaponLevel(int weapon, int level)
         {
             if (level < 0 || level > _config.Weapons[CheckWeapon(weapon)].MaxLevel) { throw new ArgumentOutOfRangeException(nameof(level)); }
+            if (_projectiles.Count > 0) { throw new InvalidOperationException("弾が残っている間は武器のレベルを直接変えられません。"); }
             _weaponLevel[weapon] = level;
             _weaponCooldown[weapon] = 0;
         }
@@ -680,7 +684,8 @@ namespace Game.Core
                 }
             }
 
-            _gems.Value[nearest] = (int)Math.Min(int.MaxValue, (long)_gems.Value[nearest] + value);
+            // 値は long で持つので、満杯の間に何度足しても切り捨てない（落ちている値の合計は保たれる。028 P2-3）。
+            _gems.Value[nearest] += value;
         }
 
         private void GainLevels()

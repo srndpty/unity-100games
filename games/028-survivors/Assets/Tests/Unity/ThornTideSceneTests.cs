@@ -97,7 +97,7 @@ namespace Game.Unity.Tests
         /// <summary>自機の上に次のレベルの分の宝石を置き、時計で 3 択が出るまで待つ。</summary>
         private IEnumerator RaiseLevel()
         {
-            R.PlaceGem(R.Player, R.ExperienceToNext - R.Experience);
+            R.PlaceGem(R.Player, (int)(R.ExperienceToNext - R.Experience));
             yield return WaitUntil(() => _game.Flow.Screen == AppScreen.LevelUp);
             yield return null;
         }

@@ -237,18 +237,48 @@ namespace Game.Core
         public static int DiagonalOf(int speed) => speed <= 0 ? 0 : Math.Max(1, speed * 181 / 256);
 
         /// <summary>
-        /// 1 つの武器の定義で同時に存在しうる弾の数（Bolt のみ。レベルごとの「数 × 寿命 ÷ 間隔の切り上げ」の最大）。
+        /// 1 つの武器の定義で同時に存在しうる弾の数の上界（Bolt のみ。他は 0）。強化をまたいで旧レベルの弾が残る場合を含む（028 P2-1）。
+        /// <para>
+        /// 弾は Tick s に撃つと、s + 寿命 - 1 の Tick の終わりまで残る（撃つ瞬間に、それより前に撃った弾は「経過 &lt; 寿命」なら残っている）。
+        /// レベルは上がるだけで、レベル l で撃ってから次に撃つまでの間は、その間に上がったレベル m の間隔も含めた
+        /// min(I_l, I_m …) 以上（強化は待ちを新しい間隔までしか縮めない）。撃った回を新しい順にたどり、
+        /// 「経過 a・直後に撃ったレベル cur」から 1 つ前の発射のレベル l（cur 以下）と経過 a + min(I_l..I_cur) を選ぶ動的計画法で、
+        /// 残っている弾の数の最大を求める。間隔を最短に取るのが最も多く残る（間が空くほど古い弾は消える）。
+        /// </para>
         /// </summary>
         public static int ProjectileCapacityOf(WeaponDef weapon)
         {
+            if (weapon == null) { throw new ArgumentNullException(nameof(weapon)); }
             if (weapon.Kind != WeaponKind.Bolt) { return 0; }
-            var most = 0;
-            foreach (var level in weapon.Levels)
+            var levels = weapon.Levels;
+            var n = levels.Length;
+            var maxLife = 0;
+            foreach (var level in levels) { maxLife = Math.Max(maxLife, level.LifeTicks); }
+
+            // older[a * n + cur]：経過 a の発射（レベル cur）より前に撃った弾のうち、まだ残っている数の最大。a ≥ maxLife なら 0。
+            var older = new long[(maxLife + 1) * n];
+            for (var a = maxLife - 1; a >= 0; a--)
             {
-                most = Math.Max(most, level.Count * ((level.LifeTicks + level.IntervalTicks - 1) / level.IntervalTicks));
+                for (var cur = 0; cur < n; cur++)
+                {
+                    long best = 0;
+                    var gap = int.MaxValue;
+                    for (var l = cur; l >= 0; l--)
+                    {
+                        gap = Math.Min(gap, levels[l].IntervalTicks);
+                        var age = a + gap;
+                        var value = age < maxLife ? older[(age * n) + l] : 0;
+                        if (levels[l].LifeTicks > age) { value += levels[l].Count; }
+                        best = Math.Max(best, value);
+                    }
+
+                    older[(a * n) + cur] = best;
+                }
             }
 
-            return most;
+            long most = 0;
+            for (var l = 0; l < n; l++) { most = Math.Max(most, levels[l].Count + older[l]); }
+            return (int)Math.Min(int.MaxValue, most);
         }
 
         /// <summary>範囲と組み合わせを確かめる。範囲外なら例外（fail-closed）。</summary>

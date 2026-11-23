@@ -34,7 +34,7 @@ namespace Game.Unity
 
             // レベルアップの 3 択：台本で自機の上に次のレベルの分の宝石を置き、操縦役を外して 3 択の画面を出す。
             var run = R;
-            run.PlaceGem(run.Player, run.ExperienceToNext - run.Experience);
+            run.PlaceGem(run.Player, (int)(run.ExperienceToNext - run.Experience));
             var pilot = _game.Flow.Pilot;
             _game.Flow.Pilot = null;
             _game.Flow.StepTick();

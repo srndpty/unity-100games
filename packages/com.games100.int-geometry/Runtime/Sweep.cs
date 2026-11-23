@@ -96,16 +96,21 @@ namespace IntGeometry
             var largest = Math.Max(Math.Max(Math.Abs(p0x), Math.Abs(p0y)), Math.Max(Math.Max(Math.Abs(dx), Math.Abs(dy)), radiusSum));
             if (largest <= FirstLimit) { return First(aStart, aEnd, bStart, bEnd, radiusSum).Hit; }
 
-            long radius = radiusSum;
-            var c = (p0x * p0x) + (p0y * p0y) - (radius * radius);
-            if (c < 0) { return true; }
-            var a = (dx * dx) + (dy * dy);
-            var b = 2 * ((p0x * dx) + (p0y * dy));
-            if (a == 0 || b >= 0) { return false; }
+            // 大きい組は係数から BigInteger で計算する（各成分は int の差なので 2^33 未満だが、2 乗の和や内積は long を超えうる）。
+            BigInteger x0 = p0x;
+            BigInteger y0 = p0y;
+            BigInteger vx = dx;
+            BigInteger vy = dy;
+            BigInteger radius = radiusSum;
+            var c = (x0 * x0) + (y0 * y0) - (radius * radius);
+            if (c.Sign < 0) { return true; }
+            var a = (vx * vx) + (vy * vy);
+            var b = 2 * ((x0 * vx) + (y0 * vy));
+            if (a.IsZero || b.Sign >= 0) { return false; }
 
             // 最も近づく時刻 t* = -b / 2a。t* が 1 以上なら終わりの位置で、そうでなければ t* での近さ（判別式が正か）で判定する。
-            if (-b >= 2 * a) { return a + b + c < 0; }
-            return (new BigInteger(b) * b) - (new BigInteger(4) * a * c) > 0;
+            if (-b >= 2 * a) { return (a + b + c).Sign < 0; }
+            return ((b * b) - (4 * a * c)).Sign > 0;
         }
 
         /// <summary>相対位置と相対移動。各軸で届かない組（遠い組）なら false。</summary>

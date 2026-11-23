@@ -105,6 +105,18 @@ namespace IntGeometry.Tests
                 Assert.That((root + 1) * (root + 1), Is.GreaterThan(value));
             }
 
+            // 境界：最大値（(x + 1) / 2 の初期値は桁あふれする。028 P3-1）、小さな値、平方数の前後。
+            Assert.That(IntMath.Sqrt(long.MaxValue), Is.EqualTo(3_037_000_499L));
+            Assert.That(IntMath.SqrtCeiling(long.MaxValue), Is.EqualTo(3_037_000_500L));
+            Assert.That(IntMath.Sqrt(long.MaxValue - 1), Is.EqualTo(3_037_000_499L));
+            Assert.That(IntMath.Sqrt(3_037_000_499L * 3_037_000_499L), Is.EqualTo(3_037_000_499L));
+            Assert.That(IntMath.Sqrt((3_037_000_499L * 3_037_000_499L) - 1), Is.EqualTo(3_037_000_498L));
+            for (long v = 0; v < 2000; v++)
+            {
+                var root = IntMath.Sqrt(v);
+                Assert.That(root * root <= v && (root + 1) * (root + 1) > v, Is.True, $"Sqrt({v}) = {root}");
+            }
+
             Assert.That(IntMath.Sqrt(0), Is.Zero);
             Assert.That(IntMath.SqrtCeiling(17), Is.EqualTo(5));
             Assert.That(IntMath.SqrtCeiling(16), Is.EqualTo(4));

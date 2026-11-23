@@ -77,6 +77,35 @@ namespace Game.Core.Tests
             Assert.That(run.Gems.ValueOf(right), Is.EqualTo(7), "いちばん近い宝石に足す");
         }
 
+        /// <summary>
+        /// レビュー（028 P2-3）：満杯の宝石へ足し続けて int を超えても値を捨てない。int.MaxValue の直前・ちょうど・超過で、
+        /// 落ちている合計が落とした合計と等しく、取れば全部が経験値になる。
+        /// </summary>
+        [Test]
+        public void MergedGemBeyondIntMax_KeepsEveryPoint()
+        {
+            var run = Run(Quiet(c => c.MaxGems = 1));
+            var far = At(40 * T, 0);
+            const int Big = TideConfig.MaxExperience;
+            for (var i = 0; i < int.MaxValue / Big; i++) { run.PlaceGem(far, Big); }
+            run.PlaceGem(far, (int)(int.MaxValue % Big) - 1);
+            Assert.That(run.Gems.ValueOf(0), Is.EqualTo(int.MaxValue - 1L), "直前");
+            run.PlaceGem(far, 1);
+            Assert.That(run.Gems.ValueOf(0), Is.EqualTo((long)int.MaxValue), "ちょうど");
+            run.PlaceGem(far, Big);
+            Assert.That(run.Gems.ValueOf(0), Is.EqualTo(int.MaxValue + (long)Big), "超過しても切り捨てない");
+            Assert.That(run.Gems.Count, Is.EqualTo(1));
+            Assert.That(run.Gems.TotalValue, Is.EqualTo(run.ExperienceDropped));
+
+            // 取ると全部が経験値になる（今のレベルの経験値も long で、レベルの表で順に上がる）。
+            run.PlacePlayer(far);
+            run.Step(PlayerCommand.Idle);
+            Assert.That(run.Gems.Count, Is.Zero);
+            Assert.That(run.TotalExperience, Is.EqualTo(run.ExperienceDropped));
+            Assert.That(run.Experience, Is.LessThan(run.ExperienceToNext));
+            Assert.That(run.PendingLevelUps, Is.EqualTo(run.Level - 1));
+        }
+
         [Test]
         public void OneBigGem_GivesOneChoicePerLevel_AndStepWaitsWhileChoosing()
         {

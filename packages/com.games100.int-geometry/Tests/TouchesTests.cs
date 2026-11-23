@@ -84,6 +84,59 @@ namespace IntGeometry.Tests
             }
         }
 
+        /// <summary>レビュー（028 P2-2）の例：終わりの位置で完全に重なる。係数 b が long を超え、long のままでは符号が反転して「近づかない」と誤る。</summary>
+        [Test]
+        public void HugeCoordinates_WhereCoefficientsOverflowLong_AreStillExact()
+        {
+            var start = new Vec2i(2_000_000_000, 2_000_000_000);
+            Assert.That(Sweep.Touches(start, Vec2i.Zero, Vec2i.Zero, Vec2i.Zero, 1), Is.True);
+            Assert.That(Reference(start, Vec2i.Zero, Vec2i.Zero, Vec2i.Zero, 1), Is.True);
+
+            // 正負の端から端へ（相対の移動は int を超える）、両方が動く組。
+            var a0 = new Vec2i(int.MinValue + 1, -2_000_000_000);
+            var a1 = new Vec2i(int.MaxValue, 2_000_000_000);
+            var b0 = new Vec2i(2_000_000_000, int.MinValue + 1);
+            var b1 = new Vec2i(-2_000_000_000, int.MaxValue);
+            Assert.That(Sweep.Touches(a0, a1, b0, b1, 1000), Is.EqualTo(Reference(a0, a1, b0, b1, 1000)));
+            Assert.That(Sweep.Touches(a0, a1, b0, b1, 1000), Is.True, "中央ですれ違う");
+        }
+
+        [TestCase(1)]
+        [TestCase(1_000_000)]
+        [TestCase(1_000_000_000)]
+        public void HugeTangent_IsNotContact_ButOneMoreIs(int r)
+        {
+            // 横に端から端まで動く点と、その真下 r の静止点（接線）。
+            var aStart = new Vec2i(-2_000_000_000, r);
+            var aEnd = new Vec2i(2_000_000_000, r);
+            Assert.That(Sweep.Touches(aStart, aEnd, Vec2i.Zero, Vec2i.Zero, r), Is.False);
+            Assert.That(Sweep.Touches(aStart, aEnd, Vec2i.Zero, Vec2i.Zero, r + 1), Is.True);
+            Assert.That(Reference(aStart, aEnd, Vec2i.Zero, Vec2i.Zero, r), Is.False);
+        }
+
+        [Test]
+        public void FullIntRange_AgreesWithTheReference()
+        {
+            var random = new SeededRandom(28);
+            var hits = 0;
+            for (var n = 0; n < 20000; n++)
+            {
+                Vec2i Point() => new(random.Range(-2_000_000_000, 2_000_000_000), random.Range(-2_000_000_000, 2_000_000_000));
+                var aStart = Point();
+                var aEnd = Point();
+                var bStart = Point();
+
+                // 半分は相手も動き、半分は止まる。半径は小さいものから int の大きさまで。
+                var bEnd = n % 2 == 0 ? Point() : bStart;
+                var radius = n % 3 == 0 ? random.Range(1, 1000) : random.Range(1, int.MaxValue - 1);
+                var expected = Reference(aStart, aEnd, bStart, bEnd, radius);
+                Assert.That(Sweep.Touches(aStart, aEnd, bStart, bEnd, radius), Is.EqualTo(expected), $"#{n} {aStart}->{aEnd} / {bStart}->{bEnd} r {radius}");
+                if (expected) { hits++; }
+            }
+
+            Assert.That(hits, Is.GreaterThan(1000), "触れる組も十分に含む");
+        }
+
         [Test]
         public void NonPositiveRadius_Throws()
         {
@@ -96,8 +149,8 @@ namespace IntGeometry.Tests
         /// </summary>
         private static bool Reference(Vec2i aStart, Vec2i aEnd, Vec2i bStart, Vec2i bEnd, int radius)
         {
-            BigInteger px = aStart.X - bStart.X;
-            BigInteger py = aStart.Y - bStart.Y;
+            BigInteger px = (long)aStart.X - bStart.X;
+            BigInteger py = (long)aStart.Y - bStart.Y;
             BigInteger dx = (long)aEnd.X - aStart.X - ((long)bEnd.X - bStart.X);
             BigInteger dy = (long)aEnd.Y - aStart.Y - ((long)bEnd.Y - bStart.Y);
             var r2 = (BigInteger)radius * radius;

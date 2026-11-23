@@ -312,7 +312,7 @@ namespace Game.Core
         internal int[] IdOf;
         internal int[] X;
         internal int[] Y;
-        internal int[] Value;
+        internal long[] Value;
         internal bool[] Attracted;
 
         internal GemSet(int capacity)
@@ -320,7 +320,7 @@ namespace Game.Core
             IdOf = new int[capacity];
             X = new int[capacity];
             Y = new int[capacity];
-            Value = new int[capacity];
+            Value = new long[capacity];
             Attracted = new bool[capacity];
         }
 
@@ -332,7 +332,7 @@ namespace Game.Core
 
         public Vec2i Position(int i) => new(X[Check(i)], Y[i]);
 
-        public int ValueOf(int i) => Value[Check(i)];
+        public long ValueOf(int i) => Value[Check(i)];
 
         public bool IsAttracted(int i) => Attracted[Check(i)];
 
@@ -347,7 +347,7 @@ namespace Game.Core
             }
         }
 
-        internal void Add(int id, Vec2i position, int value)
+        internal void Add(int id, Vec2i position, long value)
         {
             if (Count >= Capacity) { throw new InvalidOperationException("宝石の数が容量を超えます。"); }
             var i = Count++;
@@ -376,7 +376,7 @@ namespace Game.Core
             copy.IdOf = (int[])IdOf.Clone();
             copy.X = (int[])X.Clone();
             copy.Y = (int[])Y.Clone();
-            copy.Value = (int[])Value.Clone();
+            copy.Value = (long[])Value.Clone();
             copy.Attracted = (bool[])Attracted.Clone();
             return copy;
         }
