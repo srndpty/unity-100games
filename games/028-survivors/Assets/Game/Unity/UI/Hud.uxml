@@ -1,0 +1,45 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:VisualElement name="stats" class="stats" picking-mode="Ignore">
+            <ui:Label name="time" text=" " class="stat time" />
+            <ui:Label name="level" text=" " class="stat level" />
+            <ui:VisualElement class="bar xp-bar" picking-mode="Ignore">
+                <ui:VisualElement name="xp" class="fill xp-fill" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label name="health-label" text="体力" class="stat small" />
+            <ui:VisualElement class="bar hp-bar" picking-mode="Ignore">
+                <ui:VisualElement name="hp" class="fill hp-fill" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label name="kills" text=" " class="stat kills" />
+            <ui:Label name="enemies" text=" " class="stat small" />
+            <ui:Button name="pause" text="一時停止 / Esc" class="pause" />
+        </ui:VisualElement>
+        <ui:VisualElement name="boss" class="boss" picking-mode="Ignore">
+            <ui:Label name="boss-name" text=" " class="boss-name" />
+            <ui:VisualElement class="bar boss-bar" picking-mode="Ignore">
+                <ui:VisualElement name="boss-hp" class="fill boss-fill" picking-mode="Ignore" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:Label name="weapons" text=" " class="weapons" picking-mode="Ignore" />
+        <ui:VisualElement name="levelup" class="levelup">
+            <ui:Label name="levelup-title" text="レベルアップ！" class="levelup-title" />
+            <ui:VisualElement class="cards">
+                <ui:Button name="card0" class="card" />
+                <ui:Button name="card1" class="card" />
+                <ui:Button name="card2" class="card" />
+            </ui:VisualElement>
+            <ui:Label text="1 / 2 / 3・クリック：選ぶ    ← →：選び直す    Enter：決める" class="levelup-help" />
+        </ui:VisualElement>
+        <ui:VisualElement name="panel" class="panel">
+            <ui:Label name="headline" text="THORN TIDE" class="headline" />
+            <ui:Label name="message" class="message" />
+            <ui:VisualElement class="buttons">
+                <ui:Button name="submit" text="はじめる / Enter" />
+                <ui:Button name="restart" text="最初から / R" />
+                <ui:Button name="title" text="タイトルへ / T" />
+                <ui:Button name="quit" text="終了" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

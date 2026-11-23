@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc87a7ba5a421844686a79e6240c4fb2, type: 3}
+  m_Name: Weapon-arc
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.WeaponDefinition
+  DisplayName: "\u96F7\u306E\u9023\u9396"
+  Summary: "\u8FD1\u3044\u6575\u306B\u843D\u3061\u305F\u96F7\u304C\u3001\n\u6B21\u3005\u3068\u8FD1\u304F\u306E\u6575\u3078\u98DB\u3073\u79FB\u308B\u3002"
+  Data:
+    Id: arc
+    Kind: 4
+    Levels:
+    - Damage: 6
+      IntervalTicks: 100
+      Count: 2
+      Range: 1792
+      Size: 768
+      Speed: 0
+      Pierce: 0
+      LifeTicks: 0
+    - Damage: 7
+      IntervalTicks: 90
+      Count: 3
+      Range: 1792
+      Size: 768
+      Speed: 0
+      Pierce: 0
+      LifeTicks: 0
+    - Damage: 8
+      IntervalTicks: 80
+      Count: 4
+      Range: 2048
+      Size: 896
+      Speed: 0
+      Pierce: 0
+      LifeTicks: 0
+    - Damage: 10
+      IntervalTicks: 70
+      Count: 5
+      Range: 2048
+      Size: 896
+      Speed: 0
+      Pierce: 0
+      LifeTicks: 0
+    - Damage: 12
+      IntervalTicks: 60
+      Count: 6
+      Range: 2304
+      Size: 1024
+      Speed: 0
+      Pierce: 0
+      LifeTicks: 0

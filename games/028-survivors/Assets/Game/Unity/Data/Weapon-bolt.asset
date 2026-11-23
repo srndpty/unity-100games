@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc87a7ba5a421844686a79e6240c4fb2, type: 3}
+  m_Name: Weapon-bolt
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.WeaponDefinition
+  DisplayName: "\u5149\u306E\u77E2"
+  Summary: "\u8FD1\u3044\u6575\u3078\u5149\u306E\u77E2\u3092\u653E\u3064\u3002\n\u5F37\u5316\u3067\u77E2\u306E\u6570\u3068\u8CAB\u901A\u304C\u5897\u3048\u308B\u3002"
+  Data:
+    Id: bolt
+    Kind: 0
+    Levels:
+    - Damage: 4
+      IntervalTicks: 50
+      Count: 1
+      Range: 2560
+      Size: 40
+      Speed: 72
+      Pierce: 1
+      LifeTicks: 50
+    - Damage: 5
+      IntervalTicks: 45
+      Count: 1
+      Range: 2560
+      Size: 40
+      Speed: 72
+      Pierce: 2
+      LifeTicks: 50
+    - Damage: 6
+      IntervalTicks: 40
+      Count: 2
+      Range: 2560
+      Size: 44
+      Speed: 76
+      Pierce: 2
+      LifeTicks: 50
+    - Damage: 7
+      IntervalTicks: 35
+      Count: 2
+      Range: 2816
+      Size: 44
+      Speed: 80
+      Pierce: 3
+      LifeTicks: 50
+    - Damage: 8
+      IntervalTicks: 30
+      Count: 3
+      Range: 3072
+      Size: 48
+      Speed: 84
+      Pierce: 3
+      LifeTicks: 50

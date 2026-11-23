@@ -161,7 +161,15 @@
     <Project Path="games/027-bullet-hell/dotnet/Core.Tests/G027.Core.Tests.csproj" />
     <Project Path="games/027-bullet-hell/dotnet/Core/G027.Core.csproj" />
   </Folder>
+  <Folder Name="/028-survivors/">
+    <Project Path="games/028-survivors/dotnet/App.Tests/G028.App.Tests.csproj" />
+    <Project Path="games/028-survivors/dotnet/App/G028.App.csproj" />
+    <Project Path="games/028-survivors/dotnet/Core.Tests/G028.Core.Tests.csproj" />
+    <Project Path="games/028-survivors/dotnet/Core/G028.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
+    <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
+    <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />
     <Project Path="packages/com.games100.tile-motion/dotnet~/TileMotion.Tests/TileMotion.Tests.csproj" />
     <Project Path="packages/com.games100.tile-motion/dotnet~/TileMotion/TileMotion.csproj" />
   </Folder>

@@ -1,0 +1,74 @@
+{
+    "Product": "THORN TIDE",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "257b600f915641538bf9c75602430a18",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-23T10:28:16.2437117Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"ViewWidthCells\":32,\"ViewHeightCells\":18,\"DurationTicks\":18000,\"BossTimeLimitTicks\":7200,\"PlayerHealth\":100,\"PlayerRadius\":80,\"PlayerSpeed\":22,\"InvincibleTicks\":30,\"HealAmount\":30,\"PickupRadius\":640,\"GemRadius\":40,\"GemSpeed\":40,\"MaxGems\":256,\"MaxEnemies\":400,\"MaxProjectiles\":128,\"SteerIntervalTicks\":6,\"SeparationNeighbors\":6,\"SeparationPush\":12,\"GridCellSize\":512,\"SpawnInner\":5120,\"SpawnOuter\":6144,\"DespawnDistance\":8192,\"StageTicks\":1800,\"ExperienceTable\":[5,8,11,14,18,22,26,30,35,40,45,50,56,62,68,75,82,90,98,106,115,124,133,142],\"StartingWeapon\":0,\"Enemies\":[],\"Weapons\":[],\"Stages\":[{\"TargetAlive\":20,\"IntervalTicks\":30,\"Weights\":[1,0,0,0]},{\"TargetAlive\":40,\"IntervalTicks\":20,\"Weights\":[3,1,0,0]},{\"TargetAlive\":60,\"IntervalTicks\":15,\"Weights\":[3,1,0,0]},{\"TargetAlive\":90,\"IntervalTicks\":12,\"Weights\":[3,2,1,0]},{\"TargetAlive\":120,\"IntervalTicks\":10,\"Weights\":[3,2,1,0]},{\"TargetAlive\":160,\"IntervalTicks\":8,\"Weights\":[3,3,1,0]},{\"TargetAlive\":200,\"IntervalTicks\":6,\"Weights\":[3,3,2,0]},{\"TargetAlive\":250,\"IntervalTicks\":5,\"Weights\":[3,3,2,0]},{\"TargetAlive\":300,\"IntervalTicks\":4,\"Weights\":[2,3,2,0]},{\"TargetAlive\":350,\"IntervalTicks\":3,\"Weights\":[2,3,3,0]}]},\"Enemies\":[{\"instanceID\":1099511631814},{\"instanceID\":1099511631816},{\"instanceID\":1099511631815},{\"instanceID\":1099511631813}],\"Weapons\":[{\"instanceID\":1099511631811},{\"instanceID\":1099511631809},{\"instanceID\":1099511631808},{\"instanceID\":1099511631810},{\"instanceID\":1099511631812}],\"Volume\":0.11999999731779099}"
+        },
+        {
+            "Key": "rules",
+            "Value": "{\"ViewWidthCells\":32,\"ViewHeightCells\":18,\"DurationTicks\":18000,\"BossTimeLimitTicks\":7200,\"PlayerHealth\":100,\"PlayerRadius\":80,\"PlayerSpeed\":22,\"InvincibleTicks\":30,\"HealAmount\":30,\"PickupRadius\":640,\"GemRadius\":40,\"GemSpeed\":40,\"MaxGems\":256,\"MaxEnemies\":400,\"MaxProjectiles\":128,\"SteerIntervalTicks\":6,\"SeparationNeighbors\":6,\"SeparationPush\":12,\"GridCellSize\":512,\"SpawnInner\":5120,\"SpawnOuter\":6144,\"DespawnDistance\":8192,\"StageTicks\":1800,\"ExperienceTable\":[5,8,11,14,18,22,26,30,35,40,45,50,56,62,68,75,82,90,98,106,115,124,133,142],\"StartingWeapon\":0,\"Enemies\":[{\"Id\":\"mite\",\"Behavior\":0,\"Radius\":72,\"Speed\":10,\"Health\":3,\"ContactDamage\":5,\"Experience\":1},{\"Id\":\"gnat\",\"Behavior\":1,\"Radius\":56,\"Speed\":22,\"Health\":2,\"ContactDamage\":4,\"Experience\":1},{\"Id\":\"husk\",\"Behavior\":0,\"Radius\":112,\"Speed\":7,\"Health\":16,\"ContactDamage\":10,\"Experience\":3},{\"Id\":\"warden\",\"Behavior\":2,\"Radius\":320,\"Speed\":9,\"Health\":1500,\"ContactDamage\":25,\"Experience\":0}],\"Weapons\":[{\"Id\":\"bolt\",\"Kind\":0,\"Levels\":[{\"Damage\":4,\"IntervalTicks\":50,\"Count\":1,\"Range\":2560,\"Size\":40,\"Speed\":72,\"Pierce\":1,\"LifeTicks\":50},{\"Damage\":5,\"IntervalTicks\":45,\"Count\":1,\"Range\":2560,\"Size\":40,\"Speed\":72,\"Pierce\":2,\"LifeTicks\":50},{\"Damage\":6,\"IntervalTicks\":40,\"Count\":2,\"Range\":2560,\"Size\":44,\"Speed\":76,\"Pierce\":2,\"LifeTicks\":50},{\"Damage\":7,\"IntervalTicks\":35,\"Count\":2,\"Range\":2816,\"Size\":44,\"Speed\":80,\"Pierce\":3,\"LifeTicks\":50},{\"Damage\":8,\"IntervalTicks\":30,\"Count\":3,\"Range\":3072,\"Size\":48,\"Speed\":84,\"Pierce\":3,\"LifeTicks\":50}]},{\"Id\":\"orbit\",\"Kind\":1,\"Levels\":[{\"Damage\":3,\"IntervalTicks\":20,\"Count\":2,\"Range\":410,\"Size\":60,\"Speed\":546,\"Pierce\":0,\"LifeTicks\":0},{\"Damage\":4,\"IntervalTicks\":20,\"Count\":3,\"Range\":430,\"Size\":64,\"Speed\":546,\"Pierce\":0,\"LifeTicks\":0},{\"Damage\":5,\"IntervalTicks\":18,\"Count\":3,\"Range\":460,\"Size\":70,\"Speed\":600,\"Pierce\":0,\"LifeTicks\":0},{\"Damage\":6,\"IntervalTicks\":16,\"Count\":4,\"Range\":490,\"Size\":76,\"Speed\":655,\"Pierce\":0,\"LifeTicks\":0},{\"Damage\":7,\"IntervalTicks\":15,\"Count\":5,\"Range\":512,\"Size\":80,\"Speed\":700,\"Pierce\":0,\"LifeTicks\":0}]},{\"Id\":\"pulse\",\"Kind\":2,\"Levels\":[{\"Damage\":3,\"IntervalTicks\":90,\"Count\":0,\"Range\":512,\"Size\":0,\"Speed\":0,\"Pierce\":0,\"LifeTicks\":0},{\"Damage\":4,\"IntervalTicks\":80,\"Count\":0,\"Range\":580,\"Size\":0,\"Speed\":0,\"Pierce\":0,\"LifeTicks\":0},{\"Damage\":5,\"IntervalTicks\":70,\"Count\":0,\"Range\":650,\"Size\":0,\"Speed\":0,\"Pierce\":0,\"LifeTicks\":0},{\"Damage\":6,\"IntervalTicks\":60,\"Count\":0,\"Range\":730,\"Size\":0,\"Speed\":0,\"Pierce\":0,\"LifeTicks\":0},{\"Damage\":8,\"IntervalTicks\":50,\"Count\":0,\"Range\":820,\"Size\":0,\"Speed\":0,\"Pierce\":0,\"LifeTicks\":0}]},{\"Id\":\"lash\",\"Kind\":3,\"Levels\":[{\"Damage\":8,\"IntervalTicks\":70,\"Count\":1,\"Range\":768,\"Size\":128,\"Speed\":0,\"Pierce\":0,\"LifeTicks\":0},{\"Damage\":10,\"IntervalTicks\":65,\"Count\":1,\"Range\":896,\"Size\":144,\"Speed\":0,\"Pierce\":0,\"LifeTicks\":0},{\"Damage\":12,\"IntervalTicks\":60,\"Count\":2,\"Range\":1024,\"Size\":160,\"Speed\":0,\"Pierce\":0,\"LifeTicks\":0},{\"Damage\":14,\"IntervalTicks\":52,\"Count\":2,\"Range\":1088,\"Size\":176,\"Speed\":0,\"Pierce\":0,\"LifeTicks\":0},{\"Damage\":16,\"IntervalTicks\":45,\"Count\":2,\"Range\":1152,\"Size\":200,\"Speed\":0,\"Pierce\":0,\"LifeTicks\":0}]},{\"Id\":\"arc\",\"Kind\":4,\"Levels\":[{\"Damage\":6,\"IntervalTicks\":100,\"Count\":2,\"Range\":1792,\"Size\":768,\"Speed\":0,\"Pierce\":0,\"LifeTicks\":0},{\"Damage\":7,\"IntervalTicks\":90,\"Count\":3,\"Range\":1792,\"Size\":768,\"Speed\":0,\"Pierce\":0,\"LifeTicks\":0},{\"Damage\":8,\"IntervalTicks\":80,\"Count\":4,\"Range\":2048,\"Size\":896,\"Speed\":0,\"Pierce\":0,\"LifeTicks\":0},{\"Damage\":10,\"IntervalTicks\":70,\"Count\":5,\"Range\":2048,\"Size\":896,\"Speed\":0,\"Pierce\":0,\"LifeTicks\":0},{\"Damage\":12,\"IntervalTicks\":60,\"Count\":6,\"Range\":2304,\"Size\":1024,\"Speed\":0,\"Pierce\":0,\"LifeTicks\":0}]}],\"Stages\":[{\"TargetAlive\":20,\"IntervalTicks\":30,\"Weights\":[1,0,0,0]},{\"TargetAlive\":40,\"IntervalTicks\":20,\"Weights\":[3,1,0,0]},{\"TargetAlive\":60,\"IntervalTicks\":15,\"Weights\":[3,1,0,0]},{\"TargetAlive\":90,\"IntervalTicks\":12,\"Weights\":[3,2,1,0]},{\"TargetAlive\":120,\"IntervalTicks\":10,\"Weights\":[3,2,1,0]},{\"TargetAlive\":160,\"IntervalTicks\":8,\"Weights\":[3,3,1,0]},{\"TargetAlive\":200,\"IntervalTicks\":6,\"Weights\":[3,3,2,0]},{\"TargetAlive\":250,\"IntervalTicks\":5,\"Weights\":[3,3,2,0]},{\"TargetAlive\":300,\"IntervalTicks\":4,\"Weights\":[2,3,2,0]},{\"TargetAlive\":350,\"IntervalTicks\":3,\"Weights\":[2,3,3,0]}]}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "1be5ed085fbe7903abc10ce278f76b78064c6d890453a816d1b9aa28ca8a81ad",
+            "Note": "タイトル（操作とルールの説明）"
+        },
+        {
+            "File": "02-start.jpg",
+            "Sha256": "dd6c0fae27be5fc1b3de424254a47eb6db32dce6cc5150804ea44a245dd2dab9",
+            "Note": "開始から 150 Tick。最初の武器（光の矢）が近い敵を自動で撃つ。自動操縦が動かす。経過 150 Tick、自機 (-1710, -2502)、体力 100、レベル 1、撃破 1、敵 4"
+        },
+        {
+            "File": "03-level-up.jpg",
+            "Sha256": "3073081b8996ffbb451bc75b7973d8b4f14e8570e9356f67db2fc5dac064e68e",
+            "Note": "レベルアップの 3 択（台本で宝石を置いた）。試合は止まっている。1/2/3・クリック・矢印と Enter で選ぶ。経過 151 Tick、自機 (-1710, -2502)、体力 100、レベル 2、撃破 1、敵 4"
+        },
+        {
+            "File": "04-weapons.jpg",
+            "Sha256": "e4b0d103dfc1cf5f4487c1fc174417da8af400055a1bc71103ec01a0549fc360",
+            "Note": "武器 5 種：光の矢（弾）・舞う葉刃（回る刃）・棘の脈動（輪）・蔦の鞭（斬撃）・雷の連鎖（稲妻）。経過 4241 Tick、自機 (-1332, -5546)、体力 100、レベル 9、撃破 152、敵 38"
+        },
+        {
+            "File": "05-crowd.jpg",
+            "Sha256": "b035f867120e66ef37a55a610cf1ef4ce9c19debbc48125b01a63ac08912fe93",
+            "Note": "4 分過ぎ。時間とともに出現の目標（生存数）と頻度が上がり、敵が密になった場面。倒した敵は宝石を落とす。経過 14400 Tick、自機 (6118, -10210)、体力 100、レベル 25、撃破 1358、敵 124"
+        },
+        {
+            "File": "06-boss.jpg",
+            "Sha256": "d520d5f316834bd5aade95c9b3e859551dc3036ea5d435baa6293a778a05a498",
+            "Note": "5 分でボス（茨の番人）が現れる。上部に体力のバー、時間はボスの猶予に変わる。経過 18150 Tick、自機 (4078, -8878)、体力 100、レベル 35、撃破 2370、敵 212"
+        },
+        {
+            "File": "07-victory.jpg",
+            "Sha256": "142abf83128065a2145b338a44fd53f062d3e63b7c76c4154b160cb43a416a7b",
+            "Note": "ボスを倒した結果（生き残った時間・レベル・撃破・集めた経験値）。経過 19930 Tick、自機 (1905, -5143)、体力 100、レベル 39、撃破 2940、敵 236"
+        },
+        {
+            "File": "08-hurt.jpg",
+            "Sha256": "6a06e6a60c1014a5f14bd1a68d8d24c851c0303850aaa17178525b3a7834285a",
+            "Note": "敵に触れて体力が減った。被弾した Tick を含めて 30 Tick は無敵（自機が半透明に点滅）。経過 1013 Tick、自機 (-2040, -2842)、体力 95、レベル 2、撃破 17、敵 16"
+        },
+        {
+            "File": "09-pause.jpg",
+            "Sha256": "4f022d96b4db2fa09da4dff4f95e5f384d2e2866eff6cd6b175d52ff8e04d66b",
+            "Note": "一時停止。経過 1013 Tick、自機 (-2040, -2842)、体力 95、レベル 2、撃破 17、敵 16"
+        },
+        {
+            "File": "10-defeat.jpg",
+            "Sha256": "c3d734574e34d5c9098f18b4b219a7b4cd21369d5912f5a1ae9977e3642e3cc9",
+            "Note": "敵へ向かい続けて体力 0。負けの結果。経過 13202 Tick、自機 (1194, -11326)、体力 0、レベル 21、撃破 1165、敵 80"
+        }
+    ]
+}

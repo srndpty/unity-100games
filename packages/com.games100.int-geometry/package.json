@@ -1,0 +1,7 @@
+{
+  "name": "com.games100.int-geometry",
+  "version": "0.1.0",
+  "displayName": "Int Geometry",
+  "description": "整数の 2 次元ベクトル・平方根・正規化・矩形、動く 2 つの円の掃引（最初に触れた時刻と厳密な接触判定）、整数の角度表、シード付き乱数（xorshift32）。Unity API に依存しない。",
+  "unity": "6000.6"
+}
