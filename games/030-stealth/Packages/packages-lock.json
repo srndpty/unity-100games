@@ -1,5 +1,17 @@
 {
   "dependencies": {
+    "com.games100.int-geometry": {
+      "version": "file:../../../packages/com.games100.int-geometry",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
+    "com.games100.tile-motion": {
+      "version": "file:../../../packages/com.games100.tile-motion",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
     "com.unity.2d.animation": {
       "version": "16.0.1",
       "depth": 0,

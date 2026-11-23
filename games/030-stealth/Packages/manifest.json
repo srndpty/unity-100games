@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "com.games100.int-geometry": "file:../../../packages/com.games100.int-geometry",
+    "com.games100.tile-motion": "file:../../../packages/com.games100.tile-motion",
     "com.unity.2d.animation": "16.0.1",
     "com.unity.2d.aseprite": "6.0.0",
     "com.unity.2d.psdimporter": "15.0.1",
@@ -54,5 +56,6 @@
     "com.unity.modules.wind": "1.0.0",
     "com.unity.modules.xr": "1.0.0",
     "com.unity.pipeline": "1.0.1"
-  }
+  },
+  "testables": ["com.games100.int-geometry", "com.games100.tile-motion"]
 }
