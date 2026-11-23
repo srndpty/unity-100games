@@ -62,11 +62,12 @@ namespace Game.Core
     /// <summary>警備員（判断と体の組）。</summary>
     public sealed class Guard
     {
-        internal Guard(GuardPlan plan, GuardBrain brain, GuardBody body)
+        internal Guard(GuardPlan plan, GuardBrain brain, GuardBody body, VisionSpec vision)
         {
             Plan = plan;
             Brain = brain;
             Body = body;
+            Perceived(body.Position, body.Facing, vision);
         }
 
         public GuardPlan Plan { get; }
@@ -81,7 +82,28 @@ namespace Game.Core
         /// <summary>直前の Tick に足音が聞こえたか。</summary>
         public bool Hears { get; internal set; }
 
-        internal Guard Clone() => new(Plan, Brain.Clone(), Body.Clone()) { Sees = Sees, Hears = Hears };
+        /// <summary>直前の Tick の知覚に使った目の位置（その Tick に動く前の位置）。視界の扇はこの姿勢で描く。</summary>
+        public Vec2i SightOrigin { get; private set; }
+
+        /// <summary>直前の Tick の知覚に使った向き。</summary>
+        public int SightFacing { get; private set; }
+
+        /// <summary>直前の Tick の知覚に使った視界（その Tick の始めの警戒レベル）。</summary>
+        public VisionSpec SightVision { get; private set; }
+
+        internal void Perceived(Vec2i origin, int facing, VisionSpec vision)
+        {
+            SightOrigin = origin;
+            SightFacing = facing;
+            SightVision = vision;
+        }
+
+        internal Guard Clone()
+        {
+            var copy = new Guard(Plan, Brain.Clone(), Body.Clone(), SightVision) { Sees = Sees, Hears = Hears };
+            copy.Perceived(SightOrigin, SightFacing, SightVision);
+            return copy;
+        }
     }
 
     public enum MatchStatus
@@ -125,6 +147,7 @@ namespace Game.Core
     /// </summary>
     public sealed class Infiltration
     {
+        private readonly WardConfig _config;
         private readonly Guard[] _guards;
         private readonly Hearing _hearing;
         private readonly Vec2i?[] _touched;
@@ -136,11 +159,13 @@ namespace Game.Core
         {
             if (config == null) { throw new ArgumentNullException(nameof(config)); }
             config.Validate();
-            Config = config.Copy();
+
+            // 検証済みの設定はこの試合だけが持つ（外へは複製しか渡さない）。複製した試合とは共有する。
+            _config = config.Copy();
             Facility = facility ?? throw new ArgumentNullException(nameof(facility));
             Seed = seed;
-            Intruder = new Intruder(Config, facility.Exit);
-            var area = new SearchArea(facility.Map, Config.SearchRadius);
+            Intruder = new Intruder(_config, facility.Exit);
+            var area = new SearchArea(facility.Map, _config.SearchRadius);
             _guards = new Guard[facility.Guards.Count];
             for (var i = 0; i < _guards.Length; i++)
             {
@@ -148,7 +173,7 @@ namespace Game.Core
 
                 // 警備員ごとに乱数の系列を分ける（ある警備員の乱数の使用回数が他に影響しない）。
                 var random = new SeededRandom(unchecked((seed * 7919) + ((i + 1) * 104729)));
-                _guards[i] = new Guard(plan, new GuardBrain(Config, plan.Route, area, random), new GuardBody(Config, facility.Map, plan.Start, plan.StartFacing));
+                _guards[i] = new Guard(plan, new GuardBrain(_config, plan.Route, area, random), new GuardBody(_config, facility.Map, plan.Start, plan.StartFacing), _config.VisionAt(AlertLevel.Normal));
             }
 
             Guards = Array.AsReadOnly(_guards);
@@ -158,7 +183,7 @@ namespace Game.Core
 
         private Infiltration(Infiltration source)
         {
-            Config = source.Config;
+            _config = source._config;
             Facility = source.Facility;
             Seed = source.Seed;
             Intruder = source.Intruder.Clone();
@@ -178,8 +203,19 @@ namespace Game.Core
             LastNoiseTick = source.LastNoiseTick;
         }
 
-        /// <summary>検証済みの設定の複製（試合はこれを書き換えない）。</summary>
-        public WardConfig Config { get; }
+        /// <summary>検証済みの設定の複製。書き換えても試合には効かない（試合は自分の設定だけを使う）。</summary>
+        public WardConfig Config => _config.Copy();
+
+        /// <summary>今の警戒レベルの視界（描画・操縦役用。複製を作らない）。</summary>
+        public VisionSpec CurrentVision => _config.VisionAt(_alert.Level);
+
+        /// <summary>歩き方の 1 Tick の移動量（斜めでない向き）。</summary>
+        public int SpeedOf(Gait gait) => gait switch
+        {
+            Gait.Sneak => _config.SneakSpeed,
+            Gait.Run => _config.RunSpeed,
+            _ => _config.WalkSpeed,
+        };
 
         public Facility Facility { get; }
 
@@ -248,7 +284,7 @@ namespace Game.Core
                 _events |= WardEvents.ObjectiveTaken;
             }
 
-            var vision = Config.VisionAt(_alert.Level);
+            var vision = _config.VisionAt(_alert.Level);
             var radio = _radio;
             _radio = null;
             var target = Intruder.Center;
@@ -261,6 +297,7 @@ namespace Game.Core
                 var heard = noise != null && _hearing.Hears(Cell.Of(body.Position)) ? noise.Value.Source : (Cell?)null;
                 guard.Sees = seen;
                 guard.Hears = heard != null;
+                guard.Perceived(body.Position, body.Facing, vision);
                 var percept = new Percept(seen ? target : (Vec2i?)null, distance, heard, radio, _touched[i], body.StandingOn, body.Facing);
                 _touched[i] = null;
 
@@ -306,7 +343,7 @@ namespace Game.Core
             }
 
             var level = _alert.Level;
-            if (_alert.Update(anyChasing, Config))
+            if (_alert.Update(anyChasing, _config))
             {
                 Discoveries++;
                 _events |= WardEvents.Discovered;

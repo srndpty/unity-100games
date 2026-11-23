@@ -145,7 +145,7 @@ namespace Game.Unity.Editor
                         if (kind == TileKind.Wall)
                         {
                             // 下が壁でない壁は手前の面を明るくする。
-                            walls.SetTile(cell, row > 0 && map[column, row - 1] != TileKind.Wall ? wallFace : wall);
+                            walls.SetTile(cell, HushWardStage.IsWallFace(map, column, row) ? wallFace : wall);
                         }
                         else if (kind == TileKind.Crate)
                         {
@@ -177,6 +177,9 @@ namespace Game.Unity.Editor
                 Assign(serialized, "_floorTile", floorTile);
                 Assign(serialized, "_exitTile", exitTile);
                 Assign(serialized, "_noiseTile", noiseTile);
+                Assign(serialized, "_wallTile", wall);
+                Assign(serialized, "_wallFaceTile", wallFace);
+                Assign(serialized, "_crateTile", crate);
                 Assign(serialized, "_objective", objective);
                 Assign(serialized, "_intruder", intruder);
                 Assign(serialized, "_carried", carried);

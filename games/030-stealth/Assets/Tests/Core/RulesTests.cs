@@ -114,6 +114,34 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void ChangingTheReturnedSettingsDoesNotAffectTheMatch()
+        {
+            // 返した設定を書き換えても（検証を通らない 0 でも）、試合は始めの検証済みの設定で進む。複製した試合も同じ。
+            var reference = new Infiltration(new WardConfig(), Facility.Ward(), 1);
+            var match = new Infiltration(new WardConfig(), Facility.Ward(), 1);
+            var returned = match.Config;
+            returned.StepTicks = 0;
+            returned.RunSpeed = 1;
+            returned.VisionRange = 0;
+            match.Config.StepTicks = 0;
+            var clone = match.Clone();
+            clone.Config.ChaseSpeed = 0;
+            for (var t = 0; t < 300; t++)
+            {
+                var input = t < 150 ? Run(1, 1) : Move(0, 1);
+                reference.Tick(input);
+                match.Tick(input);
+                clone.Tick(input);
+            }
+
+            Assert.That(match.Hash(), Is.EqualTo(reference.Hash()));
+            Assert.That(clone.Hash(), Is.EqualTo(reference.Hash()));
+            Assert.That(match.Config.StepTicks, Is.EqualTo(new WardConfig().StepTicks), "返すのは毎回新しい複製");
+            Assert.That(match.SpeedOf(Gait.Run), Is.EqualTo(new WardConfig().RunSpeed));
+            Assert.That(match.CurrentVision.Range, Is.EqualTo(new WardConfig().VisionAt(match.Level).Range));
+        }
+
+        [Test]
         public void WardFacilityIsWellFormed()
         {
             var ward = Facility.Ward();

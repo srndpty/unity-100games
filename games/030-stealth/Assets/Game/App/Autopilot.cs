@@ -41,12 +41,7 @@ namespace Game.App
             var center = match.Intruder.Center;
             var here = Cell.Of(center);
             var target = here == goal ? goal.Center : NextStep(here, goal).Center;
-            var speed = gait switch
-            {
-                Gait.Sneak => match.Config.SneakSpeed,
-                Gait.Run => match.Config.RunSpeed,
-                _ => match.Config.WalkSpeed,
-            };
+            var speed = match.SpeedOf(gait);
             var x = Axis(target.X - center.X, speed);
             var y = Axis(target.Y - center.Y, speed);
             return new IntruderInput(x, y, gait == Gait.Run, gait == Gait.Sneak);
@@ -129,10 +124,11 @@ namespace Game.App
             var seen = new int[map.Count];
             var samples = 0;
             var match = new Infiltration(config, facility, 0);
-            var spec = match.Config.VisionAt(AlertLevel.Normal);
+            var rules = match.Config;
+            var spec = rules.VisionAt(AlertLevel.Normal);
 
             // 忍び足でも聞こえる・体が触れる近さ。
-            var near = match.Config.SneakNoise + 1;
+            var near = rules.SneakNoise + 1;
             for (var t = 0; t < ticks; t++)
             {
                 match.Tick(IntruderInput.None);

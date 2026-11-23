@@ -83,6 +83,7 @@ namespace Game.Unity
             _body.sprite = SpriteFor(plan.StartFacing, 0);
             _body.flipX = FlipFor(plan.StartFacing);
             DrawCone(map, position, plan.StartFacing, vision, rays, GuardMode.Patrol, false);
+            _cone.transform.localPosition = Vector3.zero;
             _mark.enabled = false;
             _gaugeBack.enabled = false;
             _gaugeFill.enabled = false;
@@ -99,7 +100,10 @@ namespace Game.Unity
             var moving = body.Position != body.PreviousPosition;
             _body.sprite = SpriteFor(body.Facing, moving ? (int)(match.Ticks / FrameTicks % 2) : 0);
             _body.flipX = FlipFor(body.Facing);
-            DrawCone(match.Map, body.Position, body.Facing, match.Config.VisionAt(match.Level), rays, brain.Mode, guard.Sees);
+            // 扇はこの Tick の知覚に使った姿勢（動く前の位置と向き、Tick の始めの視界）で描く。見えたかどうかの判定と同じ扇になる。
+            // 体はその Tick に動いた後の位置なので、扇の原点は体から最大で 1 Tick の移動量だけずれる。
+            DrawCone(match.Map, guard.SightOrigin, guard.SightFacing, guard.SightVision, rays, brain.Mode, guard.Sees);
+            _cone.transform.localPosition = HushWardStage.Local(guard.SightOrigin - body.Position);
 
             var mark = MarkOf(brain.Mode);
             _mark.enabled = mark != null;

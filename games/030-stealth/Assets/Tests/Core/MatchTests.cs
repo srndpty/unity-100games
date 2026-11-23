@@ -228,6 +228,27 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void SightIsJudgedFromThePoseKeptForDrawing()
+        {
+            // 視界の扇は、その Tick の知覚に使った姿勢（動く前の位置と向き、Tick の始めの視界）で描く。その姿勢で判定し直すと
+            // 見えたかどうかが毎 Tick 一致する。追跡・警戒で視程が変わる試合で確かめる。
+            var match = new Infiltration(new WardConfig(), Facility.Ward(), 4);
+            var random = new SeededRandom(17);
+            var seenTicks = 0;
+            for (var t = 0; t < 3000 && !match.IsOver; t++)
+            {
+                match.Tick(t < 200 ? Move(1, 1) : new IntruderInput(random.Range(-1, 1), random.Range(-1, 1), random.Next(2) == 0, false));
+                foreach (var guard in match.Guards)
+                {
+                    Assert.That(Vision.Sees(match.Map, guard.SightOrigin, guard.SightFacing, guard.SightVision, match.Intruder.Center), Is.EqualTo(guard.Sees), $"{t} {guard.Plan.Name}");
+                    if (guard.Sees) { seenTicks++; }
+                }
+            }
+
+            Assert.That(seenTicks, Is.GreaterThan(0), "見えた場面を含む");
+        }
+
+        [Test]
         public void HashSeesStateThatOnlyMattersLater()
         {
             // 位置は同じでも、足音の間隔の途中かどうかで以後の足音の時機が違う。ハッシュも違う。

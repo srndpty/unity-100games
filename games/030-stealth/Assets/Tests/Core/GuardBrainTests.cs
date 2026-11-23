@@ -169,6 +169,52 @@ namespace Game.Core.Tests
             Assert.That(brain.Mode, Is.EqualTo(GuardMode.Chase));
         }
 
+        [TestCase(0, Range)]
+        [TestCase(20, Range)]
+        [TestCase(20, 0)]
+        [TestCase(400, Range)]
+        public void SeenAgainLateInTheSearchResumesTheChaseRegardlessOfAwareness(int lostTicks, int distance)
+        {
+            // 捜索が長引いて気づき値が下がっても（0 まで減っても）、見えたら追跡へ戻る。視程の端（増える量が最小）でも同じ。
+            var config = Steady();
+            var brain = Chasing(config, out _);
+            brain.Think(Percept.Nothing(brain.Goal, 0), Range);
+            Assert.That(brain.Mode, Is.EqualTo(GuardMode.Search));
+            for (var t = 0; t < lostTicks; t++) { brain.Think(Percept.Nothing(null, 0), Range); }
+            Assert.That(brain.Mode, Is.EqualTo(GuardMode.Search));
+            if (lostTicks > 0) { Assert.That(brain.Awareness, Is.LessThan(WardConfig.AwarenessMax - GuardBrain.GainAt(config, distance, Range)), "見えて増えても上限に届かない気づき値"); }
+            if (lostTicks >= 400) { Assert.That(brain.Awareness, Is.Zero); }
+            var at = C(7, 3);
+            var order = brain.Think(new Percept(at, distance, null, null, null, null, 0), Range);
+            Assert.That(brain.Mode, Is.EqualTo(GuardMode.Chase));
+            Assert.That(brain.Goal, Is.EqualTo(new Cell(7, 3)));
+            Assert.That(order.Pace, Is.EqualTo(Pace.Chase));
+        }
+
+        [Test]
+        public void FootstepsDuringTheSearchDoNotResumeTheChase()
+        {
+            var brain = Chasing(Steady(), out _);
+            brain.Think(Percept.Nothing(brain.Goal, 0), Range);
+            for (var t = 0; t < 20; t++) { brain.Think(Percept.Nothing(null, 0), Range); }
+            var noise = new Cell(8, 2);
+            brain.Think(new Percept(null, 0, noise, null, null, null, 0), Range);
+            Assert.That(brain.Mode, Is.EqualTo(GuardMode.Investigate), "足音は調査");
+            Assert.That(brain.StartedChase, Is.False);
+            brain.Think(new Percept(null, 0, null, new Cell(2, 6), null, null, 0), Range);
+            Assert.That(brain.Mode, Is.Not.EqualTo(GuardMode.Chase), "無線でも追跡しない");
+        }
+
+        [Test]
+        public void TouchDuringTheSearchResumesTheChase()
+        {
+            var brain = Chasing(Steady(), out _);
+            brain.Think(Percept.Nothing(brain.Goal, 0), Range);
+            for (var t = 0; t < 20; t++) { brain.Think(Percept.Nothing(null, 0), Range); }
+            brain.Think(new Percept(null, 0, null, null, C(5, 5), null, 0), Range);
+            Assert.That(brain.Mode, Is.EqualTo(GuardMode.Chase));
+        }
+
         [Test]
         public void InvestigationEndsWithALookAroundThenPatrol()
         {

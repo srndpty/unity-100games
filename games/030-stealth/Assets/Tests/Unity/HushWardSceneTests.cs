@@ -11,6 +11,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
+using UnityEngine.Tilemaps;
 using UnityEngine.UIElements;
 using MouseButton = UnityEngine.InputSystem.LowLevel.MouseButton;
 using Object = UnityEngine.Object;
@@ -130,6 +131,56 @@ namespace Game.Unity.Tests
             Assert.That(Stage.Mismatch(Rebuild(rows, new[] { ward.Guards[0], ward.Guards[1] })), Does.Contain("警備員の数"), "警備員を減らす");
         }
 
+        [UnityTest]
+        public IEnumerator StageMismatch_ReportsMissingPartsAndWrongTileKinds()
+        {
+            // 実際の Stage を複製し、描画に要る部品を 1 つずつ壊す。照合は例外ではなく具体的な理由を返す。
+            yield return null;
+            var ward = Facility.Ward();
+            var cases = new (string Label, Action<HushWardStage> Break, string Expected)[]
+            {
+                ("自機の上向きの絵を空にする", stage => SetField(stage, "_intruderUp", Array.Empty<Sprite>()), "自機の向きの絵"),
+                ("自機の横向きの絵を 1 枚欠く", stage => SetField(stage, "_intruderSide", new Sprite[] { null, null }), "自機の向きの絵"),
+                ("忍び足の絵を外す", stage => SetField(stage, "_intruderSneak", null), "忍び足の絵"),
+                ("足音の Tilemap を外す", stage => SetField(stage, "_noise", null), "足音の Tilemap"),
+                ("足音のタイルを外す", stage => SetField(stage, "_noiseTile", null), "足音のタイル"),
+                ("運んでいる印を外す", stage => SetField(stage, "_carried", null), "運んでいる印"),
+                ("目的物を外す", stage => SetField(stage, "_objective", null), "目的物の Renderer"),
+                ("壁のタイルの参照を外す", stage => SetField(stage, "_wallTile", null), "壁のタイル"),
+                ("警備員の巡回路を外す", stage => SetField(stage.Guards[0], "_route", null), "警備員 A の描画の部品"),
+                ("警備員の記号の絵を外す", stage => SetField(stage.Guards[2], "_exclaim", null), "警備員 C の描画の部品"),
+                ("壁の位置に木箱のタイルを置く", stage => Tilemap(stage, "_walls").SetTile(new Vector3Int(0, 0, 0), (TileBase)GetField(stage, "_crateTile")), "壁 (0, 0) のタイル"),
+                ("手前の面の壁を奥の壁にする", stage => Tilemap(stage, "_walls").SetTile(new Vector3Int(1, 11, 0), (TileBase)GetField(stage, "_wallTile")), "壁 (1, 11) のタイル"),
+                ("木箱の位置に壁のタイルを置く", stage => Tilemap(stage, "_crates").SetTile(new Vector3Int(3, 4, 0), (TileBase)GetField(stage, "_wallTile")), "木箱 (3, 4) のタイル"),
+            };
+            Assert.That(HushWardStage.IsWallFace(ward.Map, 1, 11), Is.True, "(1, 11) は下が床の壁");
+            Assert.That(ward.Map[3, 4], Is.EqualTo(TileKind.Crate));
+            foreach (var (label, breakIt, expected) in cases)
+            {
+                var copy = Object.Instantiate(Stage.gameObject).GetComponent<HushWardStage>();
+                try
+                {
+                    Assert.That(copy.Mismatch(ward), Is.Null, "複製はそのままなら一致する");
+                    breakIt(copy);
+                    string reason = null;
+                    Assert.DoesNotThrow(() => reason = copy.Mismatch(ward), label);
+                    Assert.That(reason, Does.Contain(expected), label);
+                }
+                finally
+                {
+                    Object.Destroy(copy.gameObject);
+                }
+            }
+        }
+
+        private static object GetField(object target, string name) =>
+            target.GetType().GetField(name, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(target);
+
+        private static void SetField(object target, string name, object value) =>
+            target.GetType().GetField(name, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.SetValue(target, value);
+
+        private static UnityEngine.Tilemaps.Tilemap Tilemap(HushWardStage stage, string name) => (UnityEngine.Tilemaps.Tilemap)GetField(stage, name);
+
         private static Facility Rebuild(string[] rows, IReadOnlyList<GuardPlan> guards)
         {
             var plans = new GuardPlan[guards.Count];
@@ -200,9 +251,11 @@ namespace Game.Unity.Tests
                 var guard = M.Guards[i];
                 var view = Stage.Guards[i];
                 var rays = _game.Settings.FanRays;
-                var spec = M.Config.VisionAt(M.Level);
+                // 扇は知覚に使った姿勢（動く前の位置と向き、Tick の始めの視界）で描く。
+                var spec = guard.SightVision;
+                var eye = guard.SightOrigin;
                 var distances = new int[rays];
-                Vision.Fan(M.Map, guard.Body.Position, guard.Body.Facing, spec, distances);
+                Vision.Fan(M.Map, eye, guard.SightFacing, spec, distances);
                 var block = new MaterialPropertyBlock();
                 view.ConeRenderer.GetPropertyBlock(block);
                 Assert.That(block.GetVector("_Flip"), Is.EqualTo(Vector4.one), "Sprites/Default が扇を潰さないよう反転なしを渡す");
@@ -210,11 +263,12 @@ namespace Game.Unity.Tests
                 Assert.That(view.ConeMesh.colors[0].a, Is.GreaterThan(.3f), "扇の中心は見える濃さ");
                 var vertices = view.ConeMesh.vertices;
                 Assert.That(vertices, Has.Length.EqualTo(rays + 1));
-                Assert.That(view.transform.localPosition, Is.EqualTo(HushWardStage.Local(guard.Body.Position)), "扇の原点は警備員の目");
+                Assert.That(view.transform.localPosition, Is.EqualTo(HushWardStage.Local(guard.Body.Position)), "体は動いた後の位置");
+                Assert.That(view.ConeRenderer.transform.position, Is.EqualTo(Stage.transform.TransformPoint(HushWardStage.Local(eye))), "扇の原点は知覚に使った目の位置");
                 for (var r = 0; r < rays; r++)
                 {
-                    var angle = Vision.FanAngle(guard.Body.Facing, spec.HalfAngle, r, rays);
-                    var expected = HushWardStage.Local(Vision.PointAt(guard.Body.Position, angle, distances[r]) - guard.Body.Position);
+                    var angle = Vision.FanAngle(guard.SightFacing, spec.HalfAngle, r, rays);
+                    var expected = HushWardStage.Local(Vision.PointAt(eye, angle, distances[r]) - eye);
                     Assert.That((vertices[r + 1] - expected).sqrMagnitude, Is.LessThan(1e-8f), $"{guard.Plan.Name} の光線 {r}");
                 }
             }
@@ -239,13 +293,24 @@ namespace Game.Unity.Tests
             Assert.That(Text("discoveries"), Is.EqualTo("発見  1"));
             Assert.That(_game.Toast, Does.Contain("見つかった"));
 
-            StepUntil(() => AnyMode(GuardMode.Search));
-            (view, _) = First(GuardMode.Search);
-            Assert.That(view.Mark.sprite, Is.EqualTo(view.MarkOf(GuardMode.Search)), "捜索は …");
-            for (var i = 0; i < M.Guards.Count; i++)
+            // ここから試合の終わりまで毎 Tick 描き、どの警備員の記号も今の状態と合うことを確かめる（捜索が起きるかはシードによる）。
+            var seen = new HashSet<GuardMode>();
+            for (var t = 0; t < TickLimit && !M.IsOver; t++)
             {
-                if (M.Guards[i].Brain.Mode == GuardMode.Patrol) { Assert.That(Stage.Guards[i].Mark.enabled, Is.False, "巡回は記号なし"); }
+                _game.Flow.StepTick();
+                _game.ConsumeEvents();
+                _game.Render();
+                for (var i = 0; i < M.Guards.Count; i++)
+                {
+                    var mode = M.Guards[i].Brain.Mode;
+                    seen.Add(mode);
+                    var mark = Stage.Guards[i].MarkOf(mode);
+                    Assert.That(Stage.Guards[i].Mark.enabled, Is.EqualTo(mark != null), $"{t} {mode}");
+                    if (mark != null) { Assert.That(Stage.Guards[i].Mark.sprite, Is.EqualTo(mark), $"{t} {mode}"); }
+                }
             }
+
+            Assert.That(seen, Has.Member(GuardMode.Patrol).And.Member(GuardMode.Chase));
         }
 
         private bool AnyMode(GuardMode mode)

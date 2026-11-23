@@ -89,7 +89,8 @@ namespace Game.Core
     /// <list type="bullet">
     /// <item>見えた Tick は気づき値が距離に応じて増え、<see cref="WardConfig.AwarenessMax"/> に達したら追跡。見えない Tick は減る。</item>
     /// <item>足音・無線は調査にしかならない（気づき値を増やさない）。音だけで追跡に入らない。</item>
-    /// <item>追跡中は見えた位置・聞こえた位置を追い、見失ったまま最後の位置に着いたら捜索。捜索が時間切れになったら巡回へ戻る。</item>
+    /// <item>追跡中は見えた位置・聞こえた位置を追い、見失ったまま最後の位置に着いたら捜索。捜索中に見えたら（触れたら）気づき値によらず追跡へ戻る。
+    /// 捜索中の足音は調査になる。捜索が時間切れになったら巡回へ戻る。</item>
     /// </list>
     /// </summary>
     public sealed class GuardBrain
@@ -172,8 +173,10 @@ namespace Game.Core
             StartedChase = false;
             UpdateAwareness(percept, visionRange);
 
+            // 見えた・触れたときだけ追跡に入る（戻る）。捜索中は見失った相手を探しているので、気づき値によらず追跡へ戻す。
+            // 足音（Heard）と無線は追跡のきっかけにしない。
             var noticed = percept.Seen ?? percept.Touched;
-            if (noticed != null && (Mode == GuardMode.Chase || Awareness >= WardConfig.AwarenessMax))
+            if (noticed != null && (Mode == GuardMode.Chase || Mode == GuardMode.Search || Awareness >= WardConfig.AwarenessMax))
             {
                 StartedChase = Mode != GuardMode.Chase;
                 Mode = GuardMode.Chase;

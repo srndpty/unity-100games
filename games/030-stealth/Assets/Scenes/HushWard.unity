@@ -254,7 +254,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 919127213}
+  - {fileID: 1925164254}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &619394800
@@ -361,7 +361,75 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &919127212
+--- !u!1001 &1691085621
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1228488367825736534, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
+      propertyPath: m_Name
+      value: HushWardStage
+      objectReference: {fileID: 0}
+    - target: {fileID: 2422805508218422610, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2422805508218422610, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2422805508218422610, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2422805508218422610, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2422805508218422610, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2422805508218422610, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2422805508218422610, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2422805508218422610, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2422805508218422610, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2422805508218422610, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
+--- !u!114 &1691085622 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2304600988011106217, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
+  m_PrefabInstance: {fileID: 1691085621}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a05be0ba08d723a4b8609cdc8fdcc45f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.HushWardStage
+--- !u!1 &1925164253
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -369,8 +437,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 919127213}
-  - component: {fileID: 919127214}
+  - component: {fileID: 1925164254}
+  - component: {fileID: 1925164255}
   m_Layer: 0
   m_Name: Backdrop
   m_TagString: Untagged
@@ -378,13 +446,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &919127213
+--- !u!4 &1925164254
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 919127212}
+  m_GameObject: {fileID: 1925164253}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 20}
@@ -393,14 +461,14 @@ Transform:
   m_Children: []
   m_Father: {fileID: 519420032}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &919127214
+--- !u!212 &1925164255
 SpriteRenderer:
   serializedVersion: 3
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 919127212}
+  m_GameObject: {fileID: 1925164253}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -453,75 +521,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
---- !u!1001 &1044215771
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 6389736789495768612, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6389736789495768612, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6389736789495768612, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6389736789495768612, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6389736789495768612, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6389736789495768612, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6389736789495768612, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6389736789495768612, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6389736789495768612, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6389736789495768612, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7112857823567701771, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
-      propertyPath: m_Name
-      value: HushWardStage
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
---- !u!114 &1044215772 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3985459289263157190, guid: 98f47d6db5687e5478d2f3e9a39c245c, type: 3}
-  m_PrefabInstance: {fileID: 1044215771}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a05be0ba08d723a4b8609cdc8fdcc45f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game.Unity::Game.Unity.HushWardStage
---- !u!1 &1621208772
+--- !u!1 &2087988655
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -529,11 +529,11 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1621208777}
-  - component: {fileID: 1621208776}
-  - component: {fileID: 1621208775}
-  - component: {fileID: 1621208774}
-  - component: {fileID: 1621208773}
+  - component: {fileID: 2087988660}
+  - component: {fileID: 2087988659}
+  - component: {fileID: 2087988658}
+  - component: {fileID: 2087988657}
+  - component: {fileID: 2087988656}
   m_Layer: 0
   m_Name: HushWard
   m_TagString: Untagged
@@ -541,41 +541,41 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1621208773
+--- !u!114 &2087988656
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1621208772}
+  m_GameObject: {fileID: 2087988655}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a9dffc9ba38eb464ebc111d7d9c5cd6c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Unity::Game.Unity.HushWardCaptureScenario
---- !u!114 &1621208774
+--- !u!114 &2087988657
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1621208772}
+  m_GameObject: {fileID: 2087988655}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: eff124cac9009bf44ab84d8d4619f07b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Unity::Game.Unity.HushWardGame
   _settings: {fileID: 11400000, guid: ef18333aaa01c6a41b3b582369ac7566, type: 2}
-  _hudRenderer: {fileID: 1621208776}
+  _hudRenderer: {fileID: 2087988659}
   _camera: {fileID: 519420031}
-  _stage: {fileID: 1044215772}
---- !u!82 &1621208775
+  _stage: {fileID: 1691085622}
+--- !u!82 &2087988658
 AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1621208772}
+  m_GameObject: {fileID: 2087988655}
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
@@ -666,13 +666,13 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!1931382934 &1621208776
+--- !u!1931382934 &2087988659
 PanelRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1621208772}
+  m_GameObject: {fileID: 2087988655}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -724,13 +724,13 @@ PanelRenderer:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_Position: 0
---- !u!4 &1621208777
+--- !u!4 &2087988660
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1621208772}
+  m_GameObject: {fileID: 2087988655}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -745,5 +745,5 @@ SceneRoots:
   m_Roots:
   - {fileID: 519420032}
   - {fileID: 619394802}
-  - {fileID: 1044215771}
-  - {fileID: 1621208777}
+  - {fileID: 1691085621}
+  - {fileID: 2087988660}
