@@ -1,0 +1,26 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:VisualElement name="side" class="side" picking-mode="Ignore">
+            <ui:Label name="score" text=" " class="stat score" />
+            <ui:Label name="lives" text=" " class="stat lives" />
+            <ui:Label name="bombs" text=" " class="stat bombs" />
+            <ui:Label name="boss" text=" " class="stat boss" />
+            <ui:Label name="pattern" text=" " class="stat pattern" />
+            <ui:Label name="time" text=" " class="stat time" />
+            <ui:Label name="bullets" text=" " class="stat bullets" />
+            <ui:Button name="pause" text="一時停止 / Esc" class="pause" />
+        </ui:VisualElement>
+        <ui:VisualElement name="panel" class="panel">
+            <ui:Label name="headline" text="LANTERN VEIL" class="headline" />
+            <ui:Label name="message" class="message" />
+            <ui:VisualElement class="buttons">
+                <ui:Button name="submit" text="はじめる / Enter" />
+                <ui:Button name="retry" text="このボスから再挑戦 / C" />
+                <ui:Button name="restart" text="最初から / R" />
+                <ui:Button name="title" text="タイトルへ / T" />
+                <ui:Button name="quit" text="終了" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

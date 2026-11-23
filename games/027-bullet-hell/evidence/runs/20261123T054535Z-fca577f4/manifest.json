@@ -1,0 +1,98 @@
+{
+    "Product": "LANTERN VEIL",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "067f2bfe186a45b1a281a03d174125a0",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-23T05:45:34.0517995Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Lives\":3,\"Bombs\":3,\"MaxBullets\":2048,\"PlayerSpeed\":1024,\"PlayerSlowSpeed\":448,\"PlayerRadius\":640,\"PlayerMargin\":2048,\"PlayerStartY\":16384,\"InvincibleTicks\":120,\"BombTicks\":120,\"BombDamagePerTick\":2,\"ShotIntervalTicks\":4,\"ShotSpeed\":3072,\"ShotRadius\":1024,\"ShotDamage\":1,\"ShotSpread\":2560,\"ShotSlowSpread\":1024,\"BossHomeX\":49152,\"BossHomeY\":92160,\"IntervalTicks\":90,\"ShotHitScore\":10,\"PatternBonus\":3000,\"LifeBonus\":10000,\"BombBonus\":2000}"
+        },
+        {
+            "Key": "boss1",
+            "Value": "# ボス 1：Ember Warden（燠火の番人）\n# 文法は README の「弾道 DSL」。角度は度（0 = 右、反時計回り。下は -90）。\nboss \"Ember Warden\" radius=24\n\n# 1. 回る輪に、ときどき自機狙いの 3 発を混ぜる。\npattern \"Cinder Bloom\" hp=500 time=30s\n  move wait over=60\n  move wander area=120,320,264,390 over=90\n  emit ring every=18 count=18 speed=1.6 spin=6 shape=orb color=orange\n  emit aimed every=60 delay=30 count=3 spread=24 speed=2.6 shape=small color=red\n\n# 2. 左右に曲がる 2 つの輪が交わる。\npattern \"Drifting Wicks\" hp=600 time=35s\n  move to at=192,370 over=60\n  move wait over=120\n  emit ring every=12 count=8 speed=1.4 curve=0.5 life=480 shape=rice color=yellow\n  emit ring every=12 delay=6 count=8 speed=1.4 curve=-0.5 life=480 shape=rice color=orange\n\n# 3. 下へ散る紙片の雨に、大きな自機狙いの扇。\npattern \"Paper Rain\" hp=700 time=40s\n  move wander area=96,330,288,400 over=80\n  emit fan every=3 count=1 angle=rand(-160,-20) speed=rand(1.2,2.2) shape=small color=white\n  emit aimed every=50 count=5 spread=40 speed=2 shape=large color=red\n"
+        },
+        {
+            "Key": "boss2",
+            "Value": "# ボス 2：Veil Matron（帳の女主人）\n# 文法は README の「弾道 DSL」。角度は度（0 = 右、反時計回り。下は -90）。\nboss \"Veil Matron\" radius=28\n\n# 4. 逆向きに回る 2 本の渦。\npattern \"Moth Spiral\" hp=700 time=35s\n  move to at=192,340 over=60\n  move wait over=240\n  emit ring every=4 count=5 speed=2 spin=11 shape=rice color=purple\n  emit ring every=4 count=5 speed=2 spin=-13 shape=rice color=cyan\n\n# 5. ゆっくり出て加速する花びらの輪と、速い自機狙い。\npattern \"Glass Petals\" hp=800 time=40s\n  move wander area=110,320,274,390 over=100\n  emit ring every=36 count=24 angle=rand(0,15) speed=0.2 accel=0.03 maxspeed=2.8 shape=orb color=cyan\n  emit aimed every=24 count=3 spread=16 speed=3.2 shape=small color=white\n\n# 6. 曲がって輪を描く弾、左右にぶれる下向きの扇（偶数なので真下は空く）、大玉の自機狙い。\npattern \"Last Lantern\" hp=900 time=45s\n  move to at=192,350 over=60\n  move wander area=140,330,244,380 over=120\n  emit ring every=12 count=12 speed=1.5 spin=5 curve=0.6 life=420 shape=orb color=orange\n  emit fan every=40 count=6 angle=-90 spread=100 speed=2.4 offset=rand(-40,40),0 shape=large color=red\n  emit aimed every=90 count=1 speed=3.6 shape=large color=purple\n"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "ee315168bc8bddea9c8f82c6d1e125a3f1289b0214ba2861edbd58ddaa21f144",
+            "Note": "タイトル（操作説明。自機とボス 1 体目が始めの位置）"
+        },
+        {
+            "File": "02-pattern1.jpg",
+            "Sha256": "1897901a78385ef71f041bec09f850275f57a16e7cb5fdc0e46429cceac33499",
+            "Note": "弾幕 1「Cinder Bloom」（Ember Warden）。自動操縦がボスの真下で弾をくぐる。経過 390 Tick、弾幕 1、自機 (42568, 11520)、残機 3、ボム 3、得点 2250、敵弾 166"
+        },
+        {
+            "File": "03-pattern2.jpg",
+            "Sha256": "4172897588adc60204e5ad8df238fd8d3eb8b0f85d31f5d6ad67936744624f21",
+            "Note": "弾幕 2「Drifting Wicks」（Ember Warden）。自動操縦がボスの真下で弾をくぐる。経過 1161 Tick、弾幕 2、自機 (52128, 20320)、残機 3、ボム 3、得点 10150、敵弾 246"
+        },
+        {
+            "File": "04-pattern3.jpg",
+            "Sha256": "640ebfda264dfb6ddb971c7f013c3e089ec3ea30a74356cc9cbe4c76c525abb7",
+            "Note": "弾幕 3「Paper Rain」（Ember Warden）。自動操縦がボスの真下で弾をくぐる。経過 2064 Tick、弾幕 3、自機 (57632, 4696)、残機 3、ボム 3、得点 21410、敵弾 86"
+        },
+        {
+            "File": "05-pattern4.jpg",
+            "Sha256": "430c2206745f05ea8a0e208d12ab99e33786635328b18f01d60fd85e4dde8740",
+            "Note": "弾幕 4「Moth Spiral」（Veil Matron）。自動操縦がボスの真下で弾をくぐる。経過 3749 Tick、弾幕 4、自機 (45024, 5984)、残機 3、ボム 3、得点 38280、敵弾 319"
+        },
+        {
+            "File": "06-pattern5.jpg",
+            "Sha256": "aecec19da43fe3d8c3041b6f56e9ff02c94b0a61cdb67ba6c4476c1219e0ebb2",
+            "Note": "弾幕 5「Glass Petals」（Veil Matron）。自動操縦がボスの真下で弾をくぐる。経過 4768 Tick、弾幕 5、自機 (41528, 17680)、残機 3、ボム 3、得点 57230、敵弾 106"
+        },
+        {
+            "File": "07-pattern6.jpg",
+            "Sha256": "abc96f4cd3efefb67ef976456746a700ff43fe5cfa8c09f0f7d50e84a731b37d",
+            "Note": "弾幕 6「Last Lantern」（Veil Matron）。自動操縦がボスの真下で弾をくぐる。経過 6288 Tick、弾幕 6、自機 (50216, 13776)、残機 3、ボム 3、得点 80120、敵弾 210"
+        },
+        {
+            "File": "08-victory.jpg",
+            "Sha256": "024e0c94309483f10c988a6b670d3ebb0f57ef2be17909046abd1834702ea880",
+            "Note": "6 弾幕を突破した結果（得点・プレイ時間・被弾・残機とボムのボーナス）。経過 7378 Tick、弾幕 6、自機 (47112, 17152)、残機 3、ボム 3、得点 141030、敵弾 0"
+        },
+        {
+            "File": "09-slow-hitbox.jpg",
+            "Sha256": "61b5683b975dae0b1a94c915783d039833bd3a666c3c2e0e976233f9d57f09a9",
+            "Note": "Shift の低速中は、自機の中心に当たり判定の点（白い芯と赤い縁）を出す。経過 145 Tick、弾幕 1、自機 (49152, 16384)、残機 3、ボム 3、得点 450、敵弾 75"
+        },
+        {
+            "File": "10-hurt.jpg",
+            "Sha256": "c26e0e47a6a97acd7f97f0c7f9f70b7f0657d9305e005f5704d80e7359b8f5ac",
+            "Note": "被弾：残機が 1 減り、敵弾を全消去。被弾した Tick を含めて 120 Tick は無敵（自機が半透明に点滅）。経過 244 Tick、弾幕 1、自機 (49152, 16384)、残機 2、ボム 3、得点 1200、敵弾 21"
+        },
+        {
+            "File": "11-bomb.jpg",
+            "Sha256": "8064370e6f05c22809ee28d48df136ed83361dabb8967826dc2e6e83e0e23561",
+            "Note": "ボム：輪が広がる間は無敵で、敵弾を消し続け、ボスの体力を削る。経過 376 Tick、弾幕 1、自機 (49152, 16384)、残機 2、ボム 2、得点 2050、敵弾 0"
+        },
+        {
+            "File": "12-pause.jpg",
+            "Sha256": "01a0c0a9e499ec74e9d404739cb3e7c0227bd60634a8d0df5bf244d6e1f86caf",
+            "Note": "一時停止。経過 376 Tick、弾幕 1、自機 (49152, 16384)、残機 2、ボム 2、得点 2050、敵弾 0"
+        },
+        {
+            "File": "13-defeat.jpg",
+            "Sha256": "f737f18b183443bd1a708ce75e47739f596ec27e5e7c9b93d09c523e4fdc3345",
+            "Note": "残機 0 の結果。「このボスから再挑戦」（C）を出す。経過 1743 Tick、弾幕 3、自機 (49152, 16384)、残機 0、ボム 3、得点 16590、敵弾 0"
+        },
+        {
+            "File": "14-retry.jpg",
+            "Sha256": "c12031ff498506628beb9b136ffcff3ab2456a74cddd82c02aaf363aa13e536a",
+            "Note": "負けたボスの 1 つ目の弾幕から、残機とボムを戻して再挑戦（得点はボスを始めたときの値）。経過 127 Tick、弾幕 1、自機 (49152, 17280)、残機 3、ボム 3、得点 330、敵弾 57"
+        }
+    ]
+}

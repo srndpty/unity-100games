@@ -1,0 +1,23 @@
+# ボス 1：Ember Warden（燠火の番人）
+# 文法は README の「弾道 DSL」。角度は度（0 = 右、反時計回り。下は -90）。
+boss "Ember Warden" radius=24
+
+# 1. 回る輪に、ときどき自機狙いの 3 発を混ぜる。
+pattern "Cinder Bloom" hp=500 time=30s
+  move wait over=60
+  move wander area=120,320,264,390 over=90
+  emit ring every=18 count=18 speed=1.6 spin=6 shape=orb color=orange
+  emit aimed every=60 delay=30 count=3 spread=24 speed=2.6 shape=small color=red
+
+# 2. 左右に曲がる 2 つの輪が交わる。
+pattern "Drifting Wicks" hp=600 time=35s
+  move to at=192,370 over=60
+  move wait over=120
+  emit ring every=12 count=8 speed=1.4 curve=0.5 life=480 shape=rice color=yellow
+  emit ring every=12 delay=6 count=8 speed=1.4 curve=-0.5 life=480 shape=rice color=orange
+
+# 3. 下へ散る紙片の雨に、大きな自機狙いの扇。
+pattern "Paper Rain" hp=700 time=40s
+  move wander area=96,330,288,400 over=80
+  emit fan every=3 count=1 angle=rand(-160,-20) speed=rand(1.2,2.2) shape=small color=white
+  emit aimed every=50 count=5 spread=40 speed=2 shape=large color=red

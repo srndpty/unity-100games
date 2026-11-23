@@ -1,0 +1,24 @@
+# ボス 2：Veil Matron（帳の女主人）
+# 文法は README の「弾道 DSL」。角度は度（0 = 右、反時計回り。下は -90）。
+boss "Veil Matron" radius=28
+
+# 4. 逆向きに回る 2 本の渦。
+pattern "Moth Spiral" hp=700 time=35s
+  move to at=192,340 over=60
+  move wait over=240
+  emit ring every=4 count=5 speed=2 spin=11 shape=rice color=purple
+  emit ring every=4 count=5 speed=2 spin=-13 shape=rice color=cyan
+
+# 5. ゆっくり出て加速する花びらの輪と、速い自機狙い。
+pattern "Glass Petals" hp=800 time=40s
+  move wander area=110,320,274,390 over=100
+  emit ring every=36 count=24 angle=rand(0,15) speed=0.2 accel=0.03 maxspeed=2.8 shape=orb color=cyan
+  emit aimed every=24 count=3 spread=16 speed=3.2 shape=small color=white
+
+# 6. 曲がって輪を描く弾、左右にぶれる下向きの扇（偶数なので真下は空く）、大玉の自機狙い。
+pattern "Last Lantern" hp=900 time=45s
+  move to at=192,350 over=60
+  move wander area=140,330,244,380 over=120
+  emit ring every=12 count=12 speed=1.5 spin=5 curve=0.6 life=420 shape=orb color=orange
+  emit fan every=40 count=6 angle=-90 spread=100 speed=2.4 offset=rand(-40,40),0 shape=large color=red
+  emit aimed every=90 count=1 speed=3.6 shape=large color=purple

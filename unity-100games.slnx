@@ -155,6 +155,12 @@
     <Project Path="games/026-twin-stick/dotnet/Core.Tests/G026.Core.Tests.csproj" />
     <Project Path="games/026-twin-stick/dotnet/Core/G026.Core.csproj" />
   </Folder>
+  <Folder Name="/027-bullet-hell/">
+    <Project Path="games/027-bullet-hell/dotnet/App.Tests/G027.App.Tests.csproj" />
+    <Project Path="games/027-bullet-hell/dotnet/App/G027.App.csproj" />
+    <Project Path="games/027-bullet-hell/dotnet/Core.Tests/G027.Core.Tests.csproj" />
+    <Project Path="games/027-bullet-hell/dotnet/Core/G027.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.tile-motion/dotnet~/TileMotion.Tests/TileMotion.Tests.csproj" />
     <Project Path="packages/com.games100.tile-motion/dotnet~/TileMotion/TileMotion.csproj" />
