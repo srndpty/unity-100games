@@ -127,3 +127,18 @@
 - `feature/game030` で `dev new 030`（2D テンプレート）を実行し、雛形と slnx 登録を最小コミットした。EditMode 1/1。
 - `com.games100.int-geometry` と `com.games100.tile-motion` を `manifest.json`（`testables`）・各 asmdef・Core の csproj から参照した（029 と同じ形）。
 - 次（セッション1）：ルール表を README に固定し、Core（`FacilityMap`・`LineOfSight`・`Vision`・`Hearing`・`Percept`・`GuardBrain`・`GuardBody`・`Intruder`・`AlertLevel`・`Infiltration`・`WardConfig`）と App（`WardFlow`・`Intent`・`HeldControls`・`Autopilot`）をテストから作る。
+
+## セッション1の結果（2026-11-24）
+
+- ルール表は [README](../../games/030-stealth/README.md) の「採用ルール」を正とする。
+- Core：`FacilityMap`・`Facility`（本番の施設と警備員 3 人の配置）、センサ（`LineOfSight`・`Vision`・`Hearing`・`Percept`）、判断（`GuardBrain`・`Order`・`Waypoint`）、`GuardBody`・`Intruder`・`PathField`・`SearchArea`、025 から移植した経路の掃引（`Motion`・`BoxSweep`）、`AlertState`・`Infiltration`・`WardConfig`。App：`Intent`・`HeldControls`・`WardFlow`・`StealthPilot`・`BoldPilot`・`Steering`・`Exposure`。
+- Core 67 件・App 36 件が .NET で、共通パッケージを含む 165 件が Mono で通った。
+- 計画との差：
+  - 視線は supercover の走査ではなく、「閉じた線分が遮るマスの閉じた正方形に触れるか」を Liang–Barsky の区間を分数で比べて判定する定義にした（角・面に沿う線も遮る）。テストは外積による分離軸の別の式と照合する。
+  - `Percept` に体の状態（マスの中心に立っているか・向き）と、前の Tick に触れた位置を入れた。判断は「着いたか」をこれで知り、地図を見ない。捜索の行き先だけ `ISearchArea` に選ばせる。
+  - 追跡していない警備員に触れても捕まらず、その警備員が次の Tick に発見する（触れた Tick に捕まえると「追跡中だけ捕獲」と食い違う）。
+  - 調査中に見えている間は気づき値が増え続けるので、正面の近くで見つかると、調査で近づきながら気づき値が満ちてそのまま捕まる。「出口の隣で捕獲と脱出が同じ Tick」の場面は、背後から触れて追跡させてから作った。
+  - 操縦役は最短経路だと資料室の正面の扉（B の正面）を通って捕まった。巡回を試走して各マスが視界・近くにあった割合（`Exposure`）を数え、それを重みにした経路にした。候補の順序（「歩いて 0 Tick 進む」＝待つが忍び足より先）で止まり続けた不具合も直した。
+  - 見つかった後に逃げる操縦役は、見られる Tick を聞かれる Tick の 2 倍悪いとして点を付け、走る・来た道を戻る・歩数が最短の経路の候補も試す。20 シードすべて逃げ切った（初めは北西の部屋で捜索中の A に向かって走り込み、1 シードで捕まった）。
+- 隠密：1819 Tick・誰も調査に入らず脱出、ハッシュ `0xA0BB2468`（シードに依らない、.NET と Mono で一致）。強行：20 シードで 944〜1104 Tick・発見 1〜2 回、シード 1 のハッシュ `0x3C5EC9CF`（.NET と Mono で一致）。
+- 次（セッション2）：Unity 層（生成ドット絵・Stage Prefab・視界の扇の Mesh・状態の記号と気づきのゲージ・F1 の詳しい表示・足音の輪・HUD・音・シーン生成・撮影台本）。
