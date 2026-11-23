@@ -33,6 +33,15 @@ namespace Game.Core
         /// <summary>自機のショットの左右のずれの上限。</summary>
         public const int MaxShotOffset = 64 * Field.Unit;
 
+        /// <summary>1 回に撃つショットの数。</summary>
+        public const int ShotsPerVolley = 3;
+
+        /// <summary>
+        /// 同時に存在しうるショットの数（<see cref="ShotCapacity"/>）の上限。ショットは 1 発ごとに描画物を持つので、
+        /// 描画の負荷もこの数で計測する（AGENTS.md「設定の上限は描画側の負荷も含めて決める」）。既定の設定では 30。
+        /// </summary>
+        public const int MaxShots = 96;
+
         public int Lives = 3;
 
         /// <summary>ボムの数（試合の初め・被弾・再挑戦でこの数に戻す）。</summary>
@@ -102,6 +111,23 @@ namespace Game.Core
 
         public Vec2i BossHome => new(BossHomeX, BossHomeY);
 
+        /// <summary>
+        /// 同時に存在しうるショットの数の上限（どのボスにも当たらない最悪の場合）。ショットはいちばん低い位置（領域の下端から
+        /// <see cref="PlayerMargin"/>）から撃っても、k 回動いた位置 y0 + k × 速さ が 領域の高さ + 半径 を超えた Tick の終わりに消えるので、
+        /// Tick の終わりに残っているのは最大 k_max = floor((高さ + 半径 - y0) / 速さ) 回動いたものまで。その間に撃てる回数は
+        /// floor(k_max / 間隔) + 1 で、1 回に <see cref="ShotsPerVolley"/> 発。<see cref="Validate"/> で <see cref="MaxShots"/> 以下を保証する。
+        /// </summary>
+        public long ShotCapacity
+        {
+            get
+            {
+                if (ShotSpeed <= 0 || ShotIntervalTicks <= 0) { return long.MaxValue; }
+                var travel = (long)Field.Height + ShotRadius - PlayerMargin;
+                var moves = Math.Max(0, travel / ShotSpeed);
+                return ShotsPerVolley * ((moves / ShotIntervalTicks) + 1);
+            }
+        }
+
         public VeilConfig Copy() => (VeilConfig)MemberwiseClone();
 
         /// <summary>値の範囲を確かめる。範囲外なら例外（fail-closed）。</summary>
@@ -124,6 +150,10 @@ namespace Game.Core
             Range(nameof(ShotDamage), ShotDamage, 1, MaxDamage);
             Range(nameof(ShotSpread), ShotSpread, 0, MaxShotOffset);
             Range(nameof(ShotSlowSpread), ShotSlowSpread, 0, MaxShotOffset);
+            if (ShotCapacity > MaxShots)
+            {
+                throw new ArgumentOutOfRangeException(nameof(ShotSpeed), ShotCapacity, $"同時に存在しうるショット {ShotCapacity} 発が上限 {MaxShots} を超えます。ShotSpeed を速くするか ShotIntervalTicks を長くしてください。");
+            }
             Range(nameof(BossHomeX), BossHomeX, 0, Field.Width);
             Range(nameof(BossHomeY), BossHomeY, 0, Field.Height);
             Range(nameof(IntervalTicks), IntervalTicks, 1, MaxStatusTicks);

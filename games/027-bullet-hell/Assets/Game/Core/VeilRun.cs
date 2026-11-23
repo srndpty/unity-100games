@@ -153,7 +153,8 @@ namespace Game.Core
             _bosses = Array.AsReadOnly(copy);
             Seed = seed;
             _pool = new BulletPool(_config.MaxBullets);
-            _shots = new List<Shot>(64);
+            // Tick の途中（画面の上へ出たショットを消す前）は 1 回分多くなりうるので、その分も先に取っておく（増やすときの割り当てをしない）。
+            _shots = new List<Shot>((int)_config.ShotCapacity + VeilConfig.ShotsPerVolley);
             Shots = _shots.AsReadOnly();
             Player = _config.PlayerStart;
             PlayerStart = Player;

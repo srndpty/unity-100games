@@ -61,6 +61,9 @@ namespace Game.Unity
         /// <summary>領域の外を覆う幕（左・右・下・上。テストで配置の検査を確かめるのに使う）。</summary>
         public IReadOnlyList<SpriteRenderer> Curtains => Array.AsReadOnly(_curtains);
 
+        /// <summary>ショットの描画物の数（見本を含む。増やすだけで減らさない。設定の検証で <see cref="VeilConfig.MaxShots"/> 以下に収まる）。</summary>
+        public int PooledShots => _shots.Count;
+
         /// <summary>今表示しているショットの数。</summary>
         public int VisibleShots { get; private set; }
 

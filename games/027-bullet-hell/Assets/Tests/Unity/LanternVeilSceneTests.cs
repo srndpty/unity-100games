@@ -497,11 +497,51 @@ namespace Game.Unity.Tests
             Assert.That(render[Samples * 95 / 100], Is.LessThan(4));
         }
 
+        /// <summary>
+        /// レビュー：ショットは 1 発ごとに描画物を持つので、検証を通るいちばん多い設定（毎 Tick 撃ち、上限 <see cref="VeilConfig.MaxShots"/> に
+        /// 収まるいちばん遅い速さ）で、自機を左下の隅から撃ち続けても描画物が上限を超えず、表示がショットの数と一致することを確かめる。
+        /// </summary>
+        [UnityTest]
+        public IEnumerator Shots_AtTheLargestAllowedCount_StayWithinTheRendererLimit()
+        {
+            yield return null;
+            var config = new VeilConfig { IntervalTicks = 1, ShotIntervalTicks = 1, ShotSpeed = 1 };
+            while (config.ShotCapacity > VeilConfig.MaxShots) { config.ShotSpeed++; }
+            Assert.DoesNotThrow(config.Validate);
+            const string Pattern = "pattern \"Q\" hp=100000 time=36000\n  emit ring every=3600 delay=36000 speed=1\n";
+            var script = ScriptParser.ParseOrThrow("boss \"Q\" radius=8\n" + Pattern + Pattern + Pattern, "quiet");
+            var run = new VeilRun(config, new[] { script, script }, 1);
+            var command = new PlayerCommand(-1, -1, false, true, false);
+            var most = 0;
+            var render = new double[600];
+            var watch = new System.Diagnostics.Stopwatch();
+            for (var t = 0; t < render.Length; t++)
+            {
+                run.Step(command);
+                watch.Restart();
+                Stage.Render(run, config);
+                render[t] = watch.Elapsed.TotalMilliseconds;
+                Assert.That(Stage.VisibleShots, Is.EqualTo(run.Shots.Count));
+                most = Math.Max(most, run.Shots.Count);
+            }
+
+            Array.Sort(render);
+            TestContext.WriteLine($"ショット最大 {most} 発（上限 {config.ShotCapacity}）、描画物 {Stage.PooledShots} 個、描画の更新 p95 {render[render.Length * 95 / 100]:F3} ms");
+            Assert.That(most, Is.GreaterThanOrEqualTo(config.ShotCapacity - VeilConfig.ShotsPerVolley), "上限の近くまで撃っている");
+            Assert.That(Stage.PooledShots, Is.LessThanOrEqualTo(VeilConfig.MaxShots));
+            Assert.That(render[render.Length * 95 / 100], Is.LessThan(4));
+        }
+
         [Test]
         public void Settings_RejectInvalidValuesAndBrokenScripts()
         {
             AssertRejected(s => s.Volume = float.NaN, typeof(ArgumentOutOfRangeException));
             AssertRejected(s => s.Rules.PlayerSpeed = 0, typeof(ArgumentOutOfRangeException));
+            AssertRejected(s =>
+            {
+                s.Rules.ShotSpeed = 1;
+                s.Rules.ShotIntervalTicks = 1;
+            }, typeof(ArgumentOutOfRangeException));
             AssertRejected(s => s.Rules = null, typeof(ArgumentNullException));
             AssertRejected(s => s.Boss2 = null, typeof(InvalidOperationException));
             AssertRejected(s => s.Boss1 = new TextAsset("boss \"B\" radius=8\npattern \"P\" hp=1 time=60\nemit ring every=1"), typeof(FormatException));
