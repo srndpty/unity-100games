@@ -1,0 +1,65 @@
+{
+    "Product": "CINDER LANES",
+    "Version": "0.1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "6c7450c9c0384bbf80f45cc497df0f10",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-23T11:50:31.1143155Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"LaneWidth\":640,\"LaneChangeTicks\":8,\"RunnerWidth\":192,\"RunnerDepth\":128,\"StandHeight\":448,\"SlideHeight\":160,\"JumpVelocity\":32,\"Gravity\":2,\"SlideTicks\":36,\"InputBufferTicks\":10,\"RowLength\":512,\"ObstacleDepth\":128,\"HurdleHeight\":160,\"BeamBottom\":256,\"WallHeight\":768,\"BaseSpeed\":40,\"SpeedStep\":8,\"MaxSpeedLevel\":5,\"SpeedLevelMeters\":200,\"MaxTier\":3,\"TierMeters\":300,\"RunwayMeters\":30,\"LookAheadMeters\":120,\"BehindMeters\":16,\"MaxActiveChunks\":24},\"Volume\":0.11999999731779099}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "80e9a095f34076536b4bad65211819f808fec1b9c8dde85b9b2303b6969dd086",
+            "Note": "タイトル（操作説明。道の上に立った自機）"
+        },
+        {
+            "File": "02-runway.jpg",
+            "Sha256": "930702c6ed75f60736b08b57c7e2a03049a9a63dc0a3f5d152087c4830945cab",
+            "Note": "走り出し。最初の 30 m は障害物のない助走、奥にチャンクが並ぶ。50 Tick、7 m、速さ 40、レーン 0、高さ 0"
+        },
+        {
+            "File": "03-steer.jpg",
+            "Sha256": "c2a937dcff25ca74df48ed4f77e9768c78ffc951bc711c9ceb78fad64a8be6d8",
+            "Note": "自動操縦が隣のレーンへ移っている途中（8 Tick で移る。移る向きへ傾く）。1170 Tick、182 m、速さ 40、レーン 1、高さ 0"
+        },
+        {
+            "File": "04-jump.jpg",
+            "Sha256": "cae3c7ba6a92740638683444a91bf85c722eefdb1f6c35f0199512b279541c5e",
+            "Note": "低い柵（Hurdle）を跳び越えている。1375 Tick、215 m、速さ 48、レーン 0、高さ 270"
+        },
+        {
+            "File": "05-slide.jpg",
+            "Sha256": "732650dcea741e2bb6f1910109e55f62c125be77c02e85bb44a0a51237b2ab6d",
+            "Note": "頭上の梁（Beam）の下をスライドでくぐっている。1439 Tick、227 m、速さ 48、レーン 0、高さ 0"
+        },
+        {
+            "File": "06-wall.jpg",
+            "Sha256": "49e1fa420f86fd9fca71af01b920f19499334d952e2512cc9dfc258fc355dfdc",
+            "Note": "隣のレーンの壁（Wall）の横を走り抜けている。1771 Tick、290 m、速さ 48、レーン 2、高さ 0"
+        },
+        {
+            "File": "07-top-speed.jpg",
+            "Sha256": "deea602a436ecf9c7f6365c27fa57763935eb809175c28074ceb09f4d4d77692",
+            "Note": "1000 m を越えて速さ・難度とも上限（SPEED 6）。以後はこのまま続く。4949 Tick、1040 m、速さ 80、レーン 1、高さ 0"
+        },
+        {
+            "File": "08-pause.jpg",
+            "Sha256": "5ebf88d6ae30623497977a2edc3c244622052feaee4ac7d331aaaceb8b822e22",
+            "Note": "一時停止。4949 Tick、1040 m、速さ 80、レーン 1、高さ 0"
+        },
+        {
+            "File": "09-result.jpg",
+            "Sha256": "3a8fd70dcb7b68d0cc32da7ebc547d94fb39bd15ac56aa91739493b8c52140c2",
+            "Note": "操作をやめて障害物にぶつかった結果（距離・最高記録）。自機は触れた時刻の位置で止めて描く。5040 Tick、1068 m、速さ 80、レーン 1、高さ 0"
+        }
+    ]
+}

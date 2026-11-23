@@ -100,6 +100,22 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void TheKeyThatStartsOrResumes_DoesNotAlsoJump()
+        {
+            var flow = new RunnerFlow(Rules, 1);
+            flow.Apply(Intent.Of(IntentKind.Submit, 2));
+            flow.Apply(Intent.Press(RunMove.Jump, 2));
+            Assert.That(flow.PendingCount, Is.Zero, "始めた押下（Space）は跳ばない");
+            flow.Apply(Intent.Press(RunMove.Jump, 2 + (Tick / 2)));
+            Assert.That(flow.PendingCount, Is.EqualTo(1), "その後の押下は効く");
+
+            flow.Apply(Intent.Of(IntentKind.TogglePause, 3));
+            flow.Apply(Intent.Of(IntentKind.Submit, 4));
+            flow.Apply(Intent.Press(RunMove.Jump, 4));
+            Assert.That(flow.PendingCount, Is.Zero, "再開した押下も跳ばない");
+        }
+
+        [Test]
         public void MashingKeys_DoesNotGrowTheQueue()
         {
             var flow = Started();

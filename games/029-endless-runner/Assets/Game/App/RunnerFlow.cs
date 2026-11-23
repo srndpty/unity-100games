@@ -107,8 +107,9 @@ namespace Game.App
                 case IntentKind.Quit:
                     break;
                 case IntentKind.Press:
-                    // 一時停止・結果の間の押下は捨てる（再開した試合へ持ち越さない）。
-                    if (Screen == AppScreen.Playing && _pending.Count < MaxPending) { _pending.Add(intent.Move); }
+                    // 一時停止・結果の間の押下は捨てる（再開した試合へ持ち越さない）。始めた（再開した）時刻ちょうどの押下も捨てる：
+                    // Space は決定とジャンプの両方に割り当てているので、試合を始めた押下でそのまま跳ばない。
+                    if (Screen == AppScreen.Playing && intent.Time > _origin && _pending.Count < MaxPending) { _pending.Add(intent.Move); }
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(intent), intent.Kind, "未定義の操作です。");
