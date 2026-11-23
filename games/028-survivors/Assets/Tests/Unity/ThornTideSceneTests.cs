@@ -382,7 +382,7 @@ namespace Game.Unity.Tests
                 run.Step(pilot.CommandFor(run));
             }
 
-            Assert.That(run.Hash(), Is.EqualTo(0xFA88782Au), "シード 1 は App テストの固定値と同じ");
+            Assert.That(run.Hash(), Is.EqualTo(0x15E3CB72u), "シード 1 は App テストの固定値と同じ");
         }
 
         [Test]

@@ -293,8 +293,10 @@ namespace Game.Core
             Require(PlayerSpeed, 1, MaxSpeed, nameof(PlayerSpeed));
             Require(InvincibleTicks, 1, MaxStatusTicks, nameof(InvincibleTicks));
             Require(HealAmount, 1, MaxHealth, nameof(HealAmount));
-            Require(PickupRadius, 1, 16 * T, nameof(PickupRadius));
             Require(GemRadius, 1, MaxRadius, nameof(GemRadius));
+
+            // 吸い寄せの半径は、自機と宝石が触れる距離以上にする（触れているのに吸い寄せず、取れない宝石を残さない）。
+            Require(PickupRadius, PlayerRadius + GemRadius, 16 * T, nameof(PickupRadius));
             Require(GemSpeed, 1, MaxSpeed, nameof(GemSpeed));
             Require(MaxGems, 1, MaxGemsLimit, nameof(MaxGems));
             Require(MaxEnemies, 1, MaxEnemiesLimit, nameof(MaxEnemies));

@@ -44,6 +44,45 @@ namespace Game.Core.Tests
             Assert.That(run.TotalExperience, Is.EqualTo(4));
         }
 
+        /// <summary>
+        /// レビュー：速く動いて 1 Tick の途中で吸い寄せの範囲を通り過ぎ、終わりの位置では範囲の外になる宝石も取る。
+        /// 自機は (0, 0) → (256, 0)、宝石は (128, 0)。終わりの位置との距離は 128 で吸い寄せの半径 120 の外だが、軌跡は宝石の中心を通る。
+        /// </summary>
+        [Test]
+        public void GemPassedThroughWithinOneTick_IsAttractedAndCollected()
+        {
+            var run = Run(Quiet(c =>
+            {
+                c.PlayerSpeed = 256;
+                c.PickupRadius = 120;
+            }));
+            run.PlaceGem(At(128, 0), 3);
+            run.Step(new PlayerCommand(1, 0));
+            Assert.That(run.Player, Is.EqualTo(At(256, 0)));
+            Assert.That(run.Gems.Count, Is.Zero, "通り過ぎた宝石も取る");
+            Assert.That(run.TotalExperience, Is.EqualTo(3));
+
+            // 軌跡が吸い寄せの範囲に入らなければ吸い寄せない（ちょうど接するだけも入らない）。
+            var miss = Run(Quiet(c =>
+            {
+                c.PlayerSpeed = 256;
+                c.PickupRadius = 120;
+            }));
+            miss.PlaceGem(At(128, 120), 3);
+            miss.Step(new PlayerCommand(1, 0));
+            Assert.That(miss.Gems.IsAttracted(0), Is.False);
+        }
+
+        [Test]
+        public void PickupRadiusSmallerThanTheTouchDistance_IsRejected()
+        {
+            var config = Quiet();
+            config.PickupRadius = config.PlayerRadius + config.GemRadius - 1;
+            Assert.Throws<ArgumentOutOfRangeException>(config.Validate);
+            config.PickupRadius++;
+            Assert.DoesNotThrow(config.Validate);
+        }
+
         [Test]
         public void GemDroppedByAKillNextToThePlayer_IsCollectedOnce()
         {

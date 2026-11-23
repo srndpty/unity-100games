@@ -633,17 +633,17 @@ namespace Game.Core
         }
 
         /// <summary>
-        /// 宝石：自機から <see cref="TideConfig.PickupRadius"/> 未満に入った宝石は吸い寄せ（以後ずっと自機へ向かう）、
+        /// 宝石：この Tick の自機の軌跡が <see cref="TideConfig.PickupRadius"/> 未満に近づいた宝石は吸い寄せ（以後ずっと自機へ向かう）、
         /// 自機に触れた Tick に値を 1 回だけ足してその場で消す。
         /// </summary>
         private void CollectGems()
         {
-            var pickup = (long)_config.PickupRadius * _config.PickupRadius;
             var touch = _config.PlayerRadius + _config.GemRadius;
             for (var i = _gems.Count - 1; i >= 0; i--)
             {
                 var gem = new Vec2i(_gems.X[i], _gems.Y[i]);
-                if (!_gems.Attracted[i] && Vec2i.DistanceSquared(gem, Player) < pickup) { _gems.Attracted[i] = true; }
+                // 吸い寄せの始まりも自機の Tick 中の軌跡で判定する（速く動いて範囲を通り過ぎた宝石を取り逃さない。028 のレビュー）。
+                if (!_gems.Attracted[i] && Sweep.Touches(PlayerStart, Player, gem, gem, _config.PickupRadius)) { _gems.Attracted[i] = true; }
                 if (!_gems.Attracted[i]) { continue; }
 
                 var toward = Player - gem;

@@ -8,7 +8,7 @@ namespace Game.App.Tests
     public sealed class AutopilotTests
     {
         /// <summary>シード 1 を自動操縦で最後まで進めた最終ハッシュ。.NET と Mono の両方で一致する（整数だけで計算するため）。</summary>
-        private const uint SeedOneFinalHash = 0xFA88782Au;
+        private const uint SeedOneFinalHash = 0x15E3CB72u;
 
         private static TideRun Play(int seed, out int peak)
         {
