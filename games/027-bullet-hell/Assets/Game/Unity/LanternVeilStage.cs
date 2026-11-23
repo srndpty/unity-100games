@@ -98,6 +98,7 @@ namespace Game.Unity
             _hpBar.enabled = false;
             _bombRing.enabled = false;
             HideShots(0);
+            VisibleShots = 0;
             _bullets.Render(null);
         }
 
@@ -137,15 +138,12 @@ namespace Game.Unity
                 _bombRing.color = new Color(1f, 1f, 1f, 1f - (progress * .8f));
             }
 
-            var shots = 0;
-            foreach (var shot in run.Shots)
-            {
-                var item = Take(shots++);
-                item.transform.localPosition = Local(shot.Position);
-            }
+            // ReadOnlyCollection を foreach で回すと列挙子が箱に入って割り当てが起きるので、番号で回す。
+            var shots = run.Shots;
+            for (var i = 0; i < shots.Count; i++) { Take(i).transform.localPosition = Local(shots[i].Position); }
 
-            HideShots(shots);
-            VisibleShots = shots;
+            HideShots(shots.Count);
+            VisibleShots = shots.Count;
             _bullets.Render(run.Bullets);
         }
 
