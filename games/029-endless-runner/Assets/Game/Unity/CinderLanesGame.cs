@@ -72,6 +72,9 @@ namespace Game.Unity
             if (mismatch != null) { throw new InvalidOperationException("Stage Prefab が設定と一致しません：" + mismatch); }
             _stage.Initialize(rules);
 
+            // 遠くのチャンクの出現を隠すフォグは、設定の先読み距離から決める（シーンの値より設定を優先する）。
+            (RenderSettings.fogStartDistance, RenderSettings.fogEndDistance) = FogRange(rules.Config.LookAheadMeters);
+
             // 再戦は新しいシード（起動時の値から試合ごとに 1 進める。010 の知見）。撮影中は固定のシード。
             Flow = new RunnerFlow(rules, EvidenceCapture.IsRunning ? EvidenceCapture.Seed : Environment.TickCount);
             _audio = GetComponent<AudioSource>();
@@ -201,6 +204,16 @@ namespace Game.Unity
             _camera.transform.position = origin + CameraOffset;
             _camera.transform.LookAt(origin + new Vector3(0, 1.2f, 10f));
             if (Flow.Run != null && Flow.Run.IsOver) { _camera.transform.position += _camera.transform.rotation * Shake(_stage.CrashElapsed); }
+        }
+
+        /// <summary>
+        /// フォグの始まりと終わり（m）。先読み距離の 0.42 倍から 0.93 倍で濃くなり、並べた先の端（先読み距離）より手前で隠しきる。
+        /// 割合で決めるので、どの先読み距離でも始まりより終わりが遠い。
+        /// </summary>
+        public static (float Start, float End) FogRange(int lookAheadMeters)
+        {
+            if (lookAheadMeters <= 0) { throw new ArgumentOutOfRangeException(nameof(lookAheadMeters), lookAheadMeters, "正の値にしてください。"); }
+            return (lookAheadMeters * .42f, lookAheadMeters * .93f);
         }
 
         /// <summary>

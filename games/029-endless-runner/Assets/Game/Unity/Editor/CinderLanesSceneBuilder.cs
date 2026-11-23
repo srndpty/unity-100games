@@ -79,8 +79,7 @@ namespace Game.Unity.Editor
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.fogColor = Sky;
-            RenderSettings.fogStartDistance = 50;
-            RenderSettings.fogEndDistance = settings.Rules.LookAheadMeters - 8;
+            (RenderSettings.fogStartDistance, RenderSettings.fogEndDistance) = CinderLanesGame.FogRange(settings.Rules.LookAheadMeters);
 
             var game = new GameObject(ObjectPrefix + "Game");
             var hud = game.AddComponent<PanelRenderer>();

@@ -141,6 +141,58 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void ChangingTheReturnedConfig_DoesNotAffectRunsOrThePlanner()
+        {
+            // 検証済みの組の設定は外から変えられない（返すのは複製）。変えた設定が試合や探索に効くと、到達性の保証が崩れる。
+            var rules = RunRules.Build(new RunConfig(), ChunkLibrary.Default());
+            var baseline = new RunnerRun(rules, 3);
+            var config = rules.Config;
+            config.LaneChangeTicks = 0;
+            config.JumpVelocity = 200;
+            rules.Config.SlideTicks = 1;
+            Assert.That(rules.Config.LaneChangeTicks, Is.EqualTo(new RunConfig().LaneChangeTicks));
+
+            var run = new RunnerRun(rules, 3);
+            run.Config.Gravity = 50;
+            for (var tick = 0; tick < 300; tick++)
+            {
+                var command = tick % 50 == 5 ? TestKit.Do(Steer.Left, Leap.Jump) : tick % 50 == 30 ? TestKit.Do(Steer.Right, Leap.Slide) : Command.None;
+                run.Step(command);
+                baseline.Step(command);
+            }
+
+            Assert.That(run.Hash(), Is.EqualTo(baseline.Hash()), "例外にならず、変える前と同じ動き");
+            Assert.That(rules.Planner.Passable(rules.Chunks[0], rules.Config.TopSpeed, 0), Is.True);
+        }
+
+        [Test]
+        public void Hash_IncludesWhatAndWhenTheRunnerHit()
+        {
+            // 中央のレーンの同じ位置に壁・梁・柵：何もしない自機は同じ Tick・同じ時刻にぶつかるが、ぶつかった物が違う。
+            string[] Rows(char c) => new[] { "...", "...", "...", "." + c + ".", "...", "..." };
+            var hashes = new System.Collections.Generic.List<uint>();
+            var times = new System.Collections.Generic.List<Moment>();
+            var ticks = new System.Collections.Generic.List<long>();
+            foreach (var kind in new[] { 'W', 'B', 'H' })
+            {
+                var run = new RunnerRun(TestKit.Only(Rows(kind)), 1);
+                RunUntilOver(run, 5000);
+                hashes.Add(run.Hash());
+                times.Add(run.CrashTime);
+                ticks.Add(run.Ticks);
+            }
+
+            Assert.That(ticks.Distinct().Count(), Is.EqualTo(1), "同じ Tick にぶつかる");
+            Assert.That(times[0], Is.EqualTo(times[1]));
+            Assert.That(hashes.Distinct().Count(), Is.EqualTo(3), "ぶつかった物が違えばハッシュも違う");
+
+            // 同じ物にぶつかるなら同じハッシュ。
+            var again = new RunnerRun(TestKit.Only(Rows('W')), 1);
+            RunUntilOver(again, 5000);
+            Assert.That(again.Hash(), Is.EqualTo(hashes[0]));
+        }
+
+        [Test]
         public void SameSeedAndCommands_GiveTheSameHash_AndCloneContinuesTheSame()
         {
             static Command Pattern(long tick) => (tick % 97) switch

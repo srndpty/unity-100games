@@ -75,6 +75,7 @@ namespace Game.Unity
         private bool Near(ObstacleKind kind, int lane, int meters)
         {
             var run = R;
+            var config = run.Config;
             var reach = (long)meters * (long)CinderLanesStage.UnitsPerMeter;
             for (var i = 0; i < run.Chunks.Count; i++)
             {
@@ -84,7 +85,7 @@ namespace Game.Unity
                 {
                     var obstacle = obstacles[o];
                     if (obstacle.Kind != kind || obstacle.Lane != lane) { continue; }
-                    var box = obstacle.Box(run.Config);
+                    var box = obstacle.Box(config);
                     var from = start + box.Z - reach;
                     var to = start + box.Z + box.Depth + reach;
                     if (run.Z >= from && run.Z <= to) { return true; }

@@ -18,8 +18,8 @@ RenderSettings:
   m_FogColor: {r: 0.16, g: 0.07, b: 0.05, a: 1}
   m_FogMode: 1
   m_FogDensity: 0.01
-  m_LinearFogStart: 50
-  m_LinearFogEnd: 112
+  m_LinearFogStart: 50.399998
+  m_LinearFogEnd: 111.6
   m_AmbientSkyColor: {r: 0.42, g: 0.34, b: 0.34, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
@@ -383,74 +383,6 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
---- !u!1001 &645746653
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 6410011284578143239, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
-      propertyPath: m_Name
-      value: CinderLanesStage
-      objectReference: {fileID: 0}
-    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
---- !u!114 &645746654 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4387341175179686562, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
-  m_PrefabInstance: {fileID: 645746653}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b506ab1fa51e6314cb9f119556c89202, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game.Unity::Game.Unity.CinderLanesStage
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -500,7 +432,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2047114881
+--- !u!1 &1654191764
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -508,11 +440,11 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2047114886}
-  - component: {fileID: 2047114885}
-  - component: {fileID: 2047114884}
-  - component: {fileID: 2047114883}
-  - component: {fileID: 2047114882}
+  - component: {fileID: 1654191769}
+  - component: {fileID: 1654191768}
+  - component: {fileID: 1654191767}
+  - component: {fileID: 1654191766}
+  - component: {fileID: 1654191765}
   m_Layer: 0
   m_Name: CinderLanesGame
   m_TagString: Untagged
@@ -520,41 +452,41 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2047114882
+--- !u!114 &1654191765
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2047114881}
+  m_GameObject: {fileID: 1654191764}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1ff7d4fa35b501d4b935dc98b56e5114, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Unity::Game.Unity.CinderLanesCaptureScenario
---- !u!114 &2047114883
+--- !u!114 &1654191766
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2047114881}
+  m_GameObject: {fileID: 1654191764}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3c158f5c5ac262b45a03173c98ac305c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Unity::Game.Unity.CinderLanesGame
   _settings: {fileID: 11400000, guid: bb88e35c2df6ed5448596b38f9fa627d, type: 2}
-  _hudRenderer: {fileID: 2047114885}
+  _hudRenderer: {fileID: 1654191768}
   _camera: {fileID: 330585545}
-  _stage: {fileID: 645746654}
---- !u!82 &2047114884
+  _stage: {fileID: 1712517295}
+--- !u!82 &1654191767
 AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2047114881}
+  m_GameObject: {fileID: 1654191764}
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
@@ -645,13 +577,13 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!1931382934 &2047114885
+--- !u!1931382934 &1654191768
 PanelRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2047114881}
+  m_GameObject: {fileID: 1654191764}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -703,13 +635,13 @@ PanelRenderer:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_Position: 0
---- !u!4 &2047114886
+--- !u!4 &1654191769
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2047114881}
+  m_GameObject: {fileID: 1654191764}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -718,6 +650,74 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1712517294
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 6410011284578143239, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
+      propertyPath: m_Name
+      value: CinderLanesStage
+      objectReference: {fileID: 0}
+    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7612364444170188341, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
+--- !u!114 &1712517295 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4387341175179686562, guid: 6dd16b0d111f18345b5f757f5fce4eed, type: 3}
+  m_PrefabInstance: {fileID: 1712517294}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b506ab1fa51e6314cb9f119556c89202, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.CinderLanesStage
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -725,5 +725,5 @@ SceneRoots:
   - {fileID: 330585546}
   - {fileID: 410087041}
   - {fileID: 832575519}
-  - {fileID: 645746653}
-  - {fileID: 2047114886}
+  - {fileID: 1712517294}
+  - {fileID: 1654191769}

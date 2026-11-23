@@ -131,6 +131,11 @@ namespace Game.Unity
             if (_config != null) { throw new InvalidOperationException("Stage は 1 度だけ初期化します。"); }
             _config = rules.Config;
             _animator.speed = 0;
+            _animator.Rebind();
+            foreach (var state in new[] { IdleState, RunState, JumpState, SlideState, CrashState })
+            {
+                if (!_animator.HasState(0, Animator.StringToHash(state))) { throw new InvalidOperationException($"自機の Animator Controller に状態 {state} がありません。"); }
+            }
             var templates = new[] { _wallTemplate, _hurdleTemplate, _beamTemplate };
             var perChunk = new int[3];
             foreach (var chunk in rules.Chunks)
@@ -342,15 +347,43 @@ namespace Game.Unity
         }
 
         /// <summary>
-        /// Prefab の道の幅が設定のレーンと合っているか（合っていなければ理由）。道の区画の中の "Road" の幅を見る。
+        /// Prefab が設定と描画の前提に合っているか（合っていなければ理由）。シーン生成スクリプトと起動時に確かめる。
+        /// 自機の参照と親子関係、障害物の見本（種類ごとの当たり箱の大きさと高さ・Renderer・マテリアル・通り過ぎた表示）、
+        /// 道の幅・長さ・横位置、道の区画が表示の範囲を覆うこと。見本は描画で当たり箱の大きさに拡大するので、
+        /// 見本の大きさと高さが種類の当たり箱と違えば、見本の入れ替えや種類の取り違えとみなす。
         /// </summary>
         public string Mismatch(RunConfig config)
         {
             if (config == null) { throw new ArgumentNullException(nameof(config)); }
+            if (_runner == null || _model == null || _animator == null) { return "自機（Runner・Model・Animator）の参照がありません。"; }
+            if (_model.parent != _runner) { return "Model が Runner の子ではありません。"; }
+            if (!_animator.transform.IsChildOf(_model)) { return "Animator が Model の下にありません。"; }
+            if (_animator.runtimeAnimatorController == null) { return "自機の Animator にコントローラーがありません。"; }
+            if (_passedMaterials == null || _passedMaterials.Length != 3) { return "通り過ぎた障害物のマテリアルが 3 種類ありません。"; }
+
+            var templates = new[] { _wallTemplate, _hurdleTemplate, _beamTemplate };
+            for (var kind = 0; kind < 3; kind++)
+            {
+                var name = (ObstacleKind)kind;
+                var template = templates[kind];
+                if (template == null) { return $"{name} の見本がありません。"; }
+                var renderer = template.GetComponent<MeshRenderer>();
+                if (renderer == null || template.GetComponent<MeshFilter>() == null || renderer.sharedMaterial == null) { return $"{name} の見本に MeshRenderer・MeshFilter・マテリアルがありません。"; }
+                if (_passedMaterials[kind] == null) { return $"{name} の通り過ぎた表示のマテリアルがありません。"; }
+                if (_passedMaterials[kind].GetTexture("_BaseMap") != renderer.sharedMaterial.GetTexture("_BaseMap")) { return $"{name} の見本と通り過ぎた表示のマテリアルの模様が違います。"; }
+                var box = new Obstacle(name, 1, 0).Box(config);
+                var size = new Vector3(box.Width, box.Height, box.Depth) / UnitsPerMeter;
+                var scale = template.transform.localScale;
+                if (Vector3.Distance(scale, size) > .001f) { return $"{name} の見本の大きさ {scale} が当たり箱 {size} と違います（見本の入れ替え・種類の取り違え）。"; }
+                var centerY = (box.Y + (box.Height / 2f)) / UnitsPerMeter;
+                if (Mathf.Abs(template.transform.localPosition.y - centerY) > .001f) { return $"{name} の見本の高さ {template.transform.localPosition.y} m が当たり箱の中心 {centerY} m と違います。"; }
+            }
+
             var road = _segmentTemplate != null ? _segmentTemplate.transform.Find("Road") : null;
             if (road == null) { return "道の区画に Road がありません。"; }
             var width = RunConfig.Lanes * config.LaneWidth / UnitsPerMeter;
             if (Mathf.Abs(road.localScale.x - width) > .001f) { return $"道の幅 {road.localScale.x} m が 3 レーンの幅 {width} m と違います。"; }
+            if (Mathf.Abs(road.localPosition.x) > .001f) { return $"道の中心 {road.localPosition.x} m が中央のレーン（0 m）からずれています。"; }
             if (Mathf.Abs(road.localScale.z - _segmentLength) > .001f) { return $"道の区画の長さ {road.localScale.z} m が {_segmentLength} m と違います。"; }
             return (_segmentCount - 1) * _segmentLength < _segmentsBehind + config.LookAheadMeters
                 ? $"道の区画 {_segmentCount} 個では後方 {_segmentsBehind} m から前方 {config.LookAheadMeters} m まで覆えません。"

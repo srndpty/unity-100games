@@ -45,11 +45,11 @@ namespace Game.Core
         {
             _rules = rules ?? throw new ArgumentNullException(nameof(rules));
             _random = new SeededRandom(seed);
-            var capacity = rules.Config.MaxActiveChunks;
+            var capacity = rules.Settings.MaxActiveChunks;
             _ids = new int[capacity];
             _starts = new long[capacity];
             _speeds = new int[capacity];
-            _nextStart = (long)rules.Config.RunwayMeters * Units.Tile;
+            _nextStart = (long)rules.Settings.RunwayMeters * Units.Tile;
         }
 
         public int Count { get; private set; }
@@ -63,7 +63,7 @@ namespace Game.Core
         public long Recycled { get; private set; }
 
         /// <summary>助走の終わり（最初のチャンクの入口）。</summary>
-        public long RunwayEnd => (long)_rules.Config.RunwayMeters * Units.Tile;
+        public long RunwayEnd => (long)_rules.Settings.RunwayMeters * Units.Tile;
 
         /// <summary>次に並べるチャンクの入口。</summary>
         public long NextStart => _nextStart;
@@ -87,7 +87,7 @@ namespace Game.Core
         /// <summary>自機が z にいるときの区間。z は回収されていない範囲（助走か生きているチャンク）にあること。</summary>
         public Segment SegmentAt(long z)
         {
-            var config = _rules.Config;
+            var config = _rules.Settings;
             if (z < RunwayEnd) { return new Segment(0, RunwayEnd, Difficulty.Speed(config, 0)); }
             for (var i = Count - 1; i >= 0; i--)
             {
@@ -101,7 +101,7 @@ namespace Game.Core
         /// <summary>自機が z に進んだ後：後方を回収し、前方を並べる。</summary>
         public void Update(long z)
         {
-            var config = _rules.Config;
+            var config = _rules.Settings;
             var behind = z - ((long)config.BehindMeters * Units.Tile);
             while (Count > 0 && StartAt(0) + ChunkAt(0).Length(config) <= behind)
             {
@@ -150,7 +150,7 @@ namespace Game.Core
         {
             // 容量は設定の検証（RunRules.ActiveChunkBound）で足りることを保証している。超えたら止める（fail-closed）。
             if (Count >= Capacity) { throw new InvalidOperationException($"生きているチャンクが上限 {Capacity} を超えます。"); }
-            var config = _rules.Config;
+            var config = _rules.Settings;
             var id = Choose(Difficulty.Tier(config, _nextStart));
             var slot = (_head + Count) % Capacity;
             _ids[slot] = id;

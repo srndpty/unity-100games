@@ -8,30 +8,30 @@
 |---|---|
 | dev lint | 成功 |
 | dev check | 成功（警告 0・エラー 0） |
-| dev test | 成功。029 Core 47/47、App 17/17 |
-| Unity EditMode | 126/126（int-geometry 52・tile-motion 10・Core 47・App 17、Mono） |
-| Unity PlayMode | 29/29（実シーン 13、共通証跡公開 16） |
+| dev test | 成功。029 Core 49/49、App 17/17 |
+| Unity EditMode | 128/128（int-geometry 52・tile-motion 10・Core 49・App 17、Mono） |
+| Unity PlayMode | 31/31（実シーン 15、共通証跡公開 16） |
 | Windows ビルド | 成功、StandaloneWindows64 |
 | ビルド起動 | dev capture で起動・全場面撮影・正常終了 |
 | 証跡 | JPEG 品質 85、12 枚 |
-| 撮影再現 | 同じビルド（Build GUID `d5460e9e9c81472fad536c64f255236e`）を 2 回撮影し、12 枚すべての SHA-256 が一致した（撮影記録 `20261123T134050Z-70145a5d` と `20261123T134103Z-6d6fae46`、画像世代 `828f0df3d287d43a`）。Hurdle の判定を変えた後も画像は変わらない（自動操縦は Hurdle に触れない）。モーションの再生位置・走りへ戻るブレンド・倒れるモーションとカメラの揺れも Core の状態と台本の秒数だけで決まるので一致する。照合した 1 回目の記録は次の公開で消える |
+| 撮影再現 | 同じビルド（Build GUID `c8a9eb2d9602442bb8a8b544996700ff`）を 2 回撮影し、12 枚すべての SHA-256 が一致した（撮影記録 `20261123T140744Z-d74551ff` と `20261123T140755Z-12cb513b`、画像世代 `c537b80135f8566a`）。レビュー対応でフォグの範囲を先読み距離の割合（50.4〜111.6 m）にしたので、前の世代から遠景の色がわずかに変わった。モーションの再生位置・走りへ戻るブレンド・倒れるモーションとカメラの揺れも Core の状態と台本の秒数だけで決まるので一致する。照合した 1 回目の記録は次の公開で消える |
 
-公開ポインタは [current.json](current.json)、実行記録は [manifest.json](runs/20261123T134103Z-6d6fae46/manifest.json)。試合のシードは撮影用の 1 で、台本は意図と Tick を順に渡すだけで場面を作る（実時間とキー入力を使わない）。01〜08 は自動操縦（`Autopilot`）で走り、場面の条件（跳んでいる自機の下に Hurdle がある など）が成り立った Tick で撮る。10〜12 は操作をやめて次の障害物にぶつけた場面で、倒れるモーションを台本が 0.08 秒・0.6 秒・最後まで進めて撮る。
+公開ポインタは [current.json](current.json)、実行記録は [manifest.json](runs/20261123T140755Z-12cb513b/manifest.json)。試合のシードは撮影用の 1 で、台本は意図と Tick を順に渡すだけで場面を作る（実時間とキー入力を使わない）。01〜08 は自動操縦（`Autopilot`）で走り、場面の条件（跳んでいる自機の下に Hurdle がある など）が成り立った Tick で撮る。10〜12 は操作をやめて次の障害物にぶつけた場面で、倒れるモーションを台本が 0.08 秒・0.6 秒・最後まで進めて撮る。
 
 | 場面 | 画像 |
 |---|---|
-| タイトル（操作説明・ライセンス表記） | [01-title.jpg](captures/828f0df3d287d43a/01-title.jpg) |
-| 走り出し（助走） | [02-runway.jpg](captures/828f0df3d287d43a/02-runway.jpg) |
-| レーン移動の途中 | [03-steer.jpg](captures/828f0df3d287d43a/03-steer.jpg) |
-| Hurdle を跳ぶ（JUMP のモーション） | [04-jump.jpg](captures/828f0df3d287d43a/04-jump.jpg) |
-| Beam をスライドでくぐる（SLIDE のモーション） | [05-slide.jpg](captures/828f0df3d287d43a/05-slide.jpg) |
-| スライドの後、走りへブレンドしながら戻る途中 | [06-recover.jpg](captures/828f0df3d287d43a/06-recover.jpg) |
-| 隣のレーンの壁の横 | [07-wall.jpg](captures/828f0df3d287d43a/07-wall.jpg) |
-| 1000 m を越えて速さ・難度とも上限 | [08-top-speed.jpg](captures/828f0df3d287d43a/08-top-speed.jpg) |
-| 一時停止 | [09-pause.jpg](captures/828f0df3d287d43a/09-pause.jpg) |
-| ぶつかって 0.08 秒（カメラが揺れている） | [10-impact.jpg](captures/828f0df3d287d43a/10-impact.jpg) |
-| ぶつかって 0.6 秒、倒れる途中（結果のパネルはまだ出ない） | [11-fall.jpg](captures/828f0df3d287d43a/11-fall.jpg) |
-| 寝そべったところで止めた結果画面 | [12-result.jpg](captures/828f0df3d287d43a/12-result.jpg) |
+| タイトル（操作説明・ライセンス表記） | [01-title.jpg](captures/c537b80135f8566a/01-title.jpg) |
+| 走り出し（助走） | [02-runway.jpg](captures/c537b80135f8566a/02-runway.jpg) |
+| レーン移動の途中 | [03-steer.jpg](captures/c537b80135f8566a/03-steer.jpg) |
+| Hurdle を跳ぶ（JUMP のモーション） | [04-jump.jpg](captures/c537b80135f8566a/04-jump.jpg) |
+| Beam をスライドでくぐる（SLIDE のモーション） | [05-slide.jpg](captures/c537b80135f8566a/05-slide.jpg) |
+| スライドの後、走りへブレンドしながら戻る途中 | [06-recover.jpg](captures/c537b80135f8566a/06-recover.jpg) |
+| 隣のレーンの壁の横 | [07-wall.jpg](captures/c537b80135f8566a/07-wall.jpg) |
+| 1000 m を越えて速さ・難度とも上限 | [08-top-speed.jpg](captures/c537b80135f8566a/08-top-speed.jpg) |
+| 一時停止 | [09-pause.jpg](captures/c537b80135f8566a/09-pause.jpg) |
+| ぶつかって 0.08 秒（カメラが揺れている） | [10-impact.jpg](captures/c537b80135f8566a/10-impact.jpg) |
+| ぶつかって 0.6 秒、倒れる途中（結果のパネルはまだ出ない） | [11-fall.jpg](captures/c537b80135f8566a/11-fall.jpg) |
+| 寝そべったところで止めた結果画面 | [12-result.jpg](captures/c537b80135f8566a/12-result.jpg) |
 
 ## ルールの検証
 
@@ -73,3 +73,10 @@
 
 - Space を決定とジャンプの両方に割り当てたので、タイトルで Space を押すと始めた直後に跳んでいた。始めた（再開した）時刻ちょうどの押下を捨てるようにした（App と実シーンでテスト）。
 - 実シーンの「物の数が変わらない」テストで `FindObjectsByType` を使うと、非表示の障害物を数えないので数が変わって見えた。非表示を含めて Stage の子を数えるようにした。
+
+## レビュー対応
+
+- **P2-1 検証済みの設定を後から変えられた**：`RunRules.Config`（と `RunnerRun.Config`）は複製を返すようにし、試合・チャンクの列・`Planner` は組の中の検証済みの設定（`RunRules.Settings`、Core の内部だけが読む）を参照する。毎 Tick の処理は複製を作らない。返された設定の `LaneChangeTicks` を 0 にしたり跳ぶ速さ・重力・スライドの長さを変えたりしても、例外にならず、変える前と同じハッシュの試合になり、探索の結果も変わらないことをテストした。修正前のコードではこのテストが失敗することを確かめた。
+- **P2-2 Stage Prefab の見本を入れ替えても検査が通った**：`Mismatch()` で、自機の参照（Runner・Model・Animator）と親子関係、Animator のコントローラー、障害物の見本ごとの MeshRenderer・MeshFilter・マテリアル・通り過ぎた表示のマテリアル（模様が見本と同じか）、見本の大きさと高さが種類の当たり箱と同じか（入れ替えや取り違えを検出）、道の中心の横位置を確かめる。コントローラーの 5 つの状態は起動時（`Initialize`）に確かめる。Prefab の複製を壊す負例（Wall と Hurdle の見本の入れ替え・Beam の見本の欠け・Animator の欠け・コントローラーの欠け・Model の親子関係・通り過ぎた表示のマテリアルの欠け・マテリアルの取り違え・道の横ずれ）をテストした。
+- **P3-1 短い先読み距離でフォグの始まりと終わりが逆転した**：フォグを先読み距離の 0.42 倍〜0.93 倍にし（既定 50.4〜111.6 m）、起動時にも設定から決める。先読み 1・10・40・120・最大の m で始まりが終わりより手前で、終わりが先読み距離以内であることをテストした。
+- **P3-2 ハッシュにぶつかった物と時刻が入っていなかった**：試合が終わっていれば `CrashKind` と `CrashTime`（分子・分母）を混ぜる。中央のレーンの同じ位置の Wall・Beam・Hurdle に同じ Tick・同じ時刻でぶつかる 3 試合が違うハッシュになり、同じ物なら同じハッシュになることをテストした。修正前のコードでは失敗することを確かめた。自動操縦の最終ハッシュ `0xC90FAC81` は変わらない（ぶつからないため）。

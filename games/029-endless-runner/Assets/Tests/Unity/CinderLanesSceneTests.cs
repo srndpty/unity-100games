@@ -370,6 +370,67 @@ namespace Game.Unity.Tests
             yield return null;
         }
 
+        [UnityTest]
+        public IEnumerator StagePrefabCheck_RejectsSwappedOrMissingPieces()
+        {
+            // Prefab の複製を壊して確かめる（シーンの Stage は使い続けるので触らない）。
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/Unity/Art/CinderLanesStage.prefab");
+            var config = new RunConfig();
+            Assert.That(prefab.GetComponent<CinderLanesStage>().Mismatch(config), Is.Null, "生成した Prefab は合っている");
+
+            string Broken(Action<CinderLanesStage> breakIt)
+            {
+                var copy = Object.Instantiate(prefab);
+                try
+                {
+                    var stage = copy.GetComponent<CinderLanesStage>();
+                    breakIt(stage);
+                    return stage.Mismatch(config);
+                }
+                finally
+                {
+                    Object.DestroyImmediate(copy);
+                }
+            }
+
+            Assert.That(Broken(stage =>
+            {
+                var wall = Field(stage, "_wallTemplate");
+                Field(stage, "_wallTemplate", Field(stage, "_hurdleTemplate"));
+                Field(stage, "_hurdleTemplate", wall);
+            }), Does.Contain("見本"), "Wall と Hurdle の見本の入れ替え");
+            Assert.That(Broken(stage => Field(stage, "_beamTemplate", null)), Does.Contain("Beam の見本がありません"));
+            Assert.That(Broken(stage => Field(stage, "_animator", null)), Does.Contain("Animator"));
+            Assert.That(Broken(stage => stage.Animator.runtimeAnimatorController = null), Does.Contain("コントローラー"));
+            Assert.That(Broken(stage => stage.Model.SetParent(stage.transform, false)), Does.Contain("Runner の子"));
+            Assert.That(Broken(stage => ((Material[])Field(stage, "_passedMaterials"))[1] = null), Does.Contain("Hurdle の通り過ぎた表示"));
+            Assert.That(Broken(stage => ((GameObject)Field(stage, "_hurdleTemplate")).GetComponent<MeshRenderer>().sharedMaterial = ((Material[])Field(stage, "_passedMaterials"))[2]), Does.Contain("模様"));
+            Assert.That(Broken(stage => ((GameObject)Field(stage, "_segmentTemplate")).transform.Find("Road").localPosition += new Vector3(1, 0, 0)), Does.Contain("道の中心"));
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator Fog_StartsBeforeItEnds_ForAnyLookAhead()
+        {
+            foreach (var meters in new[] { 1, 10, 40, 120, RunConfig.MaxMeters })
+            {
+                var (start, end) = CinderLanesGame.FogRange(meters);
+                Assert.That(start, Is.GreaterThan(0).And.LessThan(end), $"先読み {meters} m");
+                Assert.That(end, Is.LessThanOrEqualTo(meters), "並べた先の端より手前で隠しきる");
+            }
+
+            var expected = CinderLanesGame.FogRange(Config.LookAheadMeters);
+            Assert.That(RenderSettings.fogStartDistance, Is.EqualTo(expected.Start));
+            Assert.That(RenderSettings.fogEndDistance, Is.EqualTo(expected.End));
+            yield return null;
+        }
+
+        private static object Field(CinderLanesStage stage, string name) =>
+            typeof(CinderLanesStage).GetField(name, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(stage);
+
+        private static void Field(CinderLanesStage stage, string name, object value) =>
+            typeof(CinderLanesStage).GetField(name, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(stage, value);
+
         private IEnumerable<Transform> ShownObstacles(ObstacleKind kind)
         {
             for (var i = 0; i < Stage.Shown(kind); i++) { yield return Stage.Pooled(kind, i); }

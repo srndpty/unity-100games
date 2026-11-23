@@ -47,7 +47,7 @@ namespace Game.Core
     {
         private RunRules(RunConfig config, ChunkDef[] chunks, Planner planner)
         {
-            Config = config;
+            Settings = config;
             Chunks = Array.AsReadOnly(chunks);
             Planner = planner;
             var shortest = int.MaxValue;
@@ -55,7 +55,15 @@ namespace Game.Core
             ShortestChunk = shortest;
         }
 
-        public RunConfig Config { get; }
+        /// <summary>
+        /// 検証済みの設定の複製。変えても、この組（試合・<see cref="Planner"/>・チャンクの列）には効かない：
+        /// 到達性を検査したときの動きと試合の動きが食い違わないよう、組が持つ設定は作った後に変えられない。
+        /// 呼ぶたびに複製するので、毎 Tick 呼ぶ処理では一度取り出して使う。
+        /// </summary>
+        public RunConfig Config => Settings.Copy();
+
+        /// <summary>検証済みの設定そのもの（Core の内部だけが読む。外へは出さない）。</summary>
+        internal RunConfig Settings { get; }
 
         public ReadOnlyCollection<ChunkDef> Chunks { get; }
 

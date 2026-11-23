@@ -33,14 +33,15 @@ namespace Game.Core
         {
             _rules = rules ?? throw new ArgumentNullException(nameof(rules));
             Seed = seed;
-            _body = RunnerBody.Rest(rules.Config, 1);
+            _body = RunnerBody.Rest(rules.Settings, 1);
             _chunks = new ChunkTrack(rules, seed);
             _chunks.Update(0);
-            Speed = Difficulty.Speed(rules.Config, 0);
+            Speed = Difficulty.Speed(rules.Settings, 0);
         }
 
         public RunRules Rules => _rules;
 
+        /// <summary>検証済みの設定の複製（<see cref="RunRules.Config"/>）。変えても試合には効かない。</summary>
         public RunConfig Config => _rules.Config;
 
         public int Seed { get; }
@@ -71,12 +72,12 @@ namespace Game.Core
         /// <summary>得点：進んだ距離（m、切り捨て）。</summary>
         public long Meters => Z / Units.Tile;
 
-        public int SpeedLevel => Difficulty.SpeedLevel(Config, _chunks.SegmentAt(Z).Start);
+        public int SpeedLevel => Difficulty.SpeedLevel(_rules.Settings, _chunks.SegmentAt(Z).Start);
 
         public void Step(Command command)
         {
             if (IsOver) { return; }
-            var config = Config;
+            var config = _rules.Settings;
             var segment = _chunks.SegmentAt(Z);
             if (Ticks > 0 && segment.Speed > Speed) { _events |= RunEvents.SpedUp; }
             _events |= (RunEvents)_body.Step(command, config);
@@ -104,6 +105,13 @@ namespace Game.Core
             hash.Mix(PrevZ);
             hash.Mix(Speed);
             hash.Mix(IsOver);
+            if (IsOver)
+            {
+                // 結果に出る値（ぶつかった障害物の種類と時刻）も混ぜ、違う結果を同じハッシュにしない。
+                hash.Mix((int)CrashKind);
+                hash.Mix(CrashTime.Numerator);
+                hash.Mix(CrashTime.Denominator);
+            }
             _body.MixInto(ref hash);
             _chunks.MixInto(ref hash);
             return hash.Value;
@@ -118,7 +126,7 @@ namespace Game.Core
 
         private void Collide()
         {
-            var config = Config;
+            var config = _rules.Settings;
             var lane = _body.Lane;
             var vertical = _body.Vertical;
             var reach = (config.RunnerDepth / 2) + config.RowLength;
