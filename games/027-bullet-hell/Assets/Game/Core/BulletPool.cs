@@ -266,21 +266,35 @@ namespace Game.Core
         /// <summary>中身を写した別の置き場（先読み・セーブ用。共有しない）。</summary>
         public BulletPool Clone()
         {
-            var copy = new BulletPool(Capacity) { Count = Count, Dropped = Dropped, Spawned = Spawned };
-            Array.Copy(_x, copy._x, Count);
-            Array.Copy(_y, copy._y, Count);
-            Array.Copy(_startX, copy._startX, Count);
-            Array.Copy(_startY, copy._startY, Count);
-            Array.Copy(_angle, copy._angle, Count);
-            Array.Copy(_speed, copy._speed, Count);
-            Array.Copy(_accel, copy._accel, Count);
-            Array.Copy(_maxSpeed, copy._maxSpeed, Count);
-            Array.Copy(_curve, copy._curve, Count);
-            Array.Copy(_age, copy._age, Count);
-            Array.Copy(_life, copy._life, Count);
-            Array.Copy(_shape, copy._shape, Count);
-            Array.Copy(_color, copy._color, Count);
+            var copy = new BulletPool(Capacity);
+            copy.CopyFrom(this);
             return copy;
+        }
+
+        /// <summary>
+        /// <paramref name="source"/> の中身をこの置き場へ写す（操縦役の先読みで、毎回の割り当てをせずに作業用の置き場を使い回す）。
+        /// 容量は同じでなければならない。
+        /// </summary>
+        public void CopyFrom(BulletPool source)
+        {
+            if (source == null) { throw new ArgumentNullException(nameof(source)); }
+            if (source.Capacity != Capacity) { throw new ArgumentException("容量が違う置き場からは写せません。", nameof(source)); }
+            Count = source.Count;
+            Dropped = source.Dropped;
+            Spawned = source.Spawned;
+            Array.Copy(source._x, _x, Count);
+            Array.Copy(source._y, _y, Count);
+            Array.Copy(source._startX, _startX, Count);
+            Array.Copy(source._startY, _startY, Count);
+            Array.Copy(source._angle, _angle, Count);
+            Array.Copy(source._speed, _speed, Count);
+            Array.Copy(source._accel, _accel, Count);
+            Array.Copy(source._maxSpeed, _maxSpeed, Count);
+            Array.Copy(source._curve, _curve, Count);
+            Array.Copy(source._age, _age, Count);
+            Array.Copy(source._life, _life, Count);
+            Array.Copy(source._shape, _shape, Count);
+            Array.Copy(source._color, _color, Count);
         }
 
         /// <summary>以後の動きを決める状態をすべて混ぜる（022 の知見）。</summary>
