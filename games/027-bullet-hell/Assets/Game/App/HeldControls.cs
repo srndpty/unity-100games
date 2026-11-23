@@ -5,8 +5,8 @@ namespace Game.App
 {
     /// <summary>
     /// 押している操作キー。左右（上下）を両方押しているときは後から押したほうを使う（離すと、まだ押しているほうに戻る）。
-    /// ショットは、次の Tick までに押して離しても 1 Tick は押したことにする。ボムは押した回数ではなく「押した」ことを 1 回だけ渡す
-    /// （押したままでも 2 回目は使わない）。
+    /// ショットは、次の Tick までに押して離しても 1 Tick は押したことにする。ボムは押すごとに 1 回だけ渡し、
+    /// 離すまでの間に押下がもう一度届いても（重複した押下の出来事）2 回目にはしない。
     /// </summary>
     public sealed class HeldControls
     {
@@ -15,6 +15,7 @@ namespace Game.App
         private bool _shotHeld;
         private bool _shotLatched;
         private bool _bombLatched;
+        private bool _bombHeld;
 
         /// <summary>左 -1・なし 0・右 1。</summary>
         public int Horizontal => _horizontal.Count == 0 ? 0 : _horizontal[_horizontal.Count - 1];
@@ -36,7 +37,8 @@ namespace Game.App
                     _shotLatched = true;
                     return;
                 case Control.Bomb:
-                    _bombLatched = true;
+                    if (!_bombHeld) { _bombLatched = true; }
+                    _bombHeld = true;
                     return;
                 default:
                     var (list, value) = Axis(control);
@@ -57,6 +59,7 @@ namespace Game.App
                     _shotHeld = false;
                     return;
                 case Control.Bomb:
+                    _bombHeld = false;
                     return;
                 default:
                     var (list, value) = Axis(control);
@@ -89,6 +92,7 @@ namespace Game.App
             _shotHeld = false;
             _shotLatched = false;
             _bombLatched = false;
+            _bombHeld = false;
         }
 
         private (List<int> List, int Value) Axis(Control control) => control switch

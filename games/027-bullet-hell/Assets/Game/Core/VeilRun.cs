@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Numerics;
 using TileMotion;
 
 namespace Game.Core
@@ -316,12 +317,14 @@ namespace Game.Core
         /// 2 つの動く円が、この Tick に触れたか（<see cref="Sweep.First"/>）。
         /// <para>
         /// ある軸の始めの隔たりが「両者の移動量と半径の和」より大きい組は、その軸で近づききれないので掃引しない（厳密な除外）。
-        /// 残った組の座標が大きいとき（ボスが 1 Tick で遠くへ動くなど）は、掃引の 2 次式が long に収まるまで全体を半分ずつ縮めて判定する
-        /// （半径は切り上げる）。自機と弾のような近い組は縮めずに厳密に判定する。
+        /// 残った組は、座標が小さければ（自機と弾のような近い組）long の <see cref="Sweep.First"/> で、大きければ（ボスが 1 Tick で遠くへ動くなど）
+        /// 2 次式を <see cref="BigInteger"/> で厳密に判定する。どちらも「中心の距離が半径の和より小さくなったら触れた」で、ちょうど接するだけでは触れない。
+        /// 大きな組は滅多に出ないので、BigInteger の割り当ては弾と自機の判定（毎 Tick 数千組）には起きない。
         /// </para>
         /// </summary>
         public static bool Touches(Vec2i aStart, Vec2i aEnd, Vec2i bStart, Vec2i bEnd, int radiusSum)
         {
+            if (radiusSum <= 0) { throw new ArgumentOutOfRangeException(nameof(radiusSum), radiusSum, "半径の和は正にしてください。"); }
             long p0x = aStart.X - bStart.X;
             long p0y = aStart.Y - bStart.Y;
             long ax = aEnd.X - aStart.X;
@@ -330,22 +333,33 @@ namespace Game.Core
             long by = bEnd.Y - bStart.Y;
             if (Math.Abs(p0x) > Math.Abs(ax) + Math.Abs(bx) + radiusSum || Math.Abs(p0y) > Math.Abs(ay) + Math.Abs(by) + radiusSum) { return false; }
 
-            var shift = 0;
-            long radius = radiusSum;
-            while (Math.Max(Math.Max(Math.Max(Math.Abs(p0x), Math.Abs(p0y)), Math.Max(Math.Abs(ax), Math.Abs(ay))), Math.Max(Math.Max(Math.Abs(bx), Math.Abs(by)), radius)) > SweepLimit)
+            var dx = ax - bx;
+            var dy = ay - by;
+            var largest = Math.Max(Math.Max(Math.Abs(p0x), Math.Abs(p0y)), Math.Max(Math.Max(Math.Abs(dx), Math.Abs(dy)), radiusSum));
+            if (largest <= SweepLimit)
             {
-                shift++;
-                p0x >>= 1;
-                p0y >>= 1;
-                ax >>= 1;
-                ay >>= 1;
-                bx >>= 1;
-                by >>= 1;
-                radius = (radiusSum + (1L << shift) - 1) >> shift;
+                var a0 = new Vec2i((int)p0x, (int)p0y);
+                return Sweep.First(a0, a0 + new Vec2i((int)dx, (int)dy), Vec2i.Zero, Vec2i.Zero, radiusSum).Hit;
             }
 
-            var a0 = new Vec2i((int)p0x, (int)p0y);
-            return Sweep.First(a0, a0 + new Vec2i((int)ax, (int)ay), Vec2i.Zero, new Vec2i((int)bx, (int)by), (int)radius).Hit;
+            return ExactlyTouches(p0x, p0y, dx, dy, radiusSum);
+        }
+
+        /// <summary>
+        /// 相対位置 p(t) = p0 + t d（0 ≤ t ≤ 1）が、半径 <paramref name="radius"/> の円の内側に入るか。|p(t)|^2 = a t^2 + b t + c（c = |p0|^2 - R^2）を
+        /// 桁あふれしない整数（<see cref="BigInteger"/>）で判定する（<see cref="Sweep.First"/> と同じ式）。
+        /// </summary>
+        private static bool ExactlyTouches(long p0x, long p0y, long dx, long dy, long radius)
+        {
+            var c = (p0x * p0x) + (p0y * p0y) - (radius * radius);
+            if (c < 0) { return true; }
+            var a = (dx * dx) + (dy * dy);
+            var b = 2 * ((p0x * dx) + (p0y * dy));
+            if (a == 0 || b >= 0) { return false; }
+
+            // 最も近づく時刻 t* = -b / 2a。t* が 1 以上なら終わりの位置で、そうでなければ t* での近さ（判別式が正か）で判定する。
+            if (-b >= 2 * a) { return a + b + c < 0; }
+            return (new BigInteger(b) * b) - (new BigInteger(4) * a * c) > 0;
         }
 
         /// <summary>中身を写した別の試合（操縦役の先読み用。共有しない）。</summary>

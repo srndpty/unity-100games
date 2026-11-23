@@ -10,6 +10,12 @@
 - **状況：** 023 の着手時に `packages/com.games100.tile-motion` へ抽出した。完了済みの 021・022 は元の複製のまま残している。
 - **対応：** 各作品の `TileMap` に `ISolidGrid` を実装させ、重複するファイルを消してパッケージを参照する。完走ハッシュなどの固定値が変わらないことを .NET と Mono の両方で確かめる。
 
+### 026・027：円の掃引（Geometry）を共通パッケージへ抽出する候補
+
+- **対象：** `games/026-twin-stick` と `games/027-bullet-hell` の `Assets/Game/Core/Geometry.cs`（`Vec2i`・`IntMath`・`Rect`・`Touch`・`Sweep`）と、027 の `VeilRun.Touches`（大きな座標を `BigInteger` で厳密に判定する）
+- **状況：** 027 は 026 から写して使っている（2 作品目）。026 の `Sweep.First` は座標が大きいと 2 次式が long を超えうる（026 の座標の範囲では超えない）。
+- **対応：** 3 作品目で円どうしの掃引を使うときに、`VeilRun.Touches` の厳密な判定を含めて `packages/` へ抽出し、026・027 をパッケージの参照に置き換える。完走ハッシュなどの固定値が変わらないことを .NET と Mono の両方で確かめる。
+
 ### 010 SAFE DIG：フォーカス復帰のクリックでゲームが終了する
 
 - **対象：** `games/010-minesweeper/Assets/Game/Unity/SafeDigGame.cs` の終了ボタン

@@ -123,7 +123,7 @@ namespace Game.Unity.Editor
                 var background = Sprite(root.transform, "Background", LanternVeilArtGenerator.FieldFile, material, 0);
                 background.transform.localPosition = field / 2;
 
-                var hpBar = Sprite(root.transform, "HpBar", LanternVeilArtGenerator.HpBarFile, material, 30);
+                var hpBar = Sprite(root.transform, "HpBar", LanternVeilArtGenerator.HpBarFile, material, LanternVeilStage.HpBarOrder);
                 hpBar.transform.localPosition = new Vector3(0, field.y - .25f, 0);
                 hpBar.transform.localScale = new Vector3(field.x, 1, 1);
 
@@ -144,7 +144,7 @@ namespace Game.Unity.Editor
                 bullets.AddComponent<MeshFilter>();
                 var bulletRenderer = bullets.AddComponent<MeshRenderer>();
                 bulletRenderer.sharedMaterial = bulletMaterial;
-                bulletRenderer.sortingOrder = 20;
+                bulletRenderer.sortingOrder = LanternVeilStage.BulletOrder;
                 var layer = bullets.AddComponent<BulletLayer>();
 
                 var ring = Sprite(root.transform, "BombRing", LanternVeilArtGenerator.BombRingFile, material, 22);
@@ -152,20 +152,14 @@ namespace Game.Unity.Editor
 
                 // 領域の外を覆う幕（左下を基準にした 1 単位の白い四角をカメラの背景色で塗って広げる）。
                 var curtainColor = new Color(.05f, .02f, .05f);
-                const float far = 60f;
-                var curtains = new[]
-                {
-                    (Name: "CurtainLeft", Position: new Vector3(-far, -far), Size: new Vector3(far, field.y + (2 * far))),
-                    (Name: "CurtainRight", Position: new Vector3(field.x, -far), Size: new Vector3(far, field.y + (2 * far))),
-                    (Name: "CurtainBottom", Position: new Vector3(0, -far), Size: new Vector3(field.x, far)),
-                    (Name: "CurtainTop", Position: new Vector3(0, field.y), Size: new Vector3(field.x, far)),
-                };
+                var curtains = LanternVeilStage.CurtainLayout();
                 var curtainRenderers = new SpriteRenderer[curtains.Length];
                 for (var i = 0; i < curtains.Length; i++)
                 {
-                    var curtain = Sprite(root.transform, curtains[i].Name, LanternVeilArtGenerator.PixelFile, material, 28);
-                    curtain.transform.localPosition = curtains[i].Position;
-                    curtain.transform.localScale = new Vector3(curtains[i].Size.x, curtains[i].Size.y, 1);
+                    var (name, position, size) = curtains[i];
+                    var curtain = Sprite(root.transform, name, LanternVeilArtGenerator.PixelFile, material, LanternVeilStage.CurtainOrder);
+                    curtain.transform.localPosition = position;
+                    curtain.transform.localScale = new Vector3(size.x, size.y, 1);
                     curtain.color = curtainColor;
                     curtainRenderers[i] = curtain;
                 }

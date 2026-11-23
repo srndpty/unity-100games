@@ -19,6 +19,18 @@ namespace Game.Unity
         /// <summary>無敵中の点滅の 1 段の Tick 数。</summary>
         public const int BlinkTicks = 4;
 
+        /// <summary>敵弾の Mesh の描画順。</summary>
+        public const int BulletOrder = 20;
+
+        /// <summary>領域の外を覆う幕の描画順（弾より手前、体力のバーより奥）。</summary>
+        public const int CurtainOrder = 28;
+
+        /// <summary>体力のバーの描画順。</summary>
+        public const int HpBarOrder = 30;
+
+        /// <summary>幕が領域の外へ伸びる長さ（ワールド単位）。どの横長の画面でも、領域の外の余白（弾が生きている 32 px = 2 単位）を覆いきる。</summary>
+        public const float CurtainReach = 60f;
+
         [SerializeField] private SpriteRenderer _background;
         [SerializeField] private SpriteRenderer _player;
         [SerializeField] private SpriteRenderer _hitbox;
@@ -46,11 +58,30 @@ namespace Game.Unity
 
         public BulletLayer Bullets => _bullets;
 
+        /// <summary>領域の外を覆う幕（左・右・下・上。テストで配置の検査を確かめるのに使う）。</summary>
+        public IReadOnlyList<SpriteRenderer> Curtains => Array.AsReadOnly(_curtains);
+
         /// <summary>今表示しているショットの数。</summary>
         public int VisibleShots { get; private set; }
 
         /// <summary>プレイ領域の大きさ（ワールド単位）。</summary>
         public static Vector2 FieldSize => new((float)Field.WidthPx / PixelsPerUnit, (float)Field.HeightPx / PixelsPerUnit);
+
+        /// <summary>
+        /// 幕 4 枚（左・右・下・上）の名前・位置・大きさ。幕の絵は左下を基準にした 1 単位の四角で、大きさはそのまま拡大の倍率になる。
+        /// 生成スクリプトと <see cref="Mismatch"/> が同じこの値を使う（Prefab の幕をずらすと、余白の弾が見える）。
+        /// </summary>
+        public static (string Name, Vector3 Position, Vector2 Size)[] CurtainLayout()
+        {
+            var field = FieldSize;
+            return new[]
+            {
+                ("CurtainLeft", new Vector3(-CurtainReach, -CurtainReach, 0), new Vector2(CurtainReach, field.y + (2 * CurtainReach))),
+                ("CurtainRight", new Vector3(field.x, -CurtainReach, 0), new Vector2(CurtainReach, field.y + (2 * CurtainReach))),
+                ("CurtainBottom", new Vector3(0, -CurtainReach, 0), new Vector2(field.x, CurtainReach)),
+                ("CurtainTop", new Vector3(0, field.y, 0), new Vector2(field.x, CurtainReach)),
+            };
+        }
 
         /// <summary>Core の単位の位置を Stage のローカル座標へ。</summary>
         public static Vector3 Local(Vec2i point) => new((float)point.X / (Field.Unit * PixelsPerUnit), (float)point.Y / (Field.Unit * PixelsPerUnit), 0);
@@ -70,9 +101,43 @@ namespace Game.Unity
                 return $"ボスの絵が {VeilConfig.BossCount} 枚ありません。";
             }
 
+            var curtain = CurtainMismatch();
+            if (curtain != null) { return curtain; }
+
+            var bulletRenderer = _bullets.GetComponent<MeshRenderer>();
+            if (bulletRenderer == null || bulletRenderer.sortingOrder != BulletOrder) { return $"弾の Mesh の描画順が {BulletOrder} ではありません。"; }
+            if (_hpBar.sortingOrder != HpBarOrder) { return $"体力のバーの描画順が {HpBarOrder} ではありません。"; }
+
             var size = (Vector2)_background.sprite.bounds.size;
             if (Vector2.Distance(size, FieldSize) > .001f) { return $"背景の大きさ {size} がプレイ領域 {FieldSize} と違います。"; }
             if (_background.transform.localPosition != (Vector3)(FieldSize / 2)) { return "背景がプレイ領域の中央にありません。"; }
+            return null;
+        }
+
+        /// <summary>幕の位置・大きさ・向き・描画順・絵・不透明さが <see cref="CurtainLayout"/> どおりか。違えば理由、一致すれば null。</summary>
+        private string CurtainMismatch()
+        {
+            var layout = CurtainLayout();
+            var bulletLayer = _bullets.GetComponent<Renderer>().sortingLayerID;
+            for (var i = 0; i < layout.Length; i++)
+            {
+                var (name, position, size) = layout[i];
+                var curtain = _curtains[i];
+                var t = curtain.transform;
+                if (t.parent != transform) { return $"幕 {name} が Stage の直下にありません。"; }
+                if (!curtain.enabled || !curtain.gameObject.activeSelf) { return $"幕 {name} が表示されていません。"; }
+                if (Vector3.Distance(t.localPosition, position) > 1e-4f) { return $"幕 {name} の位置 {t.localPosition} が {position} と違います。"; }
+                if (Vector3.Distance(t.localScale, new Vector3(size.x, size.y, 1)) > 1e-4f) { return $"幕 {name} の大きさ {t.localScale} が {size} と違います。"; }
+                if (t.localRotation != Quaternion.identity) { return $"幕 {name} が回っています。"; }
+                if (curtain.sortingOrder != CurtainOrder || curtain.sortingLayerID != bulletLayer) { return $"幕 {name} の描画順が弾より手前（{CurtainOrder}）ではありません。"; }
+                if (curtain.color.a < 1) { return $"幕 {name} が不透明ではありません。"; }
+                var bounds = curtain.sprite == null ? default : curtain.sprite.bounds;
+                if (curtain.sprite == null || Vector2.Distance(bounds.min, Vector2.zero) > 1e-4f || Vector2.Distance(bounds.size, Vector2.one) > 1e-4f)
+                {
+                    return $"幕 {name} の絵が左下を基準にした 1 単位の四角ではありません。";
+                }
+            }
+
             return null;
         }
 

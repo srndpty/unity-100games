@@ -32,6 +32,30 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void Bomb_DuplicatePressBeforeRelease_IsIgnoredUntilReleased()
+        {
+            var held = new HeldControls();
+            held.Press(Control.Bomb);
+            Assert.That(held.TakeBomb(), Is.True);
+            held.Press(Control.Bomb);
+            Assert.That(held.TakeBomb(), Is.False, "離さずに届いた重複した押下では 2 回目にしない");
+            held.Release(Control.Bomb);
+            held.Press(Control.Bomb);
+            Assert.That(held.TakeBomb(), Is.True, "離してから押し直すと次の 1 回");
+        }
+
+        [Test]
+        public void Bomb_ClearForgetsTheHeldKey()
+        {
+            var held = new HeldControls();
+            held.Press(Control.Bomb);
+            held.TakeBomb();
+            held.Clear();
+            held.Press(Control.Bomb);
+            Assert.That(held.TakeBomb(), Is.True, "一時停止などで消した後は、押したままの扱いを持ち越さない");
+        }
+
+        [Test]
         public void Shot_HeldKeepsFiringAndTapFiresOnce()
         {
             var held = new HeldControls();

@@ -134,6 +134,41 @@ namespace Game.Unity.Tests
             }
         }
 
+        /// <summary>
+        /// レビュー P2-1：幕の参照がそろっていても、ずらす・縮める・描画順を変える・透かす・隠すと、余白の弾が見える。
+        /// 実シーンの Stage の複製を 1 か所ずつ壊し、どれも <see cref="LanternVeilStage.Mismatch"/> が不一致を返すことを確かめる。
+        /// </summary>
+        [UnityTest]
+        public IEnumerator Mismatch_DetectsCurtainsMovedResizedReorderedOrHidden()
+        {
+            yield return null;
+            var breaks = new (string Name, Action<SpriteRenderer> Break, int Index)[]
+            {
+                ("右の幕を右へ 1 単位", c => c.transform.localPosition += Vector3.right, 1),
+                ("左の幕を左へ 0.5 単位", c => c.transform.localPosition += Vector3.left * .5f, 0),
+                ("上の幕を低く", c => c.transform.localScale = new Vector3(c.transform.localScale.x, 1, 1), 3),
+                ("下の幕を細く", c => c.transform.localScale = new Vector3(c.transform.localScale.x - 1, c.transform.localScale.y, 1), 2),
+                ("右の幕を弾より奥へ", c => c.sortingOrder = LanternVeilStage.BulletOrder - 1, 1),
+                ("上の幕を半透明に", c => c.color = new Color(c.color.r, c.color.g, c.color.b, .5f), 3),
+                ("左の幕を隠す", c => c.enabled = false, 0),
+                ("下の幕を回す", c => c.transform.localRotation = Quaternion.Euler(0, 0, 10), 2),
+            };
+
+            var intact = Object.Instantiate(Stage);
+            Assert.That(intact.Mismatch(Rules), Is.Null, "壊していない複製は一致する");
+            Object.Destroy(intact.gameObject);
+
+            foreach (var (name, change, index) in breaks)
+            {
+                var copy = Object.Instantiate(Stage);
+                change(copy.Curtains[index]);
+                Assert.That(copy.Mismatch(Rules), Is.Not.Null, name);
+                Object.Destroy(copy.gameObject);
+            }
+
+            yield return null;
+        }
+
         [UnityTest]
         public IEnumerator ArrowKeysAndWasd_MoveThePlayer_AndReleaseStops()
         {
