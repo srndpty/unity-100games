@@ -175,6 +175,7 @@ namespace Game.Core
             HasObjective = source.HasObjective;
             CaughtBy = source.CaughtBy;
             LastNoise = source.LastNoise;
+            LastNoiseTick = source.LastNoiseTick;
         }
 
         /// <summary>検証済みの設定の複製（試合はこれを書き換えない）。</summary>
@@ -206,8 +207,11 @@ namespace Game.Core
         /// <summary>捕まえた警備員の番号（捕まっていなければ -1）。</summary>
         public int CaughtBy { get; private set; } = -1;
 
-        /// <summary>直前の Tick に出た足音（なければ null）。</summary>
+        /// <summary>最後に出た足音（まだなければ null）。描画用で、以後の動きには影響しない。</summary>
         public Noise? LastNoise { get; private set; }
+
+        /// <summary><see cref="LastNoise"/> が出た Tick（1 から数える）。</summary>
+        public long LastNoiseTick { get; private set; }
 
         public bool IsOver => Status != MatchStatus.Playing;
 
@@ -226,9 +230,10 @@ namespace Game.Core
             Ticks++;
 
             var noise = Intruder.Move(Map, input);
-            LastNoise = noise;
             if (noise != null)
             {
+                LastNoise = noise;
+                LastNoiseTick = Ticks;
                 _hearing.Spread(noise.Value.Source, noise.Value.Radius);
                 _events |= WardEvents.Step;
             }

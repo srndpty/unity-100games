@@ -1,0 +1,80 @@
+{
+    "Product": "HUSH WARD",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "3368969f92f34c8a8126278485396d20",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-23T16:41:10.1419840Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"BodySize\":176,\"SneakSpeed\":9,\"WalkSpeed\":18,\"RunSpeed\":32,\"StepTicks\":15,\"SneakNoise\":1,\"WalkNoise\":3,\"RunNoise\":7,\"PatrolSpeed\":12,\"CautionPatrolSpeed\":16,\"InvestigateSpeed\":14,\"ChaseSpeed\":26,\"SearchSpeed\":16,\"TurnSpeed\":1024,\"VisionRange\":1536,\"AlertVisionRange\":2048,\"VisionHalfAngle\":7282,\"AwarenessNearGain\":60,\"AwarenessFarGain\":10,\"AwarenessDecay\":3,\"InvestigateLookTicks\":120,\"SearchTicks\":600,\"SearchRadius\":5,\"SearchLookTicks\":40,\"LookSweep\":9102,\"LookPeriodTicks\":160,\"AlertTicks\":600,\"CautionTicks\":900},\"Volume\":0.11999999731779099,\"ToastTicks\":150,\"NoiseShowTicks\":14,\"FanRays\":33}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "81db504f9c211a93d82afd5373849fbcab412b2e56f463df7ab1f61d620120ea",
+            "Note": "タイトル（施設の配置を Stage Prefab のまま描く。試合はまだない）"
+        },
+        {
+            "File": "02-start.jpg",
+            "Sha256": "91b228e1dcecdc788328bf710bb82afae73b92793a964d120bcff09688b13a0e",
+            "Note": "試合の開始直後。警備員の視界（扇）と入口。経過 1 Tick、自機 (384, 384)、目的物 なし、発見 0、平常 / A  巡回  気づき 0  → (2, 8) / B  巡回  気づき 0  → (24, 13) / C  巡回  気づき 0  → (12, 13)"
+        },
+        {
+            "File": "03-hall.jpg",
+            "Sha256": "3779069ce5f9738d0b0358e30c659efd077368d830f0c3ff09a12dc7dcbe010d",
+            "Note": "隠密：A が離れた隙に中央の廊下へ出て、西の部屋の扉へ向かう。経過 258 Tick、自機 (1917, 2061)、目的物 なし、発見 0、平常 / A  巡回  気づき 0  → (29, 8) / B  巡回  気づき 0  → (24, 13) / C  巡回  気づき 0  → (12, 13)"
+        },
+        {
+            "File": "04-north.jpg",
+            "Sha256": "116489c690d7e3e38abf021c970314ba9ab6bb949299f6154ac25df63861cff7",
+            "Note": "隠密：北の中央の部屋の上の列を、C の見回りの外で抜ける。経過 570 Tick、自機 (3093, 3964)、目的物 なし、発見 0、平常 / A  巡回  気づき 0  → (29, 8) / B  巡回  気づき 0  → (24, 13) / C  巡回  気づき 0  → (18, 13)"
+        },
+        {
+            "File": "05-objective.jpg",
+            "Sha256": "403b73c158f9504a3f0f845c42d3dfe561e09b9cfd09bcf166e91c007dbd0924",
+            "Note": "隠密：資料室の上の列から機密ファイルを取った（見張り B は扉のほうを見ている）。経過 1016 Tick、自機 (7077, 3976)、目的物 あり、発見 0、平常 / A  巡回  気づき 0  → (2, 8) / B  巡回  気づき 0  → (24, 13) / C  巡回  気づき 0  → (18, 13)"
+        },
+        {
+            "File": "06-debug.jpg",
+            "Sha256": "3598aab514bff6872ee6ee7658eaea491437530c3bcff9d0e2aa3159352c34d9",
+            "Note": "F1 の詳しい表示：状態・気づき値・向かう先（十字）・巡回路（線）。経過 1036 Tick、自機 (6957, 4195)、目的物 あり、発見 0、平常 / A  巡回  気づき 0  → (2, 8) / B  巡回  気づき 0  → (24, 13) / C  巡回  気づき 0  → (12, 13)"
+        },
+        {
+            "File": "07-escaped-unseen.jpg",
+            "Sha256": "36703c7892c830275c6124f929da6554840b1e7f469d7213dabfab04e2e9068b",
+            "Note": "誰にも気づかれずに脱出した結果（評価：未発見）。経過 1820 Tick、自機 (386, 504)、目的物 あり、発見 0、平常 / A  巡回  気づき 0  → (29, 8) / B  巡回  気づき 0  → (24, 13) / C  巡回  気づき 0  → (12, 13)"
+        },
+        {
+            "File": "08-suspicious.jpg",
+            "Sha256": "c30a7707ad17c64daa809f7844e4c6c4a72dbcf2a1ff2d309caefd2d8bbb5ef9",
+            "Note": "強行：警備員に見られ、気づき値が上がって調査に来る（?）。経過 168 Tick、自機 (1914, 2044)、目的物 なし、発見 0、平常 / A  調査  気づき 393  → (7, 7)  見えている / B  巡回  気づき 0  → (24, 13) / C  巡回  気づき 0  → (18, 13)"
+        },
+        {
+            "File": "09-discovered.jpg",
+            "Sha256": "b7635f7de5c69e82f2b614e42a8b9c90b25a3e979f76e5ca86a44cd7482f5c83",
+            "Note": "強行：気づき値が満ちて発見（!）。施設は厳戒に上がる。経過 185 Tick、自機 (1914, 2588)、目的物 なし、発見 1、厳戒  残り 600 Tick / A  追跡  気づき 1000  → (7, 10)  見えている / B  調査  気づき 0  → (7, 9) / C  調査  気づき 0  → (7, 9)"
+        },
+        {
+            "File": "10-search.jpg",
+            "Sha256": "20b043cffe684015ace21a043cba3a0e685015c8938635ff980f8508d712145e",
+            "Note": "強行：視界から逃れ、警備員は見失った位置の周りを捜索する（…）。経過 269 Tick、自機 (2098, 3198)、目的物 なし、発見 1、厳戒  残り 569 Tick / A  捜索  気づき 811  → (5, 13)  捜索残り 569 / B  調査  気づき 0  → (7, 9) / C  調査  気づき 0  → (7, 9)"
+        },
+        {
+            "File": "11-escaped-found.jpg",
+            "Sha256": "7202860f3f74648bd67bfa0068bac513c13b3c1da7d9ea73df3a9b97905a71b9",
+            "Note": "見つかってから逃げ切って脱出した結果（発見回数）。経過 1058 Tick、自機 (382, 494)、目的物 あり、発見 1、警戒  残り 680 Tick / A  調査  気づき 0  → (7, 8) / B  巡回  気づき 0  → (24, 13) / C  巡回  気づき 0  → (18, 13)"
+        },
+        {
+            "File": "12-caught.jpg",
+            "Sha256": "4acb6b61341642bd616d28cf3277694a7b83a804e96ddd2f85b22bfa66af08dc",
+            "Note": "警備員を気にせず歩いて、追跡中の警備員に捕まった。経過 233 Tick、自機 (3118, 1914)、目的物 なし、発見 1、厳戒  残り 600 Tick / A  追跡  気づき 1000  → (12, 7)  見えている / B  調査  気づき 0  → (8, 7) / C  調査  気づき 0  → (8, 7)"
+        }
+    ]
+}

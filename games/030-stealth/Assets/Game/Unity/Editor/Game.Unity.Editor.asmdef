@@ -1,7 +1,7 @@
 {
   "name": "Game.Unity.Editor",
   "rootNamespace": "Game.Unity.Editor",
-  "references": ["Game.Core", "Game.Unity"],
+  "references": ["Game.Core", "Game.App", "Game.Unity", "IntGeometry", "TileMotion"],
   "includePlatforms": ["Editor"],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
