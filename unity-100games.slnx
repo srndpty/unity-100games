@@ -173,6 +173,12 @@
     <Project Path="games/029-endless-runner/dotnet/Core.Tests/G029.Core.Tests.csproj" />
     <Project Path="games/029-endless-runner/dotnet/Core/G029.Core.csproj" />
   </Folder>
+  <Folder Name="/030-stealth/">
+    <Project Path="games/030-stealth/dotnet/App.Tests/G030.App.Tests.csproj" />
+    <Project Path="games/030-stealth/dotnet/App/G030.App.csproj" />
+    <Project Path="games/030-stealth/dotnet/Core.Tests/G030.Core.Tests.csproj" />
+    <Project Path="games/030-stealth/dotnet/Core/G030.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />
