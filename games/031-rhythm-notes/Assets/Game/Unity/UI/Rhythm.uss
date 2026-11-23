@@ -50,11 +50,33 @@ Button:hover, Button.selected {
     font-size: 31px;
     margin: 16px 0;
 }
+.field {
+    background-color: #0c192a;
+}
+.layer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
 .lane {
     height: 109px;
-    margin-bottom: 14px;
-    background-color: #0c192a;
-    overflow: hidden;
+    border-bottom-width: 2px;
+    border-bottom-color: #14253b;
+}
+.bar-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    margin-left: -1px;
+    background-color: rgba(231, 247, 250, 0.28);
+}
+.burst {
+    position: absolute;
+    width: 0;
+    height: 0;
 }
 .lane-key {
     position: absolute;

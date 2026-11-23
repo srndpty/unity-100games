@@ -24,7 +24,7 @@ namespace Game.Core
         public const int SampleRate = 32000;
         public const int SamplesPerMillisecond = SampleRate / 1000;
 
-        public Song(string name, int length, IEnumerable<Note> notes)
+        public Song(string name, int length, IEnumerable<Note> notes, IEnumerable<int> bars)
         {
             var copy = new List<Note>(notes);
             var previous = 0;
@@ -40,14 +40,25 @@ namespace Game.Core
 
             if (copy.Count == 0) { throw new ArgumentException("譜面が空です。", nameof(notes)); }
 
+            var barCopy = new List<int>(bars);
+            for (var i = 0; i < barCopy.Count; i++)
+            {
+                if (barCopy[i] < 0 || barCopy[i] >= length || (i > 0 && barCopy[i] <= barCopy[i - 1]))
+                {
+                    throw new ArgumentException("小節線の時刻が無効です。", nameof(bars));
+                }
+            }
+
             Name = name;
             Length = length;
             Notes = copy.AsReadOnly();
+            Bars = barCopy.AsReadOnly();
         }
 
         public string Name { get; }
         public int Length { get; }
         public IReadOnlyList<Note> Notes { get; }
+        public IReadOnlyList<int> Bars { get; }
 
         internal static bool IsStrike(Strike strike) => strike is Strike.Pulse or Strike.Spark;
     }
@@ -87,8 +98,8 @@ namespace Game.Core
             _fairWindow = rules.FairMs * Song.SamplesPerMillisecond;
             _goodPoints = rules.GoodPoints;
             _fairPoints = rules.FairPoints;
-            if (song.Notes[0].Sample <= _fairWindow + 100 * Song.SamplesPerMillisecond ||
-                song.Length - song.Notes[song.Notes.Count - 1].Sample <= _fairWindow + 100 * Song.SamplesPerMillisecond)
+            var margin = _fairWindow + Calibration.OffsetLimitMs * Song.SamplesPerMillisecond;
+            if (song.Notes[0].Sample <= margin || song.Length - song.Notes[song.Notes.Count - 1].Sample <= margin)
             {
                 throw new ArgumentException("譜面の前後に判定窓と補正幅を確保してください。", nameof(song));
             }

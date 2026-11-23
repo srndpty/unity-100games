@@ -34,20 +34,10 @@ namespace Game.Unity.Editor
             settings.Clips = new AudioClip[tracks.Count];
             for (var i = 0; i < tracks.Count; i++)
             {
-                _ = new Scorecard(tracks[i].Song, settings.Rules);
-                var file = AssetRoot + "Music/Track" + (i + 1) + ".wav";
-                RhythmMusic.Write(file, tracks[i]);
-                AssetDatabase.ImportAsset(file, ImportAssetOptions.ForceSynchronousImport);
-                var importer = (AudioImporter)AssetImporter.GetAtPath(file);
-                var sampleSettings = importer.defaultSampleSettings;
-                sampleSettings.compressionFormat = AudioCompressionFormat.PCM;
-                sampleSettings.loadType = AudioClipLoadType.DecompressOnLoad;
-                sampleSettings.sampleRateSetting = AudioSampleRateSetting.PreserveSampleRate;
-                importer.defaultSampleSettings = sampleSettings;
-                importer.loadInBackground = false;
-                importer.SaveAndReimport();
-                settings.Clips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>(file);
+                settings.Clips[i] = WriteClip(AssetRoot + "Music/Track" + (i + 1) + ".wav", tracks[i], settings.Rules);
             }
+
+            settings.CalibrationClip = WriteClip(AssetRoot + "Music/Calibration.wav", Arrangement.Calibration, settings.Rules);
 
             EditorUtility.SetDirty(settings);
 
@@ -79,6 +69,22 @@ namespace Game.Unity.Editor
             AssetDatabase.SaveAssets();
         }
 
+        private static AudioClip WriteClip(string file, Arrangement track, RhythmRules rules)
+        {
+            _ = new Scorecard(track.Song, rules);
+            RhythmMusic.Write(file, track);
+            AssetDatabase.ImportAsset(file, ImportAssetOptions.ForceSynchronousImport);
+            var importer = (AudioImporter)AssetImporter.GetAtPath(file);
+            var sampleSettings = importer.defaultSampleSettings;
+            sampleSettings.compressionFormat = AudioCompressionFormat.PCM;
+            sampleSettings.loadType = AudioClipLoadType.DecompressOnLoad;
+            sampleSettings.sampleRateSetting = AudioSampleRateSetting.PreserveSampleRate;
+            importer.defaultSampleSettings = sampleSettings;
+            importer.loadInBackground = false;
+            importer.SaveAndReimport();
+            return AssetDatabase.LoadAssetAtPath<AudioClip>(file);
+        }
+
         private static T LoadOrCreate<T>(string path) where T : ScriptableObject
         {
             var asset = AssetDatabase.LoadAssetAtPath<T>(path);
@@ -96,7 +102,39 @@ namespace Game.Unity.Editor
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             var samples = new double[track.Song.Length];
-            for (var step = 0; step < 96; step++)
+            if (track.Melody.Count == 0)
+            {
+                Clicks(samples, track);
+            }
+            else
+            {
+                Melody(samples, track);
+            }
+
+            using var writer = new BinaryWriter(File.Create(path));
+            var bytes = samples.Length * sizeof(short);
+            FourCc(writer, "RIFF");
+            writer.Write(36 + bytes);
+            FourCc(writer, "WAVE");
+            FourCc(writer, "fmt ");
+            writer.Write(16);
+            writer.Write((short)1);
+            writer.Write((short)1);
+            writer.Write(Song.SampleRate);
+            writer.Write(Song.SampleRate * sizeof(short));
+            writer.Write((short)sizeof(short));
+            writer.Write((short)16);
+            FourCc(writer, "data");
+            writer.Write(bytes);
+            foreach (var sample in samples)
+            {
+                writer.Write((short)(Math.Clamp(sample, -1, 1) * short.MaxValue));
+            }
+        }
+
+        private static void Melody(double[] samples, Arrangement track)
+        {
+            for (var step = 0; step < track.Eighths; step++)
             {
                 var start = track.SampleAt(step);
                 var span = track.SampleAt(step + 1) - start;
@@ -118,25 +156,18 @@ namespace Game.Unity.Editor
             {
                 Percussion(samples, note.Sample, note.Strike == Strike.Spark, .25);
             }
+        }
 
-            using var writer = new BinaryWriter(File.Create(path));
-            var bytes = samples.Length * sizeof(short);
-            FourCc(writer, "RIFF");
-            writer.Write(36 + bytes);
-            FourCc(writer, "WAVE");
-            FourCc(writer, "fmt ");
-            writer.Write(16);
-            writer.Write((short)1);
-            writer.Write((short)1);
-            writer.Write(Song.SampleRate);
-            writer.Write(Song.SampleRate * sizeof(short));
-            writer.Write((short)sizeof(short));
-            writer.Write((short)16);
-            FourCc(writer, "data");
-            writer.Write(bytes);
-            foreach (var sample in samples)
+        // 補正テスト用：4分音符ごとのクリック。小節の頭は高い音にする。ノーツのない最後の小節は鳴らさない。
+        private static void Clicks(double[] samples, Arrangement track)
+        {
+            var last = track.Song.Notes[track.Song.Notes.Count - 1].Sample;
+            for (var step = 0; step < track.Eighths; step += 2)
             {
-                writer.Write((short)(Math.Clamp(sample, -1, 1) * short.MaxValue));
+                var start = track.SampleAt(step);
+                if (start > last) { break; }
+
+                Percussion(samples, start, step % 8 == 0, step % 8 == 0 ? .28 : .22);
             }
         }
 

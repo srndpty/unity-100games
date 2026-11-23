@@ -9,6 +9,7 @@ namespace Game.Core.Tests
         private const int SamplesPerMs = Song.SamplesPerMillisecond;
         private const int GoodWindow = 30 * SamplesPerMs;
         private const int FairWindow = 80 * SamplesPerMs;
+        private static readonly int[] _noBars = Array.Empty<int>();
 
         [TestCase(-(FairWindow + 1), Grade.None)]
         [TestCase(-FairWindow, Grade.Fair)]
@@ -56,12 +57,27 @@ namespace Game.Core.Tests
         public void InvalidChartsAndRulesAreRejected()
         {
             Assert.Throws<ArgumentException>(() =>
-                new Song("test", 2 * Beat, new[] { new Note(Beat, Strike.Pulse), new Note(Beat, Strike.Spark) }));
+                new Song("test", 2 * Beat, new[] { new Note(Beat, Strike.Pulse), new Note(Beat, Strike.Spark) }, _noBars));
             Assert.Throws<ArgumentException>(() =>
-                new Song("test", 2 * Beat, new[] { new Note(Beat, (Strike)8) }));
+                new Song("test", 2 * Beat, new[] { new Note(Beat, (Strike)8) }, _noBars));
+            Assert.Throws<ArgumentException>(() =>
+                new Song("test", 2 * Beat, new[] { new Note(Beat, Strike.Pulse) }, new[] { Beat, Beat }));
+            Assert.Throws<ArgumentException>(() =>
+                new Song("test", 2 * Beat, new[] { new Note(Beat, Strike.Pulse) }, new[] { 2 * Beat }));
+            Assert.Throws<ArgumentException>(() =>
+                new Song("test", 2 * Beat, new[] { new Note(Beat, Strike.Pulse) }, new[] { -1 }));
             Assert.Throws<InvalidOperationException>(() => new RhythmRules { FairMs = 30 }.Validate());
         }
 
-        private static Scorecard NewScore(params Note[] notes) => new(new Song("test", 3 * Beat, notes), new RhythmRules());
+        [Test]
+        public void ChartsNeedRoomForTheLargestOffsetBeforeAndAfterTheNotes()
+        {
+            var margin = FairWindow + Calibration.OffsetLimitMs * SamplesPerMs;
+            Assert.Throws<ArgumentException>(() => NewScore(new Note(margin, Strike.Pulse)));
+            Assert.Throws<ArgumentException>(() => NewScore(new Note(3 * Beat - margin, Strike.Pulse)));
+            Assert.DoesNotThrow(() => NewScore(new Note(margin + 1, Strike.Pulse), new Note(3 * Beat - margin - 1, Strike.Spark)));
+        }
+
+        private static Scorecard NewScore(params Note[] notes) => new(new Song("test", 3 * Beat, notes, _noBars), new RhythmRules());
     }
 }

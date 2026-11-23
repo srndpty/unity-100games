@@ -14,11 +14,11 @@ namespace Game.Unity.Tests
         [UnityTest]
         public IEnumerator ScheduledPlaybackPausesBeforeAndAfterStartAndAcceptsARealKey()
         {
-            var previousOffset = PlayerPrefs.GetInt("InputOffsetMs", int.MinValue);
+            var previousOffset = PlayerPrefs.GetInt(RhythmGame.OffsetKey, int.MinValue);
             using var keyboard = new TestKeyboard();
             try
             {
-                PlayerPrefs.SetInt("InputOffsetMs", 0);
+                PlayerPrefs.SetInt(RhythmGame.OffsetKey, 0);
                 yield return SceneManager.LoadSceneAsync("Rhythm");
                 var game = Object.FindAnyObjectByType<RhythmGame>();
                 Assert.That(game, Is.Not.Null);
@@ -31,16 +31,18 @@ namespace Game.Unity.Tests
                 Assert.That(AudioSettings.dspTime, Is.LessThan(start));
 
                 var note = game.Session.Score.Song.Notes[0];
-                var target = start + (double)note.Sample / Song.SampleRate;
+                var target = game.HeardStartDsp + (double)note.Sample / Song.SampleRate;
                 yield return WaitForDsp(target - .025);
                 yield return keyboard.Tap(note.Strike == Strike.Pulse ? Key.F : Key.J);
                 yield return WaitForDsp(target + .16);
                 Assert.That(game.Session.Score.Good + game.Session.Score.Fair, Is.EqualTo(1));
+                Assert.That(game.VisibleBursts, Is.EqualTo(1), "打ったノーツの破壊演出");
                 Assert.That(audioSource.isPlaying, Is.True);
                 Assert.That(audioSource.timeSamples, Is.GreaterThan(0));
                 AudioSettings.GetDSPBufferSize(out var bufferSize, out var bufferCount);
                 var tolerance = bufferSize * bufferCount * (double)Song.SampleRate / AudioSettings.outputSampleRate;
-                Assert.That(audioSource.timeSamples, Is.EqualTo(game.Session.Position).Within(tolerance));
+                var latency = RhythmGame.OutputLatency * Song.SampleRate;
+                Assert.That(audioSource.timeSamples - latency, Is.EqualTo(game.Session.Position).Within(tolerance));
 
                 yield return VerifyPause(keyboard, game, audioSource);
                 Assert.That(game.StartDsp, Is.EqualTo(start));
@@ -52,8 +54,44 @@ namespace Game.Unity.Tests
             finally
             {
                 AudioListener.pause = false;
-                if (previousOffset == int.MinValue) { PlayerPrefs.DeleteKey("InputOffsetMs"); }
-                else { PlayerPrefs.SetInt("InputOffsetMs", previousOffset); }
+                if (previousOffset == int.MinValue) { PlayerPrefs.DeleteKey(RhythmGame.OffsetKey); }
+                else { PlayerPrefs.SetInt(RhythmGame.OffsetKey, previousOffset); }
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator OffsetKeysSaveAndCalibrationPlaysTheClickTrack()
+        {
+            var previousOffset = PlayerPrefs.GetInt(RhythmGame.OffsetKey, int.MinValue);
+            using var keyboard = new TestKeyboard();
+            try
+            {
+                PlayerPrefs.SetInt(RhythmGame.OffsetKey, 100);
+                yield return SceneManager.LoadSceneAsync("Rhythm");
+                var game = Object.FindAnyObjectByType<RhythmGame>();
+                Assert.That(game.Session.Offset, Is.EqualTo(100));
+                yield return keyboard.Tap(Key.RightArrow);
+                Assert.That(game.Session.Offset, Is.EqualTo(105));
+                Assert.That(PlayerPrefs.GetInt(RhythmGame.OffsetKey), Is.EqualTo(105));
+
+                yield return keyboard.Tap(Key.C);
+                Assert.That(game.Session.State, Is.EqualTo(Screen.Play));
+                Assert.That(game.Session.Calibrating, Is.True);
+                var audioSource = game.GetComponent<AudioSource>();
+                Assert.That(audioSource.clip, Is.SameAs(game.CalibrationClip));
+                yield return keyboard.Tap(Key.LeftArrow);
+                Assert.That(game.Session.Offset, Is.EqualTo(105), "演奏中は補正を変えない");
+
+                yield return keyboard.Tap(Key.Escape);
+                yield return keyboard.Tap(Key.T);
+                Assert.That(game.Session.State, Is.EqualTo(Screen.Select));
+                Assert.That(audioSource.isPlaying, Is.False);
+            }
+            finally
+            {
+                AudioListener.pause = false;
+                if (previousOffset == int.MinValue) { PlayerPrefs.DeleteKey(RhythmGame.OffsetKey); }
+                else { PlayerPrefs.SetInt(RhythmGame.OffsetKey, previousOffset); }
             }
         }
 

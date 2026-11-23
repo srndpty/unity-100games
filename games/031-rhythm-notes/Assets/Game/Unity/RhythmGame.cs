@@ -13,7 +13,7 @@ namespace Game.Unity
     [RequireComponent(typeof(AudioSource), typeof(PanelRenderer))]
     public sealed class RhythmGame : MonoBehaviour
     {
-        private const string OffsetKey = "InputOffsetMs";
+        public const string OffsetKey = "InputOffsetMs";
         [SerializeField] private RhythmSettings _settings;
 
         private readonly List<InputAction> _actions = new();
@@ -24,7 +24,7 @@ namespace Game.Unity
         private Font _font;
         private int _version = -1;
         private int _track;
-        private int _offset;
+        private int _savedOffset;
         private double _acceptSince;
         private bool _focused = true;
         private int _focusRestoredFrame = -1;
@@ -32,6 +32,22 @@ namespace Game.Unity
 
         public RhythmSession Session { get; private set; }
         public double StartDsp { get; private set; }
+
+        // 予約した音が実際に聞こえる DSP 時刻。ミキサーの出力バッファぶん dspTime より遅れて鳴る。
+        public double HeardStartDsp => StartDsp + OutputLatency;
+
+        // dspTime はミキサーが書き込んだ位置なので、出力キューに積まれたバッファぶん先行している。
+        public static double OutputLatency
+        {
+            get
+            {
+                AudioSettings.GetDSPBufferSize(out var length, out var count);
+                return (double)length * count / AudioSettings.outputSampleRate;
+            }
+        }
+
+        public AudioClip CalibrationClip => _settings.CalibrationClip;
+        public int VisibleBursts => _hud?.VisibleBursts ?? 0;
         internal bool HudReady => _hud != null;
 
         private void Awake()
@@ -41,19 +57,14 @@ namespace Game.Unity
             if (_settings.Clips.Length != _tracks.Count) { throw new InvalidOperationException("3曲の音源が必要です。"); }
             for (var i = 0; i < _tracks.Count; i++)
             {
-                var song = _tracks[i].Song;
-                var clip = _settings.Clips[i];
-                if (clip == null || clip.frequency != Song.SampleRate || clip.samples != song.Length)
-                {
-                    throw new InvalidOperationException("譜面と音源の長さまたは周波数が一致しません。");
-                }
-
-                _ = new Scorecard(song, _settings.Rules);
+                Verify(_settings.Clips[i], _tracks[i].Song);
             }
 
-            _offset = EvidenceCapture.IsRunning ? 0 : PlayerPrefs.GetInt(OffsetKey);
-            if (!RhythmSession.ValidOffset(_offset)) { _offset = 0; }
-            Session = new RhythmSession(_settings.Rules);
+            Verify(_settings.CalibrationClip, Arrangement.Calibration.Song);
+
+            _savedOffset = EvidenceCapture.IsRunning ? 0 : PlayerPrefs.GetInt(OffsetKey);
+            if (!Calibration.ValidOffset(_savedOffset)) { _savedOffset = 0; }
+            Session = new RhythmSession(_settings.Rules, _savedOffset);
             _audio = GetComponent<AudioSource>();
             _audio.playOnAwake = false;
             _audio.loop = false;
@@ -67,11 +78,22 @@ namespace Game.Unity
             Bind("j", time => Hit(Strike.Spark, time));
             Bind("escape", _ => TogglePause());
             Bind("enter", _ => Submit());
+            Bind("c", _ => Calibrate());
             Bind("upArrow", _ => MoveSelection(-1));
             Bind("downArrow", _ => MoveSelection(1));
-            Bind("leftArrow", _ => ChangeOffset(-5));
-            Bind("rightArrow", _ => ChangeOffset(5));
+            Bind("leftArrow", _ => ChangeOffset(-Calibration.StepMs));
+            Bind("rightArrow", _ => ChangeOffset(Calibration.StepMs));
             Bind("t", _ => Select());
+        }
+
+        private void Verify(AudioClip clip, Song song)
+        {
+            if (clip == null || clip.frequency != Song.SampleRate || clip.samples != song.Length)
+            {
+                throw new InvalidOperationException("譜面と音源の長さまたは周波数が一致しません。");
+            }
+
+            _ = new Scorecard(song, _settings.Rules);
         }
 
         private void Bind(string key, Action<double> action)
@@ -99,20 +121,20 @@ namespace Game.Unity
             if (version == _version) { return; }
 
             _version = version;
-            _hud = new RhythmHud(root, _font, _tracks, Choose, ChangeOffset, Submit, TogglePause, Select);
+            _hud = new RhythmHud(root, _font, _tracks, Choose, ChangeOffset, Submit, Calibrate, TogglePause, Select);
             Render();
         }
 
         private void Update()
         {
-            if (!EvidenceCapture.IsRunning)
-            {
-                Session.Advance(AudioSettings.dspTime);
-                Render();
-            }
+            if (EvidenceCapture.IsRunning) { return; }
+
+            Session.Advance(AudioSettings.dspTime);
+            if (Session.Offset != _savedOffset) { SaveOffset(); }
+            Render();
         }
 
-        private void Render() => _hud?.Render(Session, _track, _offset, _settings.LeadSeconds);
+        private void Render() => _hud?.Render(Session, _track, _settings.LeadSeconds);
 
         private void Choose(int index)
         {
@@ -123,9 +145,13 @@ namespace Game.Unity
 
         private void ChangeOffset(int delta)
         {
-            if (!Interactive || Session.State != Screen.Select) { return; }
-            _offset = Math.Clamp(_offset + delta, -100, 100);
-            PlayerPrefs.SetInt(OffsetKey, _offset);
+            if (Interactive && Session.ChangeOffset(delta)) { SaveOffset(); }
+        }
+
+        private void SaveOffset()
+        {
+            _savedOffset = Session.Offset;
+            PlayerPrefs.SetInt(OffsetKey, _savedOffset);
             PlayerPrefs.Save();
         }
 
@@ -135,11 +161,23 @@ namespace Game.Unity
         {
             if (!Interactive || Session.State is not (Screen.Select or Screen.Result)) { return; }
 
+            // 結果画面からの「もう一度」は直前と同じ種類（曲か補正テスト）をやり直す。
+            Play(Session.State == Screen.Result && Session.Calibrating);
+        }
+
+        private void Calibrate()
+        {
+            if (Interactive && Session.State == Screen.Select) { Play(true); }
+        }
+
+        private void Play(bool calibrating)
+        {
             _audio.Stop();
-            _audio.clip = _settings.Clips[_track];
+            _audio.clip = calibrating ? _settings.CalibrationClip : _settings.Clips[_track];
             _acceptSince = Time.realtimeSinceStartupAsDouble;
             StartDsp = AudioSettings.dspTime + 1;
-            Session.Start(_tracks[_track].Song, _offset, StartDsp);
+            if (calibrating) { Session.StartCalibration(Arrangement.Calibration.Song, HeardStartDsp); }
+            else { Session.Start(_tracks[_track].Song, HeardStartDsp); }
             _audio.PlayScheduled(StartDsp);
         }
 
@@ -192,8 +230,14 @@ namespace Game.Unity
 
         internal Song BeginCapture()
         {
-            Session.Start(_tracks[_track].Song, _offset, 0);
+            Session.Start(_tracks[_track].Song, 0);
             return _tracks[_track].Song;
+        }
+
+        internal Song BeginCalibrationCapture()
+        {
+            Session.StartCalibration(Arrangement.Calibration.Song, 0);
+            return Arrangement.Calibration.Song;
         }
 
         internal void CaptureAt(double seconds)

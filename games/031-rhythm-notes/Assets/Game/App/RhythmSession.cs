@@ -8,43 +8,58 @@ namespace Game.App
 
     public sealed class RhythmSession
     {
-        private const int InputGrace = 100 * Song.SamplesPerMillisecond;
+        // 打鍵を曲時刻順に並べてから採点するための保留時間。DSP 時刻の更新間隔（バッファ1つ分）より長く取る。
+        public const int InputGraceMs = 50;
+        private const int InputGrace = InputGraceMs * Song.SamplesPerMillisecond;
         private readonly RhythmRules _rules;
         private readonly List<(long Sample, Strike Strike, long Order)> _pending = new();
-        private int _offset;
+        private readonly List<long> _taps = new();
+        private int _clockOffset;
         private long _nextOrder;
         private long _confirmed = -InputGrace;
         private double _start;
 
-        public RhythmSession(RhythmRules rules)
+        public RhythmSession(RhythmRules rules, int offsetMs)
         {
             rules.Validate();
+            if (!Calibration.ValidOffset(offsetMs)) { throw new ArgumentOutOfRangeException(nameof(offsetMs)); }
+
             _rules = rules;
+            Offset = offsetMs;
         }
 
         public Screen State { get; private set; }
         public Scorecard? Score { get; private set; }
+
+        // 聞こえている曲の位置。補正値のぶん DSP 時刻より遅らせ、ノーツの表示と判定の両方に使う。
         public long Position { get; private set; }
+
+        // 音ずれ補正（ms）。正の値は音が遅れて聞こえる環境で、ノーツと判定を遅らせる。
+        public int Offset { get; private set; }
+
+        public bool Calibrating { get; private set; }
+        public int TapCount => _taps.Count;
+
+        // 直前の補正テストで測ったずれ。測れなかったときは null。
+        public int? Measured { get; private set; }
 
         public static double ToDspTime(double eventTime, double realNow, double dspNow) => dspNow + (eventTime - realNow);
 
-        public static bool ValidOffset(int milliseconds) => milliseconds is >= -100 and <= 100 && milliseconds % 5 == 0;
-
-        public void Start(Song song, int offsetMs, double startDsp)
+        public bool ChangeOffset(int deltaMs)
         {
-            if (State is not (Screen.Select or Screen.Result)) { return; }
-            if (!ValidOffset(offsetMs)) { throw new ArgumentOutOfRangeException(nameof(offsetMs)); }
-            if (!double.IsFinite(startDsp)) { throw new ArgumentOutOfRangeException(nameof(startDsp)); }
+            if (State != Screen.Select) { return false; }
 
-            Score = new Scorecard(song, _rules);
-            _start = startDsp;
-            _offset = offsetMs * Song.SamplesPerMillisecond;
-            _confirmed = -InputGrace;
-            Position = -Song.SampleRate;
-            _pending.Clear();
-            _nextOrder = 0;
-            State = Screen.Play;
+            var next = Calibration.ClampOffset(Offset + deltaMs);
+            if (next == Offset || !Calibration.ValidOffset(next)) { return false; }
+
+            Offset = next;
+            return true;
         }
+
+        public void Start(Song song, double startDsp) => Begin(song, startDsp, false);
+
+        // 補正テストは補正なしの時計で打鍵を記録し、曲の終わりに補正値を測り直す。
+        public void StartCalibration(Song song, double startDsp) => Begin(song, startDsp, true);
 
         public void StrikeAt(Strike strike, double dsp)
         {
@@ -68,16 +83,18 @@ namespace Game.App
             {
                 if (input.Sample > _confirmed) { break; }
 
-                Score.Hit(input.Sample - _offset, input.Strike);
+                if (Calibrating) { _taps.Add(input.Sample); }
+                else { Score.Hit(input.Sample, input.Strike); }
                 consumed++;
             }
 
             _pending.RemoveRange(0, consumed);
-            Score.Advance(_confirmed - _offset);
+            Score.Advance(_confirmed);
             if (Position >= Score.Song.Length && Score.Complete)
             {
                 State = Screen.Result;
                 _pending.Clear();
+                if (Calibrating) { Finish(Score.Song); }
             }
         }
 
@@ -101,10 +118,34 @@ namespace Game.App
             State = Screen.Select;
         }
 
+        private void Begin(Song song, double startDsp, bool calibrating)
+        {
+            if (State is not (Screen.Select or Screen.Result)) { return; }
+            if (!double.IsFinite(startDsp)) { throw new ArgumentOutOfRangeException(nameof(startDsp)); }
+
+            Score = new Scorecard(song, _rules);
+            Calibrating = calibrating;
+            Measured = null;
+            _taps.Clear();
+            _start = startDsp;
+            _clockOffset = calibrating ? 0 : Offset * Song.SamplesPerMillisecond;
+            _confirmed = -InputGrace;
+            Position = -Song.SampleRate - _clockOffset;
+            _pending.Clear();
+            _nextOrder = 0;
+            State = Screen.Play;
+        }
+
+        private void Finish(Song song)
+        {
+            Measured = Calibration.Estimate(song, _taps);
+            if (Measured is { } measured) { Offset = measured; }
+        }
+
         private long SampleAt(double dsp)
         {
             var samples = (dsp - _start) * Song.SampleRate;
-            return (long)Math.Clamp(Math.Round(samples, MidpointRounding.AwayFromZero), -Song.SampleRate, int.MaxValue);
+            return (long)Math.Clamp(Math.Round(samples, MidpointRounding.AwayFromZero), -Song.SampleRate, int.MaxValue) - _clockOffset;
         }
 
         private static int CompareInput(

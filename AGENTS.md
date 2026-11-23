@@ -223,6 +223,7 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 
 - `Assets/` にファイルを追加・移動・削除したら `.meta` も一緒にコミットする。新規ファイルの `.meta` は Unity を一度起動すれば生成される（`dev test NNN -Unity` でよい）。
 - `Library/` などの生成物はコミットしない。
+- **2,000 KB を超えるファイルは pre-commit（`check-added-large-files --maxkb=2000`）でコミットを拒否される。** 素材・生成物を足すときは先にサイズを確かめる。自前で生成する音源・画像は形式で収める（031 の音源は 32 kHz・16 ビット・モノラルの PCM にして、30 秒で約 1.9 MB に収めた）。生成物のサイズに上限があるなら、テストでも確かめる（031 の `CalibrationTests`）。形式で収まらない素材は下の Git LFS で持つ。上限を緩めたり `--no-verify` で回避したりしない。
 - 外部の素材（ユニティちゃんなど）の大きいバイナリは Git LFS で持つ（`.gitattributes` に `games/*/Assets/<素材のフォルダ>/**/*.<拡張子>` を足す。`.meta` は対象にしない）。LFS のフックは pre-commit と共存させる：`git lfs install --local --force` の後に `pre-commit install` をやり直すと、LFS の pre-push が `pre-push.legacy` に退避されて pre-commit から呼ばれる。Windows の pre-commit は退避したフックの `#!/bin/sh` を見つけられず push が止まるので、`.git/hooks/pre-push.legacy` の 1 行目を `#!/usr/bin/env sh` に直す（029）。
 - pre-commit で lint と check が `-Staged`（ステージした変更が影響する作品だけ。slnx を含む共通設定の変更なら全作品で、そのときはソリューションを1回でビルドする）で、pre-push で Core / App テストが走る。`--no-verify` で回避しない。
 - コードスタイルの規則を `.editorconfig` に足すときは、ビルドで検査されることを確かめる。命名規則（IDE1006）のように `dotnet_diagnostic.<ID>.severity` を別に書かないとビルドで検査されないものがある。

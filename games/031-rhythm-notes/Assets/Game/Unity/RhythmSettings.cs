@@ -10,6 +10,7 @@ namespace Game.Unity
         public float LeadSeconds = 1.8f;
         public float Volume = .35f;
         public AudioClip[] Clips;
+        public AudioClip CalibrationClip;
 
         public void Validate()
         {

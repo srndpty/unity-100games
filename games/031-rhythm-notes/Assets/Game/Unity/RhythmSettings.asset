@@ -23,3 +23,4 @@ MonoBehaviour:
   - {fileID: 8300000, guid: c443d33645e8d7347a3203a18821b5bb, type: 3}
   - {fileID: 8300000, guid: 1b9005960df0c7b4e9780e9c4a6eed46, type: 3}
   - {fileID: 8300000, guid: d87cb4545adfc0f41acd0040b6b021ba, type: 3}
+  CalibrationClip: {fileID: 8300000, guid: b39b4633ddbeda34ebb4bb8867cd9c94, type: 3}
