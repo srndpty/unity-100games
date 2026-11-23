@@ -80,6 +80,48 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void LateConfirmedMissBreaksTheComboInChartOrder()
+        {
+            var score = NewScore(new Note(Beat, Strike.Pulse), new Note(Beat + 50 * SamplesPerMs, Strike.Spark),
+                new Note(Beat + 100 * SamplesPerMs, Strike.Pulse));
+            Assert.That(score.Hit(Beat + 50 * SamplesPerMs, Strike.Spark), Is.EqualTo(Grade.Good));
+            Assert.That(score.Combo, Is.Zero, "前の未判定のノーツが決まるまで数えない");
+            score.Advance(Beat + 90 * SamplesPerMs);
+            Assert.That(score.GradeAt(0), Is.EqualTo(Grade.Miss));
+            Assert.That(score.Combo, Is.EqualTo(1));
+            Assert.That(score.Hit(Beat + 100 * SamplesPerMs, Strike.Pulse), Is.EqualTo(Grade.Good));
+            Assert.That(score.Combo, Is.EqualTo(2));
+            Assert.That(score.BestCombo, Is.EqualTo(2));
+            Assert.That(score.Miss, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void EarlierNoteHitAfterALaterOneJoinsTheSameCombo()
+        {
+            var score = NewScore(new Note(Beat, Strike.Pulse), new Note(Beat + 20 * SamplesPerMs, Strike.Spark));
+            Assert.That(score.Hit(Beat + 10 * SamplesPerMs, Strike.Spark), Is.EqualTo(Grade.Good));
+            Assert.That(score.Hit(Beat + 30 * SamplesPerMs, Strike.Pulse), Is.EqualTo(Grade.Good));
+            Assert.That(score.Combo, Is.EqualTo(2));
+            Assert.That(score.BestCombo, Is.EqualTo(2));
+            Assert.That(score.FullCombo, Is.True);
+        }
+
+        [Test]
+        public void MissConfirmedAfterLaterHitsKeepsOnlyTheHitsAfterIt()
+        {
+            var score = NewScore(new Note(Beat, Strike.Pulse), new Note(Beat + 40 * SamplesPerMs, Strike.Spark),
+                new Note(Beat + 60 * SamplesPerMs, Strike.Spark));
+            score.Hit(Beat + 40 * SamplesPerMs, Strike.Spark);
+            score.Hit(Beat + 60 * SamplesPerMs, Strike.Spark);
+            Assert.That(score.Combo, Is.Zero);
+            score.Advance(Beat + FairWindow + 1);
+            Assert.That(score.Combo, Is.EqualTo(2), "旧実装は Good, Good, Miss の順で 0 になった");
+            Assert.That(score.BestCombo, Is.EqualTo(2));
+            Assert.That(score.Complete, Is.True);
+            Assert.That(score.FullCombo, Is.False);
+        }
+
+        [Test]
         public void ExpirationIsStrictAndResetsCombo()
         {
             var score = NewScore(new Note(Beat, Strike.Pulse), new Note(2 * Beat, Strike.Spark));

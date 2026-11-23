@@ -43,6 +43,57 @@ namespace Game.App.Tests
             Assert.That(session.Score?.Good, Is.EqualTo(1));
         }
 
+        [TestCase(-200)]
+        [TestCase(0)]
+        [TestCase(300)]
+        public void SongEndsWhenTheAudioEndsRegardlessOfTheOffset(int offset)
+        {
+            var session = Start(offset);
+            session.StrikeAt(Strike.Pulse, 11 + offset / 1000.0);
+            session.StrikeAt(Strike.Spark, 12 + offset / 1000.0);
+            session.Advance(12.9);
+            Assert.That(session.Score?.Complete, Is.True);
+            Assert.That(session.State, Is.EqualTo(Screen.Play));
+            session.Advance(13 - 1.0 / Song.SampleRate);
+            Assert.That(session.State, Is.EqualTo(Screen.Play), "音源の最後の1サンプル手前");
+            session.Advance(13);
+            Assert.That(session.State, Is.EqualTo(Screen.Result));
+            Assert.That(session.Played, Is.EqualTo(3 * Song.SampleRate));
+            Assert.That(session.Position, Is.EqualTo(3 * Song.SampleRate - offset * Ms));
+            Assert.That(session.Score?.Good, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void LateOffsetWaitsForTheLastJudgementAfterTheAudioEnds()
+        {
+            var song = new Song("tail", 3 * Song.SampleRate, new[] { new Note(3 * Song.SampleRate - 400 * Ms, Strike.Pulse) }, Array.Empty<int>());
+            RhythmSession session = new(new RhythmRules(), 300);
+            session.Start(song, 10);
+            session.Advance(13);
+            Assert.That(session.Score?.Complete, Is.False, "補正後の位置では、まだ遅い側の窓と保留の中");
+            Assert.That(session.State, Is.EqualTo(Screen.Play));
+            session.Advance(13.04);
+            Assert.That(session.State, Is.EqualTo(Screen.Result));
+            Assert.That(session.Score?.Miss, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void InputsDeliveredLaterThanTheGraceAreDropped()
+        {
+            var grace = RhythmSession.InputGraceMs / 1000.0;
+            var accepted = Start(0);
+            accepted.Advance(11 + grace);
+            accepted.StrikeAt(Strike.Pulse, 11);
+            accepted.Advance(11.2);
+            Assert.That(accepted.Score?.Good, Is.EqualTo(1), "打鍵の時刻からちょうど保留時間後に届いた");
+
+            var dropped = Start(0);
+            dropped.Advance(11 + grace + 1.0 / Song.SampleRate);
+            dropped.StrikeAt(Strike.Pulse, 11);
+            dropped.Advance(11.2);
+            Assert.That(dropped.Score?.Good, Is.Zero, "保留時間を1サンプル超えて届いた");
+        }
+
         [Test]
         public void OffsetChangesOnlyOnTheSelectScreenWithinTheRange()
         {

@@ -17,6 +17,7 @@ namespace Game.App
         private int _clockOffset;
         private long _nextOrder;
         private long _confirmed = -InputGrace;
+        private long _played;
         private double _start;
 
         public RhythmSession(RhythmRules rules, int offsetMs)
@@ -36,6 +37,9 @@ namespace Game.App
 
         // 音ずれ補正（ms）。正の値は音が遅れて聞こえる環境で、ノーツと判定を遅らせる。
         public int Offset { get; private set; }
+
+        // 補正を引く前の、音源の再生位置。曲の終わりはこちらで決める（補正で結果画面へ移る時刻がずれない）。
+        public long Played => _played;
 
         public bool Calibrating { get; private set; }
         public int TapCount => _taps.Count;
@@ -65,7 +69,7 @@ namespace Game.App
         {
             if (State != Screen.Play || Score == null || !double.IsFinite(dsp)) { return; }
 
-            var sample = SampleAt(dsp);
+            var sample = PlayedAt(dsp) - _clockOffset;
             if (sample < 0 || sample < _confirmed || sample >= Score.Song.Length) { return; }
 
             _pending.Add((sample, strike, _nextOrder++));
@@ -75,7 +79,8 @@ namespace Game.App
         {
             if (State != Screen.Play || Score == null || !double.IsFinite(dsp)) { return; }
 
-            Position = Math.Max(Position, SampleAt(dsp));
+            _played = Math.Max(_played, PlayedAt(dsp));
+            Position = Math.Max(Position, _played - _clockOffset);
             _confirmed = Math.Max(_confirmed, Position - InputGrace);
             _pending.Sort(CompareInput);
             var consumed = 0;
@@ -90,7 +95,7 @@ namespace Game.App
 
             _pending.RemoveRange(0, consumed);
             Score.Advance(_confirmed);
-            if (Position >= Score.Song.Length && Score.Complete)
+            if (_played >= Score.Song.Length && Score.Complete)
             {
                 State = Screen.Result;
                 _pending.Clear();
@@ -130,7 +135,8 @@ namespace Game.App
             _start = startDsp;
             _clockOffset = calibrating ? 0 : Offset * Song.SamplesPerMillisecond;
             _confirmed = -InputGrace;
-            Position = -Song.SampleRate - _clockOffset;
+            _played = -Song.SampleRate;
+            Position = _played - _clockOffset;
             _pending.Clear();
             _nextOrder = 0;
             State = Screen.Play;
@@ -142,10 +148,10 @@ namespace Game.App
             if (Measured is { } measured) { Offset = measured; }
         }
 
-        private long SampleAt(double dsp)
+        private long PlayedAt(double dsp)
         {
             var samples = (dsp - _start) * Song.SampleRate;
-            return (long)Math.Clamp(Math.Round(samples, MidpointRounding.AwayFromZero), -Song.SampleRate, int.MaxValue) - _clockOffset;
+            return (long)Math.Clamp(Math.Round(samples, MidpointRounding.AwayFromZero), -Song.SampleRate, int.MaxValue);
         }
 
         private static int CompareInput(

@@ -187,17 +187,24 @@ namespace Game.Core
                     break;
                 default:
                     Miss++;
-                    Combo = 0;
                     break;
             }
 
-            if (grade != Grade.Miss)
+            // コンボは判定の確定順ではなく譜面順に数える。未判定のノーツより後ろの判定は、そのノーツが決まるまで保留する。
+            while (_first < _grades.Length && _grades[_first] != Grade.None)
             {
-                Combo++;
-                BestCombo = Math.Max(Combo, BestCombo);
-            }
+                if (_grades[_first] == Grade.Miss)
+                {
+                    Combo = 0;
+                }
+                else
+                {
+                    Combo++;
+                    BestCombo = Math.Max(Combo, BestCombo);
+                }
 
-            while (_first < _grades.Length && _grades[_first] != Grade.None) { _first++; }
+                _first++;
+            }
         }
     }
 }

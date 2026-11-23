@@ -4,9 +4,9 @@
 
 | 項目 | 結果 |
 |---|---|
-| dev lint / dev check / dev test | 成功。031 は Core 36/36・App 16/16 |
-| Unity EditMode | 52/52 |
-| Unity PlayMode | 18/18（実シーン2、共通証跡公開16） |
+| dev lint / dev check / dev test | 成功。031 は Core 39/39・App 21/21（レビュー対応後） |
+| Unity EditMode | 60/60（レビュー対応後） |
+| Unity PlayMode | 18/18（実シーン2、共通証跡公開16。レビュー対応後も同じ） |
 | Windows 64-bit | ビルド成功。撮影モードで起動し、7画面を保存して正常終了 |
 | 画像 | 1280 × 720、JPEG品質85、全7枚の SHA-256 を照合済み |
 
@@ -28,3 +28,5 @@ WAV の最大サイズは 1,920,044 バイト（補正テストは 1,706,710 バ
 - [補正テスト](captures/3d66f0d60f8cae33/calibration.jpg)
 - [補正テストの結果](captures/3d66f0d60f8cae33/calibration-result.jpg)
 - [撮影マニフェスト](runs/20261123T184855Z-de133378/manifest.json)
+
+レビュー対応（コンボを譜面順に数える、曲の終わりを補正前の再生位置で決める）は、補正0 msで全ノーツを順に打つ撮影台本の画面を変えないため、画像は撮り直していない。修正後のビルドは成功した。
