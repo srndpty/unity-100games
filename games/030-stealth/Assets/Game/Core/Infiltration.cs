@@ -278,7 +278,7 @@ namespace Game.Core
                 _hearing.Clear();
             }
 
-            if (!HasObjective && Intruder.Body.Overlaps(new Box(Facility.Objective.Column * Units.Tile, Facility.Objective.Row * Units.Tile, Units.Tile, Units.Tile)))
+            if (!HasObjective && Intruder.Motion.Touches(new Box(Facility.Objective.Column * Units.Tile, Facility.Objective.Row * Units.Tile, Units.Tile, Units.Tile)))
             {
                 HasObjective = true;
                 _events |= WardEvents.ObjectiveTaken;
@@ -320,7 +320,7 @@ namespace Game.Core
                     if (guard.Brain.StartedChase && chaseStart == null) { chaseStart = guard.Brain.Goal; }
                 }
 
-                if (!BoxSweep.Along(Intruder.Motion, guard.Body.PreviousBox, guard.Body.Box).Hit) { continue; }
+                if (!BoxSweep.Touches(Intruder.Motion, guard.Body)) { continue; }
                 if (guard.Brain.Mode == GuardMode.Chase)
                 {
                     if (CaughtBy < 0) { CaughtBy = i; }

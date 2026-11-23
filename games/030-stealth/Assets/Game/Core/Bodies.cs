@@ -28,6 +28,7 @@ namespace Game.Core
             _path = source._path.Clone();
             Position = source.Position;
             PreviousPosition = source.PreviousPosition;
+            LastWalkSpeed = source.LastWalkSpeed;
             Facing = source.Facing;
             Leg = source.Leg;
         }
@@ -58,6 +59,8 @@ namespace Game.Core
 
         public Box Box => BoxAt(Position);
 
+        internal int LastWalkSpeed { get; private set; }
+
         public Box PreviousBox => BoxAt(PreviousPosition);
 
         public GuardBody Clone() => new(this);
@@ -66,6 +69,7 @@ namespace Game.Core
         public void Execute(Order order, AlertLevel level)
         {
             PreviousPosition = Position;
+            LastWalkSpeed = 0;
             if (order.IsLook)
             {
                 Turn(order.FacePoint != null ? AngleTo(order.FacePoint.Value) : order.LookBase + SweepOffset(order.LookElapsed));
@@ -103,6 +107,7 @@ namespace Game.Core
         {
             Position = cell.Center;
             PreviousPosition = Position;
+            LastWalkSpeed = 0;
             Leg = null;
             Facing = Trig.Normalize(facing);
         }
@@ -130,6 +135,7 @@ namespace Game.Core
                 Leg = next;
             }
 
+            LastWalkSpeed = speed;
             var target = Leg.Value.Center;
             var dx = target.X - Position.X;
             var dy = target.Y - Position.Y;

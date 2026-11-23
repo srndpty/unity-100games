@@ -1,5 +1,6 @@
 using IntGeometry;
 using NUnit.Framework;
+using TileMotion;
 using static Game.Core.Tests.TestKit;
 
 namespace Game.Core.Tests
@@ -168,6 +169,52 @@ namespace Game.Core.Tests
             }
 
             Assert.That(sameTick, Is.GreaterThan(0));
+        }
+
+        [Test]
+        public void RunningPastTheObjectiveCornerPicksItUp()
+        {
+            var match = new Infiltration(new WardConfig(), WithGuards(OpenRoom()), 1);
+            var objective = match.Facility.Objective;
+            match.PlaceIntruder(new Cell(objective.Column - 1, objective.Row - 1));
+            for (var i = 0; i < 4; i++)
+            {
+                match.Tick(Run(-1, 0));
+                Repeat(match, Move(1, 0), 2);
+            }
+
+            match.Tick(Move(1, 0));
+            Repeat(match, Move(0, 1), 3);
+            var target = new Box(objective.Column * T, objective.Row * T, T, T);
+            Assert.That(match.Intruder.Center, Is.EqualTo(new Vec2i(target.X - 94, target.Y - 74)));
+            Assert.That(match.HasObjective, Is.False);
+
+            match.Tick(Run(1, -1));
+
+            Assert.That(match.Intruder.Motion.Corner.Overlaps(target), Is.True);
+            Assert.That(match.Intruder.Body.Overlaps(target), Is.False);
+            Assert.That(match.HasObjective, Is.True);
+            Assert.That(match.TakeEvents() & WardEvents.ObjectiveTaken, Is.EqualTo(WardEvents.ObjectiveTaken));
+        }
+
+        [TestCase(480, 457, false)]
+        [TestCase(484, 457, true)]
+        [TestCase(488, 448, true)]
+        public void CaptureSweepUsesTheGuardsActualArrivalTime(int x, int y, bool touches)
+        {
+            var config = new WardConfig();
+            var guard = new GuardBody(config, FacilityMap.Parse(OpenRoom()), new Cell(1, 2), Trig.Right);
+            var chase = Order.Walk(new Cell(2, 2), Pace.Chase, null);
+            for (var i = 0; i < 10; i++) { guard.Execute(chase, AlertLevel.Alert); }
+            Assert.That(guard.PreviousPosition, Is.EqualTo(new Vec2i(618, 640)));
+            Assert.That(guard.Position, Is.EqualTo(new Vec2i(640, 640)));
+
+            var motion = new Motion(
+                guard.BoxAt(new Vec2i(x, y)),
+                guard.BoxAt(new Vec2i(x - 22, y)),
+                guard.BoxAt(new Vec2i(x - 22, y + 22)));
+
+            Assert.That(BoxSweep.Touches(motion, guard), Is.EqualTo(touches));
         }
 
         [Test]

@@ -32,92 +32,75 @@ namespace Game.Core
         public bool Touches(Box target) => HorizontalSweep.Overlaps(target) || VerticalSweep.Overlaps(target);
     }
 
-    /// <summary>Tick の中で最初に触れた時刻（0〜1 の分数）。触れていなければ <see cref="Hit"/> が false。</summary>
-    public readonly struct BoxTouch
-    {
-        private BoxTouch(bool hit, long numerator, long denominator)
-        {
-            Hit = hit;
-            Numerator = numerator;
-            Denominator = denominator;
-        }
-
-        public static BoxTouch None => new(false, 1, 1);
-
-        public bool Hit { get; }
-
-        public long Numerator { get; }
-
-        public long Denominator { get; }
-
-        public static BoxTouch At(long numerator, long denominator)
-        {
-            if (denominator <= 0) { throw new ArgumentOutOfRangeException(nameof(denominator), denominator, "分母は正の値にしてください。"); }
-            return new BoxTouch(true, numerator, denominator);
-        }
-
-        /// <summary>この接触が <paramref name="other"/> より早ければ true（触れていない接触はいつも遅い）。</summary>
-        public bool IsEarlierThan(BoxTouch other)
-        {
-            if (!Hit) { return false; }
-            if (!other.Hit) { return true; }
-            return Numerator * other.Denominator < other.Numerator * Denominator;
-        }
-    }
-
-    /// <summary>
-    /// 動く 2 つの箱の接触判定（025 の Sweep を移植）。Tick の中で両者はそれぞれ始めの位置から終わりの位置へ
-    /// 直線で動くとみなし、相対軌跡を掃引して最初に重なり始める時刻を求める。辺が接するだけでは触れたことにならない。
-    /// </summary>
+    /// <summary>同じ時刻の箱どうしを掃引する。辺が接するだけでは重なったことにならない。</summary>
     public static class BoxSweep
     {
-        /// <summary>
-        /// 自機の経路 <paramref name="a"/>（横 → 縦）と、直線で動く <paramref name="bStart"/> → <paramref name="bEnd"/> の最初の接触。
-        /// 自機は経路を一定の速さで進むとみなし、Tick を横の区間（横の移動量の割合）と縦の区間に分ける。相手はその分け目の時刻の位置へ補間し、
-        /// 区間ごとに同じ時間の範囲で比べる（地形の解決と被弾の判定が同じ経路を使う）。片方の軸が 0 なら 1 本の直線と同じ。
-        /// </summary>
-        public static BoxTouch Along(Motion a, Box bStart, Box bEnd)
+        public static bool Touches(Motion intruder, GuardBody guard)
         {
-            long first = Math.Abs(a.Corner.X - a.Start.X);
-            long second = Math.Abs(a.End.Y - a.Corner.Y);
-            if (first == 0 || second == 0) { return First(a.Start, a.End, bStart, bEnd); }
+            var start = guard.PreviousBox;
+            var end = guard.Box;
+            if (!intruder.Touches(Box.Span(start, end))) { return false; }
 
-            // 分け目の時刻は first / total。座標を total 倍すると相手の分け目の位置も整数になる。
-            // 速さは Tile/4 以下（WardConfig.MaxSpeed）なので、total 倍しても int に収まる。
-            var total = (int)(first + second);
-            var split = new Box(
-                (bStart.X * total) + ((bEnd.X - bStart.X) * (int)first),
-                (bStart.Y * total) + ((bEnd.Y - bStart.Y) * (int)first),
-                bStart.Width * total,
-                bStart.Height * total);
-            var horizontal = First(Scale(a.Start, total), Scale(a.Corner, total), Scale(bStart, total), split);
-            if (horizontal.Hit) { return BoxTouch.At(first * horizontal.Numerator, total * horizontal.Denominator); }
+            var guardDistance = Math.Abs(end.X - start.X) + Math.Abs(end.Y - start.Y);
+            if (guardDistance == 0) { return true; }
 
-            var vertical = First(Scale(a.Corner, total), Scale(a.End, total), split, Scale(bEnd, total));
-            if (!vertical.Hit) { return BoxTouch.None; }
-            return BoxTouch.At((first * vertical.Denominator) + (second * vertical.Numerator), total * vertical.Denominator);
+            // 自機が縦へ折れる時刻と、警備員が止まる時刻で区切る。
+            // 両方の分母を掛けた単位で時刻と座標を表すと、区切りの位置を整数で計算できる。
+            var horizontal = Math.Abs(intruder.Corner.X - intruder.Start.X);
+            var vertical = Math.Abs(intruder.End.Y - intruder.Corner.Y);
+            var intruderSpeed = Math.Max(1, horizontal + vertical);
+            var guardSpeed = guard.LastWalkSpeed;
+            var scale = intruderSpeed * guardSpeed;
+            var turn = horizontal * guardSpeed;
+            var stop = guardDistance * intruderSpeed;
+            var from = 0;
+            while (from < scale)
+            {
+                var to = scale;
+                if (turn > from) { to = Math.Min(to, turn); }
+                if (stop > from) { to = Math.Min(to, stop); }
+
+                if (OverlapsDuring(IntruderAt(from), IntruderAt(to), GuardAt(from), GuardAt(to))) { return true; }
+                from = to;
+            }
+
+            return false;
+
+            Box IntruderAt(int time) => At(
+                intruder.Start,
+                Math.Sign(intruder.Corner.X - intruder.Start.X) * intruderSpeed * Math.Min(time, turn),
+                Math.Sign(intruder.End.Y - intruder.Corner.Y) * intruderSpeed * Math.Max(0, time - turn));
+
+            Box GuardAt(int time) => At(
+                start,
+                Math.Sign(end.X - start.X) * guardSpeed * Math.Min(time, stop),
+                Math.Sign(end.Y - start.Y) * guardSpeed * Math.Min(time, stop));
+
+            Box At(Box box, int dx, int dy) => new(
+                ((box.X - start.X) * scale) + dx,
+                ((box.Y - start.Y) * scale) + dy,
+                box.Width * scale,
+                box.Height * scale);
         }
 
-        private static Box Scale(Box box, int factor) => new(box.X * factor, box.Y * factor, box.Width * factor, box.Height * factor);
-
-        public static BoxTouch First(Box aStart, Box aEnd, Box bStart, Box bEnd)
+        private static bool OverlapsDuring(Box aStart, Box aEnd, Box bStart, Box bEnd)
         {
             var rx = (long)(aEnd.X - aStart.X) - (bEnd.X - bStart.X);
             var ry = (long)(aEnd.Y - aStart.Y) - (bEnd.Y - bStart.Y);
             if (!Axis(aStart.Left, aStart.Right, bStart.Left, bStart.Right, rx, out var enterX, out var exitX)
                 || !Axis(aStart.Bottom, aStart.Top, bStart.Bottom, bStart.Top, ry, out var enterY, out var exitY))
             {
-                return BoxTouch.None;
+                return false;
             }
 
             var enter = Max(enterX, enterY);
             var exit = Min(exitX, exitY);
             if (enter.CompareTo(exit) >= 0 || enter.CompareTo(Time.One) >= 0 || exit.CompareTo(Time.Zero) <= 0)
             {
-                return BoxTouch.None;
+                return false;
             }
 
-            return enter.CompareTo(Time.Zero) < 0 ? BoxTouch.At(0, 1) : BoxTouch.At(enter.Numerator, enter.Denominator);
+            return true;
         }
 
         private static bool Axis(int a0, int a1, int b0, int b1, long r, out Time enter, out Time exit)
