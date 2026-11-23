@@ -126,3 +126,19 @@ pattern "..." hp=... time=...
 - 各セッションの終わりに `dev lint` → `dev check` → `dev test`、Mono での Core/App テスト（`dev test 027 -Unity`）
 - Unity 層を触ったら `dev test 027 -Unity -Mode PlayMode`
 - `dev build 027` → `dev capture 027` → 証跡を確認 → 「検証待ち」で人間に渡す（`dev run 027`）。難しさ（弾速・密度・自機の速さ・判定の大きさ）とボムの数は試遊で調整
+
+---
+
+## セッション1の結果（2026-11-23）
+
+- ルール表と DSL の文法は [README](../../games/027-bullet-hell/README.md) の「採用ルール」「弾道 DSL」を正とする。
+- Core：`Field`（領域と単位）・`Trig`（整数の角度表と atan2）・`FixedPoint`（小数の文字列 → 整数の単位）・`BulletPool`（SoA の固定容量の置き場）・`BossScript`（台本の不変の型）・`ScriptParser`（字句・構文・単位の変換・行と列付きの誤り）・`PatternPlayer`（ボスの動きと発射器）。026 から `Geometry`（`Vec2i`・`IntMath`・`Rect`・`Sweep`）と `SeededRandom` を写した（`View` は除いた）。
+- Core 119 件が .NET で、tile-motion の 10 件を含む 129 件が Mono で通った。角度表の検査値は両環境で一致。
+- 計画との差：
+  - sin / cos の表はソースに数値を並べず、起動時に整数だけのテイラー展開（Q30）で作った。`Math.Sin` を使わないので両環境で同じ表になる。
+  - 角度は 1 周 = 65536（表は 4096 分割で、角度の下位 4 ビットを捨てて引く）。0.4 度/Tick のような小さい角速度を丸めすぎないため。
+  - 弾の内部の位置を 1 px = 2^30 にし、速さ × cos を丸めずに足す。直進・等加速の弾は閉じた式とちょうど一致する。
+  - 弾の参照実装（1 発ずつ進める版）は Core の `Trajectory` ではなくテスト側（`TestKit.ReferenceBullet`）に置いた（016 の知見：速い実装をテストの素朴な実装と照合する）。
+  - 発射器の `spiral` は `ring` ＋ `spin` と同じなので作らなかった。
+  - DSL の引数はすべて `名前=値` の形にそろえた（`move to at=192,360 over=60`）。弾幕の数（3 つ）はパーサではなくセッション2の設定の検証で確かめる。
+- 次（セッション2）：試合（`VeilRun`：自機・ショット・ボム・被弾と無敵・残機・弾幕の進行・再挑戦）、`VeilConfig`、App（`VeilFlow`・`Autopilot`）、6 弾幕の台本ファイル（`Assets/Game/Patterns/`）。
