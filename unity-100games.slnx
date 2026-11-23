@@ -168,6 +168,8 @@
     <Project Path="games/028-survivors/dotnet/Core/G028.Core.csproj" />
   </Folder>
   <Folder Name="/packages/">
+    <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
+    <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />
     <Project Path="packages/com.games100.tile-motion/dotnet~/TileMotion.Tests/TileMotion.Tests.csproj" />
     <Project Path="packages/com.games100.tile-motion/dotnet~/TileMotion/TileMotion.csproj" />
   </Folder>

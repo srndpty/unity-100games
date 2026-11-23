@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <SharedSourceDir>$(MSBuildProjectDirectory)/../../Runtime</SharedSourceDir>
+  </PropertyGroup>
+  <Import Project="../../../../build/Game.Library.props" />
+  <PropertyGroup>
+    <RootNamespace>IntGeometry</RootNamespace>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <SharedSourceDir>$(MSBuildProjectDirectory)/../../Tests</SharedSourceDir>
+  </PropertyGroup>
+  <Import Project="../../../../build/Game.Tests.props" />
+  <PropertyGroup>
+    <RootNamespace>IntGeometry.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../IntGeometry/IntGeometry.csproj" />
+  </ItemGroup>
+</Project>
