@@ -1,0 +1,33 @@
+.hud { position: absolute; width: 100%; height: 100%; color: rgb(236, 244, 226); justify-content: center; align-items: center; }
+.stats { position: absolute; left: 0; right: 0; top: 0; height: 56px; padding: 0 24px; flex-direction: row; align-items: center; background-color: rgba(14, 22, 12, 0.78); border-bottom-width: 2px; border-color: rgb(120, 170, 70); }
+.stat { font-size: 24px; -unity-font-style: bold; margin-right: 22px; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(6, 10, 4); }
+.time { color: rgb(255, 226, 140); min-width: 210px; }
+.level { color: rgb(170, 240, 120); min-width: 90px; margin-right: 10px; }
+.kills { color: rgb(255, 190, 150); min-width: 150px; margin-left: 12px; }
+.small { font-size: 19px; color: rgb(200, 214, 190); }
+.bar { height: 16px; background-color: rgb(30, 40, 26); border-width: 1px; border-color: rgb(90, 120, 70); border-radius: 4px; overflow: hidden; margin-right: 18px; }
+.fill { height: 100%; width: 0; }
+.xp-bar { width: 220px; }
+.xp-fill { background-color: rgb(120, 220, 255); }
+.hp-bar { width: 180px; }
+.hp-fill { background-color: rgb(240, 90, 80); }
+.pause { position: absolute; right: 20px; top: 6px; height: 44px; width: 190px; margin: 0; font-size: 20px; }
+.boss { position: absolute; top: 66px; left: 25%; right: 25%; align-items: center; }
+.boss-name { font-size: 22px; -unity-font-style: bold; color: rgb(255, 170, 200); -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(20, 4, 10); }
+.boss-bar { width: 100%; height: 18px; margin: 4px 0 0 0; }
+.boss-fill { background-color: rgb(220, 70, 140); }
+.weapons { position: absolute; left: 20px; bottom: 16px; font-size: 20px; padding: 8px 14px; background-color: rgba(14, 22, 12, 0.7); border-radius: 8px; white-space: normal; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(6, 10, 4); }
+.levelup { width: 1200px; padding: 26px 30px; background-color: rgba(12, 20, 10, 0.94); border-radius: 18px; border-width: 2px; border-color: rgb(150, 210, 80); align-items: center; }
+.levelup-title { font-size: 46px; -unity-font-style: bold; color: rgb(190, 250, 120); }
+.cards { flex-direction: row; justify-content: center; margin-top: 16px; }
+.card { width: 360px; height: 230px; margin: 0 10px; padding: 14px; font-size: 22px; white-space: normal; -unity-text-align: upper-left; background-color: rgb(30, 46, 24); border-width: 2px; border-color: rgb(80, 110, 60); border-radius: 12px; color: rgb(236, 244, 226); }
+.card:hover { background-color: rgb(40, 62, 32); }
+.selected { border-color: rgb(255, 230, 120); border-width: 4px; background-color: rgb(52, 76, 34); }
+.levelup-help { margin-top: 14px; font-size: 19px; color: rgb(200, 214, 190); }
+.panel { width: 1000px; padding: 30px 40px; background-color: rgba(12, 20, 10, 0.94); border-radius: 18px; border-width: 2px; border-color: rgb(150, 210, 80); }
+.headline { font-size: 56px; -unity-font-style: bold; color: rgb(190, 250, 120); -unity-text-align: middle-center; white-space: normal; }
+.message { margin-top: 14px; margin-bottom: 14px; font-size: 22px; white-space: normal; -unity-text-align: middle-center; }
+.buttons { align-items: stretch; }
+Button { height: 52px; margin: 8px 0 0 0; font-size: 22px; color: rgb(236, 244, 226); background-color: rgb(40, 64, 30); border-color: rgb(120, 170, 70); border-width: 1px; border-radius: 10px; }
+Button:hover { background-color: rgb(52, 82, 38); }
+Button:active { background-color: rgb(66, 104, 46); }

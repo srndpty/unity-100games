@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc87a7ba5a421844686a79e6240c4fb2, type: 3}
+  m_Name: Weapon-lash
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.WeaponDefinition
+  DisplayName: "\u8526\u306E\u97AD"
+  Summary: "\u5411\u3044\u3066\u3044\u308B\u5DE6\u53F3\u3078\u8526\u3092\u632F\u308B\u3046\u3002\n\u5F37\u5316\u3067\u4E21\u5074\u3092\u6253\u3064\u3002"
+  Data:
+    Id: lash
+    Kind: 3
+    Levels:
+    - Damage: 8
+      IntervalTicks: 70
+      Count: 1
+      Range: 768
+      Size: 128
+      Speed: 0
+      Pierce: 0
+      LifeTicks: 0
+    - Damage: 10
+      IntervalTicks: 65
+      Count: 1
+      Range: 896
+      Size: 144
+      Speed: 0
+      Pierce: 0
+      LifeTicks: 0
+    - Damage: 12
+      IntervalTicks: 60
+      Count: 2
+      Range: 1024
+      Size: 160
+      Speed: 0
+      Pierce: 0
+      LifeTicks: 0
+    - Damage: 14
+      IntervalTicks: 52
+      Count: 2
+      Range: 1088
+      Size: 176
+      Speed: 0
+      Pierce: 0
+      LifeTicks: 0
+    - Damage: 16
+      IntervalTicks: 45
+      Count: 2
+      Range: 1152
+      Size: 200
+      Speed: 0
+      Pierce: 0
+      LifeTicks: 0

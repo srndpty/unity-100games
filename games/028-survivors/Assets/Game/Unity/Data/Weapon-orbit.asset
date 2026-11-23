@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc87a7ba5a421844686a79e6240c4fb2, type: 3}
+  m_Name: Weapon-orbit
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.WeaponDefinition
+  DisplayName: "\u821E\u3046\u8449\u5203"
+  Summary: "\u81EA\u5206\u306E\u5468\u308A\u3092\u8449\u306E\u5203\u304C\u56DE\u308A\u3001\n\u89E6\u308C\u305F\u6575\u3092\u5207\u308B\u3002"
+  Data:
+    Id: orbit
+    Kind: 1
+    Levels:
+    - Damage: 3
+      IntervalTicks: 20
+      Count: 2
+      Range: 410
+      Size: 60
+      Speed: 546
+      Pierce: 0
+      LifeTicks: 0
+    - Damage: 4
+      IntervalTicks: 20
+      Count: 3
+      Range: 430
+      Size: 64
+      Speed: 546
+      Pierce: 0
+      LifeTicks: 0
+    - Damage: 5
+      IntervalTicks: 18
+      Count: 3
+      Range: 460
+      Size: 70
+      Speed: 600
+      Pierce: 0
+      LifeTicks: 0
+    - Damage: 6
+      IntervalTicks: 16
+      Count: 4
+      Range: 490
+      Size: 76
+      Speed: 655
+      Pierce: 0
+      LifeTicks: 0
+    - Damage: 7
+      IntervalTicks: 15
+      Count: 5
+      Range: 512
+      Size: 80
+      Speed: 700
+      Pierce: 0
+      LifeTicks: 0

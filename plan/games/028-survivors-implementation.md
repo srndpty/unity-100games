@@ -138,3 +138,14 @@
   - 自動操縦は最初「敵から離れる」だけの評価で 8 シードとも時間切れになった（近接の武器が当たらず倒せない）。「いちばん近い敵（ボス）から武器の届く距離を保つ」を足して全勝になった。
 - 試遊で見てほしい点（セッション2以降）：難しさ（自動操縦はほとんど被弾しない。敵の速さ・数・体力・接触ダメージ）、レベルアップの頻度（経験値の表）、武器のバランス。
 - 次（セッション2）：Unity 層（定義アセット・Stage Prefab・敵/宝石/弾の一括描画・HUD・3 択の UI・音・シーン生成・撮影台本）。
+
+## セッション2の結果（2026-11-23）
+
+- Unity 層：
+  - 定義アセット `EnemyDefinition`・`WeaponDefinition`（ScriptableObject。数値は Core の `EnemyDef`・`WeaponDef` そのものに、表示名・説明・絵の区画を足す）と `ThornTideSettings`（`BuildRules` が定義アセットから Core の設定を組み立てて検証する。設定の側の Enemies・Weapons は空にして二重に持たない）。
+  - `ThornTideStage`（床は Tiled の SpriteRenderer を模様の倍数の位置に寄せて果てなく見せる。自機・ボス・Orbit の刃・Pulse の輪・Lash の斬撃・Arc の LineRenderer）と `QuadLayer`（敵・宝石・弾を 1 つの Mesh に詰めて描く。027 の BulletLayer を一般化し、頂点の色で被弾の点滅）。
+  - `ThornTideGame`（入力・カメラ・HUD・3 択のカード・音。撃破・取得の音は 0.09 秒の間を空ける）、HUD（PanelRenderer）、生成スクリプト（ドット絵・定義アセット・Stage Prefab・シーン）、撮影台本 10 枚。
+  - Core に描画用の `WeaponCountOf`・`WeaponSizeOf` を足し、`OrbitBlade` が設定を複製しないようにした（毎フレームの割り当てを避ける）。
+- Windows ビルドと `dev capture 028` が成功（10 枚）。1 回目の撮影で「密な群れ」の場面がボスの後になり、ボスの場面と同じ画像になったので、4 分の時点で撮るように直した。タイトルの説明の改行と、Pulse の輪・Lash の斬撃の見え方も直した。
+- EditMode 170 件・PlayMode 16 件（雛形の証跡公開のテスト）が通った。
+- 次（セッション3）：PlayMode 実シーン（移動・3 択をキーとクリックで選ぶ・時間の停止・HUD・結果 → 再戦・タイトルへ戻った表示・一時停止とフォーカス・設定アセット）、敵数別のフレーム時間の計測、同一ビルドの再撮影の一致、evidence/README。

@@ -279,6 +279,20 @@ namespace Game.Core
             return level == 0 ? null : _config.Weapons[weapon].At(level).Copy();
         }
 
+        /// <summary>武器 <paramref name="weapon"/> の今のレベルの「数」（持っていなければ 0。描画用に複製しない）。</summary>
+        public int WeaponCountOf(int weapon)
+        {
+            var level = WeaponLevelOf(weapon);
+            return level == 0 ? 0 : _config.Weapons[weapon].At(level).Count;
+        }
+
+        /// <summary>武器 <paramref name="weapon"/> の今のレベルの「大きさ」（持っていなければ 0）。</summary>
+        public int WeaponSizeOf(int weapon)
+        {
+            var level = WeaponLevelOf(weapon);
+            return level == 0 ? 0 : _config.Weapons[weapon].At(level).Size;
+        }
+
         /// <summary>武器 <paramref name="weapon"/> が次に発動するまでの Tick（0 なら次の Tick に発動を試みる）。</summary>
         public int WeaponCooldownOf(int weapon) => _weaponCooldown[CheckWeapon(weapon)];
 
@@ -288,7 +302,9 @@ namespace Game.Core
         /// <summary>Orbit の刃 <paramref name="blade"/> の今の位置。</summary>
         public Vec2i OrbitBlade(int weapon, int blade)
         {
-            var stats = WeaponStatsOf(weapon) ?? throw new InvalidOperationException("持っていない武器です。");
+            var level = WeaponLevelOf(weapon);
+            if (level == 0) { throw new InvalidOperationException("持っていない武器です。"); }
+            var stats = _config.Weapons[weapon].At(level);
             if (blade < 0 || blade >= stats.Count) { throw new ArgumentOutOfRangeException(nameof(blade)); }
             return BladeAt(Player, _orbitAngle[weapon], blade, stats);
         }
