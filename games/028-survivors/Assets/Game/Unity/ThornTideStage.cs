@@ -133,6 +133,7 @@ namespace Game.Unity
             foreach (var lash in _lashes) { lash.enabled = false; }
             VisibleLashes = 0;
             HideBlades(0);
+            VisibleBlades = 0;
             _swarm.Begin();
             _swarm.End();
         }
