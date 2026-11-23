@@ -68,8 +68,6 @@ namespace Game.Unity
         private void Awake()
         {
             var rules = _settings.BuildRules();
-            var mismatch = _stage.Mismatch(rules.Config);
-            if (mismatch != null) { throw new InvalidOperationException("Stage Prefab が設定と一致しません：" + mismatch); }
             _stage.Initialize(rules);
 
             // 遠くのチャンクの出現を隠すフォグは、設定の先読み距離から決める（シーンの値より設定を優先する）。

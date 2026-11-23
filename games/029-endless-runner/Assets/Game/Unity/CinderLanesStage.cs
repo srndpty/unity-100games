@@ -129,6 +129,8 @@ namespace Game.Unity
         {
             if (rules == null) { throw new ArgumentNullException(nameof(rules)); }
             if (_config != null) { throw new InvalidOperationException("Stage は 1 度だけ初期化します。"); }
+            var problem = Mismatch(rules.Config);
+            if (problem != null) { throw new InvalidOperationException("Stage Prefab が設定と一致しません：" + problem); }
             _config = rules.Config;
             _animator.speed = 0;
             _animator.Rebind();
@@ -347,6 +349,26 @@ namespace Game.Unity
         }
 
         /// <summary>
+        /// Inspector で調整する数値の検証（有限か・範囲内か）。走りの周期と道の区画の長さは Core の単位の整数にして割るので、
+        /// 整数にした後も 1 単位（1/256 m）以上であることを求める（0 になると描画で 0 除算になる）。
+        /// </summary>
+        private string TuningProblem()
+        {
+            static bool InUnit(float value) => float.IsFinite(value) && value >= 0 && value <= 1;
+            if (!float.IsFinite(_runStride) || (long)(_runStride * UnitsPerMeter) < 1) { return $"走りの周期 {_runStride} m は 1/256 m 以上の有限の値にしてください。"; }
+            if (!float.IsFinite(_segmentLength) || (long)(_segmentLength * UnitsPerMeter) < 1) { return $"道の区画の長さ {_segmentLength} m は 1/256 m 以上の有限の値にしてください。"; }
+            if (!float.IsFinite(_segmentsBehind) || _segmentsBehind < 0) { return $"道の区画を後ろへ置く距離 {_segmentsBehind} m は 0 以上の有限の値にしてください。"; }
+            if (_segmentCount < 1) { return $"道の区画の数 {_segmentCount} は 1 以上にしてください。"; }
+            if (!float.IsFinite(_hideBehind) || _hideBehind < 0) { return $"通り過ぎた障害物を隠す距離 {_hideBehind} m は 0 以上の有限の値にしてください。"; }
+            if (!InUnit(_jumpWindow.x) || !InUnit(_jumpWindow.y)) { return $"ジャンプのクリップの範囲 {_jumpWindow} は 0〜1 にしてください。"; }
+            if (!InUnit(_slideWindow.x) || !InUnit(_slideWindow.y)) { return $"スライドのクリップの範囲 {_slideWindow} は 0〜1 にしてください。"; }
+            if (!float.IsFinite(_crashLength) || _crashLength <= 0) { return $"被弾のクリップの長さ {_crashLength} 秒は正の有限の値にしてください。"; }
+            if (!InUnit(_crashEnd) || _crashEnd <= 0) { return $"被弾のクリップを止める位置 {_crashEnd} は 0 より大きく 1 以下にしてください。"; }
+            if (!InUnit(_crashFall) || _crashFall <= 0) { return $"被弾で地面へ落ちる割合 {_crashFall} は 0 より大きく 1 以下にしてください。"; }
+            return _recoverTicks < 1 ? $"走りへ戻るブレンドの Tick 数 {_recoverTicks} は 1 以上にしてください。" : null;
+        }
+
+        /// <summary>
         /// Prefab が設定と描画の前提に合っているか（合っていなければ理由）。シーン生成スクリプトと起動時に確かめる。
         /// 自機の参照と親子関係、障害物の見本（種類ごとの当たり箱の大きさと高さ・Renderer・マテリアル・通り過ぎた表示）、
         /// 道の幅・長さ・横位置、道の区画が表示の範囲を覆うこと。見本は描画で当たり箱の大きさに拡大するので、
@@ -355,6 +377,8 @@ namespace Game.Unity
         public string Mismatch(RunConfig config)
         {
             if (config == null) { throw new ArgumentNullException(nameof(config)); }
+            var tuning = TuningProblem();
+            if (tuning != null) { return tuning; }
             if (_runner == null || _model == null || _animator == null) { return "自機（Runner・Model・Animator）の参照がありません。"; }
             if (_model.parent != _runner) { return "Model が Runner の子ではありません。"; }
             if (!_animator.transform.IsChildOf(_model)) { return "Animator が Model の下にありません。"; }

@@ -406,6 +406,31 @@ namespace Game.Unity.Tests
             Assert.That(Broken(stage => ((Material[])Field(stage, "_passedMaterials"))[1] = null), Does.Contain("Hurdle の通り過ぎた表示"));
             Assert.That(Broken(stage => ((GameObject)Field(stage, "_hurdleTemplate")).GetComponent<MeshRenderer>().sharedMaterial = ((Material[])Field(stage, "_passedMaterials"))[2]), Does.Contain("模様"));
             Assert.That(Broken(stage => ((GameObject)Field(stage, "_segmentTemplate")).transform.Find("Road").localPosition += new Vector3(1, 0, 0)), Does.Contain("道の中心"));
+
+            // Inspector の数値：走りの周期は整数の単位にして割るので、0・1 単位未満・NaN・無限大を拒否する（描画で 0 除算になる）。
+            foreach (var stride in new[] { 0f, 1f / 512, -1f, float.NaN, float.PositiveInfinity })
+            {
+                Assert.That(Broken(stage => Field(stage, "_runStride", stride)), Does.Contain("走りの周期"), $"走りの周期 {stride}");
+            }
+
+            Assert.That(Broken(stage => Field(stage, "_runStride", 1f / 256)), Is.Null, "ちょうど 1 単位は受け付ける");
+            Assert.That(Broken(stage => Field(stage, "_segmentLength", 0f)), Does.Contain("道の区画の長さ"));
+            Assert.That(Broken(stage => Field(stage, "_hideBehind", float.NaN)), Does.Contain("隠す距離"));
+            Assert.That(Broken(stage => Field(stage, "_jumpWindow", new Vector2(0, float.PositiveInfinity))), Does.Contain("ジャンプ"));
+            Assert.That(Broken(stage => Field(stage, "_crashEnd", 0f)), Does.Contain("止める位置"));
+            Assert.That(Broken(stage => Field(stage, "_recoverTicks", 0)), Does.Contain("ブレンド"));
+
+            // 起動時の初期化も同じ検査を通す（検査を飛ばして描画で落ちない）。
+            var invalid = Object.Instantiate(prefab);
+            try
+            {
+                Field(invalid.GetComponent<CinderLanesStage>(), "_runStride", 0f);
+                Assert.That(() => invalid.GetComponent<CinderLanesStage>().Initialize(_game.Flow.Rules), Throws.InvalidOperationException.With.Message.Contains("走りの周期"));
+            }
+            finally
+            {
+                Object.DestroyImmediate(invalid);
+            }
             yield return null;
         }
 
