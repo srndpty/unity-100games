@@ -118,3 +118,23 @@
 - 各セッションの終わりに `dev lint` → `dev check` → `dev test`
 - Unity 層を触ったら `dev test 028 -Unity` と `dev test 028 -Unity -Mode PlayMode`
 - `dev build 028` → `dev capture 028` → 証跡を確認 → 「検証待ち」で人間に渡す（`dev run 028`）
+
+---
+
+## セッション0の結果（2026-11-23）
+
+- `feature/game028` で雛形と slnx 登録を最小コミットし、`com.games100.int-geometry` を抽出した（025〜027 は書き換えていない）。027 の `VeilRun.Touches` を `Sweep.Touches` に移し、`Sweep.First` は遠い組を計算前に除き、近い組で値が `Sweep.FirstLimit` を超えたら例外にした（無限の平面で座標が大きくなるため）。.NET と Mono で 47 件、角度表と乱数系列の検査値が一致。
+
+## セッション1の結果（2026-11-23）
+
+- ルール表は [README](../../games/028-survivors/README.md) の「採用ルール」を正とする。
+- Core：`TideDefs`（`EnemyDef`・`WeaponDef`/`WeaponLevel`・`SpawnStage`）、`TideConfig`（既定のデータと検証）、`SpatialGrid`、`Pools`（`EnemySet`・`ProjectileSet`・`GemSet` の SoA）、`TideRun`（進行・3 択・出現・置き直し）と `TideRun.Combat`（武器 5 種・弾・被弾・近傍の問い合わせ）。App：`Intent`・`HeldControls`・`TideFlow`・`Autopilot`。
+- Core 93 件・App 20 件が .NET で、int-geometry 47 件と tile-motion 10 件を含む 170 件が Mono で通った。400 体に張り付けた Step の割り当ては 0（.NET）。
+- 自動操縦は 12 シードとも勝ち（約 20000 Tick・レベル 40 前後・撃破 3000 前後・被弾ほぼなし）。シード 1 の最終ハッシュ `0xFA88782A` は .NET と Mono で一致。1 試合は .NET で約 1.6 秒。
+- 計画との差：
+  - `GemSet` の満杯時は「最も古い宝石を近い宝石へ統合」ではなく、「新しい宝石の値をいちばん近い宝石へ足す」にした（合計は同じく保たれ、処理が 1 か所で済む）。
+  - `LevelUp` クラスは分けず、`TideRun` の中の 3 択（`MakeChoices`・`Choose`）にした。
+  - ボスの猶予（2 分）を足した：ボスを倒せないまま試合が終わらない状態を作らないため。
+  - 自動操縦は最初「敵から離れる」だけの評価で 8 シードとも時間切れになった（近接の武器が当たらず倒せない）。「いちばん近い敵（ボス）から武器の届く距離を保つ」を足して全勝になった。
+- 試遊で見てほしい点（セッション2以降）：難しさ（自動操縦はほとんど被弾しない。敵の速さ・数・体力・接触ダメージ）、レベルアップの頻度（経験値の表）、武器のバランス。
+- 次（セッション2）：Unity 層（定義アセット・Stage Prefab・敵/宝石/弾の一括描画・HUD・3 択の UI・音・シーン生成・撮影台本）。
