@@ -20,8 +20,6 @@ namespace Game.Unity.Editor
         public const string Wall = "Wall";
         public const string Hurdle = "Hurdle";
         public const string Beam = "Beam";
-        public const string Runner = "Runner";
-        public const string Skin = "Skin";
         public const string Post = "Post";
         public const string Lamp = "Lamp";
 
@@ -42,10 +40,9 @@ namespace Game.Unity.Editor
             MaterialOf(Wall, Color.white, Color.black);
             MaterialOf(Hurdle, Color.white, new Color(.25f, .08f, 0));
             MaterialOf(Beam, Color.white, Color.black);
-            MaterialOf(Runner, new Color(.2f, .85f, .95f), new Color(0, .12f, .16f));
-            MaterialOf(Skin, new Color(1f, .82f, .68f), Color.black);
             MaterialOf(Post, new Color(.24f, .22f, .22f), Color.black);
             MaterialOf(Lamp, new Color(1f, .6f, .25f), new Color(2.4f, 1.1f, .3f));
+            foreach (var name in new[] { Wall, Hurdle, Beam }) { PassedMaterialOf(name); }
             AssetDatabase.SaveAssets();
         }
 
@@ -68,6 +65,28 @@ namespace Game.Unity.Editor
                 material.SetColor("_EmissionColor", emission);
             }
 
+            AssetDatabase.CreateAsset(material, path);
+        }
+
+        /// <summary>通り過ぎた障害物の半透明のマテリアル（元の模様を薄く残す）。</summary>
+        public static string Passed(string name) => name + "Passed";
+
+        private static void PassedMaterialOf(string name)
+        {
+            var path = ArtRoot + Passed(name) + ".mat";
+            if (AssetDatabase.LoadAssetAtPath<Material>(path) != null) { return; }
+            var material = new Material(Material(name));
+            material.SetFloat("_Surface", 1);
+            material.SetFloat("_Blend", 0);
+            material.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            material.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            material.SetFloat("_ZWrite", 0);
+            material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            material.SetOverrideTag("RenderType", "Transparent");
+            material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+            material.SetShaderPassEnabled("ShadowCaster", false);
+            var color = material.GetColor("_BaseColor");
+            material.SetColor("_BaseColor", new Color(color.r, color.g, color.b, .12f));
             AssetDatabase.CreateAsset(material, path);
         }
 

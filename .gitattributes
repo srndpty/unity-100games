@@ -22,3 +22,13 @@
 *.ttf binary
 *.otf binary
 *.fbx binary
+
+# 外部の素材（ユニティちゃんなど）の大きいバイナリは Git LFS で持つ（pre-commit の check-added-large-files は LFS のファイルを検査しない）
+games/*/Assets/UnityChan/**/*.tga filter=lfs diff=lfs merge=lfs -text
+games/*/Assets/UnityChan/**/*.fbx filter=lfs diff=lfs merge=lfs -text
+games/*/Assets/UnityChan/**/*.pdf filter=lfs diff=lfs merge=lfs -text
+games/*/Assets/UnityChan/**/*.psd filter=lfs diff=lfs merge=lfs -text
+games/*/Assets/UnityChan/**/*.ai filter=lfs diff=lfs merge=lfs -text
+games/*/Assets/UnityChan/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+games/*/Assets/UnityChan/**/*.png filter=lfs diff=lfs merge=lfs -text
+games/*/Assets/UnityChan/**/*.svg filter=lfs diff=lfs merge=lfs -text

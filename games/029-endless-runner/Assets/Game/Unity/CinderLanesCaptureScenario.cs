@@ -41,21 +41,28 @@ namespace Game.Unity
             StepUntil(() => R.Body.Vertical.IsSliding && Near(ObstacleKind.Beam, R.Body.Lane.To, 1), "Beam をくぐる");
             await Shoot(capture, "05-slide", "頭上の梁（Beam）の下をスライドでくぐっている");
 
+            StepUntil(() => !R.Body.Vertical.IsSliding && R.Body.Vertical.IsGrounded, "スライドの終わり");
+            Step(4);
+            await Shoot(capture, "06-recover", "スライドが終わって 5 Tick 目。スライドの姿勢から走りへブレンドしながら戻っている途中");
+
             StepUntil(() => !R.Body.Lane.IsMoving && (Near(ObstacleKind.Wall, R.Body.Lane.To - 1, 0) || Near(ObstacleKind.Wall, R.Body.Lane.To + 1, 0)), "壁の横");
-            await Shoot(capture, "06-wall", "隣のレーンの壁（Wall）の横を走り抜けている");
+            await Shoot(capture, "07-wall", "隣のレーンの壁（Wall）の横を走り抜けている");
 
             var cap = Difficulty.CapMeters(config);
             StepUntil(() => R.Meters >= cap + 40, "難度の上限");
-            await Shoot(capture, "07-top-speed", $"{cap} m を越えて速さ・難度とも上限（SPEED {config.MaxSpeedLevel + 1}）。以後はこのまま続く");
+            await Shoot(capture, "08-top-speed", $"{cap} m を越えて速さ・難度とも上限（SPEED {config.MaxSpeedLevel + 1}）。以後はこのまま続く");
 
             Apply(Intent.Of(IntentKind.TogglePause, ClockTime));
-            await Shoot(capture, "08-pause", "一時停止");
+            await Shoot(capture, "09-pause", "一時停止");
             Apply(Intent.Of(IntentKind.Submit, ClockTime));
 
             // 操作をやめると、次の障害物にぶつかって終わる。
             _game.Flow.Pilot = new IdlePilot();
             StepUntil(() => _game.Flow.Screen == AppScreen.Result, "衝突");
-            await Shoot(capture, "09-result", "操作をやめて障害物にぶつかった結果（距離・最高記録）。自機は触れた時刻の位置で止めて描く");
+            _game.Stage.AdvanceCrash(.6f);
+            await Shoot(capture, "10-crash", "障害物にぶつかって倒れかけている（触れた時刻の位置から、被弾のモーションを 0.6 秒）");
+            _game.Stage.AdvanceCrash(10);
+            await Shoot(capture, "11-result", "倒れたところで止めた結果画面（距離・最高記録）");
         }
 
         private RunnerRun R => _game.Flow.Run ?? throw new InvalidOperationException("試合がありません。");

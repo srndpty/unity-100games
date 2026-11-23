@@ -147,15 +147,12 @@ namespace Game.Unity.Editor
                     Part(segment.transform, "Lamp" + name, PrimitiveType.Sphere, CinderLanesArtGenerator.Lamp, new Vector3(side * ((roadWidth / 2) + .6f), 2.4f, 0), Vector3.one * .45f);
                 }
 
-                // 自機：足元が原点。高さ 1.75 m（当たり箱の高さ）。
+                // 自機：足元が原点。見た目はユニティちゃん（当たり判定は Core の箱のまま）。
                 var runner = new GameObject("Runner");
                 runner.transform.SetParent(root.transform, false);
                 var model = new GameObject("Model");
                 model.transform.SetParent(runner.transform, false);
-                Part(model.transform, "Body", PrimitiveType.Capsule, CinderLanesArtGenerator.Runner, new Vector3(0, .98f, 0), new Vector3(.62f, .5f, .42f));
-                Part(model.transform, "Head", PrimitiveType.Sphere, CinderLanesArtGenerator.Skin, new Vector3(0, 1.58f, 0), Vector3.one * .34f);
-                Part(model.transform, "LegL", PrimitiveType.Cube, CinderLanesArtGenerator.Runner, new Vector3(-.13f, .25f, 0), new Vector3(.16f, .5f, .18f));
-                Part(model.transform, "LegR", PrimitiveType.Cube, CinderLanesArtGenerator.Runner, new Vector3(.13f, .25f, 0), new Vector3(.16f, .5f, .18f));
+                var animator = CinderLanesCharacter.Place(model.transform);
 
                 // 障害物の見本：Scene ビューで大きさと見た目を確かめられるよう、レーンに 1 つずつ置く（実行時は隠してプールの元にする）。
                 var samples = new GameObject("Samples");
@@ -167,10 +164,16 @@ namespace Game.Unity.Editor
                 var serialized = new SerializedObject(stage);
                 Assign(serialized, "_runner", runner.transform);
                 Assign(serialized, "_model", model.transform);
+                Assign(serialized, "_animator", animator);
+                serialized.FindProperty("_crashLength").floatValue = CinderLanesCharacter.CrashLength();
                 Assign(serialized, "_wallTemplate", wall);
                 Assign(serialized, "_hurdleTemplate", hurdle);
                 Assign(serialized, "_beamTemplate", beam);
                 Assign(serialized, "_segmentTemplate", segment);
+                var passed = serialized.FindProperty("_passedMaterials");
+                passed.arraySize = 3;
+                var kinds = new[] { CinderLanesArtGenerator.Wall, CinderLanesArtGenerator.Hurdle, CinderLanesArtGenerator.Beam };
+                for (var i = 0; i < kinds.Length; i++) { passed.GetArrayElementAtIndex(i).objectReferenceValue = CinderLanesArtGenerator.Material(CinderLanesArtGenerator.Passed(kinds[i])); }
                 serialized.FindProperty("_segmentLength").floatValue = SegmentLength;
                 serialized.ApplyModifiedPropertiesWithoutUndo();
                 return PrefabUtility.SaveAsPrefabAsset(root, StagePath);

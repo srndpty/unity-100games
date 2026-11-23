@@ -6,7 +6,7 @@ namespace Game.Core
 {
     public enum ObstacleKind
     {
-        /// <summary>全高の壁。行いっぱいの奥行き。レーン移動で避ける。</summary>
+        /// <summary>全高の壁。レーン移動で避ける（跳べない・くぐれない）。</summary>
         Wall,
 
         /// <summary>低い障害。ジャンプで越える。</summary>
@@ -41,7 +41,7 @@ namespace Game.Core
             var thinZ = rowZ + ((config.RowLength - config.ObstacleDepth) / 2);
             return Kind switch
             {
-                ObstacleKind.Wall => new Box3(x, 0, rowZ, config.LaneWidth, config.WallHeight, config.RowLength),
+                ObstacleKind.Wall => new Box3(x, 0, thinZ, config.LaneWidth, config.WallHeight, config.ObstacleDepth),
                 ObstacleKind.Hurdle => new Box3(x, 0, thinZ, config.LaneWidth, config.HurdleHeight, config.ObstacleDepth),
                 ObstacleKind.Beam => new Box3(x, config.BeamBottom, thinZ, config.LaneWidth, config.WallHeight - config.BeamBottom, config.ObstacleDepth),
                 _ => throw new InvalidOperationException($"未定義の障害物です：{Kind}"),
@@ -64,7 +64,7 @@ namespace Game.Core
     /// <summary>
     /// 文字の表で書いたチャンク。1 行 = 奥行き 1 区画、3 文字 = 左・中・右のレーン。
     /// <b>上の行ほど奥</b>（自機の後ろから見た並び）。<c>.</c> 空・<c>W</c> Wall・<c>H</c> Hurdle・<c>B</c> Beam。
-    /// 入口と出口の行は空にする（隣のチャンクの障害物と同じ Tick に触れないため）。
+    /// 入口と出口の行は空にする（隣のチャンクの障害物と同じ Tick に触れないため）。障害物はどれも行の中央の薄い板（奥行き <see cref="RunConfig.ObstacleDepth"/>）。
     /// </summary>
     [Serializable]
     public sealed class ChunkSpec

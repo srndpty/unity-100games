@@ -44,7 +44,7 @@ namespace Game.Core.Tests
         public void ShiftingTwoLanes_PassesSlowly_ButNotAtTopSpeed()
         {
             // 左のレーンから右端だけ空いた壁まで：2 レーン動く距離が足りるかは速さで決まる。
-            var chunk = TestKit.Chunk("...", "WW.", "...", "...");
+            var chunk = TestKit.Chunk("...", "...", "WW.", "...");
             Assert.That(_planner.Passable(chunk, _config.BaseSpeed, 0), Is.True);
             Assert.That(_planner.Passable(chunk, _config.TopSpeed, 0), Is.False);
             Assert.That(_planner.Passable(chunk, _config.TopSpeed, 2), Is.True, "右のレーンからなら動かなくてよい");
@@ -52,13 +52,13 @@ namespace Game.Core.Tests
             // 難度 1 のチャンクは最も速い段階でも出るので拒否する。速さが上がる前に出ない難度でも同じ（最後は上限の速さで出る）。
             foreach (var tier in new[] { 1, 3 })
             {
-                var specs = new[] { TestKit.Spec("other", 1, "...", "...", "..."), TestKit.Spec("shift", tier, "...", "WW.", "...", "...") };
+                var specs = new[] { TestKit.Spec("other", 1, "...", "...", "..."), TestKit.Spec("shift", tier, "...", "...", "WW.", "...") };
                 Assert.That(() => RunRules.Build(new RunConfig(), specs), Throws.ArgumentException.With.Message.Contains("shift"));
             }
 
             // 速さの段階が上がらない設定なら受け付ける。
             var slow = new RunConfig { MaxSpeedLevel = 0 };
-            Assert.That(() => RunRules.Build(slow, new[] { TestKit.Spec("shift", 1, "...", "WW.", "...", "...") }), Throws.Nothing);
+            Assert.That(() => RunRules.Build(slow, new[] { TestKit.Spec("shift", 1, "...", "...", "WW.", "...") }), Throws.Nothing);
         }
 
         [Test]
@@ -163,7 +163,7 @@ namespace Game.Core.Tests
                 for (var lane = 0; lane < RunConfig.Lanes; lane++)
                 {
                     var roll = random.Next(100);
-                    chars[lane] = roll < 18 ? 'W' : roll < 28 ? 'H' : roll < 38 ? 'B' : '.';
+                    chars[lane] = roll < 30 ? 'W' : roll < 42 ? 'H' : roll < 54 ? 'B' : '.';
                 }
 
                 rows[r] = new string(chars);

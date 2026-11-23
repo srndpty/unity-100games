@@ -34,7 +34,7 @@ namespace Game.Core.Tests
             var events = RunUntilOver(run, 5000);
             Assert.That(events & RunEvents.Crashed, Is.EqualTo(RunEvents.Crashed));
             Assert.That(run.CrashKind, Is.EqualTo(ObstacleKind.Wall));
-            var wall = run.Chunks.RunwayEnd + (2 * run.Config.RowLength);
+            var wall = run.Chunks.RunwayEnd + (2 * run.Config.RowLength) + ((run.Config.RowLength - run.Config.ObstacleDepth) / 2);
             Assert.That(run.Z + (run.Config.RunnerDepth / 2), Is.GreaterThan(wall), "壁の手前の面を越えた Tick で止まる");
             Assert.That(run.PrevZ + (run.Config.RunnerDepth / 2), Is.LessThanOrEqualTo(wall));
             Assert.That(run.Meters, Is.EqualTo(run.Z / M));
@@ -60,10 +60,10 @@ namespace Game.Core.Tests
         [Test]
         public void SteeringIntoTheSideOfAWall_Crashes()
         {
-            // 左のレーンの長い壁の横を走っている途中で左へ動く。
+            // 左のレーンに並んだ壁の 1 枚の横を走っている途中で左へ動く。
             var rows = new[] { "...", "...", "W..", "W..", "W..", "W..", "...", "..." };
             var run = new RunnerRun(TestKit.Only(rows), 1);
-            var beside = run.Chunks.RunwayEnd + (3 * run.Config.RowLength);
+            var beside = run.Chunks.RunwayEnd + (3 * run.Config.RowLength) + ((run.Config.RowLength - run.Config.ObstacleDepth) / 2);
             while (run.Z < beside) { run.Step(Command.None); }
             Assert.That(run.IsOver, Is.False);
             run.Step(TestKit.Do(Steer.Left));

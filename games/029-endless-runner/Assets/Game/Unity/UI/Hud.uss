@@ -8,6 +8,7 @@
 .panel { width: 1040px; padding: 30px 40px; background-color: rgba(30, 12, 8, 0.93); border-radius: 18px; border-width: 2px; border-color: rgb(230, 120, 60); }
 .headline { font-size: 58px; -unity-font-style: bold; color: rgb(255, 170, 90); -unity-text-align: middle-center; white-space: normal; }
 .message { margin-top: 14px; margin-bottom: 14px; font-size: 22px; white-space: normal; -unity-text-align: middle-center; }
+.credit { position: absolute; right: 16px; bottom: 10px; font-size: 16px; color: rgba(255, 236, 214, 0.75); -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(14, 6, 4); }
 .buttons { align-items: stretch; }
 Button { height: 52px; margin: 8px 0 0 0; font-size: 22px; color: rgb(255, 236, 214); background-color: rgb(96, 40, 24); border-color: rgb(230, 120, 60); border-width: 1px; border-radius: 10px; }
 Button:hover { background-color: rgb(122, 52, 30); }

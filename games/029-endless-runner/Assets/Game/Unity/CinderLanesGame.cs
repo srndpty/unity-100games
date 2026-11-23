@@ -21,9 +21,12 @@ namespace Game.Unity
         [SerializeField] private CinderLanesStage _stage;
 
         /// <summary>カメラの自機からの位置（m）。横は自機の横位置の <see cref="CameraFollow"/> 倍だけ追う。</summary>
-        public static readonly Vector3 CameraOffset = new(0, 3.4f, -6.5f);
+        public static readonly Vector3 CameraOffset = new(0, 2.8f, -5f);
 
         public const float CameraFollow = .45f;
+
+        /// <summary>ぶつかってから結果のパネルを出すまでの秒数（倒れる様子を見せる。操作はすぐ受け付ける）。</summary>
+        public const float ResultPanelDelay = .8f;
 
         // 種類の違う操作も起きた順に 1 本の列で処理する。Pointer は HUD のボタン由来（フォーカス復帰直後は捨てる）。
         private readonly List<(Intent Intent, bool Pointer)> _intents = new();
@@ -146,6 +149,9 @@ namespace Game.Unity
             if (!EvidenceCapture.IsRunning && Time.timeScale > 0) { Flow.Advance(Now); }
             else { Flow.EndFrame(); }
             ConsumeEvents();
+
+            // ぶつかった後の倒れるモーションは表示の時計で進める（撮影中は台本が進める）。
+            if (!EvidenceCapture.IsRunning && Flow.Screen == AppScreen.Result) { _stage.AdvanceCrash(Time.unscaledDeltaTime); }
             Render();
         }
 
@@ -216,7 +222,8 @@ namespace Game.Unity
             var run = Flow.Run;
             var screen = Flow.Screen;
             var level = run?.SpeedLevel ?? 0;
-            var state = (screen, run?.Meters ?? 0, level, Flow.BestMeters, Flow.IsNewBest);
+            var panel = screen == AppScreen.Title || screen == AppScreen.Paused || (screen == AppScreen.Result && _stage.CrashElapsed >= ResultPanelDelay);
+            var state = (screen, run?.Meters ?? 0, level, Flow.BestMeters, Flow.IsNewBest, panel);
             if (Equals(_shownHud, state)) { return; }
             _shownHud = state;
             var config = Flow.Rules.Config;
@@ -228,7 +235,7 @@ namespace Game.Unity
                 _root.Q<Label>("best").text = $"BEST {Math.Max(Flow.BestMeters, screen == AppScreen.Result ? 0 : run.Meters)} m";
             }
 
-            _root.Q("panel").style.display = screen != AppScreen.Playing ? DisplayStyle.Flex : DisplayStyle.None;
+            _root.Q("panel").style.display = panel ? DisplayStyle.Flex : DisplayStyle.None;
             _root.Q<Label>("headline").text = Headline(screen);
             _root.Q<Label>("message").text = Message(screen, run, Flow.BestMeters, Flow.IsNewBest, config);
             Show("submit", screen != AppScreen.Playing);

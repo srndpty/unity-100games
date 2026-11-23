@@ -106,7 +106,11 @@ namespace Game.Unity.Tests
             Assert.That(_game.HudRoot.Q<Label>("message").text, Does.Contain("ジャンプ").And.Contain("スライド"));
             foreach (var kind in _kinds) { Assert.That(Stage.Shown(kind), Is.Zero); }
             Assert.That(Stage.Runner.localPosition, Is.EqualTo(Vector3.zero));
+            Assert.That(Stage.Motion.State, Is.EqualTo(CinderLanesStage.IdleState));
+            Assert.That(_game.HudRoot.Q<Label>("credit").text, Is.EqualTo("© Unity Technologies Japan/UCL"), "ユニティちゃんライセンスの表記");
             yield return StartGame();
+            yield return null;
+            Assert.That(Stage.Motion.State, Is.EqualTo(CinderLanesStage.RunState));
             Assert.That(Stage.Shown(ObstacleKind.Wall) + Stage.Shown(ObstacleKind.Hurdle) + Stage.Shown(ObstacleKind.Beam), Is.GreaterThan(0), "前方のチャンクが描かれる");
             Assert.That(Text("distance"), Does.EndWith(" m"));
         }
@@ -136,15 +140,16 @@ namespace Game.Unity.Tests
             yield return WaitUntil(() => R.Body.Vertical.Y > Config.HurdleHeight);
             yield return null;
             Assert.That(Stage.Runner.localPosition.y, Is.GreaterThan(0));
+            Assert.That(Stage.Motion.State, Is.EqualTo(CinderLanesStage.JumpState));
             yield return WaitUntil(() => R.Body.Vertical.IsGrounded);
 
             yield return _keyboard.Tap(Key.DownArrow);
             yield return WaitUntil(() => R.Body.Vertical.IsSliding);
             yield return null;
-            Assert.That(Stage.Model.localEulerAngles.x, Is.Not.EqualTo(0).Within(1f), "スライド中は伏せる");
+            Assert.That(Stage.Motion.State, Is.EqualTo(CinderLanesStage.SlideState));
             yield return WaitUntil(() => !R.Body.Vertical.IsSliding);
             yield return null;
-            Assert.That(Stage.Model.localRotation, Is.EqualTo(Quaternion.identity));
+            Assert.That(Stage.Motion.State, Is.EqualTo(CinderLanesStage.RunState));
 
             Assert.That(R.Z, Is.LessThan(Config.RunwayMeters * (long)M), "ここまで助走の中");
             Assert.That(R.IsOver, Is.False);
@@ -159,7 +164,20 @@ namespace Game.Unity.Tests
             StepTicks(100_000);
             Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Result));
             yield return null;
+            Assert.That(_game.HudRoot.Q("panel").style.display.value, Is.EqualTo(DisplayStyle.None), "倒れる間は結果のパネルを出さない");
             Assert.That(_game.HudRoot.Q<Label>("headline").text, Is.EqualTo("ぶつかった！"));
+            Assert.That(Stage.Motion.State, Is.EqualTo(CinderLanesStage.CrashState));
+
+            // 倒れるモーションは結果画面の間に実時間で進み、倒れたところで止まる。
+            Time.timeScale = 1;
+            var start = Stage.Motion.Time;
+            yield return WaitUntil(() => Stage.Motion.Time > start + .05f);
+            yield return WaitSeconds(4f);
+            var end = Stage.Motion.Time;
+            yield return WaitSeconds(.2f);
+            Assert.That(Stage.Motion.Time, Is.EqualTo(end), "倒れたところで止まる");
+            Assert.That(Stage.Runner.localPosition.y, Is.Zero, "空中でぶつかっても地面に落ちる");
+            Assert.That(_game.HudRoot.Q("panel").style.display.value, Is.EqualTo(DisplayStyle.Flex), "倒れた後に結果のパネルを出す");
             Assert.That(_game.HudRoot.Q<Label>("message").text, Does.Contain($"{R.Meters} m"));
             Assert.That(IsShown("restart"), Is.True);
             Assert.That(IsShown("pause"), Is.False);
@@ -169,7 +187,6 @@ namespace Game.Unity.Tests
             Assert.That(crashed, Is.True);
 
             _game.Flow.Pilot = null;
-            Time.timeScale = 1;
             yield return _keyboard.Tap(Key.R);
             Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Playing));
             Assert.That(R.Seed, Is.EqualTo(seed + 1));
@@ -195,6 +212,7 @@ namespace Game.Unity.Tests
             yield return null;
             Assert.That(Stage.Runner.localPosition, Is.EqualTo(runner));
             Assert.That(Stage.Model.localRotation, Is.EqualTo(Quaternion.identity));
+            Assert.That(Stage.Motion, Is.EqualTo((CinderLanesStage.IdleState, 0f)));
             Assert.That(Stage.Segment(0).localPosition, Is.EqualTo(segment));
             foreach (var kind in _kinds) { Assert.That(Stage.Shown(kind), Is.Zero); }
             Assert.That(_game.HudRoot.Q("stats").style.display.value, Is.EqualTo(DisplayStyle.None));
@@ -224,6 +242,45 @@ namespace Game.Unity.Tests
             Assert.That(Stage.GetComponentsInChildren<Transform>(true).Length, Is.EqualTo(objects), "プールの外で作った物がない");
             Assert.That(SceneManager.GetActiveScene().rootCount, Is.EqualTo(roots));
             yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator RunMotion_FollowsTheDistance_NotTheClock()
+        {
+            // 撮影で同じ絵になるよう、走りのモーションの位置は進んだ距離だけで決まる（実時間で進めない）。
+            yield return StartGame();
+            StepTicks(10);
+            var motion = Stage.Motion;
+            var ticks = R.Ticks;
+            yield return WaitSeconds(.2f);
+            Assert.That(R.Ticks, Is.EqualTo(ticks));
+            Assert.That(Stage.Motion, Is.EqualTo(motion), "Tick が進まなければモーションも止まる");
+            StepTicks(1);
+            Assert.That(Stage.Motion.State, Is.EqualTo(CinderLanesStage.RunState));
+            Assert.That(Stage.Motion.Time, Is.Not.EqualTo(motion.Time));
+        }
+
+        [UnityTest]
+        public IEnumerator AfterASlide_RunBlendsBackGradually()
+        {
+            // スライドが終わった次の Tick から、スライドの姿勢から走りへ数 Tick かけて移る（いきなり戻らない）。
+            yield return StartGame();
+            _game.Flow.Pilot = new SlideOncePilot();
+            Time.timeScale = 0;
+            var recoveries = new List<float>();
+            for (var i = 0; i < Config.SlideTicks + 30; i++)
+            {
+                _game.Flow.StepTick();
+                _game.Render();
+                if (!R.Body.Vertical.IsSliding) { recoveries.Add(Stage.Recovery); }
+            }
+
+            Assert.That(R.IsOver, Is.False);
+            Assert.That(recoveries.Count, Is.EqualTo(30), "スライドは設定の Tick 数だけ続いた");
+            Assert.That(recoveries[0], Is.GreaterThan(0).And.LessThan(.2f), "戻り始めはスライドの姿勢に近い");
+            for (var i = 1; i < recoveries.Count; i++) { Assert.That(recoveries[i], Is.GreaterThanOrEqualTo(recoveries[i - 1])); }
+            Assert.That(recoveries[recoveries.Count - 1], Is.EqualTo(1), "しばらくすると走りに戻りきる");
+            Assert.That(recoveries.Count(r => r < 1), Is.GreaterThan(5), "数 Tick かけて戻る");
         }
 
         [UnityTest]
@@ -323,12 +380,36 @@ namespace Game.Unity.Tests
 
                 var actual = ShownObstacles(kind).Select(t => Describe(t.localPosition, t.localScale)).ToList();
                 Assert.That(ShownObstacles(kind).All(t => t.gameObject.activeSelf), Is.True);
+                for (var i = 0; i < Stage.Shown(kind); i++)
+                {
+                    // 奥の面が自機の中心より後ろなら半透明、前なら元の見た目。
+                    var item = Stage.Pooled(kind, i);
+                    var back = item.localPosition.z + (item.localScale.z / 2);
+                    Assert.That(Stage.IsPassedLook(kind, i), Is.EqualTo(back <= 1e-4f), $"{kind} z {item.localPosition.z}");
+                    var lane = Mathf.RoundToInt(item.localPosition.x / (Config.LaneWidth / M)) + 1;
+                    var blocksView = kind == ObstacleKind.Beam || lane == R.Body.Lane.To;
+                    var visible = blocksView ? back > 1e-4f : back > -Stage.HideBehind + 1e-4f;
+                    Assert.That(Stage.IsVisible(kind, i), Is.EqualTo(visible), $"{kind} レーン {lane} z {item.localPosition.z}：通り過ぎた Beam・自機のレーンのもの・後ろへ流れたものは描かない");
+                }
                 Assert.That(actual, Is.EquivalentTo(expected), kind.ToString());
                 Assert.That(Stage.Shown(kind), Is.LessThanOrEqualTo(Stage.PoolSize(kind)));
             }
         }
 
         private static string Describe(Vector3 position, Vector3 scale) => $"{position.x:F3},{position.y:F3},{position.z:F3}/{scale.x:F3},{scale.y:F3},{scale.z:F3}";
+
+        /// <summary>最初に呼ばれた Tick にだけスライドする（助走の中）。</summary>
+        private sealed class SlideOncePilot : IPilot
+        {
+            private bool _done;
+
+            public Command CommandFor(RunnerRun run)
+            {
+                var leap = _done ? Leap.None : Leap.Slide;
+                _done = true;
+                return new Command(Steer.None, leap);
+            }
+        }
 
         /// <summary>何もせず、いちばん近い前方の障害物のレーンへ移り続ける（必ずぶつかる）。</summary>
         private sealed class SeekerPilot : IPilot

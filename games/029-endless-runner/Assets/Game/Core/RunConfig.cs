@@ -56,7 +56,7 @@ namespace Game.Core
         /// <summary>チャンクの 1 行の奥行き。</summary>
         public int RowLength = 512;
 
-        /// <summary>Hurdle と Beam の奥行き（行の中央に置く）。Wall は行いっぱい。</summary>
+        /// <summary>障害物の奥行き（行の中央に置く）。壁も薄い板にして、通り過ぎた後の横移動でぶつからないようにする。</summary>
         public int ObstacleDepth = 128;
 
         public int HurdleHeight = 160;
