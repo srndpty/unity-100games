@@ -1,0 +1,128 @@
+# 027 弾幕STG 実装計画
+
+## Context
+
+- 027 弾幕STG（難易度 4・Phase 2）に着手する。仕様書 `plan/games/027-bullet-hell.md` の中心課題は「**弾道DSL/パラメータ生成**」、重点は「**大量弾のプーリングまたはデータ指向処理**」。
+- In scope：ボス 2 体・各 3 弾幕、低速移動と当たり判定表示、リトライ・残機、タイトル→操作説明→結果→再プレイ。Out of scope：原作スペル全再現・ネット対戦・素材量産。
+- 題材固有テスト：弾道式の軌跡が期待値と一致／無敵中の二重被弾なし／弾数上限で破綻しない。完了判定：6 パターンを再現しクリア可能、弾数・処理時間を計測記録。
+- ユーザーと決めたこと：
+  - 弾幕は **テキスト DSL ＋ Core のパーサ**で定義する（TextAsset、設定アセットから差し替え可能）
+  - **ボスラッシュ**（道中なし、ボス 1 → ボス 2）。残機 0 で結果画面 →「このボスから再挑戦」または「最初から」
+  - 操作は **矢印 / WASD 移動・Shift 低速（当たり判定表示）・Z 押しっぱなし連射・X ボム・Esc 一時停止**（キーボードのみ）。ボムは In scope 外の追加として README に記録する
+- 作品名はオリジナル（仮）：**LANTERN VEIL**。参考作品の名称・キャラクター・スペル名・演出は使わない。
+- 027 は `main` から `feature/game027` を切った（026 はマージ済み。026 の `Geometry.cs` などは写して使う）。
+
+---
+
+## セッション分割（難易度 4 なので 5 つに分ける。区切りを progress.csv の記録/メモに残す）
+
+| セッション | 内容 | 終わりの状態 |
+|---|---|---|
+| 0（済） | `dev new 027`・雛形と slnx 登録の最小コミット・この計画を `plan/games/027-bullet-hell-implementation.md` に置く | `dev lint/check/test` 通過 |
+| 1 | ルール表を README に固定。DSL（字句・構文・検証）、弾の運動と SoA の弾プール、角度表 | 題材固有テスト「軌跡」「弾数上限」が .NET と Mono で通る |
+| 2 | 試合（自機・ショット・ボム・ボス・弾幕の進行・被弾・残機・再挑戦）、App（Flow・操縦役）、6 弾幕の DSL ファイル | 操縦役で 6 弾幕を突破、最終ハッシュが両環境で一致 |
+| 3 | Playable（Stage Prefab・弾の一括描画・HUD・音・シーン生成・撮影台本） | 人間が通しで遊べる |
+| 4 | Verification（PlayMode・負荷計測・ビルド・`dev capture`・README/evidence） | 状態「検証待ち」 |
+
+---
+
+## ルール表（セッション1で README に固定する要点）
+
+| 項目 | 採用ルール |
+|---|---|
+| 単位 | 位置は 1 px = 256 単位の整数、60 Tick/秒、時間の設定は Tick 数。浮動小数点を使わず Mono と .NET で一致させる |
+| 角度 | 1 周 = 4096 の整数。sin/cos は **ソースに書いた 1/4 周期の整数表（Q14）** を引く（`Math.Sin` を実行時に使わない）。表は生成テストで `Math.Sin` との差 ±1 以内・対称性を確認 |
+| 画面 | 16:9 の画面に縦長のプレイ領域 384×448 px（左寄せ）＋右に HUD。カメラ固定 |
+| 自機 | 通常 4.0 px/Tick・低速 1.75 px/Tick（斜めは `×181/256`、最低 1）。領域内で止まる。当たり判定は半径 2.5 px の円、低速中だけ表示 |
+| ショット | Z を押している間 `ShotIntervalTicks` ごとに上へ直進弾（低速中は幅を狭めて集中）。ボスの円への接触は掃引で判定し、体力を減らす |
+| 被弾 | 敵弾と自機の判定円を **Tick 中の相対軌跡の掃引**で判定（026 の `Sweep.First`）。被弾で残機 -1・画面の敵弾を全消去・`InvincibleTicks` の無敵（被弾した Tick を含めて数える `Countdown`）。**同じ Tick に複数の弾に触れても 1 回**、無敵中は無視 |
+| ボム | X で 1 個消費（初期 3、被弾・再挑戦で 3 に戻す）。敵弾を全消去し、`BombTicks` の間無敵＋ボスへ継続ダメージ。ボム中の再使用は不可 |
+| 残機 | 初期 3。0 になった Tick で敗北 |
+| 弾幕 | 各弾幕は体力と制限時間を持つ。体力 0 または時間切れで突破（時間切れはボーナスなし）、敵弾を全消去し `IntervalTicks` 後に次の弾幕。被弾・ボムなしで突破したら弾幕ボーナス |
+| 進行 | ボス 1（3 弾幕）→ ボス 2（3 弾幕）→ 勝利。敗北後の「このボスから再挑戦」は、そのボスの 1 弾幕目・残機 3・ボム 3・得点はボス開始時の値で、**新しいシード**で始め直す（1 試合 = 1 シード） |
+| 弾数上限 | 敵弾プールは固定容量 `MaxBullets`（既定 2048）。満杯のときの発射は **捨てて数える**（`DroppedBullets`）。例外にしない・配列を伸ばさない。領域外（余白 32 px）に出た弾・寿命切れの弾は消える |
+| 乱数 | 1 試合 = 1 シードの xorshift。DSL の `rand` は弾幕ごと・発射器ごとに系列を分ける（015 の知見） |
+| 終了後 | 勝利・敗北後の Tick と入力は状態を変えない |
+
+## 弾道 DSL（セッション1）
+
+行単位の小さなテキスト言語。1 ファイル = 1 ボス（3 弾幕）。数値リテラルは **文字列から直接固定小数点へ変換**（`float.Parse` を使わない）。式は持たず、値は「数値」「`rand(a, b)`」「`aim`（自機の向き）」に限る。
+
+```
+boss "Ember Warden" radius=24
+pattern "Cinder Bloom" hp=900 time=40s
+  move to 192 120 over 60
+  emit ring every=20 count=24 speed=1.8 spin=7
+  emit aimed every=45 count=5 spread=30 speed=3.0 accel=0.02 maxspeed=4.5
+pattern "..." hp=... time=...
+  move wander rect=96,80,288,160 every=120
+  emit spiral every=4 arms=3 speed=2.2 spin=11 curve=0.4 shape=rice color=blue
+```
+
+- 発射器：`ring`（全周）・`fan`（扇）・`aimed`（自機狙いの扇）・`spiral`（腕 × 回転）。共通引数：`every`・`delay`・`count`/`arms`・`speed`・`accel`・`maxspeed`・`curve`（角速度）・`spin`（発射ごとの回転）・`angle`・`spread`・`offset`（ボスからの位置）・`shape`・`color`・`life`
+- ボスの動き：`move to x y over N`・`move wander rect=… every=N`
+- パーサの出力は不変の `BossScript`（`PatternSpec` → `MoveSpec` / `EmitterSpec`）。**値の範囲と組み合わせを検証**（count×発射頻度×寿命の見積もりが `MaxBullets` を大きく超える定義も警告ではなくエラーにはしない。上限は実行時の捨てる処理で守る）
+- エラーは行・列つきの `ScriptError`（未知の語・必須引数なし・引数の重複・範囲外・型違い・pattern の外の emit・ボスあたり 3 弾幕でない）
+
+## 弾の運動とプール（セッション1、データ指向）
+
+- `BulletPool`：固定容量の SoA（`int[] x, y, angle, speed, accel, maxSpeed, curve, age, life` と `byte[] shape, color`）。`Spawn` は満杯なら false。`Step` は全弾を 1 Tick 進め、消える弾は末尾と入れ替えて詰める（順序は決定的）。`Step` で割り当てをしない
+- 1 Tick の運動：`angle += curve` → `speed = clamp(speed + accel, maxSpeed)` → `pos += speed × dir(angle)`（Q14 の表、四捨五入の割り算）
+- `Trajectory.At(spec, t)`：弾 1 発の参照実装（1 発ずつ進める素朴な版）と、**直進・等加速は閉じた式**（`o + Σ speed_k × dir`）
+
+## 試合（セッション2）
+
+- `VeilRun`：試合 1 回。1 Tick の順序＝時間（無敵・ボム・連射・弾幕の残り時間）→ 自機の移動 → ショット発射 → ボム → ボスの移動 → 発射器（DSL の評価）→ 敵弾の移動 → ショット×ボス → 敵弾×自機 → 弾幕の突破判定 → 勝敗。`Step(PlayerCommand)`・`Hash()`（tile-motion の `StateHash`、プールの全弾・各 `Countdown`・乱数の状態まで混ぜる。022 の知見）・`Clone()`
+- `VeilConfig`：公開フィールド＋検証（有限・範囲・`MaxBullets`・自機の半径と速さ・`InvincibleTicks`・`BombTicks`）。弾幕の内容は `BossScript` 2 つ
+- 流用：026 の `Geometry.cs`（`Vec2i`・`IntMath`・`Sweep.First`・`Touch`）、`SeededRandom.cs`。tile-motion の `Countdown`・`StateHash`
+
+## App（セッション2）
+
+- `VeilFlow`：Title / Playing / Paused / Result、実時間 → 固定 Tick、フレーム単位の Tick 上限（026 `SiegeFlow` を土台に）。フォーカス喪失で保留入力も消して停止。結果画面の選択肢（このボスから／最初から／タイトル）。再挑戦・再戦は新しいシード
+- `Intent`・`HeldControls`（026 から流用）：移動 4 方向・低速・ショット・ボム（ボムは押した瞬間の 1 回）
+- `Autopilot`：`VeilRun.Clone()` で 9 方向 × 低速/通常を数十 Tick 先読みし、被弾しない・弾から遠い候補を選ぶ。常にショット、ボムは使わない。判断の状態は試合・弾幕が変わったら捨てる（023）。先読みは数 Tick ごと
+
+## テスト（題材固有を優先）
+
+- **弾道式の軌跡**：直進・加速（`maxspeed` で頭打ちする Tick の前後）・角速度・`spin` の発射ごとの回転で、プールの各 Tick の位置が `Trajectory.At` と一致。直進・等加速は閉じた式とも一致。角度表の対称性と `Math.Sin` との差。`ring` の 24 発が等間隔、`aimed` の中心が自機の方向
+- **無敵中の二重被弾なし**：同じ Tick に 2 発 → 残機 -1 だけ。無敵の最後の Tick と切れた直後の Tick の境界。ボム中の接触。被弾とボムが同じ Tick
+- **弾数上限で破綻しない**：容量を超える発射を長時間続けても数 ≤ 容量・`DroppedBullets` が増える・例外なし・空きが出たら再び出る。容量ちょうど・1 超え。`Step` の割り当て 0（.NET の `GC.GetAllocatedBytesForCurrentThread`。Mono は PlayMode の ProfilerRecorder で確かめる）
+- **DSL**：6 弾幕のファイルがすべて通る。エラーの種類ごとに行・列が合う負テスト。小数の固定小数点変換の境界（`0.004`、桁の多い小数、負数）
+- **6 パターンを再現しクリア可能**：操縦役で固定シードの通しが勝利し、各弾幕を体力 0 で突破。最終ハッシュを .NET と Mono で照合。各弾幕の最大同時弾数を記録（容量の何割か）
+- 共通：状態遷移（開始→進行→終了→再挑戦→再戦、終了後の入力無視）、負テスト（NaN・範囲外の設定、終了後の Step、ボムの重複押下、ボム 0 での使用）、再現性（同シード同入力で同ハッシュ）、「このボスから再挑戦」の初期状態（残機・ボム・得点・弾幕番号）
+
+## Playable（セッション3、Unity 層）
+
+- `LanternVeilGame`（入力・Flow・HUD・音）、`LanternVeilStage`（Stage Prefab：プレイ領域の枠と背景・自機・判定点・ボス 2 体・ショット）、`LanternVeilSettings`（ScriptableObject：速さ・無敵・ボム・`MaxBullets`・音量・DSL の TextAsset 2 つ）
+- 敵弾の描画：**1 つの動的 Mesh（四角形 × 容量）を MeshRenderer で描く**。毎フレーム SoA から頂点を書き、形・色はアトラスの UV で選ぶ。割り当てなし。GameObject を弾ごとに作らない（003 の知見）
+- DSL ファイルは `Assets/Game/Patterns/*.txt`。Core テストは .NET と Unity の両方からファイルを読む補助（テストのディレクトリと作業ディレクトリから上へ `Assets/Game/Patterns` を探す）を置く
+- HUD（PanelRenderer）：右側にスコア・残機・ボム・ボス名・弾幕名・残り時間・弾数、プレイ領域の上にボスの体力。タイトルに操作説明、結果画面に勝敗・スコア・到達弾幕・ボタン（このボスから／最初から／タイトル）
+- Editor：`LanternVeilArtGenerator`（生成ドット絵：自機・ボス 2 体・弾のアトラス・背景）、`LanternVeilSceneBuilder`（既存 Prefab・設定アセットは上書きしない）
+- 音：ショット（間引き）・被弾・ボム・弾幕突破を控えめに、`AudioPolicy.ShouldMute` で消音
+- 撮影台本：タイトル・6 弾幕それぞれ・低速の判定表示・被弾と無敵・ボム・弾数上限に張り付いた場面・結果（勝利／敗北）・再挑戦の開始
+
+## Verification（セッション4）
+
+- PlayMode：矢印で動く／Shift で低速と判定表示／Z でボスの体力が減る／X でボムと弾消し／被弾の表示／結果画面のボタン（このボスから・最初から）／タイトルへ戻った表示が起動直後と一致（021）／一時停止・フォーカス喪失／設定アセットの検証と DSL の読み込み（024）
+- 負荷計測：各弾幕の最大同時弾数、`MaxBullets` いっぱいの設定で Core の Step と Mesh の更新の p50/p95・GC 割り当てを記録（対象機・条件を README に）
+- `dev build 027` → `dev capture 027` → 同一ビルドの再撮影で SHA-256 一致 → README・`evidence/README.md`・`progress.csv` を「検証待ち」
+
+---
+
+## 主なファイル
+
+- 新規：`games/027-bullet-hell/**`、`plan/games/027-bullet-hell-implementation.md`
+  - Core：`Geometry.cs`（026 から）・`SeededRandom.cs`・`Trig.cs`（角度表）・`Fixed.cs`（小数リテラル → 固定小数点）・`Dsl/Lexer.cs`・`Dsl/Parser.cs`・`BossScript.cs`・`BulletPool.cs`・`Trajectory.cs`・`Emitter.cs`・`VeilConfig.cs`・`VeilRun.cs`
+  - App：`Intent.cs`・`HeldControls.cs`・`VeilFlow.cs`・`Autopilot.cs`
+  - Patterns：`boss1.txt`・`boss2.txt`
+- 流用元：
+  - `games/026-twin-stick/Assets/Game/Core/Geometry.cs`・`SeededRandom.cs`、`Assets/Game/App/SiegeFlow.cs`・`HeldControls.cs`・`Intent.cs`・`Autopilot.cs`
+  - `packages/com.games100.tile-motion`（`Countdown`・`StateHash`）
+  - 026 の SceneBuilder・ArtGenerator・CaptureScenario・HUD の構成
+- `Geometry.cs`（円の掃引）は 026・027 の 2 作品目。もう 1 作品で使ったら `packages/` へ抽出する候補として `plan/TODO.md` に書く
+
+## 検証
+
+- 各セッションの終わりに `dev lint` → `dev check` → `dev test`、Mono での Core/App テスト（`dev test 027 -Unity`）
+- Unity 層を触ったら `dev test 027 -Unity -Mode PlayMode`
+- `dev build 027` → `dev capture 027` → 証跡を確認 → 「検証待ち」で人間に渡す（`dev run 027`）。難しさ（弾速・密度・自機の速さ・判定の大きさ）とボムの数は試遊で調整
