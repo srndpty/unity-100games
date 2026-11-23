@@ -1,0 +1,87 @@
+.shell {
+    flex-grow: 1;
+    justify-content: center;
+    align-items: center;
+    color: #e7f7fa;
+}
+.section {
+    width: 84%;
+    max-width: 1200px;
+    padding: 34px 44px;
+    background-color: #14253b;
+    border-top-width: 4px;
+    border-top-color: #35e3d4;
+}
+.title {
+    font-size: 60px;
+    -unity-font-style: bold;
+    margin-bottom: 10px;
+}
+.instruction {
+    font-size: 21px;
+    color: #a8bfce;
+    margin-bottom: 12px;
+}
+.row {
+    flex-direction: row;
+    align-items: center;
+}
+Button {
+    background-color: #223b55;
+    color: #e7f7fa;
+    border-width: 0;
+    padding: 9px 24px;
+    font-size: 24px;
+    margin: 4px;
+    align-self: flex-start;
+}
+Button:hover, Button.selected {
+    background-color: #236974;
+}
+.track {
+    align-self: stretch;
+    -unity-text-align: middle-left;
+}
+.offset {
+    margin: 0 12px;
+    font-size: 23px;
+}
+.score, .judgement, .summary {
+    font-size: 31px;
+    margin: 16px 0;
+}
+.lane {
+    height: 109px;
+    margin-bottom: 14px;
+    background-color: #0c192a;
+    overflow: hidden;
+}
+.lane-key {
+    position: absolute;
+    top: 26px;
+    left: 18px;
+    font-size: 39px;
+    -unity-font-style: bold;
+}
+.hit-line {
+    position: absolute;
+    left: 12%;
+    width: 3px;
+    top: 0;
+    bottom: 0;
+    opacity: 0.6;
+}
+.pulse, .spark {
+    position: absolute;
+    top: 36px;
+    width: 36px;
+    height: 36px;
+    translate: -50% 0;
+}
+.pulse {
+    border-radius: 18px;
+}
+.spark {
+    rotate: 45deg;
+    border-radius: 5px;
+}
