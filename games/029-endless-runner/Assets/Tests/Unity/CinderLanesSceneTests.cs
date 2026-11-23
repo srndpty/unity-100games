@@ -168,6 +168,17 @@ namespace Game.Unity.Tests
             Assert.That(_game.HudRoot.Q<Label>("headline").text, Is.EqualTo("ぶつかった！"));
             Assert.That(Stage.Motion.State, Is.EqualTo(CinderLanesStage.CrashState));
 
+            // ぶつかった直後はカメラが揺れ、揺れの長さを過ぎると戻る（倒れてからの秒数だけで決まる）。
+            var rest = Stage.transform.TransformPoint(new Vector3(Stage.Runner.localPosition.x * CinderLanesGame.CameraFollow, 0, 0)) + CinderLanesGame.CameraOffset;
+            Assert.That(CinderLanesGame.Shake(.05f).magnitude, Is.GreaterThan(.01f), "ぶつかった直後は揺れる");
+            Assert.That(Stage.CrashElapsed, Is.LessThan(CinderLanesGame.ShakeSeconds));
+            _game.Render();
+            var camera = _game.ViewCamera.transform;
+            Assert.That(Vector3.Distance(camera.position, rest + (camera.rotation * CinderLanesGame.Shake(Stage.CrashElapsed))), Is.LessThan(1e-4f));
+            Stage.AdvanceCrash(CinderLanesGame.ShakeSeconds);
+            _game.Render();
+            Assert.That(Vector3.Distance(camera.position, rest), Is.LessThan(1e-4f), "揺れは収まる");
+
             // 倒れるモーションは結果画面の間に実時間で進み、倒れたところで止まる。
             Time.timeScale = 1;
             var start = Stage.Motion.Time;
@@ -176,6 +187,9 @@ namespace Game.Unity.Tests
             var end = Stage.Motion.Time;
             yield return WaitSeconds(.2f);
             Assert.That(Stage.Motion.Time, Is.EqualTo(end), "倒れたところで止まる");
+            Assert.That(end, Is.EqualTo(Stage.CrashEnd).Within(1e-5f));
+            var head = Stage.Animator.GetBoneTransform(HumanBodyBones.Head).position.y - Stage.Runner.position.y;
+            Assert.That(head, Is.LessThan(.3f), "寝そべったまま止まり、起き上がらない");
             Assert.That(Stage.Runner.localPosition.y, Is.Zero, "空中でぶつかっても地面に落ちる");
             Assert.That(_game.HudRoot.Q("panel").style.display.value, Is.EqualTo(DisplayStyle.Flex), "倒れた後に結果のパネルを出す");
             Assert.That(_game.HudRoot.Q<Label>("message").text, Does.Contain($"{R.Meters} m"));

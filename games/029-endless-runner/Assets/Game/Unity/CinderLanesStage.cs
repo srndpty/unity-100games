@@ -28,7 +28,7 @@ namespace Game.Unity
         [SerializeField] private Vector2 _slideWindow = new(.1f, .75f);
         [Tooltip("被弾（倒れる）のクリップの長さ（秒）。生成スクリプトがクリップから書き込む")]
         [SerializeField] private float _crashLength = 3.6f;
-        [Tooltip("被弾のクリップのうち再生する範囲の終わり（倒れたところで止める）")]
+        [Tooltip("被弾のクリップのうち再生する範囲の終わり（寝そべったところで止め、起き上がりは見せない）。生成スクリプトが頭の高さから求めて書き込む")]
         [SerializeField] private float _crashEnd = .7f;
         [Tooltip("空中でぶつかったとき、地面に落ちるまでの被弾のクリップの割合")]
         [SerializeField] private float _crashFall = .2f;
@@ -62,6 +62,11 @@ namespace Game.Unity
         public Transform Runner => _runner;
 
         public Transform Model => _model;
+
+        public Animator Animator => _animator;
+
+        /// <summary>倒れるモーションを止める位置（正規化時間）。</summary>
+        public float CrashEnd => _crashEnd;
 
         public const string IdleState = "Idle";
         public const string RunState = "Run";

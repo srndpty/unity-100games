@@ -25,6 +25,11 @@ namespace Game.Unity
 
         public const float CameraFollow = .45f;
 
+        /// <summary>ぶつかったときのカメラの揺れの長さ（秒）と大きさ（m）。</summary>
+        public const float ShakeSeconds = .45f;
+
+        public const float ShakeAmplitude = .22f;
+
         /// <summary>ぶつかってから結果のパネルを出すまでの秒数（倒れる様子を見せる。操作はすぐ受け付ける）。</summary>
         public const float ResultPanelDelay = .8f;
 
@@ -195,6 +200,19 @@ namespace Game.Unity
             var origin = _stage.transform.TransformPoint(new Vector3(x, 0, 0));
             _camera.transform.position = origin + CameraOffset;
             _camera.transform.LookAt(origin + new Vector3(0, 1.2f, 10f));
+            if (Flow.Run != null && Flow.Run.IsOver) { _camera.transform.position += _camera.transform.rotation * Shake(_stage.CrashElapsed); }
+        }
+
+        /// <summary>
+        /// ぶつかってから <paramref name="elapsed"/> 秒のカメラの揺れ（カメラから見た横・縦の m）。周期の違う 2 つの正弦波を 2 乗で減らし、
+        /// <see cref="ShakeSeconds"/> で 0 になる。乱数と実時間を使わないので撮影は同じ絵になる。
+        /// </summary>
+        public static Vector3 Shake(float elapsed)
+        {
+            if (elapsed >= ShakeSeconds || elapsed < 0) { return Vector3.zero; }
+            var fade = 1 - (elapsed / ShakeSeconds);
+            var amount = ShakeAmplitude * fade * fade;
+            return new Vector3(Mathf.Sin(elapsed * 61f) * amount, Mathf.Sin((elapsed * 47f) + 1.3f) * amount * .7f, 0);
         }
 
         private void OnHudReloaded(PanelRenderer renderer, VisualElement root, int version)

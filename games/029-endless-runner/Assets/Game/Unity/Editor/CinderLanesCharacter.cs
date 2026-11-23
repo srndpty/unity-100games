@@ -55,6 +55,39 @@ namespace Game.Unity.Editor
             return AssetDatabase.LoadAllAssetsAtPath(AnimationPath + clip + ".fbx").OfType<AnimationClip>().First(c => c.name == clip).length;
         }
 
+        /// <summary>
+        /// 被弾（倒れる）のクリップで、寝そべったままの時刻（正規化時間）。頭の高さを 120 等分で調べ、いちばん低い高さ +4 cm 以内に
+        /// 続けて収まる区間の中央を返す（その後の起き上がりは見せない）。
+        /// </summary>
+        public static float LyingTime()
+        {
+            var clipName = _states.First(s => s.State == CinderLanesStage.CrashState).Clip;
+            var clip = AssetDatabase.LoadAllAssetsAtPath(AnimationPath + clipName + ".fbx").OfType<AnimationClip>().First(c => c.name == clipName);
+            var model = (GameObject)UnityEngine.Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(ModelPath));
+            try
+            {
+                var head = model.GetComponent<Animator>().GetBoneTransform(HumanBodyBones.Head);
+                const int Steps = 120;
+                var heights = new float[Steps + 1];
+                for (var i = 0; i <= Steps; i++)
+                {
+                    clip.SampleAnimation(model, clip.length * i / Steps);
+                    heights[i] = head.position.y;
+                }
+
+                var lowest = Array.IndexOf(heights, heights.Min());
+                var first = lowest;
+                var last = lowest;
+                while (first > 0 && heights[first - 1] <= heights[lowest] + .04f) { first--; }
+                while (last < Steps && heights[last + 1] <= heights[lowest] + .04f) { last++; }
+                return (first + last) / 2f / Steps;
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(model);
+            }
+        }
+
         public static Animator Place(Transform parent)
         {
             BakeRootMotion();

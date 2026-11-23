@@ -166,6 +166,7 @@ namespace Game.Unity.Editor
                 Assign(serialized, "_model", model.transform);
                 Assign(serialized, "_animator", animator);
                 serialized.FindProperty("_crashLength").floatValue = CinderLanesCharacter.CrashLength();
+                serialized.FindProperty("_crashEnd").floatValue = CinderLanesCharacter.LyingTime();
                 Assign(serialized, "_wallTemplate", wall);
                 Assign(serialized, "_hurdleTemplate", hurdle);
                 Assign(serialized, "_beamTemplate", beam);

@@ -2,9 +2,9 @@
     "Product": "CINDER LANES",
     "Version": "0.1.0",
     "UnityVersion": "6000.6.9f1",
-    "BuildGuid": "787388bf1dd04938962b74f3ef35efa7",
+    "BuildGuid": "fbd38c16f058428b915f8951aa1a30ba",
     "Seed": 1,
-    "CapturedAtUtc": "2026-11-23T13:18:28.2310559Z",
+    "CapturedAtUtc": "2026-11-23T13:31:37.9811351Z",
     "Info": [
         {
             "Key": "imageEncoding",
@@ -62,14 +62,19 @@
             "Note": "一時停止。4949 Tick、1040 m、速さ 80、レーン 1、高さ 0"
         },
         {
-            "File": "10-crash.jpg",
-            "Sha256": "eb3f85c05f20c3aeff2f470f12281407107102cd187657738a27ada5ef9acde2",
-            "Note": "障害物にぶつかって倒れかけている（触れた時刻の位置から、被弾のモーションを 0.6 秒）。5040 Tick、1068 m、速さ 80、レーン 1、高さ 0"
+            "File": "10-impact.jpg",
+            "Sha256": "0cdecd4c832269bc7d4c52526273dca42300d984898879f79f7b9ed59649116b",
+            "Note": "ぶつかって 0.08 秒。カメラが揺れている。5040 Tick、1068 m、速さ 80、レーン 1、高さ 0"
         },
         {
-            "File": "11-result.jpg",
-            "Sha256": "3faa280127849b90d0277e6f8a3479a7650277fc58c44c8d755fa4794d0a0b2b",
-            "Note": "倒れたところで止めた結果画面（距離・最高記録）。5040 Tick、1068 m、速さ 80、レーン 1、高さ 0"
+            "File": "11-fall.jpg",
+            "Sha256": "daa8f5e8971f61026e317da95470011cb1fb4e77b34bcad3d59d125945a39d13",
+            "Note": "ぶつかって 0.6 秒。倒れている途中（結果のパネルはまだ出ない）。5040 Tick、1068 m、速さ 80、レーン 1、高さ 0"
+        },
+        {
+            "File": "12-result.jpg",
+            "Sha256": "d651a5643413a00a45b56f4f34be2a676152681dd9eac6be78dc56ca2be80dfb",
+            "Note": "寝そべったところで止めた結果画面（起き上がらない。距離・最高記録）。5040 Tick、1068 m、速さ 80、レーン 1、高さ 0"
         }
     ]
 }

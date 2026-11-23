@@ -59,10 +59,12 @@ namespace Game.Unity
             // 操作をやめると、次の障害物にぶつかって終わる。
             _game.Flow.Pilot = new IdlePilot();
             StepUntil(() => _game.Flow.Screen == AppScreen.Result, "衝突");
-            _game.Stage.AdvanceCrash(.6f);
-            await Shoot(capture, "10-crash", "障害物にぶつかって倒れかけている（触れた時刻の位置から、被弾のモーションを 0.6 秒）");
+            _game.Stage.AdvanceCrash(.08f);
+            await Shoot(capture, "10-impact", "ぶつかって 0.08 秒。カメラが揺れている");
+            _game.Stage.AdvanceCrash(.52f);
+            await Shoot(capture, "11-fall", "ぶつかって 0.6 秒。倒れている途中（結果のパネルはまだ出ない）");
             _game.Stage.AdvanceCrash(10);
-            await Shoot(capture, "11-result", "倒れたところで止めた結果画面（距離・最高記録）");
+            await Shoot(capture, "12-result", "寝そべったところで止めた結果画面（起き上がらない。距離・最高記録）");
         }
 
         private RunnerRun R => _game.Flow.Run ?? throw new InvalidOperationException("試合がありません。");
