@@ -1,0 +1,63 @@
+{
+    "Product": "リズムゲーム",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "bea7b80ec39844c19ed0c8a3871b51eb",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-23T18:48:54.7726429Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "song",
+            "Value": "港の灯"
+        },
+        {
+            "Key": "inputOffsetMs",
+            "Value": "0"
+        },
+        {
+            "Key": "calibrationLateMs",
+            "Value": "150"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "select.jpg",
+            "Sha256": "628f2173d2888e2e499ee0de7f29df02979c9aa43cbd56f3aed67ad5c51be9b5",
+            "Note": "曲選択と音ずれ補正"
+        },
+        {
+            "File": "burst-fair.jpg",
+            "Sha256": "e9cd8a77dc2b5d6887b77d18ff4d1cc644ae1c86f9d692140270b58d2f04d428",
+            "Note": "曲内サンプル 145920"
+        },
+        {
+            "File": "burst-good.jpg",
+            "Sha256": "92c6112c8eddc4526a2e4b624fbfb0ce1ae1f3d33a3e0819ae66f9cf5d02a111",
+            "Note": "曲内サンプル 164320"
+        },
+        {
+            "File": "full-combo.jpg",
+            "Sha256": "6bfb8c154a0d3f1d088fb7707abcff0cb473abdd6f61ee6569d2815af485318c",
+            "Note": "曲内サンプル 932960"
+        },
+        {
+            "File": "result.jpg",
+            "Sha256": "672f89e9625142704576257eb1206efbd071bdc8cca5ca56e25c5f3aa06152fd",
+            "Note": "曲内サンプル 960000"
+        },
+        {
+            "File": "calibration.jpg",
+            "Sha256": "d917ca300e92138706c22a74fe3c89073176d3a87a3a06e6c36aa42d065c59d9",
+            "Note": "曲内サンプル 326560"
+        },
+        {
+            "File": "calibration-result.jpg",
+            "Sha256": "3febe9b145f5fd7ea5b99d6761567ccb4b84acd33255c68f4b337178457a55ac",
+            "Note": "補正 150 ms"
+        }
+    ]
+}

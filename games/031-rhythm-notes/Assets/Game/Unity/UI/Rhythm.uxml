@@ -1,0 +1,4 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Rhythm.uss" />
+    <ui:VisualElement name="rhythm-root" style="flex-grow: 1;" />
+</ui:UXML>

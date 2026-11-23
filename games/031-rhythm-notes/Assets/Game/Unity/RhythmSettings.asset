@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6de0b8852ca6c844ab49f7ca65f10f08, type: 3}
+  m_Name: RhythmSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.RhythmSettings
+  Rules:
+    GoodMs: 30
+    FairMs: 80
+    GoodPoints: 100
+    FairPoints: 50
+  LeadSeconds: 1.8
+  Volume: 0.35
+  Clips:
+  - {fileID: 8300000, guid: c443d33645e8d7347a3203a18821b5bb, type: 3}
+  - {fileID: 8300000, guid: 1b9005960df0c7b4e9780e9c4a6eed46, type: 3}
+  - {fileID: 8300000, guid: d87cb4545adfc0f41acd0040b6b021ba, type: 3}
+  CalibrationClip: {fileID: 8300000, guid: b39b4633ddbeda34ebb4bb8867cd9c94, type: 3}
