@@ -43,7 +43,24 @@ namespace Game.Core
 
         private readonly WordEntry[] _entries;
 
-        private WordBook(WordEntry[] entries) => _entries = entries;
+        private WordBook(WordEntry[] entries)
+        {
+            _entries = entries;
+
+            // 以後の照合と出題を変える内容（並び・読み・段）の指紋。表示文は描画だけに使うので含めない。
+            var h = new Fnv();
+            h.Add(entries.Length);
+            foreach (var entry in entries)
+            {
+                h.Add(entry.Reading.Kana);
+                h.Add(entry.Tier);
+            }
+
+            Fingerprint = h.Value;
+        }
+
+        /// <summary>単語帳の並び・読み・段の指紋（試合の状態のハッシュに含める）。</summary>
+        public uint Fingerprint { get; }
 
         public IReadOnlyList<WordEntry> Entries => Array.AsReadOnly(_entries);
 

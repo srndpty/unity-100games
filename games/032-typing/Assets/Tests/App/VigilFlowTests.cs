@@ -319,7 +319,7 @@ namespace Game.App.Tests
         }
 
         /// <summary>試合の最終ハッシュ（Hard・シード 1・8 Tick ごと・誤字 5%）。.NET と Mono で一致すること。</summary>
-        private const uint ExpectedHash = 0xCC41215F;
+        private const uint ExpectedHash = 0x3476B187;
 
         private static VigilConfig Quick(int goal = 99)
         {

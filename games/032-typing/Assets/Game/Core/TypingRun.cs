@@ -359,7 +359,7 @@ namespace Game.Core
             h.Add(_level.FirstSpawnTicks);
             h.Add(_level.SpawnMinTicks);
             h.Add(_level.SpawnMaxTicks);
-            h.Add(_book.Count);
+            h.Add(_book.Fingerprint);
             h.Add((int)Status);
             h.Add(Ticks);
             h.Add(Hp);
@@ -485,41 +485,5 @@ namespace Game.Core
             }
         }
 
-        private struct Fnv
-        {
-            private uint _value;
-            private bool _started;
-
-            public uint Value => _started ? _value : 2166136261u;
-
-            public void Add(int value) => Add(unchecked((uint)value));
-
-            public void Add(long value)
-            {
-                Add(unchecked((uint)value));
-                Add(unchecked((uint)(value >> 32)));
-            }
-
-            public void Add(string value)
-            {
-                Add(value.Length);
-                foreach (var c in value) { Add((int)c); }
-            }
-
-            public void Add(uint value)
-            {
-                if (!_started)
-                {
-                    _value = 2166136261u;
-                    _started = true;
-                }
-
-                for (var i = 0; i < 4; i++)
-                {
-                    _value ^= (value >> (i * 8)) & 0xFF;
-                    _value = unchecked(_value * 16777619u);
-                }
-            }
-        }
     }
 }

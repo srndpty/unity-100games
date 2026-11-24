@@ -383,6 +383,29 @@ namespace Game.Core.Tests
             Assert.That(new TypingRun(config, book, Difficulty.Normal, 1).Hash(), Is.EqualTo(normal.Hash()));
         }
 
+        [Test]
+        public void ハッシュは語数が同じで内容だけ違う単語帳も区別する()
+        {
+            // 同じ位置の「かね」を「つき」に替えると、次の k の正誤が変わる。
+            static uint StartHash(string text) => new TypingRun(TestKit.Quiet(), WordBook.Parse(text), Difficulty.Easy, 1).Hash();
+            const string Original = "鐘\tかね\t1\n星\tほし\t1";
+            Assert.That(StartHash("鐘\tかね\t1\n星\tほし\t1"), Is.EqualTo(StartHash(Original)), "同じ内容なら同じ");
+            Assert.That(StartHash("月\tつき\t1\n星\tほし\t1"), Is.Not.EqualTo(StartHash(Original)), "読みが違う");
+            Assert.That(StartHash("鐘\tかね\t2\n星\tほし\t1"), Is.Not.EqualTo(StartHash(Original)), "段が違う");
+            Assert.That(StartHash("星\tほし\t1\n鐘\tかね\t1"), Is.Not.EqualTo(StartHash(Original)), "並びが違う");
+            Assert.That(StartHash("かね\tかね\t1\n星\tほし\t1"), Is.EqualTo(StartHash(Original)), "表示文は照合と出題を変えないので含めない");
+
+            // 敵が出た後も、置いた語の読みが違えば区別する。
+            var bookA = WordBook.Parse(Original);
+            var bookB = WordBook.Parse("月\tつき\t1\n星\tほし\t1");
+            var a = TestKit.QuietRun(bookA);
+            var b = TestKit.QuietRun(bookB);
+            a.Place(bookA[0], 0);
+            b.Place(bookB[0], 0);
+            Assert.That(a.Hash(), Is.Not.EqualTo(b.Hash()));
+            Assert.That(a.Type('k'), Is.Not.EqualTo(b.Type('k')), "次の k の正誤が違う");
+        }
+
         // --- 得点 ---
 
         [Test]
