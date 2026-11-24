@@ -318,6 +318,71 @@ namespace Game.Core.Tests
             Assert.That(twin.LastDefeated, Is.Not.SameAs(run.LastDefeated), "複製は描画用の敵も独立");
         }
 
+        // --- 公開 API ---
+
+        [Test]
+        public void 敵の照合は読み取り専用で外から進めたり戻したりできない()
+        {
+            var run = TestKit.QuietRun(_book);
+            var enemy = run.Place(TestKit.Word(_book, "かね"), 0);
+            var view = enemy.Matcher;
+            object boxed = view;
+            Assert.That(boxed is RomajiMatcher, Is.False, "照合器へキャストできない");
+            var mutators = typeof(MatcherView).GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+                .Where(m => m.DeclaringType == typeof(MatcherView) && !m.IsSpecialName)
+                .Select(m => m.Name);
+            Assert.That(mutators, Is.EquivalentTo(new[] { nameof(MatcherView.Accepts) }), "状態を変える操作を持たない");
+            Assert.That(typeof(MatcherView).GetProperties().All(p => p.SetMethod == null || !p.SetMethod.IsPublic), Is.True);
+
+            // 進めるのは試合の打鍵だけで、窓口は同じ照合器の今の状態を見せる。
+            TestKit.TypeAll(run, "ka");
+            Assert.That(view.Typed, Is.EqualTo("ka"));
+            Assert.That(view.Guide, Is.EqualTo("ne"));
+        }
+
+        [Test]
+        public void 照合の版は受け付けた打鍵とResetで増え_誤字では変わらない()
+        {
+            var matcher = new RomajiMatcher(Reading.Parse("ふね"));
+            var start = matcher.Revision;
+            matcher.Type('f');
+            var afterF = matcher.Revision;
+            Assert.That(afterF, Is.GreaterThan(start));
+            matcher.Type('q');
+            Assert.That(matcher.Revision, Is.EqualTo(afterF), "誤字");
+            matcher.Reset();
+            matcher.Type('h');
+            Assert.That(matcher.TypedLength, Is.EqualTo(1), "打った文字数は同じ");
+            Assert.That(matcher.Revision, Is.Not.EqualTo(afterF), "綴りが違えば版も違う");
+            Assert.That(matcher.View.Revision, Is.EqualTo(matcher.Revision));
+            Assert.That(matcher.Clone().Revision, Is.EqualTo(matcher.Revision));
+        }
+
+        [Test]
+        public void 敵がいる列には置けない()
+        {
+            var run = TestKit.QuietRun(_book);
+            run.Place(TestKit.Word(_book, "かね"), 2);
+            Assert.That(() => run.Place(TestKit.Word(_book, "つき"), 2), Throws.ArgumentException.With.Message.Contains("列 2"));
+            Assert.That(run.Enemies.Count, Is.EqualTo(1));
+            Assert.That(() => run.Place(TestKit.Word(_book, "つき"), 3), Throws.Nothing, "同時出現数の上限は適用しない（撮影の場面づくり用）");
+        }
+
+        [Test]
+        public void ハッシュは難度と規則の違いも区別する()
+        {
+            var book = TestKit.Production();
+            var config = new VigilConfig();
+            var easy = new TypingRun(config, book, Difficulty.Easy, 1);
+            var normal = new TypingRun(config, book, Difficulty.Normal, 1);
+            Assert.That(easy.Hash(), Is.Not.EqualTo(normal.Hash()), "開始時の動的な状態は同じでも難度が違う");
+
+            var longer = config.Copy();
+            longer.Normal.Goal++;
+            Assert.That(new TypingRun(longer, book, Difficulty.Normal, 1).Hash(), Is.Not.EqualTo(normal.Hash()), "規定数だけが違う");
+            Assert.That(new TypingRun(config, book, Difficulty.Normal, 1).Hash(), Is.EqualTo(normal.Hash()));
+        }
+
         // --- 得点 ---
 
         [Test]

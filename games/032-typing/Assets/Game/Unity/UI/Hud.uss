@@ -19,3 +19,10 @@
 .panel { width: 1120px; padding: 30px 44px; background-color: rgba(10, 8, 18, 0.95); border-radius: 18px; border-width: 2px; border-color: rgb(120, 96, 180); }
 .headline { font-size: 58px; -unity-font-style: bold; color: rgb(200, 176, 255); -unity-text-align: middle-center; white-space: normal; }
 .message { margin-top: 14px; font-size: 24px; white-space: normal; -unity-text-align: middle-center; }
+.difficulties { margin-top: 18px; align-items: center; }
+.difficulty-row { flex-direction: row; align-items: center; height: 38px; }
+.difficulty-marker { width: 200px; font-size: 26px; -unity-text-align: middle-right; padding-right: 14px; color: rgb(255, 214, 110); }
+.difficulty-name { width: 170px; font-size: 28px; -unity-text-align: middle-center; color: rgb(200, 196, 220); }
+.difficulty-best { width: 200px; font-size: 22px; -unity-text-align: middle-left; padding-left: 14px; color: rgb(170, 166, 196); }
+.difficulty-row.selected .difficulty-name { color: rgb(255, 214, 110); }
+.controls { margin-top: 18px; }

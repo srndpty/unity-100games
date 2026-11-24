@@ -31,6 +31,7 @@ namespace Game.Unity
         private readonly List<(FlowEvents Event, AudioClip Clip)> _sounds = new();
         private readonly Plate[] _plates = new Plate[InkVigilStage.MaxLanes];
         private readonly List<Enemy> _order = new();
+        private readonly Difficulty[] _difficulties = { Difficulty.Easy, Difficulty.Normal, Difficulty.Hard };
         private bool _hasFocus = true;
         private VisualElement _root;
         private int _version = -1;
@@ -227,13 +228,39 @@ namespace Game.Unity
                 _root.Q("panel").style.display = screen != AppScreen.Playing ? DisplayStyle.Flex : DisplayStyle.None;
                 _root.Q<Label>("headline").text = Headline(screen, run);
                 _root.Q<Label>("message").text = Message(Flow);
+                RenderDifficulties(screen == AppScreen.Title);
             }
 
             RenderTyping(run, screen);
             RenderPlates(run, screen);
         }
 
-        /// <summary>画面下の大きな表示：狙っている敵の表示文・読み・ローマ字（打った部分は色を変える）。</summary>
+        /// <summary>
+        /// タイトルの難度の一覧。印（▶）・難度名・最高得点を別々の固定幅の列に置き、印と最高得点の列を同じ幅にするので、
+        /// 選んでいるかどうか・最高得点の有無で難度名の位置が変わらない。
+        /// </summary>
+        private void RenderDifficulties(bool visible)
+        {
+            var list = _root.Q("difficulties");
+            list.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+            _root.Q<Label>("controls").style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+            if (!visible) { return; }
+            foreach (var difficulty in _difficulties)
+            {
+                var row = list.Q(DifficultyRow(difficulty));
+                var selected = difficulty == Flow.Selected;
+                row.EnableInClassList("selected", selected);
+                row.Q<Label>(className: "difficulty-marker").text = selected ? "▶" : string.Empty;
+                row.Q<Label>(className: "difficulty-name").text = DifficultyName(difficulty);
+                var best = Flow.BestScore(difficulty);
+                row.Q<Label>(className: "difficulty-best").text = best > 0 ? $"最高 {best}" : string.Empty;
+            }
+        }
+
+        /// <summary>タイトルの難度の行の名前（UXML）。</summary>
+        public static string DifficultyRow(Difficulty difficulty) => "difficulty-" + difficulty.ToString().ToLowerInvariant();
+
+        /// <summary>画面上の大きな表示：狙っている敵の表示文・読み・ローマ字（打った部分は色を変える）。</summary>
         private void RenderTyping(TypingRun run, AppScreen screen)
         {
             var typing = _root.Q("typing");
@@ -242,7 +269,9 @@ namespace Game.Unity
             if (!visible) { return; }
             var target = run.Target;
             var miss = run.LastMissTick >= 0 && run.Ticks - run.LastMissTick < _settings.EffectTicks;
-            var state = (target?.Id ?? -1, target?.Matcher.TypedLength ?? 0, miss);
+            // 打った文字数が同じでも綴りが違えば案内が変わる（Backspace の後に別の綴りで打ち直す）ので、照合の版で決める。
+            // 敵の番号は試合ごとに 0 から使い直すので、試合も含める。
+            var state = (run, target?.Id ?? -1, target?.Matcher.Revision ?? 0, miss);
             if (Equals(_shownTyping, state)) { return; }
             _shownTyping = state;
             typing.EnableInClassList("miss", miss);
@@ -274,7 +303,7 @@ namespace Game.Unity
             var scale = .7f + (.3f * InkVigilPerspective.ScaleAt((float)enemy.Distance / Enemy.Far));
             plate.Root.style.scale = new Scale(new Vector3(scale, scale, 1));
             plate.Root.EnableInClassList("target", targeted);
-            var state = (enemy.Id, enemy.Matcher.TypedLength);
+            var state = (run, enemy.Id, enemy.Matcher.Revision);
             if (Equals(plate.Shown, state)) { return; }
             plate.Shown = state;
             plate.Display.text = enemy.Word.Display;
@@ -283,7 +312,7 @@ namespace Game.Unity
         }
 
         /// <summary>読み。打ち終えたかなを暗くする。</summary>
-        public static string KanaText(RomajiMatcher matcher)
+        public static string KanaText(MatcherView matcher)
         {
             if (matcher == null) { throw new ArgumentNullException(nameof(matcher)); }
             var kana = matcher.Reading.Kana;
@@ -292,7 +321,7 @@ namespace Game.Unity
         }
 
         /// <summary>ローマ字。打った部分は色を変え、残りは今の綴りに合わせた案内。</summary>
-        public static string RomajiText(RomajiMatcher matcher)
+        public static string RomajiText(MatcherView matcher)
         {
             if (matcher == null) { throw new ArgumentNullException(nameof(matcher)); }
             var typed = matcher.Typed;
@@ -324,15 +353,8 @@ namespace Game.Unity
             switch (flow.Screen)
             {
                 case AppScreen.Title:
-                    var lines = "回廊の奥から、言葉を背負った影が迫ってくる。\n影の頭上の言葉をローマ字で打ち切ると消える。手前の線まで来られると体力が減る。\n\n";
-                    foreach (var difficulty in new[] { Difficulty.Easy, Difficulty.Normal, Difficulty.Hard })
-                    {
-                        var selected = difficulty == flow.Selected;
-                        var best = flow.BestScore(difficulty);
-                        lines += $"{(selected ? "<color=#FFD66E>▶ " : "    ")}{DifficultyName(difficulty)}{(best > 0 ? $"    最高 {best}" : string.Empty)}{(selected ? "</color>" : string.Empty)}\n";
-                    }
-
-                    return lines + "\n↑ ↓：難度    Enter：はじめる\n打鍵中  Backspace：狙いを外す    Esc：一時停止\n綴りの例  し＝shi / si    つ＝tsu / tu    ん＝nn（次が子音なら n）    っ＝次の子音を重ねる";
+                    // 難度の一覧（difficulties）と操作の説明（controls）は別の要素に出す。
+                    return "回廊の奥から、言葉を背負った影が迫ってくる。\n影の頭上の言葉をローマ字で打ち切ると消える。手前の線まで来られると体力が減る。";
                 case AppScreen.Paused:
                     return "Esc / Enter：つづける    T：タイトルへ";
                 case AppScreen.Result:

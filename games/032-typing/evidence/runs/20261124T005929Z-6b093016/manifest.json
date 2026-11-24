@@ -2,9 +2,9 @@
     "Product": "INK VIGIL",
     "Version": "1.0",
     "UnityVersion": "6000.6.9f1",
-    "BuildGuid": "722756ac85474c708d11c386e3c18ade",
+    "BuildGuid": "01c96f0b9f4e4c37aa90d0c1bb9ddbba",
     "Seed": 1,
-    "CapturedAtUtc": "2026-11-23T20:06:23.0102576Z",
+    "CapturedAtUtc": "2026-11-24T00:59:28.5405866Z",
     "Info": [
         {
             "Key": "imageEncoding",
@@ -18,57 +18,57 @@
     "Shots": [
         {
             "File": "01-title.jpg",
-            "Sha256": "6d71796c6333e69b4052b46d640b2a9345c725ce641d2887d6682353431f16d6",
+            "Sha256": "8a61c76043aff1d8f6360701343d67c74559a4018ae48006af5958680fca0925",
             "Note": "タイトル（難度の選択と操作の説明）"
         },
         {
             "File": "02-approach.jpg",
-            "Sha256": "c336288670fb170b4e8ab3a435eb778b4113d1826106f8fe526385245dbcd441",
+            "Sha256": "f6dd1a8ca9efd841c8d9ae921f6a16ba369ce8c741979a2812ed914af33889f0",
             "Note": "ふつう：奥から 3 体が迫る。札に表示文・読み・ローマ字の案内。経過 400 Tick、撃破 0/15、体力 3、得点 0、誤字 0、狙い なし"
         },
         {
             "File": "03-locked.jpg",
-            "Sha256": "111ac8ff4c45b672a517bc26c92eb8e4ad857279854bc7f83f333908990f2a81",
+            "Sha256": "10e84bcd07dc9da2be10baca6206525ea0820c9db92611764d580b328c71674a",
             "Note": "最初の 1 打で手前の敵（銀）を狙い、打った部分の色が変わる。経過 400 Tick、撃破 0/15、体力 3、得点 30、誤字 0、狙い 銀（gin）"
         },
         {
             "File": "04-miss.jpg",
-            "Sha256": "5e4fe78fcab0a5084241bb6f5ab9b58dafae611dc1a8b1e00f127e5b119d2e87",
+            "Sha256": "8eeaae7b455eea43b5d067b064b08c576ca232b2597190ba6d869b4c40fea0be",
             "Note": "誤字：狙いの言葉は進まず、連続が 0 に戻り、下の表示が赤くなる。経過 400 Tick、撃破 0/15、体力 3、得点 30、誤字 1、狙い 銀（gin）"
         },
         {
             "File": "05-backspace.jpg",
-            "Sha256": "e4dd801a16d7f86bdd0f0c4d48f790c56dbb9a5114756904a19f49ed2af5aed4",
+            "Sha256": "3a9d74f4e6fc25f181fcbc6e96eafa1e3bc8eb3668f9bd881ac191d4ac835d31",
             "Note": "Backspace：狙いを外し、その敵の打った分を最初に戻す。経過 401 Tick、撃破 0/15、体力 3、得点 30、誤字 1、狙い なし"
         },
         {
             "File": "06-alternative.jpg",
-            "Sha256": "ad13bcc2cb4d5bd4b773d050fc3613d7c6ed15e9102ae959e4f41e892f5983a9",
+            "Sha256": "331cd3d0bf7ab82dc534b2c6fedd4e51a5c654f4dd244b10a9eeed6562240f6a",
             "Note": "別の綴り：静かな図書室（しずかなとしょしつ）の「し」を si で打っても受け付け、案内は続きを示す。経過 425 Tick、撃破 0/15、体力 3、得点 90、誤字 1、狙い 静かな図書室（sizuka）"
         },
         {
             "File": "07-defeated.jpg",
-            "Sha256": "45c5afe3811e6d6744f846c5d8ccc82a3f9233163f0dcbcf72199ce07f28bc4c",
+            "Sha256": "62b015fc63963953cc1075550b52bcb5e53db1bad0f48b7b602fca1a2cf3aaec",
             "Note": "静かな図書室 を打ち切って撃破（煙の演出）。経過 429 Tick、撃破 1/15、体力 3、得点 670、誤字 1、狙い なし"
         },
         {
             "File": "08-hit.jpg",
-            "Sha256": "d1efbbdfc5502d12b3836f14ea4d64780540d5826a1618d725bf4fccf4ed07fb",
+            "Sha256": "5d8ea0e90acd9badaaf3001ca3f5f9f50ca6887ac551a8ce0da59a1815f5f998",
             "Note": "打たずにいた敵が手前の線に着いて被弾（体力が減り、画面が赤く揺れる）。経過 573 Tick、撃破 1/15、体力 2、得点 670、誤字 1、狙い なし"
         },
         {
             "File": "09-paused.jpg",
-            "Sha256": "ff5c9f18c12268f699651948324d30e357d21a4611087801710ef5df0f8dd0ba",
+            "Sha256": "25e08103e92febc2de9855a93f624039f31139b728b807b2af0b8bdc905e8969",
             "Note": "一時停止。経過 573 Tick、撃破 1/15、体力 2、得点 670、誤字 1、狙い なし"
         },
         {
             "File": "10-cleared.jpg",
-            "Sha256": "63651ba5edb7be46a4b8f59ef2d63f4cfb78028224b1e06317447fc7a1a70c28",
+            "Sha256": "ccfc5b1ee8980496a4109bd4b223324a70add73ae5c404b3e52d72c968f6fc97",
             "Note": "速い操縦役（7.5 打/秒、誤字 4%）でふつうをクリアした結果。経過 2294 Tick、撃破 15/15、体力 3、得点 3730、誤字 1、狙い なし"
         },
         {
             "File": "11-failed.jpg",
-            "Sha256": "7987ff28cd1b1a58b752e185b9eb603497b4d266a5f13e5df74ac735a5b09044",
+            "Sha256": "98d99d4ad0a592e6258aa9ade291510cc5d1fcbdc6111393a638a7c29cbe4673",
             "Note": "遅い操縦役（2 打/秒）でむずかしいに失敗した結果。経過 1708 Tick、撃破 5/20、体力 0、得点 2200、誤字 0、狙い なし"
         }
     ]

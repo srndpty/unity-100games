@@ -30,10 +30,17 @@ namespace Game.Core
         public RomajiMatcher(Reading reading)
         {
             Reading = reading ?? throw new ArgumentNullException(nameof(reading));
+            View = new MatcherView(this);
             Reset();
         }
 
         public Reading Reading { get; }
+
+        /// <summary>読み取り専用の窓口（試合の外へはこれだけを渡す）。</summary>
+        public MatcherView View { get; }
+
+        /// <summary>照合の状態が変わるたびに増える番号（受け付けた打鍵と <see cref="Reset"/>）。描画が書き換えの要否を決めるのに使う。</summary>
+        public int Revision { get; private set; }
 
         /// <summary>これまでに受け付けた文字列。</summary>
         public string Typed => _typed.ToString();
@@ -94,6 +101,7 @@ namespace Game.Core
             }
 
             if (!completed && _next.Count == 0) { return KeyResult.Miss; }
+            Revision++;
             _typed.Append(key);
             _paths.Clear();
             if (completed)
@@ -109,6 +117,7 @@ namespace Game.Core
         /// <summary>打つ前に戻す。</summary>
         public void Reset()
         {
+            Revision++;
             _typed.Clear();
             IsComplete = false;
             _paths.Clear();
@@ -125,6 +134,7 @@ namespace Game.Core
             clone._paths.AddRange(_paths);
             clone._typed.Append(_typed);
             clone.IsComplete = IsComplete;
+            clone.Revision = Revision;
             return clone;
         }
 
@@ -159,5 +169,33 @@ namespace Game.Core
 
             public override int GetHashCode() => HashCode.Combine(Start, Chunk, Offset);
         }
+    }
+
+    /// <summary>
+    /// 照合器の読み取り専用の窓口。試合（<see cref="TypingRun"/>）の外から敵の照合を進めたり戻したりできないよう、
+    /// 状態を変える操作を持たない別の型にしている（照合器へキャストして書き換えることもできない）。
+    /// </summary>
+    public sealed class MatcherView
+    {
+        private readonly RomajiMatcher _matcher;
+
+        internal MatcherView(RomajiMatcher matcher) => _matcher = matcher;
+
+        public Reading Reading => _matcher.Reading;
+
+        public string Typed => _matcher.Typed;
+
+        public int TypedLength => _matcher.TypedLength;
+
+        public bool IsComplete => _matcher.IsComplete;
+
+        public string Guide => _matcher.Guide;
+
+        public int KanaDone => _matcher.KanaDone;
+
+        /// <inheritdoc cref="RomajiMatcher.Revision"/>
+        public int Revision => _matcher.Revision;
+
+        public bool Accepts(char key) => _matcher.Accepts(key);
     }
 }

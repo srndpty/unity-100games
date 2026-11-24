@@ -17,6 +17,24 @@
         <ui:VisualElement name="panel" class="panel" picking-mode="Ignore">
             <ui:Label name="headline" text="INK VIGIL" class="headline" />
             <ui:Label name="message" text=" " class="message" />
+            <ui:VisualElement name="difficulties" class="difficulties" picking-mode="Ignore">
+                <ui:VisualElement name="difficulty-easy" class="difficulty-row" picking-mode="Ignore">
+                    <ui:Label class="difficulty-marker" />
+                    <ui:Label class="difficulty-name" />
+                    <ui:Label class="difficulty-best" />
+                </ui:VisualElement>
+                <ui:VisualElement name="difficulty-normal" class="difficulty-row" picking-mode="Ignore">
+                    <ui:Label class="difficulty-marker" />
+                    <ui:Label class="difficulty-name" />
+                    <ui:Label class="difficulty-best" />
+                </ui:VisualElement>
+                <ui:VisualElement name="difficulty-hard" class="difficulty-row" picking-mode="Ignore">
+                    <ui:Label class="difficulty-marker" />
+                    <ui:Label class="difficulty-name" />
+                    <ui:Label class="difficulty-best" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label name="controls" text="↑ ↓：難度    Enter：はじめる&#10;打鍵中  Backspace：狙いを外す    Esc：一時停止&#10;綴りの例  し＝shi / si    つ＝tsu / tu    ん＝nn（次が子音なら n）    っ＝次の子音を重ねる" class="message controls" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

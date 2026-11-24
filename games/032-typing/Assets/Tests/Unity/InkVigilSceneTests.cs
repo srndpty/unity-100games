@@ -87,6 +87,13 @@ namespace Game.Unity.Tests
             return events;
         }
 
+        private VisualElement Row(Difficulty difficulty) => _game.HudRoot.Q(InkVigilGame.DifficultyRow(difficulty));
+
+        private string Marker(Difficulty difficulty) => Row(difficulty).Q<Label>(className: "difficulty-marker").text;
+
+        private Label[] DifficultyNames() =>
+            new[] { Difficulty.Easy, Difficulty.Normal, Difficulty.Hard }.Select(d => Row(d).Q<Label>(className: "difficulty-name")).ToArray();
+
         private WordEntry Word(string kana) => _game.Flow.Book.Entries.First(e => e.Reading.Kana == kana);
 
         private int FreeLane() => Enumerable.Range(0, Run.Lanes).First(l => Run.Enemies.All(e => e.Lane != l));
@@ -98,7 +105,9 @@ namespace Game.Unity.Tests
             Assert.That(Object.FindObjectsByType<InkVigilStage>(FindObjectsInactive.Include), Has.Length.EqualTo(1), "Stage のインスタンスは 1 つ");
             Assert.That(Stage.Mismatch(), Is.Null);
             Assert.That(Text("headline"), Is.EqualTo("INK VIGIL"));
-            Assert.That(Text("message"), Does.Contain("Backspace").And.Contain("shi / si").And.Contain("Enter").And.Contain("▶ ふつう"));
+            Assert.That(Text("controls"), Does.Contain("Backspace").And.Contain("shi / si").And.Contain("Enter"));
+            Assert.That(Marker(Difficulty.Normal), Is.EqualTo("▶"));
+            Assert.That(Marker(Difficulty.Easy), Is.Empty);
             Assert.That(Shown("stats"), Is.False);
             Assert.That(Shown("typing"), Is.False);
             for (var lane = 0; lane < InkVigilStage.MaxLanes; lane++)
@@ -274,7 +283,7 @@ namespace Game.Unity.Tests
         public IEnumerator SelectHard_Clear_Retry_AndBackToTitle()
         {
             yield return _keyboard.Tap(Key.DownArrow);
-            Assert.That(Text("message"), Does.Contain("▶ むずかしい"));
+            Assert.That(Marker(Difficulty.Hard), Is.EqualTo("▶"));
             _game.Flow.Pilot = new Typist(8);
             yield return StartPaused();
             Assert.That(Run.Difficulty, Is.EqualTo(Difficulty.Hard));
@@ -295,7 +304,8 @@ namespace Game.Unity.Tests
             Assert.That(Text("headline"), Is.EqualTo("灯が消えた…"));
             yield return _keyboard.Tap(Key.Escape);
             Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Title));
-            Assert.That(Text("message"), Does.Contain("最高"), "タイトルに難度ごとの最高得点");
+            Assert.That(Row(Difficulty.Hard).Q<Label>(className: "difficulty-best").text, Does.StartWith("最高 "), "タイトルに難度ごとの最高得点");
+            Assert.That(Row(Difficulty.Easy).Q<Label>(className: "difficulty-best").text, Is.Empty);
         }
 
         [UnityTest]
@@ -338,6 +348,63 @@ namespace Game.Unity.Tests
             _game.SendMessage("OnApplicationFocus", true);
             yield return null;
             Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Paused), "戻っても自動では再開しない");
+        }
+
+        [UnityTest]
+        public IEnumerator TitleSelection_DoesNotMoveTheDifficultyNames()
+        {
+            // 印（▶）の有無で難度名が動かない：選び直しても、各難度名の画面上の位置と大きさが変わらない。
+            yield return null;
+            yield return null;
+            var before = DifficultyNames().Select(l => l.worldBound).ToArray();
+            Assert.That(before.All(r => r.width > 0), Is.True, "配置が済んでいる");
+            yield return _keyboard.Tap(Key.DownArrow);
+            yield return null;
+            Assert.That(Marker(Difficulty.Hard), Is.EqualTo("▶"));
+            Assert.That(DifficultyNames().Select(l => l.worldBound).ToArray(), Is.EqualTo(before), "↓");
+            yield return _keyboard.Tap(Key.UpArrow);
+            yield return _keyboard.Tap(Key.UpArrow);
+            yield return null;
+            Assert.That(Marker(Difficulty.Easy), Is.EqualTo("▶"));
+            Assert.That(DifficultyNames().Select(l => l.worldBound).ToArray(), Is.EqualTo(before), "↑ ↑");
+            var names = DifficultyNames().Select(l => l.worldBound.center.x).ToArray();
+            Assert.That(names[1], Is.EqualTo(names[0]).Within(.01f), "難度名は縦にそろう");
+            Assert.That(names[2], Is.EqualTo(names[0]).Within(.01f));
+        }
+
+        [UnityTest]
+        public IEnumerator BackspaceThenAnotherSpelling_InTheSameFrame_UpdatesTheGuideAndPlate()
+        {
+            // f → 描画 → 同じフレームに Backspace と h → 描画。打った文字数は同じ 1 だが、案内は hude に変わる。
+            yield return StartPaused();
+            var brush = Run.Place(Word("ふで"), 1, 100);
+            yield return TypeKeys("f");
+            Assert.That(Text("typing-romaji"), Is.EqualTo("<color=#FFD66E>f</color>ude"));
+            _keyboard.Hold(Key.Backspace);
+            _keyboard.Hold(Key.H);
+            yield return null;
+            _keyboard.Hold();
+            yield return null;
+            Assert.That(brush.Matcher.Typed, Is.EqualTo("h"));
+            Assert.That(Text("typing-romaji"), Is.EqualTo("<color=#FFD66E>h</color>ude"));
+            Assert.That(_game.PlateOf(1).Q<Label>(className: "plate-romaji").text, Is.EqualTo("<color=#FFD66E>h</color>ude"));
+        }
+
+        [UnityTest]
+        public IEnumerator NextMatch_ReusingEnemyIds_RedrawsThePlates()
+        {
+            // 敵の番号は試合ごとに 0 から使い直す。前の試合で同じ番号・同じ版だった札の文字を残さない。
+            yield return StartPaused();
+            Run.Place(Word("ふで"), 0, 100);
+            _game.Render();
+            yield return _keyboard.Tap(Key.Escape);
+            yield return _keyboard.Tap(Key.T);
+            yield return StartPaused();
+            Run.Place(Word("ゆき"), 0, 100);
+            _game.Render();
+            Assert.That(Run.Enemies[0].Id, Is.Zero);
+            Assert.That(_game.PlateOf(0).Q<Label>(className: "plate-display").text, Is.EqualTo("雪"));
+            Assert.That(_game.PlateOf(0).Q<Label>(className: "plate-romaji").text, Is.EqualTo("yuki"));
         }
 
         [UnityTest]
@@ -391,12 +458,12 @@ namespace Game.Unity.Tests
         public void RichText_MarksTypedRomajiAndDoneKana()
         {
             var matcher = new RomajiMatcher(Reading.Parse("しずか"));
-            Assert.That(InkVigilGame.RomajiText(matcher), Is.EqualTo("shizuka"));
-            Assert.That(InkVigilGame.KanaText(matcher), Is.EqualTo("しずか"));
+            Assert.That(InkVigilGame.RomajiText(matcher.View), Is.EqualTo("shizuka"));
+            Assert.That(InkVigilGame.KanaText(matcher.View), Is.EqualTo("しずか"));
             matcher.Type('s');
             matcher.Type('i');
-            Assert.That(InkVigilGame.RomajiText(matcher), Is.EqualTo("<color=#FFD66E>si</color>zuka"));
-            Assert.That(InkVigilGame.KanaText(matcher), Is.EqualTo("<color=#6E6A86>し</color>ずか"));
+            Assert.That(InkVigilGame.RomajiText(matcher.View), Is.EqualTo("<color=#FFD66E>si</color>zuka"));
+            Assert.That(InkVigilGame.KanaText(matcher.View), Is.EqualTo("<color=#6E6A86>し</color>ずか"));
         }
 
         private string Snapshot()
@@ -404,7 +471,7 @@ namespace Game.Unity.Tests
             _game.Render();
             var enemies = string.Join(",", Enumerable.Range(0, InkVigilStage.MaxLanes).Select(l => Stage.EnemyRenderer(l).enabled));
             var plates = string.Join(",", Enumerable.Range(0, InkVigilStage.MaxLanes).Select(l => _game.PlateOf(l).style.display.value));
-            return $"{enemies}|{plates}|{Stage.Puff.enabled}|{Stage.Flash.enabled}|{Shown("stats")}|{Shown("typing")}|{Shown("panel")}|{Text("headline")}|{Text("message")}|{_game.ViewCamera.transform.position}";
+            return $"{enemies}|{plates}|{Stage.Puff.enabled}|{Stage.Flash.enabled}|{Shown("stats")}|{Shown("typing")}|{Shown("panel")}|{Text("headline")}|{Text("message")}|{Marker(Difficulty.Normal)}|{_game.ViewCamera.transform.position}";
         }
 
         private static T Get<T>(InkVigilStage stage, string field) =>

@@ -56,7 +56,7 @@ namespace Game.Core
             Lane = lane;
             Age = age;
             ApproachTicks = approachTicks;
-            Matcher = new RomajiMatcher(word.Reading);
+            Progress = new RomajiMatcher(word.Reading);
         }
 
         private Enemy(Enemy source)
@@ -66,7 +66,7 @@ namespace Game.Core
             Lane = source.Lane;
             Age = source.Age;
             ApproachTicks = source.ApproachTicks;
-            Matcher = source.Matcher.Clone();
+            Progress = source.Progress.Clone();
         }
 
         /// <summary>出現順の番号（試合の中で一意）。</summary>
@@ -82,8 +82,10 @@ namespace Game.Core
 
         public int ApproachTicks { get; }
 
-        /// <summary>打鍵の照合。描画は読み取りだけに使う。</summary>
-        public RomajiMatcher Matcher { get; }
+        /// <summary>打鍵の照合（読み取り専用）。進めるのは <see cref="TypingRun.Type"/>・<see cref="TypingRun.Backspace"/> だけ。</summary>
+        public MatcherView Matcher => Progress.View;
+
+        internal RomajiMatcher Progress { get; }
 
         /// <summary>奥行き（<see cref="Far"/> から 0 へ減る）。</summary>
         public int Distance => (int)(Far - ((long)Far * Math.Min(Age, ApproachTicks) / ApproachTicks));
@@ -236,7 +238,7 @@ namespace Game.Core
 
             var target = Target ?? Choose(key);
             if (target == null) { return Miss(); }
-            var result = target.Matcher.Type(key);
+            var result = target.Progress.Type(key);
             if (result == KeyResult.Miss) { return Miss(); }
             if (Target == null)
             {
@@ -271,7 +273,7 @@ namespace Game.Core
         public bool Backspace()
         {
             if (Status != RunStatus.Playing || Target == null) { return false; }
-            Target.Matcher.Reset();
+            Target.Progress.Reset();
             Target = null;
             _events |= RunEvents.Released;
             return true;
@@ -320,6 +322,9 @@ namespace Game.Core
             if (word == null) { throw new ArgumentNullException(nameof(word)); }
             if (lane < 0 || lane >= _config.Lanes) { throw new ArgumentOutOfRangeException(nameof(lane)); }
             if (age < 0 || age >= _level.ApproachTicks) { throw new ArgumentOutOfRangeException(nameof(age)); }
+
+            // 描画は列ごとに 1 体なので、同じ列に 2 体は置かない（同時出現数の上限は撮影のために適用しない）。
+            if (_enemies.Exists(e => e.Lane == lane)) { throw new ArgumentException($"列 {lane} には既に敵がいます。", nameof(lane)); }
             var enemy = new Enemy(_nextId++, word, lane, age, _level.ApproachTicks);
             _enemies.Add(enemy);
             Spawned++;
@@ -341,6 +346,20 @@ namespace Game.Core
         public uint Hash()
         {
             var h = new Fnv();
+
+            // 規則（難度と設定）の指紋：同じ状態でも規則が違えば以後が分かれる。
+            h.Add((int)Difficulty);
+            h.Add(_config.Hp);
+            h.Add(_config.Lanes);
+            h.Add(_level.MinTier);
+            h.Add(_level.MaxTier);
+            h.Add(_level.MaxEnemies);
+            h.Add(_level.ApproachTicks);
+            h.Add(_level.Goal);
+            h.Add(_level.FirstSpawnTicks);
+            h.Add(_level.SpawnMinTicks);
+            h.Add(_level.SpawnMaxTicks);
+            h.Add(_book.Count);
             h.Add((int)Status);
             h.Add(Ticks);
             h.Add(Hp);
