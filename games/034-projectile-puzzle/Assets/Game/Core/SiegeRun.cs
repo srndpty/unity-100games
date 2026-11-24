@@ -162,6 +162,9 @@ namespace Game.Core
             return true;
         }
 
+        /// <summary>盤にある爆発の弾が何かに触れ、自動の起爆を待っているか（この間は静止しても決着しない）。</summary>
+        public bool FuseBurning => CanDetonate && FuseElapsed >= 0;
+
         /// <summary>飛んでいる爆発の弾をまだ起爆していないか。</summary>
         public bool CanDetonate => FlyingShot == ShotKind.Bomb && ShotAlive && !Detonated;
 
@@ -255,7 +258,8 @@ namespace Game.Core
 
             switch (Phase)
             {
-                case RunPhase.Flying when rested || TicksSinceLaunch >= _config.SettleTimeoutTicks:
+                // 導火線が燃えている爆発の弾は、止まっていても起爆を待つ（静止で消すと起爆しなくなる）。タイムアウトは上限として残す。
+                case RunPhase.Flying when (rested && !FuseBurning) || TicksSinceLaunch >= _config.SettleTimeoutTicks:
                     Settle();
                     break;
                 case RunPhase.Aiming when rested && TargetsLeft == 0:

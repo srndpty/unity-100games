@@ -431,6 +431,48 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void BombWithABurningFuseWaitsForTheBlastInsteadOfSettling()
+        {
+            // 触れた直後に盤全体が止まっても、静止で弾を消さずに導火線の満了で起爆し、その後に静止で決着する（レビュー P2）。
+            var run = Run("bomb");
+            Shoot(run);
+            var touch = Quiet();
+            touch.ShotTouched = true;
+            Step(run, touch);
+            Assert.That(run.FuseBurning, Is.True);
+            for (var i = 0; i < _config.FuseTicks; i++)
+            {
+                Assert.That(Step(run).Detonate, Is.False, $"{i} Tick");
+                Assert.That(run.Phase, Is.EqualTo(RunPhase.Flying), $"{i} Tick：止まっていても決着しない");
+                Assert.That(run.ShotRemovedThisTick, Is.False);
+            }
+
+            Assert.That(run.QuietTicks, Is.GreaterThan(_config.RestTicks));
+            var blast = Step(run, Fell(1, 2));
+            Assert.That(blast.Detonate, Is.True);
+            Assert.That(run.FuseBurning, Is.False);
+            Steps(run, _config.RestTicks);
+            Assert.That(run.Phase, Is.EqualTo(RunPhase.Won), "起爆の後は静止で決着する");
+        }
+
+        [Test]
+        public void SettleTimeoutStillAppliesWhileTheFuseBurns()
+        {
+            var config = new SiegeConfig { FuseTicks = 600, SettleTimeoutTicks = 300, ShotLifeTicks = 300 };
+            var run = new SiegeRun(config, Small("bomb normal"));
+            Shoot(run);
+            var touch = Quiet();
+            touch.ShotTouched = true;
+            Step(run, touch);
+            Steps(run, config.SettleTimeoutTicks - 3);
+            Assert.That(run.TicksSinceLaunch, Is.EqualTo(config.SettleTimeoutTicks - 1));
+            Assert.That(run.Phase, Is.EqualTo(RunPhase.Flying));
+            Step(run);
+            Assert.That(run.Phase, Is.EqualTo(RunPhase.Aiming), "揺れが続く・導火線が長くても上限で決着する");
+            Assert.That(run.ShotRemovedThisTick, Is.True);
+        }
+
+        [Test]
         public void BlastHitsDamageByDistanceAndCanBreakTargets()
         {
             var run = Run("bomb");
