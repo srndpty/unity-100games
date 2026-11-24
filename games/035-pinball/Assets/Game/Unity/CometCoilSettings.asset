@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6008de13ac78a47b2b6bac13c23f1e, type: 3}
+  m_Name: CometCoilSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.CometCoilSettings
+  Rules:
+    Gravity: 59
+    MaxSpeed: 98304
+    BallRadius: 512
+    WallRestitution: 2048
+    FlipperRestitution: 1024
+    BumperRestitution: 2048
+    TargetRestitution: 1536
+    BumperKick: 24000
+    FlipAccel: 150
+    FlipMaxSpeed: 600
+    ReturnAccel: 80
+    ReturnMaxSpeed: 400
+    PlungerMaxTicks: 60
+    PlungerMinSpeed: 20000
+    PlungerMaxSpeed: 46000
+    AutoLaunchMin: 40000
+    AutoLaunchMax: 46000
+    BumperScore: 100
+    TargetScore: 500
+    TargetSetScore: 2000
+    Balls: 3
+  Table: {fileID: 4900000, guid: 64a92cab82427a74494a0980d789beff, type: 3}
+  Volume: 0.12
+  FlashTicks: 8
+  CapturePilotSeed: 12
