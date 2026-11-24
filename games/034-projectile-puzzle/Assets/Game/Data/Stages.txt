@@ -1,0 +1,76 @@
+# PEBBLE SIEGE の面。長さは m（盤は 32 × 18、原点は地面の左端、y は上向き）。
+# 書式は StageBook を参照。block は書いた順に 0 から番号が付き、joint はその番号でつなぐ。
+
+stage ひとつの塔
+hint 弾を引いて離すと飛ぶ。灯籠を全部落とせば勝ち
+launcher 4 2.5
+shots normal normal normal
+block wood 19.4 1.0 0.3 2.0
+block wood 20.6 1.0 0.3 2.0
+block wood 20 2.15 1.8 0.3
+block lantern 20 2.6 0.6 0.6
+end
+
+stage 石の土台
+hint 接合した部材はまとめて動く。強く当てると外れる
+launcher 4 2.5
+shots normal normal heavy
+block stone 21 0.5 3 1.0
+block wood 20 2.0 0.3 2.0
+block wood 22 2.0 0.3 2.0
+block wood 21 3.15 2.6 0.3
+block lantern 21 3.6 0.6 0.6
+block lantern 23.2 0.3 0.6 0.6
+joint 0 1 600
+joint 0 2 600
+joint 1 3 400
+joint 2 3 400
+end
+
+stage 氷の高い塔
+hint 重い弾は高い塔もなぎ倒す
+launcher 4 2.5
+shots heavy normal normal
+block ice 22 1.5 0.4 3
+block ice 23.6 1.5 0.4 3
+block ice 22.8 3.15 2.0 0.3
+block lantern 22.8 3.6 0.6 0.6
+block ice 22.2 4.3 0.4 2.0
+block ice 23.4 4.3 0.4 2.0
+block ice 22.8 5.45 2.0 0.3
+block lantern 22.8 5.9 0.6 0.6
+end
+
+stage 囲いの奥
+hint 爆発の弾はクリックで起爆。爆風は壁の向こうにも届く
+launcher 4 2.5
+shots bomb bomb normal
+block stone 19 1.5 0.6 3.0
+block stone 23 1.5 0.6 3.0
+block stone 21 3.25 4.6 0.5
+block lantern 21 0.3 0.6 0.6
+joint 0 2 800
+joint 1 2 800
+end
+
+stage 砦
+hint 3 種の弾を使い分けよう
+launcher 4 2.5
+shots normal heavy bomb
+block stone 18 1.0 0.5 2.0
+block stone 21 1.0 0.5 2.0
+block wood 19.5 2.15 3.6 0.3
+block lantern 19.5 0.3 0.6 0.6
+block ice 18.6 3.05 0.3 1.5
+block ice 20.4 3.05 0.3 1.5
+block wood 19.5 3.95 2.2 0.3
+block lantern 19.5 4.4 0.6 0.6
+block stone 25 1.25 0.6 2.5
+block lantern 25 2.8 0.6 0.6
+joint 0 2 700
+joint 1 2 700
+joint 2 4 300
+joint 2 5 300
+joint 4 6 300
+joint 5 6 300
+end
