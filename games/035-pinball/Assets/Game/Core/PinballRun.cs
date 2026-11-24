@@ -114,6 +114,7 @@ namespace Game.Core
         private readonly Shape[] _shapes;
         private readonly int[] _shapeColliders;
         private readonly int[] _scratch;
+        private readonly int[] _pinch;
         private Ball[] _balls;
         private bool[] _targetsUp;
         private Flipper _left;
@@ -131,6 +132,7 @@ namespace Game.Core
             _shapes = new Shape[table.Colliders.Count + 2];
             _shapeColliders = new int[_shapes.Length];
             _scratch = new int[_shapes.Length];
+            _pinch = new int[_shapes.Length];
             _balls = new Ball[PinballConfig.MaxBalls];
             _targetsUp = new bool[Table.TargetCount];
             for (var i = 0; i < _targetsUp.Length; i++) { _targetsUp[i] = true; }
@@ -358,9 +360,18 @@ namespace Game.Core
             _events.FlipperHits++;
         }
 
+        /// <summary>区間の残り時間の単位（1 区間 = この値）。</summary>
+        public const int TimeUnits = 1 << 16;
+
         /// <summary>
-        /// 重力を加えて 1 区間動かす。経路の最初の接触の手前の点で反射し、区間の残りの割合を反射後の速度で続けて動く
-        /// （斜面を滑る球が止まらない）。1 区間の接触は <see cref="MaxContactsPerSubstep"/> 回までで、超えたら残りを捨てる。
+        /// 重力を加えて 1 区間動かす。経路の最初の接触の手前の点で反射し、区間の残り時間を反射後の速度で続けて動く
+        /// （斜面を滑る球が止まらない）。接触の回数に上限は置かず、移動を途中で捨てない。
+        /// <para>
+        /// 残り時間は区間全体に対する割合（<see cref="TimeUnits"/> 単位）で持ち、接触のたびに「その経路で進んだ点の数 ÷ 経路の点の数」の割合だけ減らす
+        /// （切り上げ）。進んだ接触は残り時間を 1 以上減らす。進めなかった接触（手前の点が始点）は、当たった相手を「挟んでいる相手」に加え、
+        /// 速度をそのどれにも近づかない向きへ射影する（なければ止める）。同じ相手に進めずにもう一度当たったら、挟まって動けないとしてこの区間を終える。
+        /// 進めない接触は相手ごとに 1 回なので、繰り返しは必ず終わる（回数の上界：(<see cref="TimeUnits"/> + 1) × (相手の数 + 1)）。
+        /// </para>
         /// </summary>
         private void Move(int slot)
         {
@@ -371,9 +382,13 @@ namespace Game.Core
             var fineY = ((long)ball.Position.Y * Board.VelocityScale) + ball.Fraction.Y + ball.Velocity.Y;
             var target = new Vec2i((int)(fineX >> 8), (int)(fineY >> 8));
             var fraction = new Vec2i((int)(fineX & (Board.VelocityScale - 1)), (int)(fineY & (Board.VelocityScale - 1)));
+            var remaining = TimeUnits;
+            var pinched = 0;
+            var limit = (long)(TimeUnits + 1) * (_shapes.Length + 1);
 
-            for (var contact = 0; contact <= MaxContactsPerSubstep; contact++)
+            for (long iteration = 0; ; iteration++)
             {
+                if (iteration > limit) { throw new InvalidOperationException("1 区間の接触の解決が終わりませんでした（起こらないはずの状態）。"); }
                 var count = BuildShapes(ball.Position, ball.Velocity);
                 var hit = BallPath.First(ball.Position, target, _shapes, count, _scratch, out var step);
                 if (hit < 0)
@@ -383,25 +398,99 @@ namespace Game.Core
                     return;
                 }
 
-                if (contact == MaxContactsPerSubstep) { break; }
                 var total = BallPath.Steps(ball.Position, target);
-                var start = ball.Position;
                 var used = Math.Max(0, step - 1);
-                var before = BallPath.PointAt(start, target, used, total);
+                var before = BallPath.PointAt(ball.Position, target, used, total);
+                var id = _shapes[hit].Id;
                 ball.Position = Collide(ref ball, hit, before, step == 0);
 
-                // 区間の残り（経路の点の数の割合）を、反射後の速度で進む。位置の端数は始めの値を保つ（遅い滑りも積み上がる）。
-                var remaining = total == 0 ? 1L : total - used;
-                var span = total == 0 ? 1L : total;
-                fineX = ((long)ball.Position.X * Board.VelocityScale) + ball.Fraction.X + (ball.Velocity.X * remaining / span);
-                fineY = ((long)ball.Position.Y * Board.VelocityScale) + ball.Fraction.Y + (ball.Velocity.Y * remaining / span);
+                if (used == 0)
+                {
+                    // 進めなかった：挟んでいる相手に加え、そのどれにも近づかない向きへ速度を射影する。
+                    for (var i = 0; i < pinched; i++)
+                    {
+                        if (_pinch[i] == id) { return; }
+                    }
+
+                    _pinch[pinched++] = id;
+                    ball.Velocity = Unpinch(ball.Position, ball.Velocity, pinched);
+                }
+                else
+                {
+                    pinched = 0;
+                    remaining -= ConsumedTime(remaining, used, total);
+                }
+
+                if (remaining <= 0) { return; }
+
+                // 残り時間を、反射後の速度で進む。位置の端数は始めの値を保つ（遅い滑りも積み上がる）。
+                fineX = ((long)ball.Position.X * Board.VelocityScale) + ball.Fraction.X + ((long)ball.Velocity.X * remaining / TimeUnits);
+                fineY = ((long)ball.Position.Y * Board.VelocityScale) + ball.Fraction.Y + ((long)ball.Velocity.Y * remaining / TimeUnits);
                 target = new Vec2i((int)(fineX >> 8), (int)(fineY >> 8));
                 fraction = new Vec2i((int)(fineX & (Board.VelocityScale - 1)), (int)(fineY & (Board.VelocityScale - 1)));
             }
         }
 
-        /// <summary>1 区間の接触の回数の上限（隅に挟まった球が区間の中で跳ね続けない）。</summary>
-        public const int MaxContactsPerSubstep = 4;
+        /// <summary>
+        /// 残り時間 <paramref name="remaining"/> で進む経路（点の数 <paramref name="total"/>）のうち <paramref name="used"/> 点を進んだときに使った時間（切り上げ）。
+        /// <paramref name="used"/> が 1 以上なら 1 以上。
+        /// </summary>
+        internal static int ConsumedTime(int remaining, int used, int total)
+        {
+            if (total <= 0) { return remaining; }
+            var consumed = (((long)remaining * used) + total - 1) / total;
+            return (int)Math.Min(remaining, consumed);
+        }
+
+        /// <summary>
+        /// 速度を、挟んでいる相手（<see cref="_pinch"/> の先頭 <paramref name="count"/> 個）のどれにも近づかない向きへ射影する。
+        /// 候補は今の速度、各相手の接線への射影の順で、全ての相手に近づかない最初の候補を取る。どれもだめなら止める。
+        /// </summary>
+        private Vec2i Unpinch(Vec2i position, Vec2i velocity, int count)
+        {
+            if (Clear(position, velocity, count)) { return velocity; }
+            for (var i = 0; i < count; i++)
+            {
+                var normal = PinchNormal(position, _pinch[i]);
+                var length2 = normal.LengthSquared;
+                if (length2 == 0) { continue; }
+                var dot = Vec2i.Dot(velocity, normal);
+                var tangent = new Vec2i(velocity.X - IntMath.RoundDiv(normal.X * dot, length2), velocity.Y - IntMath.RoundDiv(normal.Y * dot, length2));
+                if (Clear(position, tangent, count)) { return tangent; }
+            }
+
+            return Vec2i.Zero;
+        }
+
+        private bool Clear(Vec2i position, Vec2i velocity, int count)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                if (Vec2i.Dot(velocity, PinchNormal(position, _pinch[i])) < 0) { return false; }
+            }
+
+            return true;
+        }
+
+        /// <summary>挟んでいる相手（衝突物の番号、左フリッパー −1、右 −2）から球へ向く法線。</summary>
+        private Vec2i PinchNormal(Vec2i position, int id)
+        {
+            Vec2i a;
+            Vec2i b;
+            if (id >= 0)
+            {
+                a = _table.Colliders[id].A;
+                b = _table.Colliders[id].B;
+            }
+            else
+            {
+                var flipper = id == -1 ? _left : _right;
+                a = flipper.Spec.Pivot;
+                b = flipper.Tip;
+            }
+
+            return position - Capsule.Closest(position, a, b);
+        }
 
         /// <summary>接触を解決する：手前の点（始めから内側なら面の外）に置き、相手に応じて反射・得点する。球の新しい位置を返す。</summary>
         private Vec2i Collide(ref Ball ball, int hit, Vec2i before, bool startedInside)

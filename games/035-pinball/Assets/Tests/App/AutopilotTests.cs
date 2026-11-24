@@ -22,8 +22,8 @@ namespace Game.App.Tests
         }
 
         /// <summary>最終ハッシュの固定値。整数だけで進むので .NET と Mono（Unity）で一致する。</summary>
-        [TestCase(1, 4289, 0x499B0F08u)]
-        [TestCase(6, 27384, 0xB3FBF3A2u)]
+        [TestCase(1, 31564, 0xF90DC7C0u)]
+        [TestCase(6, 7927, 0x07A36AA1u)]
         public void FinalHashIsFixed(int seed, long ticks, uint hash)
         {
             var run = AppKit.PlayOut(seed, 60000);

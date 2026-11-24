@@ -22,7 +22,7 @@ namespace Game.Unity
         [Min(1)] public int FlashTicks = 8;
 
         /// <summary>撮影で操縦役に渡すシード（マルチボールの場面が撮れる値を選んである）。</summary>
-        public int CapturePilotSeed = 12;
+        public int CapturePilotSeed = 8;
 
         /// <summary>設定と台を検証し、台を返す。</summary>
         public Table Validate()

@@ -403,6 +403,92 @@ namespace Game.Core.Tests
             Assert.That(walls, Is.GreaterThan(0));
         }
 
+        /// <summary>レビュー P1：残り時間は区間全体に対する割合で減る（2 回目以降の反射で進みすぎない）。</summary>
+        [Test]
+        public void RemainingTimeIsAFractionOfTheWholeSubstep()
+        {
+            var remaining = PinballRun.TimeUnits;
+            remaining -= PinballRun.ConsumedTime(remaining, 50, 100);
+            Assert.That(remaining, Is.EqualTo(PinballRun.TimeUnits / 2), "1 回目の経路の半分で反射：残りは半分");
+            remaining -= PinballRun.ConsumedTime(remaining, 25, 50);
+            Assert.That(remaining, Is.EqualTo(PinballRun.TimeUnits / 4), "残りの経路の半分で反射：残りは 1/4（1/2 ではない）");
+            Assert.That(PinballRun.ConsumedTime(1, 1, 1000), Is.EqualTo(1), "進めば必ず 1 以上減る（繰り返しが終わる）");
+            Assert.That(PinballRun.ConsumedTime(100, 7, 7), Is.EqualTo(100));
+        }
+
+        /// <summary>
+        /// 1 区間に何度も反射する狭い溝：反発係数 1 の 2 枚の縦の壁の間を横に動く球の位置が、折り返しの厳密な位置と一致する。
+        /// 1 区間に約 6 回反射するので、残り時間の数え方の誤りや接触の回数の上限（以前は 4 回で残りを捨てた）があると大きくずれる。
+        /// </summary>
+        [Test]
+        public void ManyBouncesInOneSubstepFollowTheExactReflection([Values(0, 17, 41)] int offset)
+        {
+            const int Play = 60;
+            const int Speed = 350;
+            var left = 10 * TestKit.U;
+            var right = left + 640 + Play + 640;
+            var config = new PinballConfig { WallRestitution = PinballConfig.RatioDenominator };
+            var walls = $"wall 10 15 10 25 0.125\nwall {Cells(right)} 15 {Cells(right)} 25 0.125\n";
+            var run = TestKit.LabRun(walls, config);
+            var low = left + 640;
+            var high = right - 640;
+            TestKit.Drop(run, new Vec2i(low + offset, 20 * TestKit.U), new Vec2i(Speed * Board.VelocityScale, 0));
+            var hits = 0;
+            for (var tick = 1; tick <= 3; tick++)
+            {
+                hits += run.Step(TestKit.None).WallHits;
+                var unfolded = offset + (Speed * Board.Substeps * tick);
+                var period = 2 * Play;
+                var phase = unfolded % period;
+                var expected = low + (phase <= Play ? phase : period - phase);
+                Assert.That(run.BallAt(0).Position.X, Is.InRange(expected - 2, expected + 2), $"Tick {tick}");
+                Assert.That(Math.Abs(run.BallAt(0).Velocity.X), Is.EqualTo(Speed * Board.VelocityScale), "反発係数 1 なので横の速さは変わらない");
+            }
+
+            Assert.That(hits, Is.GreaterThan(3 * Board.Substeps * 4), "1 区間に 4 回を超えて反射しても移動を捨てない");
+        }
+
+        /// <summary>
+        /// レビュー P1：壁の間に球の中心が 1 単位しか動けない溝（x = 10 と 11.251 マスの壁）でも、最大の速さの球の移動を捨てずに終わる。
+        /// </summary>
+        [Test]
+        public void NarrowChannelResolvesWithoutDroppingMotion()
+        {
+            // 反発係数 1（速さが落ちないので、毎区間たくさん反射し続ける）。
+            var run = TestKit.LabRun("wall 10 15 10 25 0.125\nwall 11.251 15 11.251 25 0.125\n", new PinballConfig { WallRestitution = PinballConfig.RatioDenominator });
+            var low = (10 * TestKit.U) + 640;
+            var high = (int)Math.Round(11.251 * TestKit.U) - 640;
+            TestKit.Drop(run, new Vec2i(low, 20 * TestKit.U), new Vec2i(new PinballConfig().MaxSpeed, 0));
+            var hits = 0;
+            for (var tick = 0; tick < 30; tick++)
+            {
+                hits += run.Step(TestKit.None).WallHits;
+                var x = run.BallAt(0).Position.X;
+                Assert.That(x, Is.InRange(low - 1, high + 1), $"Tick {tick}：溝から出ない");
+            }
+
+            Assert.That(hits, Is.GreaterThan(30 * Board.Substeps * 4), "1 区間に 4 回を超えて反射している（上限で切らない）");
+            Assert.That(run.BallAt(0).Position.Y, Is.LessThan(20 * TestKit.U), "縦には重力で落ちていく");
+        }
+
+        /// <summary>球がちょうど挟まる溝（遊び 0）：横へ押しても進めない接触が両側で起きるが、射影して縦に落ち、止まらずに終わる。</summary>
+        [Test]
+        public void PinchedBallSlidesAlongTheGap()
+        {
+            var run = TestKit.LabRun("wall 10 15 10 25 0.125\nwall 11.25 15 11.25 25 0.125\n");
+            var center = (10 * TestKit.U) + 640;
+            TestKit.Drop(run, new Vec2i(center, 20 * TestKit.U), new Vec2i(50000, 0));
+            for (var tick = 0; tick < 40; tick++)
+            {
+                run.Step(TestKit.None);
+                Assert.That(run.BallAt(0).Position.X, Is.InRange(center - 1, center + 1), $"Tick {tick}");
+            }
+
+            Assert.That(run.BallAt(0).Position.Y, Is.LessThan(19 * TestKit.U), "挟まっても縦には落ちる");
+        }
+
+        private static string Cells(int units) => (units / (decimal)TestKit.U).ToString(System.Globalization.CultureInfo.InvariantCulture);
+
         /// <summary>最大の速さで、ポストへ 24 方向から当てる。どの Tick の終わりにも内側に入っていない。</summary>
         [Test]
         public void MaxSpeedBallNeverEndsInsideAPost()
