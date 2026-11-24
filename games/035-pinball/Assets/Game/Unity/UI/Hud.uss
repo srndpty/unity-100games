@@ -1,0 +1,15 @@
+.hud { position: absolute; width: 100%; height: 100%; color: rgb(228, 236, 255); justify-content: center; align-items: center; }
+.side { position: absolute; top: 60px; width: 560px; padding: 28px 34px; background-color: rgba(10, 12, 32, 0.82); border-radius: 16px; border-width: 2px; border-color: rgb(90, 120, 220); }
+.left { left: 60px; }
+.right { right: 60px; }
+.logo { font-size: 52px; -unity-font-style: bold; color: rgb(140, 220, 255); margin-bottom: 18px; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(20, 30, 80); }
+.caption { font-size: 22px; color: rgb(150, 160, 210); margin-top: 8px; }
+.score { font-size: 64px; -unity-font-style: bold; color: rgb(255, 226, 140); margin-bottom: 12px; }
+.stat { font-size: 30px; -unity-font-style: bold; margin-top: 6px; }
+.best { color: rgb(170, 220, 255); }
+.targets { color: rgb(255, 200, 120); }
+.multiball { display: none; margin-top: 18px; font-size: 40px; -unity-font-style: bold; color: rgb(255, 120, 200); }
+.controls { font-size: 25px; margin-top: 10px; white-space: normal; }
+.panel { width: 640px; padding: 30px 36px; background-color: rgba(8, 10, 28, 0.93); border-radius: 18px; border-width: 2px; border-color: rgb(140, 220, 255); }
+.headline { font-size: 60px; -unity-font-style: bold; color: rgb(140, 220, 255); -unity-text-align: middle-center; white-space: normal; }
+.message { margin-top: 14px; font-size: 25px; white-space: normal; -unity-text-align: middle-center; }

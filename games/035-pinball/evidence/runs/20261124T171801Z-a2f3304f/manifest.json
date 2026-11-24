@@ -1,0 +1,74 @@
+{
+    "Product": "COMET COIL",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "0f372e73faf24b28845f6f6ae680a620",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-24T17:18:00.6461589Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Gravity\":59,\"MaxSpeed\":98304,\"BallRadius\":512,\"WallRestitution\":2048,\"FlipperRestitution\":1024,\"BumperRestitution\":2048,\"TargetRestitution\":1536,\"BumperKick\":24000,\"FlipAccel\":150,\"FlipMaxSpeed\":600,\"ReturnAccel\":80,\"ReturnMaxSpeed\":400,\"PlungerMaxTicks\":60,\"PlungerMinSpeed\":20000,\"PlungerMaxSpeed\":46000,\"AutoLaunchMin\":40000,\"AutoLaunchMax\":46000,\"BumperScore\":100,\"TargetScore\":500,\"TargetSetScore\":2000,\"Balls\":3}"
+        },
+        {
+            "Key": "pilotSeed",
+            "Value": "8"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "0a1417161d4579e578bd7bb1652c4215a8bfe3520c87d3309e3271862adb760d",
+            "Note": "タイトル（遊び方の説明と操作）"
+        },
+        {
+            "File": "02-pull.jpg",
+            "Sha256": "5d0aa5272abb17943acd423c6da2dd3447e7d2f9917557fb121fb5745ebbd418",
+            "Note": "Space を押したまま 40 Tick：プランジャーを引くと球も下がる。経過 40 Tick、得点 0、球 1/3、台の上 1 個、ハッシュ 0x94609C7E"
+        },
+        {
+            "File": "03-launch.jpg",
+            "Sha256": "45f4ff7c209f9305a6707e2706f43746a0a7745e13c249bfb43a64af96a5d4c8",
+            "Note": "離すと引きに比例した速さで打ち出す（レーンを上る）。経過 50 Tick、得点 0、球 1/3、台の上 1 個、ハッシュ 0x1D143EF8"
+        },
+        {
+            "File": "04-target.jpg",
+            "Sha256": "0a5a4d329e4a0939435079e25c667982defafc59bcfcdad4ce5a48f5de5508a0",
+            "Note": "右上の曲がりから台へ入った球がターゲットを倒した（薄く表示）。経過 127 Tick、得点 500、球 1/3、台の上 1 個、ハッシュ 0x29F316F0"
+        },
+        {
+            "File": "05-bumper.jpg",
+            "Sha256": "933c719e1e4547c43d53b8dc76216bfff97d4f240e054bb97271fcfdaad7adfd",
+            "Note": "バンパーに当たった Tick：光って外向きに弾く。経過 748 Tick、得点 600、球 2/3、台の上 1 個、ハッシュ 0x20808336"
+        },
+        {
+            "File": "06-flip.jpg",
+            "Sha256": "399348a6eb56101dd6013fe505cfe5179d032a69651273481955bce9dd4c552c",
+            "Note": "フリッパーを上げて球を打ち返した直後。経過 959 Tick、得点 1600、球 2/3、台の上 1 個、ハッシュ 0x3E198E02"
+        },
+        {
+            "File": "07-multiball.jpg",
+            "Sha256": "774bdaa866373c048bfd54a89bb6587e7a585712618e6c1d48a4b67aa81b8776",
+            "Note": "ターゲットを 3 枚倒してマルチボール：2 個目の球が自動で打ち出される。経過 1287 Tick、得点 4500、球 2/3、台の上 2 個、ハッシュ 0x67170FAF"
+        },
+        {
+            "File": "08-paused.jpg",
+            "Sha256": "abeaadc2db143befc7261419a55676bdc999f7cf8c47e6687f6a740ec61a5a47",
+            "Note": "Esc で一時停止。経過 1287 Tick、得点 4500、球 2/3、台の上 2 個、ハッシュ 0x67170FAF"
+        },
+        {
+            "File": "09-drain.jpg",
+            "Sha256": "a7f72d41873692c76cde1a4e9f613227309ef3bf924dd02a7c37b0c742be4f94",
+            "Note": "台の上の最後の球がドレインへ落ちて 1 球が終わり、次の球がレーンへ出た。経過 1504 Tick、得点 4600、球 3/3、台の上 1 個、ハッシュ 0x0ED92F62"
+        },
+        {
+            "File": "10-result.jpg",
+            "Sha256": "82a9d2283b32f26eea3b3ec5b2a7cd9916d1118ce388531bc55f7beafca7cab1",
+            "Note": "3 球を失って結果（得点と起動中の最高記録）。経過 2639 Tick、得点 5500、球 3/3、台の上 0 個、ハッシュ 0x284C216F"
+        }
+    ]
+}

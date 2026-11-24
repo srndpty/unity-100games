@@ -1,0 +1,22 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:VisualElement name="side-left" class="side left" picking-mode="Ignore">
+            <ui:Label name="logo" text="COMET COIL" class="logo" />
+            <ui:Label text="SCORE" class="caption" />
+            <ui:Label name="score" text="0" class="score" />
+            <ui:Label name="ball" text=" " class="stat" />
+            <ui:Label name="best" text=" " class="stat best" />
+            <ui:Label name="targets" text=" " class="stat targets" />
+            <ui:Label name="multiball" text="MULTIBALL!" class="multiball" />
+        </ui:VisualElement>
+        <ui:VisualElement name="side-right" class="side right" picking-mode="Ignore">
+            <ui:Label text="操作" class="caption" />
+            <ui:Label name="controls" text=" " class="controls" />
+        </ui:VisualElement>
+        <ui:VisualElement name="panel" class="panel" picking-mode="Ignore">
+            <ui:Label name="headline" text="COMET COIL" class="headline" />
+            <ui:Label name="message" text=" " class="message" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
