@@ -242,18 +242,55 @@ namespace Game.Unity.Tests
             var locked = _game.HudRoot.Q<Button>(DewdropSnipGame.TileName(1));
             Assert.That(locked.enabledSelf, Is.False, "未解放の札は押せない");
             Assert.That(locked.Q<Label>("tile-name").text, Is.EqualTo("？"));
-            SendButtonClick(DewdropSnipGame.TileName(1));
-            yield return null;
+            yield return ClickTile(1);
             Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Select));
 
-            var delivered = 0;
-            var tile = _game.HudRoot.Q<Button>(DewdropSnipGame.TileName(0));
-            tile.clicked += () => delivered++;
-            SendButtonClick(DewdropSnipGame.TileName(0));
-            yield return null;
-            Assert.That(delivered, Is.EqualTo(1));
+            yield return ClickTile(0);
             Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Playing), "解放済みの札を押すと始まる");
             Assert.That(_game.Flow.Cursor, Is.Zero);
+        }
+
+        /// <summary>
+        /// 試遊の指摘：タイトルでクリックすると問題選択へ移り、同じクリックを離したときにカーソルの下の札が押されて問が始まっていた。
+        /// マウスの押下（タイトル）→ 離す → 札のクリック、の順で届けても問題選択に留まり、押し直したクリックで始まる。
+        /// </summary>
+        [UnityTest]
+        public IEnumerator TitleClick_OverATile_DoesNotStartThatPuzzle()
+        {
+            yield return null;
+            var point = TileScreenPoint(0);
+            SetScreenMouse(point, false);
+            yield return null;
+            SetScreenMouse(point, true);
+            yield return null;
+            Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Select), "タイトルのクリックで問題選択へ");
+            yield return null;
+            yield return null;
+            SetScreenMouse(point, false);
+            yield return null;
+            SendButtonClick(DewdropSnipGame.TileName(0));
+            yield return null;
+            yield return null;
+            Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Select), "同じクリックの離しで札が押されても始まらない");
+
+            yield return ClickTile(0);
+            Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Playing), "問題選択で押し直すと始まる");
+        }
+
+        /// <summary>レビュー P2-1：最後の移動とボタンの解放が同じ入力の更新で届いても、離した位置までの線分で切れる。</summary>
+        [UnityTest]
+        public IEnumerator ReleaseAndMoveInOneMouseUpdate_StillCuts()
+        {
+            yield return StartPaused();
+            SetMouse(P(112, 118), false);
+            yield return null;
+            SetMouse(P(112, 118), true);
+            yield return null;
+            Assert.That(_game.Flow.SwipePoint, Is.Not.Null);
+            SetMouse(P(144, 118), false);
+            yield return null;
+            Assert.That(Run.Moves, Is.EqualTo(1));
+            Assert.That(_game.Flow.SwipePoint, Is.Null);
         }
 
         [UnityTest]
@@ -378,6 +415,26 @@ namespace Game.Unity.Tests
                 copy.Wall(2).drawMode = SpriteDrawMode.Tiled;
                 copy.Spike(9).sprite = null;
                 Assert.That(copy.Mismatch(), Is.Not.Null, "トゲの絵がない");
+                copy.Spike(9).sprite = Stage.Spike(9).sprite;
+                Assert.That(copy.Mismatch(), Is.Null);
+
+                // レビュー P3-1：ロープ・軌跡の置き場をずらすと、見えているロープと切断の判定がずれるので拒否する。
+                copy.Ropes.transform.localPosition = new Vector3(1, 0, 0);
+                Assert.That(copy.Mismatch(), Is.Not.Null, "ロープの Mesh の位置がずれている");
+                copy.Ropes.transform.localPosition = Vector3.zero;
+                copy.Ropes.transform.localScale = new Vector3(2, 1, 1);
+                Assert.That(copy.Mismatch(), Is.Not.Null, "ロープの Mesh の大きさが違う");
+                copy.Ropes.transform.localScale = Vector3.one;
+                copy.Ropes.transform.localRotation = Quaternion.Euler(0, 0, 10);
+                Assert.That(copy.Mismatch(), Is.Not.Null, "ロープの Mesh が回っている");
+                copy.Ropes.transform.localRotation = Quaternion.identity;
+                copy.Trail.transform.localPosition = new Vector3(0, -1, 0);
+                Assert.That(copy.Mismatch(), Is.Not.Null, "軌跡の位置がずれている");
+                copy.Trail.transform.localPosition = Vector3.zero;
+                copy.Trail.useWorldSpace = true;
+                Assert.That(copy.Mismatch(), Is.Not.Null, "軌跡が世界座標");
+                copy.Trail.useWorldSpace = false;
+                Assert.That(copy.Mismatch(), Is.Null);
             }
             finally
             {
@@ -434,6 +491,58 @@ namespace Game.Unity.Tests
             Assert.That(measured - baseline, Is.LessThanOrEqualTo(0), "Tick と描画の更新で割り当てをしない");
             Assert.That(step[Samples * 95 / 100], Is.LessThan(4));
             Assert.That(render[Samples * 95 / 100], Is.LessThan(4));
+        }
+
+        private void SetScreenMouse(Vector2 screen, bool pressed)
+        {
+            var state = new MouseState { position = screen };
+            if (pressed) { state = state.WithButton(MouseButton.Left); }
+            InputSystem.QueueStateEvent(_mouse, state);
+        }
+
+        /// <summary>札の中心の画面の位置（ピクセル、左下原点）。</summary>
+        private Vector2 TileScreenPoint(int index)
+        {
+            var panel = _game.HudRoot.panel;
+            var root = panel.visualTree.worldBound.size;
+            var center = _game.HudRoot.Q<Button>(DewdropSnipGame.TileName(index)).worldBound.center;
+            if (float.IsNaN(center.x) || root.x <= 0)
+            {
+                // タイトルでは札が隠れていて大きさが決まらないので、問題選択の画面と同じ配置（パネルの中央付近）を使う。
+                return new Vector2(Screen.width / 2f, Screen.height / 2f);
+            }
+
+            return new Vector2(center.x / root.x * Screen.width, Screen.height - (center.y / root.y * Screen.height));
+        }
+
+        /// <summary>
+        /// 札をマウスでクリックする：押して離し、UI の clicked が届かなければ（バッチ実行では UI イベントが配送されない）ポインタのイベントを直接送る。
+        /// GUI のエディタでは届くので二重に押さない（022 の知見）。
+        /// </summary>
+        private IEnumerator ClickTile(int index)
+        {
+            yield return null;
+            var button = _game.HudRoot.Q<Button>(DewdropSnipGame.TileName(index));
+            var point = TileScreenPoint(index);
+            var delivered = false;
+            void OnClicked() => delivered = true;
+            button.clicked += OnClicked;
+            try
+            {
+                SetScreenMouse(point, false);
+                yield return null;
+                SetScreenMouse(point, true);
+                yield return null;
+                SetScreenMouse(point, false);
+                yield return null;
+                if (!delivered) { SendButtonClick(DewdropSnipGame.TileName(index)); }
+                yield return null;
+                yield return null;
+            }
+            finally
+            {
+                button.clicked -= OnClicked;
+            }
         }
 
         // ボタンへポインタの押下と離しを送る（ClickEvent では Button.clicked が呼ばれない。013 の知見）。

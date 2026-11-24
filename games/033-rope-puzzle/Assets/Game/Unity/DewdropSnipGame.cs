@@ -182,7 +182,7 @@ namespace Game.Unity
             var run = Flow.Run;
             if (run == null || Flow.Screen != AppScreen.Playing) { return; }
             if (intent.Kind == IntentKind.PointerDown) { _trailCount = 0; }
-            if (intent.Kind == IntentKind.PointerDown || (intent.Kind == IntentKind.PointerMove && before != null))
+            if (intent.Kind == IntentKind.PointerDown || ((intent.Kind == IntentKind.PointerMove || intent.Kind == IntentKind.PointerUp) && before != null && before != intent.Point))
             {
                 AddTrail(DewdropSnipStage.ToLocal(intent.Point), run.Ticks);
             }

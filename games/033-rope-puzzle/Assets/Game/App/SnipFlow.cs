@@ -63,6 +63,7 @@ namespace Game.App
         private bool _hasFocus = true;
         private bool _dropNextClick;
         private bool _dropUntilUp;
+        private bool _clickOnSelect;
         private Vec2i? _swipe;
         private double _origin;
         private long _ticksDone;
@@ -102,8 +103,17 @@ namespace Game.App
         public void Apply(Intent intent)
         {
             if (!_hasFocus) { return; }
-            // ウィンドウを選び直したクリックは操作にしない（010）。押下から離すまでと、その間に届く札のクリックを捨てる。
+            // ウィンドウを選び直したクリックは操作にしない（010）。押下から離すまでを捨てる。
             if (DropsRefocusClick(intent)) { return; }
+
+            // 札のクリック（Choose）は、問題選択の画面で押したクリックにだけ 1 回効く。
+            // タイトルでクリックして問題選択へ移ったとき、同じクリックを離して届く札のクリックで問を始めない。
+            if (intent.Kind == IntentKind.PointerDown) { _clickOnSelect = Screen == AppScreen.Select; }
+            else if (intent.Kind == IntentKind.Choose)
+            {
+                if (!_clickOnSelect) { return; }
+                _clickOnSelect = false;
+            }
 
             AdvanceTo(intent.Time);
             switch (Screen)
@@ -133,6 +143,10 @@ namespace Game.App
             }
         }
 
+        /// <summary>
+        /// フォーカスが戻った直後の押下から離すまでを捨てる。捨てた押下は問題選択で押したクリックにならないので、
+        /// 札のクリック（Choose）が離す前・後のどちらに届いても効かない。
+        /// </summary>
         private bool DropsRefocusClick(Intent intent)
         {
             switch (intent.Kind)
@@ -140,14 +154,12 @@ namespace Game.App
                 case IntentKind.PointerDown when _dropNextClick:
                     _dropNextClick = false;
                     _dropUntilUp = true;
+                    _clickOnSelect = false;
                     return true;
                 case IntentKind.PointerMove when _dropUntilUp:
                     return true;
                 case IntentKind.PointerUp when _dropUntilUp:
                     _dropUntilUp = false;
-                    return true;
-                case IntentKind.Choose when _dropNextClick || _dropUntilUp:
-                    _dropNextClick = false;
                     return true;
                 default:
                     return false;
@@ -161,6 +173,7 @@ namespace Game.App
             _hasFocus = focus;
             if (focus) { return; }
             _swipe = null;
+            _clickOnSelect = false;
             if (Screen == AppScreen.Playing)
             {
                 Screen = AppScreen.Paused;
@@ -236,6 +249,8 @@ namespace Game.App
 
                     break;
                 case IntentKind.PointerUp:
+                    // 最後の移動から離した位置までの線分も切る（移動の出来事が離すのと同じ更新で届いても取りこぼさない）。
+                    if (_swipe is { } last && last != intent.Point && Pilot == null) { run.Cut(last, intent.Point); }
                     _swipe = null;
                     break;
                 case IntentKind.Retry:

@@ -35,6 +35,14 @@ namespace Game.App.Tests
 
         private static void Pointer(SnipFlow flow, IntentKind kind, Vec2i point, double time = 0) => flow.Apply(Intent.Mouse(kind, point, time));
 
+        /// <summary>問題選択の札をマウスでクリックする：押下 → 離す → 札のクリック（UI Toolkit の clicked は離したときに届く）。</summary>
+        private static void ClickTile(SnipFlow flow, int index)
+        {
+            Pointer(flow, IntentKind.PointerDown, P(10, 10));
+            Pointer(flow, IntentKind.PointerUp, P(10, 10));
+            flow.Apply(Intent.Choose(index, 0));
+        }
+
         /// <summary>タイトルから 1 問目を始める（時刻 0）。</summary>
         private static SnipFlow Playing()
         {
@@ -76,14 +84,47 @@ namespace Game.App.Tests
         {
             var flow = Flow();
             Key(flow, IntentKind.Submit);
-            flow.Apply(Intent.Choose(3, 0));
+            ClickTile(flow, 3);
             Assert.That(flow.Screen, Is.EqualTo(AppScreen.Select), "未解放の問を選んでも始まらない");
             flow.Apply(Intent.Move(1, 0));
             flow.Apply(Intent.Move(SnipFlow.SelectColumns, 0));
             Assert.That(flow.Cursor, Is.Zero, "カーソルは解放済みの範囲から出ない");
-            flow.Apply(Intent.Choose(-1, 0));
-            flow.Apply(Intent.Choose(99, 0));
+            ClickTile(flow, -1);
+            ClickTile(flow, 99);
             Assert.That(flow.Screen, Is.EqualTo(AppScreen.Select));
+            ClickTile(flow, 0);
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Playing));
+        }
+
+        /// <summary>
+        /// 試遊の指摘：タイトルでクリックすると問題選択へ移り、同じクリックを離したときにカーソルの下の札のクリックが届いて問が始まっていた。
+        /// 札のクリックは問題選択の画面で押したクリックにだけ効く。
+        /// </summary>
+        [Test]
+        public void TitleClickDoesNotAlsoChooseATile()
+        {
+            var flow = Flow();
+            Pointer(flow, IntentKind.PointerDown, P(128, 72));
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Select));
+            Pointer(flow, IntentKind.PointerUp, P(128, 72));
+            flow.Apply(Intent.Choose(0, 0));
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Select), "タイトルのクリックで問を始めない");
+            ClickTile(flow, 0);
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Playing), "問題選択で押し直したクリックは効く");
+        }
+
+        [Test]
+        public void OneClickChoosesAtMostOnce()
+        {
+            var flow = Flow();
+            Key(flow, IntentKind.Submit);
+            Pointer(flow, IntentKind.PointerDown, P(10, 10));
+            flow.Apply(Intent.Choose(0, 0));
+            Key(flow, IntentKind.Cancel);
+            Key(flow, IntentKind.Back);
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Select));
+            flow.Apply(Intent.Choose(0, 0));
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Select), "同じ押下で 2 回目の札のクリックは効かない");
         }
 
         [Test]
@@ -125,6 +166,31 @@ namespace Game.App.Tests
             Pointer(flow, IntentKind.PointerUp, P(110, 130));
             Pointer(flow, IntentKind.PointerMove, P(146, 130));
             Assert.That(flow.Run.Moves, Is.Zero, "離した後の移動では切らない");
+        }
+
+        /// <summary>レビュー P2-1：押した位置から離した位置までの線分も切る（移動の出来事が届かなくても）。</summary>
+        [Test]
+        public void ReleaseSegmentCuts()
+        {
+            var flow = Playing();
+            Pointer(flow, IntentKind.PointerDown, P(112, 118));
+            Pointer(flow, IntentKind.PointerUp, P(144, 118));
+            Assert.That(flow.Run!.Moves, Is.EqualTo(1));
+            Assert.That(flow.SwipePoint, Is.Null);
+
+            var other = Playing();
+            Pointer(other, IntentKind.PointerDown, P(100, 118));
+            Pointer(other, IntentKind.PointerMove, P(120, 118));
+            Pointer(other, IntentKind.PointerUp, P(140, 118));
+            Assert.That(other.Run!.Moves, Is.EqualTo(1), "最後の移動から離した位置まで");
+        }
+
+        [Test]
+        public void ReleaseWithoutPressDoesNotCut()
+        {
+            var flow = Playing();
+            Pointer(flow, IntentKind.PointerUp, P(144, 118));
+            Assert.That(flow.Run!.Moves, Is.Zero);
         }
 
         [Test]
@@ -218,20 +284,21 @@ namespace Game.App.Tests
             Assert.That(flow.Screen, Is.EqualTo(AppScreen.Select));
         }
 
-        [Test]
-        public void TileClickThatRefocusesIsDropped()
+        /// <summary>レビュー P2-2：フォーカス復帰のクリックで札が反応しない。札のクリックが離す前・後のどちらに届いても捨て、次のクリックは効く。</summary>
+        [TestCase(true, TestName = "TileClickThatRefocusesIsDropped(Down-Choose-Up)")]
+        [TestCase(false, TestName = "TileClickThatRefocusesIsDropped(Down-Up-Choose)")]
+        public void TileClickThatRefocusesIsDropped(bool chooseBeforeUp)
         {
-            // 札のクリック（Choose）は押下の後、離したときに届く。押下から離すまでをまとめて捨てる。
             var flow = Flow();
             Key(flow, IntentKind.Submit);
             flow.SetFocus(false);
             flow.SetFocus(true);
             Pointer(flow, IntentKind.PointerDown, P(10, 10));
-            flow.Apply(Intent.Choose(0, 0));
+            if (chooseBeforeUp) { flow.Apply(Intent.Choose(0, 0)); }
             Pointer(flow, IntentKind.PointerUp, P(10, 10));
+            if (!chooseBeforeUp) { flow.Apply(Intent.Choose(0, 0)); }
             Assert.That(flow.Screen, Is.EqualTo(AppScreen.Select));
-            Pointer(flow, IntentKind.PointerDown, P(10, 10));
-            flow.Apply(Intent.Choose(0, 0));
+            ClickTile(flow, 0);
             Assert.That(flow.Screen, Is.EqualTo(AppScreen.Playing), "次のクリックは効く");
         }
 
@@ -303,7 +370,7 @@ namespace Game.App.Tests
             Key(flow, IntentKind.Submit);
             Assert.That(flow.Screen, Is.EqualTo(AppScreen.Title));
             Key(flow, IntentKind.Submit);
-            flow.Apply(Intent.Choose(9, 0));
+            ClickTile(flow, 9);
             Assert.That(flow.Screen, Is.EqualTo(AppScreen.Playing), "再プレイでは解放済みの問を選べる");
             Assert.That(flow.Cursor, Is.EqualTo(9));
         }

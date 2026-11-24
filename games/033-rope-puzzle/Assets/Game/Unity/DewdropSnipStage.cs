@@ -59,6 +59,8 @@ namespace Game.Unity
 
         public LineRenderer Trail => _trail;
 
+        public MeshFilter Ropes => _ropes;
+
         public SpriteRenderer Anchor(int index) => _anchors[index];
 
         public SpriteRenderer Wall(int index) => _walls[index];
@@ -181,6 +183,11 @@ namespace Game.Unity
             if (_snip == null || _snip.sprite == null) { return "切った瞬間の絵がありません。"; }
             if (_ropes == null || _ropes.GetComponent<MeshRenderer>() == null || _ropes.GetComponent<MeshRenderer>().sharedMaterial == null) { return "ロープの Mesh の描画がありません。"; }
             if (_trail == null || _trail.sharedMaterial == null) { return "なぞりの軌跡がありません。"; }
+
+            // ロープの頂点と軌跡の点は Stage の座標で書くので、置き場の Transform が Stage と同じ座標系でないと、
+            // 見えているロープと切断の判定（Core の座標）がずれる。
+            if (!Identity(_ropes.transform)) { return "ロープの Mesh の位置・回転・大きさが Stage と違います。"; }
+            if (!Identity(_trail.transform) || _trail.useWorldSpace) { return "なぞりの軌跡の位置・回転・大きさが Stage と違います（ローカル座標で描きます）。"; }
             var parts = Parts("支点", _anchors, MaxRopes) ?? Parts("壁", _walls, MaxWalls) ?? Parts("トゲ", _spikes, MaxSpikes);
             if (parts != null) { return parts; }
             foreach (var wall in _walls)
@@ -206,6 +213,9 @@ namespace Game.Unity
 
             return null;
         }
+
+        private static bool Identity(Transform part) =>
+            part.localPosition == Vector3.zero && part.localRotation == Quaternion.identity && part.localScale == Vector3.one;
 
         private static string Parts(string name, SpriteRenderer[] parts, int count)
         {
