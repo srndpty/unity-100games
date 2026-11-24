@@ -56,6 +56,21 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void TimingOutOverWaterPenalizesAndTheNextShotStarts()
+        {
+            var config = new GolfConfig { MaxWindSteps = 0, MaxShotTicks = 60 };
+            var round = new GolfRound(config, LabCourse("paint water rect 40 0 140 60\n"), 1);
+            Swing(round, Clubs.Wood, config.MeterHalfTicks, aim: 0);
+            Settle(round);
+            Assert.That(round.Shots[0].Actual.Phase, Is.EqualTo(BallPhase.Out));
+            Assert.That(round.Shots[0].Actual.OutSurface, Is.EqualTo(Surface.Water));
+            Assert.That(round.Shots[0].Actual.Ticks, Is.EqualTo(60));
+            Assert.That(round.Strokes, Is.EqualTo(2));
+            Assert.That(round.Lie, Is.EqualTo(round.Hole.Tee));
+            Assert.DoesNotThrow(() => Swing(round, Clubs.Wedge, config.MeterHalfTicks, aim: 0));
+        }
+
+        [Test]
         public void WaterIsHandledLikeOutOfBounds()
         {
             var round = LabRound("paint water rect 100 0 120 60\n");

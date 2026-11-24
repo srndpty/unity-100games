@@ -34,6 +34,32 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void SpinThatOutrunsDragIsRejectedBeforeAShotCanThrow()
+        {
+            var dangerous = new GolfConfig
+            {
+                Gravity = 100,
+                Drag = 1,
+                WindPush = 0,
+                SpinPerImpact = 5000,
+                SpinPerErrorTick = 5000,
+            };
+            Assert.Throws<ArgumentOutOfRangeException>(() => dangerous.Validate());
+
+            // 木が 1 本でもあると、毎 Tick の掃引が成分の上限を検査する。場外へ飛んでも検査は走る。
+            var hole = TestKit.Lab("tree 30 8 1 5\n");
+            var launched = Launch.From(dangerous, new ShotSetup(Clubs.Wood, 0, GolfConfig.MaxImpact, 0, 1000, 8, false), hole.Tee, Surface.Tee);
+            Assert.Throws<ArgumentOutOfRangeException>(() => Predictor.Finish(launched, hole, IntGeometry.Vec2i.Zero, dangerous));
+
+            // 抵抗最小・風なし・既定のスピンは、最大の曲がりで打ち切っても掃引の上限に収まる。
+            var accepted = new GolfConfig { Gravity = 100, Drag = 1, WindPush = 0 };
+            Assert.DoesNotThrow(() => accepted.Validate());
+            var safe = Launch.From(accepted, new ShotSetup(Clubs.Wood, 0, GolfConfig.MaxImpact, 0, 1000, accepted.ImpactWindow, false), hole.Tee, Surface.Tee);
+            var end = Predictor.Finish(safe, hole, IntGeometry.Vec2i.Zero, accepted);
+            Assert.That(end.IsMoving, Is.False);
+        }
+
+        [Test]
         public void RejectsSpeedsThatWouldBreakTheSweepLimits()
         {
             Rejects(c => c.ClubSpeed[Clubs.Wood] = Units.MaxTickMove);

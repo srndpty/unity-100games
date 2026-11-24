@@ -1,4 +1,5 @@
 using System;
+using IntGeometry;
 using TileMotion;
 
 namespace Game.Core
@@ -229,6 +230,47 @@ namespace Game.Core
             Require(AimStep, 16, 4096, nameof(AimStep));
             Require(PuttAimStep, 16, 4096, nameof(PuttAimStep));
             Require(PuttPreviewTicks, 1, 600, nameof(PuttPreviewTicks));
+            RejectSpeedsThatBreakTheSweepLimit();
+        }
+
+        /// <summary>
+        /// 飛行中の横スピンと風、着地後にグリーンの最大の傾きで転がる分を、最大の飛行時間ぶん足しても、
+        /// 1 Tick の移動の各成分が <see cref="Units.MaxTickMove"/> を超えないこと。
+        /// 初速だけの上限では、抵抗が小さいとスピンで速さが増え、検証を通った設定の途中で掃引が例外になる。
+        /// 見積もりは実際より大きい（初速はクラブの速さそのもの、風は進行方向、スピンの長さは四捨五入の 1 を足す、着地しても減速しない、坂は毎 Tick 最大）。
+        /// </summary>
+        private void RejectSpeedsThatBreakTheSweepLimit()
+        {
+            var spin = ((long)MaxImpact * SpinPerImpact) + ((long)ImpactWindow * SpinPerErrorTick);
+            if (spin > 0) { spin++; }
+            var windSpeed = (long)MaxWindSteps * WindStep;
+            var windAdd = windSpeed == 0 || WindPush == 0 ? 0 : ((windSpeed * WindPush) + Units.Fine - 1) / Units.Fine;
+            long speed = 0;
+            for (var club = 0; club < Clubs.Count; club++)
+            {
+                if (ClubSpeed[club] > speed) { speed = ClubSpeed[club]; }
+            }
+
+            long peak = speed;
+            for (var tick = 1; tick <= MaxShotTicks; tick++)
+            {
+                speed -= speed * Drag / Units.Fine;
+                speed += windAdd;
+                if (spin > 0) { speed = IntMath.SqrtCeiling((speed * speed) + (spin * spin)); }
+                if (speed > peak) { peak = speed; }
+                if (speed > Units.MaxTickMove)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(SpinPerImpact), $"横スピンと風を {tick} Tick 足すと 1 Tick の移動の上限 {Units.MaxTickMove} を超えます。");
+                }
+            }
+
+            // グリーンの傾きは検証の上限（80‰）まで効く。減速より大きければ、最大の飛行時間のあいだ速さが増え続ける。
+            var slope = (long)Hole.MaxGrade * Gravity * 5 / 7000;
+            var gain = slope > RollDecel[(int)Surface.Green] ? slope - RollDecel[(int)Surface.Green] : 0;
+            if (peak + (gain * MaxShotTicks) > Units.MaxTickMove)
+            {
+                throw new ArgumentOutOfRangeException(nameof(RollDecel), "グリーンの傾きで転がる速さが 1 Tick の移動の上限を超えます。");
+            }
         }
 
         /// <summary>全ての値を混ぜる（状態のハッシュに含め、設定が違えば違うハッシュにする）。</summary>

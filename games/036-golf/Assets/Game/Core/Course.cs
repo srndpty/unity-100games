@@ -236,6 +236,18 @@ namespace Game.Core
             return value;
         }
 
+        /// <summary>グリーン以外のマスに傾きが残っていたら拒否する（塗り直しで消したあとの不変条件）。</summary>
+        internal static void RequireFlatOffTheGreen(Surface[] cells, short[] gradeX, short[] gradeY)
+        {
+            for (var i = 0; i < cells.Length; i++)
+            {
+                if (cells[i] != Surface.Green && (gradeX[i] != 0 || gradeY[i] != 0))
+                {
+                    throw new FormatException("グリーン以外のマスに傾きが残っています。");
+                }
+            }
+        }
+
         private static Surface SurfaceNamed(string word) => word switch
         {
             "rough" => Surface.Rough,
@@ -345,6 +357,12 @@ namespace Game.Core
                     throw new FormatException($"{_number} 番ホールの tee と cup は 50 m 以上離してください。");
                 }
 
+                if (_trees.Count > BallSim.MaxTrees)
+                {
+                    throw new FormatException($"{_number} 番ホールの木は {BallSim.MaxTrees} 本までです：{_trees.Count}");
+                }
+
+                Course.RequireFlatOffTheGreen(_cells, _gradeX, _gradeY);
                 foreach (var tree in _trees)
                 {
                     if (hole.SurfaceAt(tree.Center) == Surface.Green) { throw new FormatException($"{_number} 番ホールの木がグリーンの上にあります。"); }
@@ -410,8 +428,15 @@ namespace Game.Core
                 {
                     for (var x = 0; x < _width; x++)
                     {
-                        // マスの中心（dm）。
-                        if (inside((x * 10L) + 5, (y * 10L) + 5)) { _cells[(y * _width) + x] = surface; }
+                        // マスの中心（dm）。グリーン以外へ塗り直したら、そのマスの傾きは消す（slope は塗った時点のグリーンにだけ残る）。
+                        if (!inside((x * 10L) + 5, (y * 10L) + 5)) { continue; }
+                        var index = (y * _width) + x;
+                        _cells[index] = surface;
+                        if (surface != Surface.Green)
+                        {
+                            _gradeX[index] = 0;
+                            _gradeY[index] = 0;
+                        }
                     }
                 }
             }

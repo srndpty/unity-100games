@@ -233,6 +233,31 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void TimingOutInTheAirUsesTheGroundUnderTheBall()
+        {
+            var config = new GolfConfig { MaxShotTicks = 60 };
+            var fairway = Flying(At(50, 30), 10 * M, Vec2i.Zero, 0);
+            for (var i = 0; i < 60; i++) { StepOnce(ref fairway, Lab(config: config), config: config); }
+            Assert.That(fairway.Phase, Is.EqualTo(BallPhase.Resting));
+            Assert.That(fairway.Ticks, Is.EqualTo(60));
+            Assert.That(fairway.Z, Is.EqualTo(0));
+
+            var water = Flying(At(105, 30), 10 * M, Vec2i.Zero, 0);
+            var waterHole = Lab("paint water rect 100 0 120 60\n", config);
+            BallEvents waterEvents = BallEvents.None;
+            for (var i = 0; i < 60; i++) { waterEvents |= StepOnce(ref water, waterHole, config: config); }
+            Assert.That(water.Phase, Is.EqualTo(BallPhase.Out));
+            Assert.That(water.OutSurface, Is.EqualTo(Surface.Water));
+            Assert.That(waterEvents & BallEvents.TimedOut, Is.EqualTo(BallEvents.TimedOut));
+
+            var ob = Flying(At(105, 30), 10 * M, Vec2i.Zero, 0);
+            var obHole = Lab("paint ob rect 100 0 120 60\n", config);
+            for (var i = 0; i < 60; i++) { StepOnce(ref ob, obHole, config: config); }
+            Assert.That(ob.Phase, Is.EqualTo(BallPhase.Out));
+            Assert.That(ob.OutSurface, Is.EqualTo(Surface.OutOfBounds));
+        }
+
+        [Test]
         public void LongShotsAlwaysEndWithinTheTickLimit()
         {
             var config = new GolfConfig();

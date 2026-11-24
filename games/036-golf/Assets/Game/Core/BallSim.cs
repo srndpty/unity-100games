@@ -133,11 +133,20 @@ namespace Game.Core
             var events = ball.Phase == BallPhase.Flying ? Fly(ref ball, hole, wind, config) : Roll(ref ball, hole, config);
             if (ball.IsMoving && ball.Ticks >= config.MaxShotTicks)
             {
-                ball.Phase = BallPhase.Resting;
+                // 空中のまま時間切れでも、置いた位置の地面は着地・転がりと同じく判定する。池・OBで静止させると、次の打ち出しが例外になる。
                 ball.Z = 0;
                 ball.Velocity = Vec2i.Zero;
                 ball.VelocityZ = 0;
-                events |= BallEvents.Stopped | BallEvents.TimedOut;
+                var surface = hole.SurfaceAt(ball.Position);
+                if (surface == Surface.Water || surface == Surface.OutOfBounds)
+                {
+                    events |= GoOut(ref ball, surface) | BallEvents.TimedOut;
+                }
+                else
+                {
+                    ball.Phase = BallPhase.Resting;
+                    events |= BallEvents.Stopped | BallEvents.TimedOut;
+                }
             }
 
             return events;

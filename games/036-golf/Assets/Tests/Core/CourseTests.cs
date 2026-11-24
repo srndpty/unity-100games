@@ -38,6 +38,36 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void RepaintingOffTheGreenClearsTheSlope()
+        {
+            var config = new GolfConfig();
+            config.RollDecel[(int)Surface.Fairway] = 1;
+            var hole = Lab("paint green rect 20 20 30 40\nslope 20 20 30 40 0 80\npaint fairway rect 20 20 30 40\nslope 155 18 185 42 0 10\n", config);
+            Assert.That(hole.SurfaceAt(At(25, 30)), Is.EqualTo(Surface.Fairway));
+            Assert.That(hole.GradeAt(At(25, 30)).IsZero, Is.True);
+            Assert.That(hole.GradeAt(hole.Cup), Is.EqualTo(new IntGeometry.Vec2i(0, 10)), "塗り直していないグリーンの傾きは残る");
+            var stayed = Run(Rolling(At(25, 30), IntGeometry.Vec2i.Zero), hole, config: config);
+            Assert.That(stayed.Position, Is.EqualTo(At(25, 30)));
+
+            Assert.Throws<FormatException>(() => Course.RequireFlatOffTheGreen(new[] { Surface.Fairway }, new short[] { 0 }, new short[] { 80 }));
+            Assert.DoesNotThrow(() => Course.RequireFlatOffTheGreen(new[] { Surface.Green }, new short[] { 10 }, new short[] { -20 }));
+        }
+
+        [Test]
+        public void TooManyTreesAreRejected()
+        {
+            string Trees(int count)
+            {
+                var text = new System.Text.StringBuilder();
+                for (var i = 0; i < count; i++) { text.Append("tree ").Append(25 + ((i % 8) * 5)).Append(' ').Append(8 + ((i / 8) * 5)).Append(" 1 5\n"); }
+                return text.ToString();
+            }
+
+            Assert.That(Lab(Trees(BallSim.MaxTrees)).Trees.Count, Is.EqualTo(BallSim.MaxTrees));
+            Assert.Throws<FormatException>(() => Lab(Trees(BallSim.MaxTrees + 1)));
+        }
+
+        [Test]
         public void SlopeAppliesOnlyToGreenCells()
         {
             var hole = Lab("slope 0 0 200 60 10 -20\n");
