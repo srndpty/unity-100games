@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <GameLayer>App</GameLayer>
+  </PropertyGroup>
+  <Import Project="../../../../build/Game.Library.props" />
+  <ItemGroup>
+    <ProjectReference Include="../Core/G032.Core.csproj" />
+  </ItemGroup>
+</Project>

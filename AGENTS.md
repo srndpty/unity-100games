@@ -45,7 +45,7 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
   - 作品からは `Packages/manifest.json` に `"file:../../../packages/<名前>"` と `testables` を書き、`dev test NNN -Unity` でパッケージのテストも Mono で流す。dotnet 側は作品の Core の csproj から `ProjectReference` する。
   - パッケージも Core と同じく Unity API に依存しない（`noEngineReferences`）。中身を変えると全作品が検査対象になる（`dev lint/check -Staged`）。
   - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う。
-  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）。025〜027 の実装から抽出し、028 から使う。
+  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）。025〜027 の実装から抽出し、028 から使う（032 は `SeededRandom` だけを使う）。
 
 ## 技術スタック
 
@@ -220,6 +220,11 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - **MeshRenderer に Sprites/Default のマテリアルを使うときは、`_RendererColor` と `_Flip` を MaterialPropertyBlock で渡す。** SpriteRenderer が渡す値が MeshRenderer には渡らず、直前の描画の値が残る。`_Flip` が 0 なら Mesh が潰れて消え、別の描画の直後だけ暗く写る。頂点だけを確かめる PlayMode テストは見えていなくても通るので、渡した値と頂点の色まで確かめ、撮影で目で見る（030 の視界の扇）。
 - **隠密の自動操縦は、邪魔されない巡回を試走して数えた「見られやすさ」を経路の重みにする。** 最短経路は見張りの正面を通りやすい。見つからない限り警備員の動きは自機に依らないので、施設ごとに 1 回数えればよい。候補の順序は「進む量の多い順」にし、待つ（進む量 0）を最後に置く（030 の `Exposure`）。
 - **自動操縦の評価は「安全かどうか」で足切りしてから位置の好みで選ぶ。** 弾との隙間を最大にする評価を優先すると、攻撃の位置に入らず時間切れが続く。弾幕を通せないときは、発射器を 1 つずつ外して原因を突き止める（027）。
+- **打鍵を拾うアクションは PassThrough にする。** Button 型に複数のキーを束ねると、前のキーを押したまま次のキーを押したとき（ロールオーバー）に 2 打目の `performed` が来ない。PassThrough は押下と解放のたびに呼ばれるので、`KeyControl.isPressed` で押下だけを拾う。物理キー（`Key`）を読めば IME と配列の文字変換も通らない（032）。
+- **表示の書き換えの要否は、見た目を決める状態の版で決める。** 「打った文字数」のような代わりの値では、Backspace の後に別の綴りで同じ文字数まで打ち直したとき古い表示が残る。照合器に変化のたびに増える版を持たせ、試合ごとに 0 から使い直す番号には試合も含めてキャッシュのキーにする（032）。
+- **読み取り専用のリストの要素が書き換えられる型なら、要素も読み取り専用の窓口で公開する。** `IReadOnlyList<Enemy>` でも `Enemy.Matcher` が照合器そのものなら、試合を通さずに打ち切れて倒せない敵ができる。状態を変える操作を持たない別の型（キャストもできない）を返す（032）。
+- **NUnit の `Does.Contain(文字列)` は .NET（ICU）でカルチャ依存の比較になる。** 長音「ー」などを無視して見つからないことがある。かなを含む部分文字列は `string.Contains(…, StringComparison.Ordinal)` で確かめる。Unity の NUnit には `Does.Contain(物)` がないので、要素は `Has.Member` で確かめる（032）。
+- **選択の印（▶）を中央ぞろえの文字列に混ぜない。** 印の有無で行の幅が変わり、選び直すたびに項目名が動く。印・項目名・付記を固定幅の列に分け、左右の列を同じ幅にして項目名を中央に保つ。PlayMode で選び直しの前後の `worldBound` を比べる（032）。
 
 ## 注意点
 

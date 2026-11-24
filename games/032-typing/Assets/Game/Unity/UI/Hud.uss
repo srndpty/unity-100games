@@ -1,0 +1,28 @@
+.hud { position: absolute; width: 100%; height: 100%; color: rgb(226, 230, 240); justify-content: center; align-items: center; }
+.plates { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+.stats { position: absolute; left: 0; right: 0; top: 0; height: 60px; padding: 0 28px; flex-direction: row; align-items: center; background-color: rgba(10, 8, 18, 0.88); border-bottom-width: 2px; border-color: rgb(110, 90, 160); }
+.stat { font-size: 26px; -unity-font-style: bold; margin-right: 44px; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(6, 4, 12); }
+.difficulty { color: rgb(190, 170, 240); }
+.score { color: rgb(255, 226, 140); }
+.combo { color: rgb(150, 220, 255); }
+.hp { position: absolute; right: 28px; color: rgb(255, 120, 120); margin-right: 0; }
+.typing { position: absolute; top: 74px; min-width: 760px; padding: 10px 32px 12px 32px; align-items: center; background-color: rgba(10, 8, 18, 0.86); border-radius: 14px; border-width: 2px; border-color: rgb(110, 90, 160); }
+.typing.miss { border-color: rgb(255, 90, 80); background-color: rgba(70, 12, 16, 0.9); }
+.typing-display { font-size: 34px; -unity-font-style: bold; color: rgb(240, 236, 250); }
+.typing-kana { font-size: 24px; color: rgb(200, 196, 220); }
+.typing-romaji { font-size: 40px; -unity-font-style: bold; color: rgb(250, 250, 255); letter-spacing: 2px; }
+.plate { position: absolute; padding: 4px 12px 6px 12px; align-items: center; background-color: rgba(12, 10, 22, 0.78); border-radius: 10px; border-width: 1px; border-color: rgb(90, 80, 130); }
+.plate.target { background-color: rgba(40, 26, 70, 0.95); border-width: 3px; border-color: rgb(255, 214, 110); }
+.plate-display { font-size: 26px; -unity-font-style: bold; color: rgb(240, 236, 250); }
+.plate-kana { font-size: 18px; color: rgb(190, 186, 214); }
+.plate-romaji { font-size: 24px; -unity-font-style: bold; color: rgb(236, 236, 250); }
+.panel { width: 1120px; padding: 30px 44px; background-color: rgba(10, 8, 18, 0.95); border-radius: 18px; border-width: 2px; border-color: rgb(120, 96, 180); }
+.headline { font-size: 58px; -unity-font-style: bold; color: rgb(200, 176, 255); -unity-text-align: middle-center; white-space: normal; }
+.message { margin-top: 14px; font-size: 24px; white-space: normal; -unity-text-align: middle-center; }
+.difficulties { margin-top: 18px; align-items: center; }
+.difficulty-row { flex-direction: row; align-items: center; height: 38px; }
+.difficulty-marker { width: 200px; font-size: 26px; -unity-text-align: middle-right; padding-right: 14px; color: rgb(255, 214, 110); }
+.difficulty-name { width: 170px; font-size: 28px; -unity-text-align: middle-center; color: rgb(200, 196, 220); }
+.difficulty-best { width: 200px; font-size: 22px; -unity-text-align: middle-left; padding-left: 14px; color: rgb(170, 166, 196); }
+.difficulty-row.selected .difficulty-name { color: rgb(255, 214, 110); }
+.controls { margin-top: 18px; }

@@ -1,0 +1,40 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:VisualElement name="plates" class="plates" picking-mode="Ignore" />
+        <ui:VisualElement name="stats" class="stats" picking-mode="Ignore">
+            <ui:Label name="difficulty" text=" " class="stat difficulty" />
+            <ui:Label name="defeated" text=" " class="stat" />
+            <ui:Label name="score" text=" " class="stat score" />
+            <ui:Label name="combo" text=" " class="stat combo" />
+            <ui:Label name="hp" text=" " class="stat hp" />
+        </ui:VisualElement>
+        <ui:VisualElement name="typing" class="typing" picking-mode="Ignore">
+            <ui:Label name="typing-display" text=" " class="typing-display" />
+            <ui:Label name="typing-kana" text=" " class="typing-kana" />
+            <ui:Label name="typing-romaji" text=" " class="typing-romaji" />
+        </ui:VisualElement>
+        <ui:VisualElement name="panel" class="panel" picking-mode="Ignore">
+            <ui:Label name="headline" text="INK VIGIL" class="headline" />
+            <ui:Label name="message" text=" " class="message" />
+            <ui:VisualElement name="difficulties" class="difficulties" picking-mode="Ignore">
+                <ui:VisualElement name="difficulty-easy" class="difficulty-row" picking-mode="Ignore">
+                    <ui:Label class="difficulty-marker" />
+                    <ui:Label class="difficulty-name" />
+                    <ui:Label class="difficulty-best" />
+                </ui:VisualElement>
+                <ui:VisualElement name="difficulty-normal" class="difficulty-row" picking-mode="Ignore">
+                    <ui:Label class="difficulty-marker" />
+                    <ui:Label class="difficulty-name" />
+                    <ui:Label class="difficulty-best" />
+                </ui:VisualElement>
+                <ui:VisualElement name="difficulty-hard" class="difficulty-row" picking-mode="Ignore">
+                    <ui:Label class="difficulty-marker" />
+                    <ui:Label class="difficulty-name" />
+                    <ui:Label class="difficulty-best" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label name="controls" text="↑ ↓：難度    Enter：はじめる&#10;打鍵中  Backspace：狙いを外す    Esc：一時停止&#10;綴りの例  し＝shi / si    つ＝tsu / tu    ん＝nn（次が子音なら n）    っ＝次の子音を重ねる" class="message controls" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
