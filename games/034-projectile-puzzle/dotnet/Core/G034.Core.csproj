@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <GameLayer>Core</GameLayer>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../packages/com.games100.tile-motion/dotnet~/TileMotion/TileMotion.csproj" />
+  </ItemGroup>
+  <Import Project="../../../../build/Game.Library.props" />
+</Project>

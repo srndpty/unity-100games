@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2efc559714c8dd44babedf9890285ca, type: 3}
+  m_Name: PebbleSiegeSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.PebbleSiegeSettings
+  Rules:
+    Gravity: -9.81
+    MaxPull: 2.4
+    MinPull: 0.35
+    MaxSpeed: 21
+    GrabRadius: 1.2
+    PreviewTicks: 48
+    PreviewStride: 3
+    Wood:
+      Health: 100
+      Score: 500
+      Density: 1
+      Threshold: 2
+      DamagePerImpulse: 9
+    Stone:
+      Health: 260
+      Score: 800
+      Density: 2.4
+      Threshold: 4
+      DamagePerImpulse: 9
+    Ice:
+      Health: 50
+      Score: 300
+      Density: 0.8
+      Threshold: 1
+      DamagePerImpulse: 12
+    Lantern:
+      Health: 30
+      Score: 3000
+      Density: 0.6
+      Threshold: 0.6
+      DamagePerImpulse: 15
+    Normal:
+      Radius: 0.32
+      Density: 6
+    Heavy:
+      Radius: 0.42
+      Density: 14
+    Bomb:
+      Radius: 0.36
+      Density: 5
+    ShotAngularDamping: 3
+    BlastRadius: 2.8
+    BlastDamage: 180
+    BlastImpulse: 16
+    FuseTicks: 90
+    RestSpeed: 0.12
+    RestAngular: 10
+    RestTicks: 30
+    SettleTimeoutTicks: 720
+    ShotLifeTicks: 480
+    GraceTicks: 60
+    UnusedShotBonus: 2000
+  Stages: {fileID: 4900000, guid: ff9e98490b232774c93c149af9eda542, type: 3}
+  Solutions: {fileID: 4900000, guid: 4ad8a61189c05394bac34a603098dd1f, type: 3}
+  Volume: 0.12
+  EffectTicks: 24

@@ -197,6 +197,12 @@
     <Project Path="games/033-rope-puzzle/dotnet/Core.Tests/G033.Core.Tests.csproj" />
     <Project Path="games/033-rope-puzzle/dotnet/Core/G033.Core.csproj" />
   </Folder>
+  <Folder Name="/034-projectile-puzzle/">
+    <Project Path="games/034-projectile-puzzle/dotnet/App.Tests/G034.App.Tests.csproj" />
+    <Project Path="games/034-projectile-puzzle/dotnet/App/G034.App.csproj" />
+    <Project Path="games/034-projectile-puzzle/dotnet/Core.Tests/G034.Core.Tests.csproj" />
+    <Project Path="games/034-projectile-puzzle/dotnet/Core/G034.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />
