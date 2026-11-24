@@ -85,19 +85,25 @@ dev capture 033  # 証跡を evidence/ に撮る（画像は captures/<画像世
 - **精度**：最初は 1 マス = 4096 単位で作ったが、露玉への補正が丸めで 0 になる不感帯ができ、振り子が真下から外れた位置で止まった。1 マス = 65536 単位に上げた。精度を上げて `Sweep.First` の値の上限（16384）を超えたので、接触は大きさに依らず厳密な `Sweep.Touches` で判定し、目標とトゲの先後を比べない規則（同じ Tick なら失敗）にした。
 - **操作と物理の分離**：Core の `PuzzleRun.Cut` はなぞりの線分を受け取り、Tick の間にだけ呼ばれる。App（`SnipFlow`）は入力の時刻までの Tick を進めてから線分を渡す（022 の時刻付き入力）ので、フレームの長さに依らず「その時刻を含む Tick の境目」で切れる。押した点・前の点（なぞりの状態）は App が持ち、Core は知らない。
 - 操縦役（`Snipper`）は解答の手順の Tick に、そのロープだけを横切る短いなぞり（`CutPlan.SwipeAcross`）を返す。撮影と App テストで共有する。
+- Unity（`DewdropSnipGame`）はマウスの押下・解放と移動を PassThrough のアクションで 1 つずつ拾い、画面 → 世界 → 盤の座標に直して時刻つきで渡す。なぞりの軌跡は渡した点を Tick とともに残し、最後の点から 10 Tick 以内の点だけを描く（撮影でも同じ絵になる）。カメラの大きさは画面の縦横比から決め、盤の幅が収まるまで引く。
+- 描画は Stage Prefab（`Art/DewdropSnipStage.prefab`：背景・露玉・目標・切った印・ロープの Mesh・軌跡・支点 4・壁 6・トゲ 10 の置き場）を正とし、問ごとの配置は Core の問題データから並べる（`DewdropSnipStage.Layout`）。ロープは全ての節を 1 つの Mesh の四角形で描き、節が効いているか（`PuzzleRun.IsLinkActive`）は Core の拘束と同じ判定を使う。毎フレームの描画は割り当てをしない。タイトル・問題選択の背景には、起動時に 1 回だけ作った問の初期状態を描く。
+- シーンは `unity run games/033-rope-puzzle -- -executeMethod Game.Unity.Editor.DewdropSnipSceneBuilder.Build` で生成する（既存の Prefab と設定アセットは上書きしない）。絵は `DewdropSnipArtGenerator` が描く。物理の値・音量・演出の長さは `DewdropSnipSettings.asset` にある。
 
 ## テスト
 
 | 種類 | 場所 | 件数 | 内容 |
 |---|---|---|---|
 | Core（EditMode / dotnet） | `Assets/Tests/Core/` | 67 | 切ったロープは拘束を失う（自由落下の参照と一致・支点からの距離の制限が外れる・断片の分かれ方）、重複切断（ロープに沿うなぞり・断片・同じ Tick・終了後）、成功は到達時のみ（吊られたまま届かない・全部切って外れる・吊られたまま触れて成功・到達の Tick・1 Tick で飛び越えても掃引で成功・目標とトゲが同じ Tick なら失敗）、壁、リセットと複製、ハッシュ、長い通し、線分の交差（参照実装と乱数で照合）、問題データの負例、本番 10 問の解答と自明でないこと |
-| App（EditMode / dotnet） | `Assets/Tests/App/` | 19 | 画面遷移、解放、なぞりの時刻と Tick、押しただけ・離した後・速いなぞり、やり直し、Tick 上限、一時停止とフォーカス（復帰のクリックを捨てる）、成功で次へ・失敗でやり直し、操縦役で全 10 問→結果→再プレイ |
+| App（EditMode / dotnet） | `Assets/Tests/App/` | 20 | 画面遷移、解放、なぞりの時刻と Tick、押しただけ・離した後・速いなぞり、やり直し、Tick 上限、一時停止とフォーカス（復帰のクリックと札のクリックを捨てる）、成功で次へ・失敗でやり直し、操縦役で全 10 問→結果→再プレイ |
+| 実シーン（PlayMode） | `Assets/Tests/Unity/DewdropSnipSceneTests.cs` | 15 | マウスのドラッグで切って成功、1 フレームの速いドラッグ、押しただけ・断片のなぞり、R、ロープの Mesh と Core の節点の一致、画面と盤の座標の往復と盤がカメラに収まること、問題選択の札（未解放・クリック・キー）、タイトルへ戻った表示、フォーカス喪失、軌跡、設定アセット、Stage Prefab の照合、描画の割り当て 0 と時間 |
 
 ```
 dev test                 # Core / App（dotnet）
 dev test 033 -Unity      # EditMode（Mono、int-geometry・tile-motion のテストも含む）
 dev test 033 -Unity -Mode PlayMode
 ```
+
+検証の結果と画面は [検証記録](evidence/README.md) を参照。
 
 ## 未実装範囲
 

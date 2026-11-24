@@ -62,6 +62,7 @@ namespace Game.App
         private readonly PuzzleBook _book;
         private bool _hasFocus = true;
         private bool _dropNextClick;
+        private bool _dropUntilUp;
         private Vec2i? _swipe;
         private double _origin;
         private long _ticksDone;
@@ -101,15 +102,8 @@ namespace Game.App
         public void Apply(Intent intent)
         {
             if (!_hasFocus) { return; }
-            if (intent.Kind == IntentKind.PointerDown || intent.Kind == IntentKind.Choose)
-            {
-                // ウィンドウを選び直したクリックは操作にしない（010）。
-                if (_dropNextClick)
-                {
-                    _dropNextClick = false;
-                    return;
-                }
-            }
+            // ウィンドウを選び直したクリックは操作にしない（010）。押下から離すまでと、その間に届く札のクリックを捨てる。
+            if (DropsRefocusClick(intent)) { return; }
 
             AdvanceTo(intent.Time);
             switch (Screen)
@@ -136,6 +130,27 @@ namespace Game.App
                     break;
                 default:
                     throw new InvalidOperationException($"未定義の画面です：{Screen}");
+            }
+        }
+
+        private bool DropsRefocusClick(Intent intent)
+        {
+            switch (intent.Kind)
+            {
+                case IntentKind.PointerDown when _dropNextClick:
+                    _dropNextClick = false;
+                    _dropUntilUp = true;
+                    return true;
+                case IntentKind.PointerMove when _dropUntilUp:
+                    return true;
+                case IntentKind.PointerUp when _dropUntilUp:
+                    _dropUntilUp = false;
+                    return true;
+                case IntentKind.Choose when _dropNextClick || _dropUntilUp:
+                    _dropNextClick = false;
+                    return true;
+                default:
+                    return false;
             }
         }
 

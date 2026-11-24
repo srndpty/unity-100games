@@ -251,7 +251,9 @@ namespace Game.Core
             }
 
             LimitBody(start);
-            foreach (var wall in Puzzle.Walls) { PushOut(wall); }
+            // 毎 Tick の処理で ReadOnlyCollection を foreach で回さない（列挙子が箱に入って割り当てが起きる。027 の知見）。
+            var walls = Puzzle.Walls;
+            for (var i = 0; i < walls.Count; i++) { PushOut(walls[i]); }
             DropFragments();
 
             var end = Body;
@@ -321,9 +323,12 @@ namespace Game.Core
             return -1;
         }
 
-        /// <summary>節 j が今、拘束として効いているか。切った節と、断片と露玉を結ぶ最後の節、消えた断片の節は効かない。</summary>
-        private bool Active(int rope, int j)
+        /// <summary>
+        /// 節 <paramref name="j"/> が今、拘束として効いているか（描くか）。切った節と、断片と露玉を結ぶ最後の節、消えた断片の節は効かない。
+        /// </summary>
+        public bool IsLinkActive(int rope, int j)
         {
+            if ((uint)rope >= (uint)RopeCount) { throw new ArgumentOutOfRangeException(nameof(rope), rope, "ロープの番号が範囲外です。"); }
             var cut = _cut[rope];
             if (cut < 0 || j < cut) { return true; }
             return j > cut && j < _links[rope] - 1 && !_gone[rope];
@@ -367,7 +372,7 @@ namespace Game.Core
             var rest = _rest[rope];
             for (var j = 0; j < _links[rope]; j++)
             {
-                if (!Active(rope, j)) { continue; }
+                if (!IsLinkActive(rope, j)) { continue; }
                 var a = Index(rope, j);
                 var b = Index(rope, j + 1);
                 var wa = _w[a];
@@ -467,8 +472,10 @@ namespace Game.Core
         private void Contact(Vec2i start, Vec2i end)
         {
             var r = _config.BodyRadius;
-            foreach (var spike in Puzzle.Spikes)
+            var spikes = Puzzle.Spikes;
+            for (var i = 0; i < spikes.Count; i++)
             {
+                var spike = spikes[i];
                 if (Sweep.Touches(start, end, spike.Center, spike.Center, r + spike.Radius))
                 {
                     Finish(RunStatus.Failed, FailReason.Spike);

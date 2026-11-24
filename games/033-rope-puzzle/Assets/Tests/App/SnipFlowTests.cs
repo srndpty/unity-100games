@@ -219,6 +219,23 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void TileClickThatRefocusesIsDropped()
+        {
+            // 札のクリック（Choose）は押下の後、離したときに届く。押下から離すまでをまとめて捨てる。
+            var flow = Flow();
+            Key(flow, IntentKind.Submit);
+            flow.SetFocus(false);
+            flow.SetFocus(true);
+            Pointer(flow, IntentKind.PointerDown, P(10, 10));
+            flow.Apply(Intent.Choose(0, 0));
+            Pointer(flow, IntentKind.PointerUp, P(10, 10));
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Select));
+            Pointer(flow, IntentKind.PointerDown, P(10, 10));
+            flow.Apply(Intent.Choose(0, 0));
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Playing), "次のクリックは効く");
+        }
+
+        [Test]
         public void ClickBeforeFocusReturnIsIgnored()
         {
             // クリックが先に届き、その後でフォーカスが戻る順序：フォーカスのない間のクリックは捨てる。

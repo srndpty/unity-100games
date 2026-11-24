@@ -1,0 +1,80 @@
+{
+    "Product": "DEWDROP SNIP",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "a94d59559ecd44be92738fefed171852",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-24T04:38:59.9223423Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Gravity\":288,\"Damping\":4086,\"Iterations\":24,\"BodyRadius\":22528,\"NodeInverseMass\":32,\"BodyInverseMass\":1,\"MaxStep\":20480,\"WallFriction\":3584,\"MaxLinks\":32}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "4329288f3b9eedf35ab459bbcd0442e07719db2190a5f35d22ca231d3573457d",
+            "Note": "タイトル（遊び方の説明）"
+        },
+        {
+            "File": "02-select.jpg",
+            "Sha256": "844abb813df455359794aa16d5c5db306a7dd13f22fbbe37d583db1b3e164694",
+            "Note": "問題選択：最初は 1 問目だけを選べる"
+        },
+        {
+            "File": "03-hanging.jpg",
+            "Sha256": "1dc98a2c10ed4168c39432b943320b8080fd72363fca95fb0d41c35f61923126",
+            "Note": "1 問目：ロープで吊った露玉が下の花の器の上で揺れが収まる。第 1 問「はじめの一刀」、経過 30 Tick、手数 0、結果 Playing/None、ハッシュ 0xDBA92426"
+        },
+        {
+            "File": "04-swiping.jpg",
+            "Sha256": "f3b3f366750c21e327fe3dd962d0c9e2e1688df3c625d4e39080c0194449193a",
+            "Note": "なぞりの途中（軌跡を描く）。まだロープを横切っていない。第 1 問「はじめの一刀」、経過 30 Tick、手数 0、結果 Playing/None、ハッシュ 0xDBA92426"
+        },
+        {
+            "File": "05-cut.jpg",
+            "Sha256": "b26e220a9b59d2f26187dda4953f96595681d05f53dd5e95814b2cc242bb28f2",
+            "Note": "なぞりがロープを横切って切れた：支点側の断片は垂れ、露玉側の断片は露玉から外れて落ちる。第 1 問「はじめの一刀」、経過 34 Tick、手数 1、結果 Playing/None、ハッシュ 0x2B9C3919"
+        },
+        {
+            "File": "06-solved.jpg",
+            "Sha256": "77863e2c6493883b100df809e8585dbdbcbf02ff31647d2f8359a1eba75b7e1f",
+            "Note": "露玉が器に触れた Tick に成功（手数 1）。第 1 問「はじめの一刀」、経過 71 Tick、手数 1、結果 Succeeded/None、ハッシュ 0xB6C77F94"
+        },
+        {
+            "File": "07-fell.jpg",
+            "Sha256": "4dc7ea8e41c3965eee63b810144560349ebc49284e8ec553898e2e64d6adb63c",
+            "Note": "3 問目：揺れの始めに切ると、器に届かず盤の下へ落ちて失敗。第 3 問「ふりこ」、経過 60 Tick、手数 1、結果 Failed/Fell、ハッシュ 0x37B28273"
+        },
+        {
+            "File": "08-swing.jpg",
+            "Sha256": "4a9545b99a714eb3c4ab2385a4c1c76bc68a352acedaad735ed8a9b3915b5af7",
+            "Note": "やり直し：振り子の揺れ。器の方へ振れたところで切る（手順は 48 Tick）。第 3 問「ふりこ」、経過 40 Tick、手数 0、結果 Playing/None、ハッシュ 0xDC8414AA"
+        },
+        {
+            "File": "09-spike.jpg",
+            "Sha256": "519cda89d3110be19ce3902ef0cb4dd97f4c8fdea3ca80ed4f763c8a629b98fd",
+            "Note": "4 問目：1 回のなぞりで 2 本とも切ると（手数 2）、真下のトゲに触れて失敗。第 4 問「トゲの上」、経過 46 Tick、手数 2、結果 Failed/Spike、ハッシュ 0x1EE505BB"
+        },
+        {
+            "File": "10-ledge.jpg",
+            "Sha256": "f072f2a6c91b159588c01696f0082a5e1ec1e93f8122128064c0de94c0e52d2a",
+            "Note": "5 問目：棚に落ちた露玉が棚の上を滑って端へ向かう。第 5 問「棚をすべる」、経過 67 Tick、手数 1、結果 Playing/None、ハッシュ 0xCEB17B7E"
+        },
+        {
+            "File": "11-final.jpg",
+            "Sha256": "43e42ec49bae6b53a8e8a6b8e06fa95f96a612b8b0a779497a4c72de4114a9d3",
+            "Note": "10 問目：2 本を切り、残る 1 本で振り上げる（手順では右の頂点の近くで切る）。第 10 問「仕上げ」、経過 71 Tick、手数 2、結果 Playing/None、ハッシュ 0xE9CE3089"
+        },
+        {
+            "File": "12-result.jpg",
+            "Sha256": "688e4917d9430e57d4b8066847c1757da5472ec9d85b046a0a73de790f4b427a",
+            "Note": "全 10 問を解いた結果（最少手数の合計）。第 10 問「仕上げ」、経過 151 Tick、手数 3、結果 Succeeded/None、ハッシュ 0x5AA478FF"
+        }
+    ]
+}
