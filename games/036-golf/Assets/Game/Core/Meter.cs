@@ -20,6 +20,29 @@ namespace Game.Core
         Canceled,
     }
 
+    /// <summary>メーターの見え方（値型、割り当てなしで読む）。</summary>
+    public readonly struct MeterView
+    {
+        public MeterView(int t, int gauge, bool powerSet, int power, int idealTick)
+        {
+            T = t;
+            Gauge = gauge;
+            PowerSet = powerSet;
+            Power = power;
+            IdealTick = idealTick;
+        }
+
+        public int T { get; }
+
+        public int Gauge { get; }
+
+        public bool PowerSet { get; }
+
+        public int Power { get; }
+
+        public int IdealTick { get; }
+    }
+
     /// <summary>
     /// 2 回押しのメーター。振り始めた Tick を T = 0 とし、<see cref="Step"/> ごとに T が 1 増える。
     /// ゲージは T = 0〜H で 0 → 1000‰、T = H〜2H で 1000 → 0‰（H は <see cref="GolfConfig.MeterHalfTicks"/>）。
@@ -70,6 +93,8 @@ namespace Game.Core
         }
 
         public Meter Clone() => (Meter)MemberwiseClone();
+
+        public MeterView View => new(T, Gauge, PowerSet, Power, IdealTick);
 
         public MeterResult Press()
         {

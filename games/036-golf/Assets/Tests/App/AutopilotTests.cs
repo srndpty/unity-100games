@@ -9,10 +9,17 @@ namespace Game.App.Tests
         /// <summary>シード 1 の最終ハッシュ（.NET と Mono で同じ値になる）。</summary>
         private const uint SeedOneHash = 0x6E6BB7DAu;
 
+        /// <summary>20 シードの全打球について、ずれ 0 の打球は予測と実際が一致し、ずれのある打球の差も記録する。</summary>
         [Test]
         public void TwentySeedsFinishEveryHoleWithinPar()
         {
             var course = AppKit.Production();
+            var shots = 0;
+            var exact = 0;
+            var bent = 0;
+            long worst = 0;
+            long total = 0;
+            var strokes = 0;
             for (var seed = 1; seed <= 20; seed++)
             {
                 var round = AppKit.PlayOut(seed, course: course);
@@ -21,7 +28,28 @@ namespace Game.App.Tests
                 {
                     Assert.That(round.ScoreOf(hole), Is.InRange(1, course.Holes[hole].Par), $"シード {seed} の {hole + 1} 番");
                 }
+
+                strokes += round.Total;
+                foreach (var shot in round.Shots)
+                {
+                    shots++;
+                    if (shot.Setup.Error == 0 && !shot.Setup.Mishit)
+                    {
+                        Assert.That(shot.Difference, Is.EqualTo(0), $"シード {seed} の {shot.Hole} 番 {shot.Stroke} 打目");
+                        exact++;
+                        continue;
+                    }
+
+                    bent++;
+                    total += shot.Difference;
+                    worst = System.Math.Max(worst, shot.Difference);
+                }
             }
+
+            TestContext.Out.WriteLine($"20 シード：{strokes} 打（par 合計 {20 * 12}）、打球 {shots}（ずれ 0 が {exact}、ずれ ±1 が {bent}）。" +
+                $"ずれ ±1 の差：平均 {(bent == 0 ? 0 : total / bent) / 1e6:F2} m・最大 {worst / 1e6:F2} m");
+            Assert.That(exact, Is.GreaterThan(0));
+            Assert.That(bent, Is.GreaterThan(0), "ずれのある打球も含む");
         }
 
         [Test]
@@ -55,21 +83,6 @@ namespace Game.App.Tests
             }
 
             Assert.That(round.Hash(), Is.EqualTo(AppKit.PlayOut(2).Hash()));
-        }
-
-        [Test]
-        public void PredictionsMatchWhenThereIsNoImpactError()
-        {
-            var round = AppKit.PlayOut(3);
-            var exact = 0;
-            foreach (var shot in round.Shots)
-            {
-                if (shot.Setup.Error != 0 || shot.Setup.Mishit) { continue; }
-                Assert.That(shot.Difference, Is.EqualTo(0), $"{shot.Hole} 番の {shot.Stroke} 打目");
-                exact++;
-            }
-
-            Assert.That(exact, Is.GreaterThan(0));
         }
     }
 }

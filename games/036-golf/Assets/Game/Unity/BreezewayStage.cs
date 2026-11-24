@@ -70,7 +70,7 @@ namespace Game.Unity
         private float _heightScale = .5f;
 
         /// <summary>予測線のキャッシュの鍵（構え・パワー・位置・ホールが変わったら描き直す）。</summary>
-        private (int Hole, Vec2i Lie, int Club, int Aim, int ImpactX, int ImpactY, int Power, int Phase, int Strokes, int Seed) _shownPreview;
+        private PreviewKey _shownPreview;
         private int _previewCount;
         private bool _previewLanded;
         private Vec2i _previewLanding;
@@ -264,9 +264,9 @@ namespace Game.Unity
         /// <summary>構えの予測線（打った後の軌跡と同じ関数）。構え・パワーが変わったときだけ計算し直す。</summary>
         private void DrawPreview(GolfRound round, Vector3 dotScale)
         {
-            var meter = round.Phase == RoundPhase.Swinging ? round.Meter : null;
-            var power = meter != null && meter.PowerSet ? meter.Power : 1000;
-            var key = (round.HoleIndex, round.Lie, round.Club, round.Aim, round.ImpactX, round.ImpactY, power, 0, round.Strokes, round.Seed);
+            var meter = round.MeterState;
+            var power = meter is { PowerSet: true } ? meter.Value.Power : 1000;
+            var key = new PreviewKey(round, false, round.Lie, round.Club, round.Aim, round.ImpactX, round.ImpactY, power);
             if (!key.Equals(_shownPreview))
             {
                 _shownPreview = key;
@@ -288,7 +288,8 @@ namespace Game.Unity
         /// <summary>打った後：ずれ 0 の予測（薄く）と、実際の軌跡（打ち出しから今の Tick まで）。</summary>
         private void DrawShot(GolfRound round, Vector3 dotScale)
         {
-            var key = (round.HoleIndex, round.PreviousLie, round.LastSetup?.Club ?? -1, round.LastSetup?.Aim ?? 0, 0, 0, round.LastSetup?.Power ?? 0, 1, round.Strokes, round.Seed);
+            var setup = round.LastSetup ?? default;
+            var key = new PreviewKey(round, true, round.PreviousLie, setup.Club, setup.Aim, setup.ImpactX, setup.ImpactY, setup.Power);
             if (!key.Equals(_shownPreview))
             {
                 _shownPreview = key;
@@ -439,5 +440,44 @@ namespace Game.Unity
 
         private static bool Upright(Transform part) =>
             Quaternion.Angle(part.localRotation, Quaternion.identity) < .01f && Near(part.localScale, Vector3.one);
+    }
+
+    /// <summary>
+    /// 予測線のキャッシュの鍵。要素の多い ValueTuple は Mono で比べると入れ子の部分が箱に入って割り当てが起きるので、自前の値型にする。
+    /// </summary>
+    internal readonly struct PreviewKey : IEquatable<PreviewKey>
+    {
+        private readonly GolfRound _round;
+        private readonly bool _shot;
+        private readonly int _hole;
+        private readonly int _strokes;
+        private readonly Vec2i _lie;
+        private readonly int _club;
+        private readonly int _aim;
+        private readonly int _impactX;
+        private readonly int _impactY;
+        private readonly int _power;
+
+        public PreviewKey(GolfRound round, bool shot, Vec2i lie, int club, int aim, int impactX, int impactY, int power)
+        {
+            _round = round;
+            _shot = shot;
+            _hole = round.HoleIndex;
+            _strokes = round.Strokes;
+            _lie = lie;
+            _club = club;
+            _aim = aim;
+            _impactX = impactX;
+            _impactY = impactY;
+            _power = power;
+        }
+
+        public bool Equals(PreviewKey other) =>
+            ReferenceEquals(_round, other._round) && _shot == other._shot && _hole == other._hole && _strokes == other._strokes && _lie == other._lie &&
+            _club == other._club && _aim == other._aim && _impactX == other._impactX && _impactY == other._impactY && _power == other._power;
+
+        public override bool Equals(object obj) => obj is PreviewKey other && Equals(other);
+
+        public override int GetHashCode() => HashCode.Combine(_hole, _strokes, _lie, _club, _aim, _power);
     }
 }

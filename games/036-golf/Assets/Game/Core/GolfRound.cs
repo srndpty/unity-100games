@@ -226,6 +226,15 @@ namespace Game.Core
         /// <summary>メーター（振っていなければ null）。複製を返す。</summary>
         public Meter? Meter => _meter?.Clone();
 
+        /// <summary>メーターの見え方（振っていなければ null）。割り当てなし（描画用）。</summary>
+        public MeterView? MeterState => _meter?.View;
+
+        /// <summary>記録した打球の数（割り当てなし）。</summary>
+        public int ShotCount => _shots.Count;
+
+        /// <summary>最後の打球の記録（まだなければ null）。割り当てなし。</summary>
+        public ShotRecord? LastShot => _shots.Count == 0 ? null : _shots[_shots.Count - 1];
+
         /// <summary>直前に終わった打球の終わり方。</summary>
         public ShotOutcome LastOutcome { get; private set; }
 

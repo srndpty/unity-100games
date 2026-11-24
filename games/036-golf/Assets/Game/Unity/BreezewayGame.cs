@@ -301,7 +301,7 @@ namespace Game.Unity
             RenderMeter(round, screen);
             var banner = Banner;
             var state = (screen, round, round?.HoleIndex ?? -1, round?.Strokes ?? 0, round?.Phase ?? RoundPhase.Aiming, round?.Club ?? 0, round?.Lie ?? default,
-                round?.ImpactX ?? 0, round?.ImpactY ?? 0, round?.Shots.Count ?? 0, banner, Flow.BestTotal, Flow.IsNewBest);
+                round?.ImpactX ?? 0, round?.ImpactY ?? 0, round?.ShotCount ?? 0, banner, Flow.BestTotal, Flow.IsNewBest);
             if (Equals(_shownHud, state)) { return; }
             _shownHud = state;
 
@@ -353,7 +353,7 @@ namespace Game.Unity
             var half = (float)config.MeterHalfTicks;
             var window = config.ImpactWindow / half;
             float U(float position) => Mathf.Clamp01((position + window) / (1 + window)) * 100f;
-            var meter = round.Phase == RoundPhase.Swinging ? round.Meter : null;
+            var meter = round.MeterState;
             var t = meter?.T ?? 0;
             var position = t <= half ? t / half : ((2 * half) - t) / half;
             _meterBand.style.left = Length.Percent(0);
@@ -361,18 +361,18 @@ namespace Game.Unity
             _meterFill.style.width = Length.Percent(meter == null ? 0 : U(position));
             _meterCursor.style.left = Length.Percent(U(position));
             var power = _meterPower;
-            power.style.display = meter != null && meter.PowerSet ? DisplayStyle.Flex : DisplayStyle.None;
-            if (meter != null && meter.PowerSet) { power.style.left = Length.Percent(U(meter.Power / 1000f)); }
+            var powerSet = meter is { PowerSet: true };
+            power.style.display = powerSet ? DisplayStyle.Flex : DisplayStyle.None;
+            if (powerSet) { power.style.left = Length.Percent(U(meter.Value.Power / 1000f)); }
             var text = meter == null ? "Space：振り始める"
-                : meter.PowerSet ? $"パワー {meter.Power / 10}%    Space：青い帯でインパクト"
-                : $"Space：パワーを決める（{meter.Gauge / 10}%）";
+                : powerSet ? $"パワー {meter.Value.Power / 10}%    Space：青い帯でインパクト"
+                : $"Space：パワーを決める（{meter.Value.Gauge / 10}%）";
             if (_meterText.text != text) { _meterText.text = text; }
         }
 
         private static string LastShotText(GolfRound round)
         {
-            if (round.Shots.Count == 0) { return "前の打球：—"; }
-            var shot = round.Shots[round.Shots.Count - 1];
+            if (round.LastShot is not { } shot) { return "前の打球：—"; }
             var setup = shot.Setup;
             var error = setup.Mishit ? "ミス" : setup.Error == 0 ? "ずれ 0" : $"ずれ {setup.Error:+0;-0} Tick";
             return $"前の打球：予測との差 {shot.Difference / (float)Units.PerMeter:0.00} m（{error}）";
