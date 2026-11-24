@@ -10,7 +10,7 @@ namespace Game.Core.Tests
     public sealed class ProductionTests
     {
         /// <summary>全 10 問を解答の手順で解いた最終状態のハッシュを混ぜた値。.NET と Mono で一致する。</summary>
-        private const uint SolvedHash = 0x10E40AFC;
+        private const uint SolvedHash = 0xAAC0BF2B;
 
         [Test]
         public void EverySolutionSolvesItsPuzzleWithParMoves()

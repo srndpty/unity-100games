@@ -379,6 +379,32 @@ namespace Game.Core.Tests
             Assert.That(a.Hash(), Is.Not.EqualTo(b.Hash()));
         }
 
+        /// <summary>
+        /// レビュー：今の位置が同じでも、設定や問の定義が違えば次の Tick で分かれる組はハッシュが違う。
+        /// 名前・案内・目安の手数だけが違う問は動きが同じなので、ハッシュも同じ。
+        /// </summary>
+        [Test]
+        public void HashIncludesConfigAndPuzzleDefinition()
+        {
+            var puzzle = One(Hanging);
+            var a = new PuzzleRun(new RopeConfig(), puzzle);
+            var b = new PuzzleRun(new RopeConfig { Gravity = new RopeConfig().Gravity + 1 }, puzzle);
+            Assert.That(a.Body, Is.EqualTo(b.Body));
+            Assert.That(a.Hash(), Is.Not.EqualTo(b.Hash()), "重力だけが違う");
+            a.Tick();
+            b.Tick();
+            Assert.That(a.Body, Is.Not.EqualTo(b.Body), "次の Tick で分かれる");
+
+            var config = new RopeConfig();
+            var basis = new PuzzleRun(config, puzzle).Hash();
+            Assert.That(new PuzzleRun(config, One(Hanging.Replace("goal 200 24 10", "goal 200 24 11"))).Hash(), Is.Not.EqualTo(basis), "目標の大きさだけが違う");
+            Assert.That(new PuzzleRun(config, One(Hanging + "\nspike 30 20 6")).Hash(), Is.Not.EqualTo(basis), "トゲだけが違う");
+            Assert.That(new PuzzleRun(config, One(Hanging + "\nwall 10 10 40 20")).Hash(), Is.Not.EqualTo(basis), "壁だけが違う");
+            Assert.That(new PuzzleRun(new RopeConfig { WallFriction = 1 }, puzzle).Hash(), Is.Not.EqualTo(basis), "壁の摩擦だけが違う");
+            var renamed = PuzzleBook.Parse($"puzzle 別名\nhint 別の案内\npar 1\n{Hanging}\nend\n").Puzzles[0];
+            Assert.That(new PuzzleRun(config, renamed).Hash(), Is.EqualTo(basis), "名前と案内だけが違う問は同じ");
+        }
+
         [Test]
         public void LongRunStaysBounded()
         {

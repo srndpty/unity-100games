@@ -60,6 +60,7 @@ namespace Game.Core
         private readonly int[] _cut;
         private readonly bool[] _gone;
         private readonly int _body;
+        private readonly uint _fingerprint;
         private RunEvents _events;
 
         /// <param name="config">物理の設定（検証して複製する）。</param>
@@ -86,6 +87,7 @@ namespace Game.Core
             _cut = new int[ropes];
             _gone = new bool[ropes];
             _body = points - 1;
+            _fingerprint = Fingerprint(_config, puzzle);
             Reset();
         }
 
@@ -104,6 +106,7 @@ namespace Game.Core
             _cut = (int[])other._cut.Clone();
             _gone = (bool[])other._gone.Clone();
             _body = other._body;
+            _fingerprint = other._fingerprint;
             _events = other._events;
             Ticks = other.Ticks;
             Moves = other.Moves;
@@ -272,10 +275,14 @@ namespace Game.Core
             return events;
         }
 
-        /// <summary>以後の動きを決める状態のハッシュ（位置・前の位置・切った節・消えた断片・手数・Tick・結果）。</summary>
+        /// <summary>
+        /// 以後の動きを決める状態のハッシュ（位置・前の位置・切った節・消えた断片・手数・Tick・結果）に、
+        /// 物理の設定と問の物理的な定義の指紋（<see cref="Fingerprint"/>）を混ぜたもの。
+        /// </summary>
         public uint Hash()
         {
             var hash = StateHash.Start();
+            hash.Mix(_fingerprint);
             hash.Mix(Ticks);
             hash.Mix(Moves);
             hash.Mix((int)Status);
@@ -295,6 +302,61 @@ namespace Game.Core
             }
 
             return hash.Value;
+        }
+
+        /// <summary>
+        /// 物理の設定の全ての値と、問の物理的な定義（露玉の初期位置・ロープの支点・全長・節の数・壁・トゲ・目標）の指紋。
+        /// 今の位置が同じでも、設定や問が違えば以後の動きが分かれるのでハッシュに含める（022）。名前・案内・目安の手数は動きを変えないので含めない。
+        /// </summary>
+        public static uint Fingerprint(RopeConfig config, Puzzle puzzle)
+        {
+            if (config == null) { throw new ArgumentNullException(nameof(config)); }
+            if (puzzle == null) { throw new ArgumentNullException(nameof(puzzle)); }
+            var hash = StateHash.Start();
+            hash.Mix(config.Gravity);
+            hash.Mix(config.Damping);
+            hash.Mix(config.Iterations);
+            hash.Mix(config.BodyRadius);
+            hash.Mix(config.NodeInverseMass);
+            hash.Mix(config.BodyInverseMass);
+            hash.Mix(config.MaxStep);
+            hash.Mix(config.WallFriction);
+            hash.Mix(config.MaxLinks);
+            Mix(ref hash, puzzle.Body);
+            hash.Mix(puzzle.Ropes.Count);
+            for (var i = 0; i < puzzle.Ropes.Count; i++)
+            {
+                Mix(ref hash, puzzle.Ropes[i].Anchor);
+                hash.Mix(puzzle.Ropes[i].Length);
+                hash.Mix(puzzle.Ropes[i].Links);
+            }
+
+            hash.Mix(puzzle.Walls.Count);
+            for (var i = 0; i < puzzle.Walls.Count; i++)
+            {
+                var wall = puzzle.Walls[i];
+                hash.Mix(wall.MinX);
+                hash.Mix(wall.MinY);
+                hash.Mix(wall.MaxX);
+                hash.Mix(wall.MaxY);
+            }
+
+            hash.Mix(puzzle.Spikes.Count);
+            for (var i = 0; i < puzzle.Spikes.Count; i++) { Mix(ref hash, puzzle.Spikes[i]); }
+            Mix(ref hash, puzzle.Goal);
+            return hash.Value;
+        }
+
+        private static void Mix(ref StateHash hash, Vec2i point)
+        {
+            hash.Mix(point.X);
+            hash.Mix(point.Y);
+        }
+
+        private static void Mix(ref StateHash hash, Circle circle)
+        {
+            Mix(ref hash, circle.Center);
+            hash.Mix(circle.Radius);
         }
 
         private int Index(int rope, int k)
