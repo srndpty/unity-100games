@@ -389,7 +389,21 @@ namespace Game.Core
             var power = _meter != null && _meter.PowerSet ? _meter.Power : 1000;
             var start = Launch.From(_config, SetupFor(power), Lie, LieSurface);
             var ticks = Club == Clubs.Putter ? _config.PuttPreviewTicks : _config.MaxShotTicks;
-            return Predictor.Trace(start, Hole, Wind, _config, points, heights, ticks);
+            return Predictor.Trace(start, Hole, Wind, _config, points, heights, ticks, true);
+        }
+
+        /// <summary>このホールで直前に打った決め事（このホールでまだ打っていなければ null）。</summary>
+        public ShotSetup? LastSetup => Strokes > 0 ? _launched : null;
+
+        /// <summary>
+        /// 直前の打球の軌跡を <paramref name="ticks"/> Tick まで（止まる・入る・池/OB まで）書く。<paramref name="ideal"/> なら同じ打ち方のずれ 0（予測線）、
+        /// そうでなければ実際の打ち方（ずれ・ミスを含む）。実際と同じ関数で打ち出しから進め直すので、実際の球の軌跡と一致する。
+        /// </summary>
+        public Prediction TraceLastShot(bool ideal, Vec2i[] points, int[]? heights, int ticks)
+        {
+            var setup = LastSetup ?? throw new InvalidOperationException("まだ打っていません。");
+            var start = Launch.From(_config, ideal ? setup.Ideal : setup, PreviousLie, Hole.SurfaceAt(PreviousLie));
+            return Predictor.Trace(start, Hole, Wind, _config, points, heights, ticks, false);
         }
 
         /// <summary>1 Tick 進めて、その Tick に起きたことを返す（<see cref="TakeEvents"/> の分も含めて取り出す）。</summary>

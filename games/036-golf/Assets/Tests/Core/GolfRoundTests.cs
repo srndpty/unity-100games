@@ -162,6 +162,27 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void TracingTheLastShotReplaysTheActualAndIdealPaths()
+        {
+            var round = LabRound("tree 60 30 2 25\n");
+            Assert.That(round.LastSetup, Is.Null);
+            Swing(round, Clubs.Iron, _config.MeterHalfTicks, 4, aim: 0);
+            var points = new Vec2i[_config.MaxShotTicks + 1];
+            var ideal = new Vec2i[points.Length];
+            while (round.Phase == RoundPhase.Moving)
+            {
+                round.Step();
+                var trace = round.TraceLastShot(false, points, null, round.Ball.Ticks);
+                Assert.That(points[trace.Count - 1], Is.EqualTo(round.Ball.Position), $"Tick {round.Ball.Ticks}");
+            }
+
+            var shot = round.Shots[0];
+            var predicted = round.TraceLastShot(true, ideal, null, _config.MaxShotTicks);
+            Assert.That(ideal[predicted.Count - 1], Is.EqualTo(shot.Predicted.Position));
+            Assert.That(predicted.End.Landing, Is.EqualTo(shot.Predicted.Landing));
+        }
+
+        [Test]
         public void CanceledSwingDoesNotCountAStroke()
         {
             var round = Round();

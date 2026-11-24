@@ -1,0 +1,51 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:VisualElement name="hole-panel" class="box top-left" picking-mode="Ignore">
+            <ui:Label name="logo" text="BREEZEWAY LINKS" class="logo" />
+            <ui:Label name="hole" text=" " class="big" />
+            <ui:Label name="strokes" text=" " class="stat" />
+            <ui:Label name="total" text=" " class="stat soft" />
+        </ui:VisualElement>
+        <ui:VisualElement name="wind-panel" class="box top-right" picking-mode="Ignore">
+            <ui:Label text="風" class="caption" />
+            <ui:VisualElement class="wind-row" picking-mode="Ignore">
+                <ui:Label name="wind-arrow" text="➜" class="wind-arrow" />
+                <ui:Label name="wind-speed" text=" " class="big" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="shot-panel" class="box bottom-left" picking-mode="Ignore">
+            <ui:VisualElement class="shot-row" picking-mode="Ignore">
+                <ui:VisualElement class="shot-text" picking-mode="Ignore">
+                    <ui:Label name="club" text=" " class="big" />
+                    <ui:Label name="distance" text=" " class="stat" />
+                    <ui:Label name="lie" text=" " class="stat soft" />
+                </ui:VisualElement>
+                <ui:VisualElement class="impact-box" picking-mode="Ignore">
+                    <ui:Label text="打点" class="caption" />
+                    <ui:VisualElement name="impact-ball" class="impact-ball" picking-mode="Ignore">
+                        <ui:VisualElement name="impact-dot" class="impact-dot" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label name="diff" text=" " class="diff" />
+        </ui:VisualElement>
+        <ui:VisualElement name="meter" class="meter" picking-mode="Ignore">
+            <ui:VisualElement name="meter-track" class="meter-track" picking-mode="Ignore">
+                <ui:VisualElement name="meter-band" class="meter-band" picking-mode="Ignore" />
+                <ui:VisualElement name="meter-fill" class="meter-fill" picking-mode="Ignore" />
+                <ui:VisualElement name="meter-power" class="meter-power" picking-mode="Ignore" />
+                <ui:VisualElement name="meter-cursor" class="meter-cursor" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label name="meter-text" text=" " class="meter-text" />
+        </ui:VisualElement>
+        <ui:VisualElement name="controls-panel" class="box bottom-right" picking-mode="Ignore">
+            <ui:Label name="controls" text=" " class="controls" />
+        </ui:VisualElement>
+        <ui:Label name="banner" text=" " class="banner" />
+        <ui:VisualElement name="panel" class="panel" picking-mode="Ignore">
+            <ui:Label name="headline" text="BREEZEWAY LINKS" class="headline" />
+            <ui:Label name="message" text=" " class="message" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

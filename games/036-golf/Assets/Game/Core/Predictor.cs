@@ -32,10 +32,10 @@ namespace Game.Core
     public static class Predictor
     {
         /// <summary>
-        /// 打ち出しの位置から、最初の着地（または <paramref name="maxTicks"/> Tick・止まる・入る・池/OB）までの各 Tick の位置を書く。
-        /// 点は打ち出しの位置を含み、配列に入るだけ書く。高さは <paramref name="heights"/> に書く（null なら書かない）。
+        /// 打ち出しの位置から、<paramref name="stopAtLanding"/> なら最初の着地まで（他は <paramref name="maxTicks"/> Tick・止まる・入る・池/OB まで）の
+        /// 各 Tick の位置を書く。点は打ち出しの位置を含み、配列に入るだけ書く。高さは <paramref name="heights"/> に書く（null なら書かない）。
         /// </summary>
-        public static Prediction Trace(BallState start, Hole hole, Vec2i wind, GolfConfig config, Vec2i[] points, int[]? heights, int maxTicks)
+        public static Prediction Trace(BallState start, Hole hole, Vec2i wind, GolfConfig config, Vec2i[] points, int[]? heights, int maxTicks, bool stopAtLanding = true)
         {
             if (points == null) { throw new ArgumentNullException(nameof(points)); }
             var ball = start;
@@ -45,7 +45,7 @@ namespace Game.Core
             {
                 var events = BallSim.Step(ref ball, hole, wind, config);
                 Write(points, heights, ref count, ball);
-                if ((events & BallEvents.Landed) != 0) { return new Prediction(count, true, ball.Landing, ball); }
+                if (stopAtLanding && (events & BallEvents.Landed) != 0) { return new Prediction(count, true, ball.Landing, ball); }
             }
 
             return new Prediction(count, ball.Landed, ball.Landing, ball);
