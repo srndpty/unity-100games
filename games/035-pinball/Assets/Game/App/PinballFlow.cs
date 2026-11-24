@@ -50,9 +50,10 @@ namespace Game.App
         private readonly int _baseSeed;
         private int _games;
         private bool _hasFocus = true;
-        private bool _left;
-        private bool _right;
-        private bool _plunger;
+        // 操作ごとに、今のプレイ期間に押されたキーのビット（1 つの操作に複数のキーを割り当てる）。
+        private int _left;
+        private int _right;
+        private int _plunger;
         private double _origin;
         private long _ticksDone;
         private int _frameBudget = MaxTicksPerFrame;
@@ -85,7 +86,7 @@ namespace Game.App
         public bool IsNewBest { get; private set; }
 
         /// <summary>今の Tick に使う入力（押しているキー）。</summary>
-        public PinballInput Held => new(_left, _right, _plunger);
+        public PinballInput Held => new(_left != 0, _right != 0, _plunger != 0);
 
         /// <summary>設定されていれば、キーの代わりにこれで操作する（撮影・テスト用）。</summary>
         public IPinballPilot? Pilot { get; set; }
@@ -116,7 +117,10 @@ namespace Game.App
             }
         }
 
-        /// <summary>フォーカスを失うと押しているキーを全て離し、プレイ中は一時停止する（戻っても自動では再開しない）。</summary>
+        /// <summary>
+        /// フォーカスを失うと押しているキーを全て離し、プレイ中は一時停止する（戻っても自動では再開しない）。
+        /// 離したとみなしたキーは、物理的に押したままでも一度離して押し直すまで効かない（他の割り当てのキーを新しく押せば効く）。
+        /// </summary>
         public void SetFocus(bool focus)
         {
             _hasFocus = focus;
@@ -163,22 +167,22 @@ namespace Game.App
             switch (intent.Kind)
             {
                 case IntentKind.LeftDown:
-                    _left = true;
+                    _left |= intent.KeyBit;
                     break;
                 case IntentKind.LeftUp:
-                    _left = false;
+                    _left &= ~intent.KeyBit;
                     break;
                 case IntentKind.RightDown:
-                    _right = true;
+                    _right |= intent.KeyBit;
                     break;
                 case IntentKind.RightUp:
-                    _right = false;
+                    _right &= ~intent.KeyBit;
                     break;
                 case IntentKind.PlungerDown:
-                    _plunger = true;
+                    _plunger |= intent.KeyBit;
                     break;
                 case IntentKind.PlungerUp:
-                    _plunger = false;
+                    _plunger &= ~intent.KeyBit;
                     break;
                 case IntentKind.Cancel:
                     Pause();
@@ -270,9 +274,9 @@ namespace Game.App
 
         private void ReleaseAll()
         {
-            _left = false;
-            _right = false;
-            _plunger = false;
+            _left = 0;
+            _right = 0;
+            _plunger = 0;
         }
     }
 

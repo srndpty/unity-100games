@@ -38,28 +38,45 @@ namespace Game.App
     /// </summary>
     public readonly struct Intent : IEquatable<Intent>
     {
+        /// <summary>1 つの操作に割り当てられるキーの数の上限（キーの番号は 0〜31）。</summary>
+        public const int MaxKeys = 32;
+
         public Intent(IntentKind kind, double time)
+            : this(kind, time, 0)
+        {
+        }
+
+        /// <param name="key">押下・解放の意図で、その操作に割り当てたキーの番号（0〜31）。同じ操作の別のキーは別々に押す・離す。</param>
+        public Intent(IntentKind kind, double time, int key)
         {
             if (!double.IsFinite(time)) { throw new ArgumentOutOfRangeException(nameof(time), time, "時刻は有限の値にしてください。"); }
             if (!Enum.IsDefined(typeof(IntentKind), kind)) { throw new ArgumentOutOfRangeException(nameof(kind), kind, "未定義の操作です。"); }
+            if (key < 0 || key >= MaxKeys) { throw new ArgumentOutOfRangeException(nameof(key), key, "キーの番号は 0〜31 にしてください。"); }
             Kind = kind;
             Time = time;
+            Key = key;
         }
 
         public IntentKind Kind { get; }
 
         public double Time { get; }
 
-        public bool Equals(Intent other) => Kind == other.Kind && Time.Equals(other.Time);
+        /// <summary>操作に割り当てたキーの番号（押下・解放の意図だけが使う）。</summary>
+        public int Key { get; }
+
+        /// <summary>キーの番号のビット。</summary>
+        public int KeyBit => 1 << Key;
+
+        public bool Equals(Intent other) => Kind == other.Kind && Time.Equals(other.Time) && Key == other.Key;
 
         public override bool Equals(object? obj) => obj is Intent other && Equals(other);
 
-        public override int GetHashCode() => ((int)Kind * 397) ^ Time.GetHashCode();
+        public override int GetHashCode() => (((int)Kind * 397) ^ Time.GetHashCode()) + Key;
 
         public static bool operator ==(Intent left, Intent right) => left.Equals(right);
 
         public static bool operator !=(Intent left, Intent right) => !left.Equals(right);
 
-        public override string ToString() => $"{Kind}@{Time}";
+        public override string ToString() => $"{Kind}[{Key}]@{Time}";
     }
 }

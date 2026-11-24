@@ -193,6 +193,34 @@ namespace Game.Unity.Tests
             yield return WaitUntil(() => !_game.Flow.Held.Left);
         }
 
+        /// <summary>
+        /// レビュー P2-1：Z を押したまま一時停止・再開した後、← を新しく押すと上がり、← を離すと（Z は押したままでも）下がる。
+        /// </summary>
+        [UnityTest]
+        public IEnumerator AnotherBoundKey_WorksAfterPausingWithAKeyHeld()
+        {
+            var rest = _game.Flow.Table.Left.RestAngle;
+            yield return _keyboard.Tap(Key.Enter);
+            _keyboard.Hold(Key.Z);
+            yield return WaitUntil(() => Run.FlipperOf(FlipperSide.Left).IsUp);
+            _keyboard.Hold(Key.Z, Key.Escape);
+            yield return WaitUntil(() => _game.Flow.Screen == AppScreen.Paused);
+            _keyboard.Hold(Key.Z);
+            yield return null;
+            _keyboard.Hold(Key.Z, Key.Enter);
+            yield return WaitUntil(() => _game.Flow.Screen == AppScreen.Playing);
+            _keyboard.Hold(Key.Z);
+            yield return WaitUntil(() => Run.FlipperAngle(FlipperSide.Left) == rest);
+
+            _keyboard.Hold(Key.Z, Key.LeftArrow);
+            yield return WaitUntil(() => Run.FlipperOf(FlipperSide.Left).IsUp, 2f);
+            _keyboard.Hold(Key.Z);
+            yield return WaitUntil(() => Run.FlipperAngle(FlipperSide.Left) == rest, 2f);
+            yield return WaitSeconds(.2f);
+            Assert.That(Run.FlipperAngle(FlipperSide.Left), Is.EqualTo(rest), "古いキーが押したままでも上がりっぱなしにならない");
+            _keyboard.Hold();
+        }
+
         [UnityTest]
         public IEnumerator HoldingSpace_PullsThePlunger_AndReleasingLaunches()
         {
@@ -378,6 +406,10 @@ namespace Game.Unity.Tests
                 var flipperSprite = copy.LeftFlipper.sprite;
                 Check(copy, c => c.LeftFlipper.sprite = c.Ball(0).sprite, c => c.LeftFlipper.sprite = flipperSprite, "フリッパーの絵");
                 Check(copy, c => c.Ball(1).transform.localScale *= 2, c => c.Ball(1).transform.localScale /= 2, "球の大きさ");
+                Check(copy, c => c.Plunger.transform.localScale = new Vector3(2, 1, 1), c => c.Plunger.transform.localScale = Vector3.one, "プランジャーの拡大率");
+                Check(copy, c => c.Plunger.transform.localRotation = Quaternion.Euler(0, 0, 15), c => c.Plunger.transform.localRotation = Quaternion.identity, "プランジャーの回転");
+                Check(copy, c => c.Background.transform.localScale = new Vector3(1.1f, 1.1f, 1), c => c.Background.transform.localScale = Vector3.one, "背景の拡大率");
+                Check(copy, c => c.Background.transform.localPosition = new Vector3(0, .5f, 0), c => c.Background.transform.localPosition = Vector3.zero, "背景の位置");
                 var background = copy.Background.sprite;
                 Check(copy, c => c.Background.sprite = null, c => c.Background.sprite = background, "背景の絵");
             }

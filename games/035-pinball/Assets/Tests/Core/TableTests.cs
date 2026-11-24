@@ -49,6 +49,24 @@ namespace Game.Core.Tests
             Assert.That(() => Table.Parse(text, new PinballConfig()), Throws.ArgumentException.With.Message.Contains(reason));
         }
 
+        /// <summary>レビュー P3-1：左右のフリッパーが回る範囲で重なる台は拒否する（フリッパーどうしは当たらない）。</summary>
+        [TestCase("flipper R 8 3 3 0.3 210 150", true)]
+        [TestCase("flipper R 9.4 3 3 0.3 210 150", true)]
+        [TestCase("flipper R 12 3 3 0.3 210 150", false)]
+        public void OverlappingFlippersAreRejected(string right, bool rejected)
+        {
+            var text = TestKit.LabText(string.Empty).Replace("flipper R 18 3 3 0.3 210 150", right);
+            Assert.That(text, Does.Not.Contain("flipper R 18"));
+            if (rejected)
+            {
+                Assert.That(() => Table.Parse(text, new PinballConfig()), Throws.ArgumentException.With.Message.Contains("フリッパーどうし"));
+            }
+            else
+            {
+                Assert.That(() => Table.Parse(text, new PinballConfig()), Throws.Nothing);
+            }
+        }
+
         [TestCase("flipper L 1 1 1 0.1 0 10\n", "2 つ")]
         [TestCase("lane 1 3 2\n", "lane")]
         [TestCase("post 1 2 3\n", "未知")]

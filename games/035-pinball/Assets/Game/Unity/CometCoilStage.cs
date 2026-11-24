@@ -157,7 +157,11 @@ namespace Game.Unity
             if (table == null) { throw new ArgumentNullException(nameof(table)); }
             if (config == null) { throw new ArgumentNullException(nameof(config)); }
             if (_background == null || _background.sprite == null) { return "背景の絵がありません。"; }
+            if (!Near(_background.transform.localPosition, Vector3.zero) || !Upright(_background.transform)) { return "背景の位置・回転・大きさが変わっています（台の中心に、拡大せずに置きます）。"; }
             if (_plunger == null || _plunger.sprite == null) { return "プランジャーの絵がありません。"; }
+
+            // 描画は位置だけを動かすので、回転・拡大率が Prefab で変わっていると試合中もその姿で描かれる。
+            if (!Upright(_plunger.transform)) { return "プランジャーの回転・大きさが変わっています。"; }
             var rails = 0;
             foreach (var collider in table.Colliders)
             {
@@ -295,6 +299,10 @@ namespace Game.Unity
         }
 
         private static bool Near(Vector3 a, Vector3 b) => (a - b).sqrMagnitude < Tolerance * Tolerance;
+
+        /// <summary>回転なし・拡大率 1。</summary>
+        private static bool Upright(Transform part) =>
+            Quaternion.Angle(part.localRotation, Quaternion.identity) < .01f && Near(part.localScale, Vector3.one);
 
         private static bool Near(Vector2 a, Vector2 b) => (a - b).sqrMagnitude < Tolerance * Tolerance;
     }

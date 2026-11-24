@@ -282,6 +282,46 @@ namespace Game.Core
 
             ValidateFlipper(Left, FlipperSide.Left, config);
             ValidateFlipper(Right, FlipperSide.Right, config);
+            ValidateFlippersApart();
+        }
+
+        /// <summary>フリッパーどうしを重ならないか調べる角度の刻み（1 度）。</summary>
+        public const int FlipperPairStep = Trig.FullTurn / 360;
+
+        /// <summary>
+        /// 左右のフリッパーが、回る範囲のどの組み合わせでも重ならないか（フリッパーどうしの衝突は Core にないので、重なる台は成り立たない）。
+        /// 角度を <see cref="FlipperPairStep"/> 刻みで組み合わせ、刻みの間に先端が動く弧の長さを両方ぶん余裕に足して判定する
+        /// （刻みの間で触れる配置も拒否する側に倒す）。
+        /// </summary>
+        private void ValidateFlippersApart()
+        {
+            var margin = Arc(Left.Length) + Arc(Right.Length) + 1;
+            var reach = (int)Math.Min(int.MaxValue, Left.Radius + Right.Radius + margin);
+            foreach (var left in Angles(Left))
+            {
+                var leftTip = Left.TipAt(left);
+                foreach (var right in Angles(Right))
+                {
+                    if (Capsule.SegmentsWithin(Left.Pivot, leftTip, Right.Pivot, Right.TipAt(right), reach))
+                    {
+                        throw new ArgumentException("左右のフリッパーどうしが回る範囲で重なります（フリッパーどうしは当たらないので、離して置いてください）。");
+                    }
+                }
+            }
+
+            static long Arc(int length) => (((long)length * FlipperPairStep * TwoPiQ16) >> 32) + 1;
+        }
+
+        /// <summary>休みの角度から上の角度まで、<see cref="FlipperPairStep"/> 刻み（最後は上の角度ちょうど）。</summary>
+        private static System.Collections.Generic.IEnumerable<int> Angles(FlipperSpec flipper)
+        {
+            var step = flipper.UpDirection * FlipperPairStep;
+            for (var angle = flipper.RestAngle; ; angle += step)
+            {
+                var done = flipper.UpDirection > 0 ? angle >= flipper.UpAngle : angle <= flipper.UpAngle;
+                yield return done ? flipper.UpAngle : angle;
+                if (done) { yield break; }
+            }
         }
 
         /// <summary>

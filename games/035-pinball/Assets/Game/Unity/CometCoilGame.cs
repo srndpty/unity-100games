@@ -13,8 +13,8 @@ namespace Game.Unity
 {
     /// <summary>
     /// 入力・HUD・音。キーを起きた時刻つきで 1 本の列に入れ、フレームの初めに起きた順で <see cref="PinballFlow"/> へ渡す（012・022）。
-    /// フリッパーとプランジャーは押下と解放の両方を拾う（PassThrough）。1 つの操作に複数のキーを割り当てたので、
-    /// どれかが押されている間を「押している」とし、変わったときだけ意図にする（032 の知見：束ねたキーのロールオーバー）。
+    /// フリッパーとプランジャーは押下と解放の両方をキーごとに拾う（PassThrough、032 の知見：束ねたキーのロールオーバー）。
+    /// 1 つの操作に割り当てた複数のキーは、組の中の番号つきの意図にし、どれが押されているかは Flow が持つ。
     /// </summary>
     [RequireComponent(typeof(AudioSource))]
     public sealed class CometCoilGame : MonoBehaviour
@@ -31,7 +31,6 @@ namespace Game.Unity
         private readonly List<Intent> _intents = new();
         private readonly List<InputAction> _actions = new();
         private readonly List<AudioClip> _clips = new();
-        private readonly bool[] _held = new bool[3];
         private PinballRun _preview;
         private bool _hasFocus = true;
         private VisualElement _root;
@@ -92,9 +91,9 @@ namespace Game.Unity
             _lostSound = Tone("Lost", 520, 140, .45f);
             _overSound = Tone("Over", 300, 70, .9f);
 
-            Track(0, IntentKind.LeftDown, IntentKind.LeftUp, _leftKeys);
-            Track(1, IntentKind.RightDown, IntentKind.RightUp, _rightKeys);
-            Track(2, IntentKind.PlungerDown, IntentKind.PlungerUp, _plungerKeys);
+            Track(IntentKind.LeftDown, IntentKind.LeftUp, _leftKeys);
+            Track(IntentKind.RightDown, IntentKind.RightUp, _rightKeys);
+            Track(IntentKind.PlungerDown, IntentKind.PlungerUp, _plungerKeys);
             Bind(IntentKind.Submit, "<Keyboard>/enter", "<Keyboard>/numpadEnter");
             Bind(IntentKind.Cancel, "<Keyboard>/escape");
             Bind(IntentKind.Retry, "<Keyboard>/r");
@@ -108,20 +107,24 @@ namespace Game.Unity
 
         private bool AcceptInput() => _hasFocus && !EvidenceCapture.IsRunning;
 
-        /// <summary>キーの組の押下・解放を拾い、組のどれかが押されているかが変わったときだけ意図にする。</summary>
-        private void Track(int index, IntentKind down, IntentKind up, (Key Key, string Path)[] keys)
+        /// <summary>
+        /// キーの組の押下・解放を、組の中のキーの番号つきで意図にする。どのキーが押されているかは Flow がキーごとに持つ
+        /// （一時停止・フォーカス喪失で Flow が全て離したとき、Unity 側の集約状態と食い違わない）。
+        /// </summary>
+        private void Track(IntentKind down, IntentKind up, (Key Key, string Path)[] keys)
         {
             var bindings = new string[keys.Length];
             for (var i = 0; i < keys.Length; i++) { bindings[i] = keys[i].Path; }
             var action = NewAction(down.ToString(), InputActionType.PassThrough, bindings);
             action.performed += context =>
             {
-                if (context.control is not KeyControl || context.control.device is not Keyboard keyboard) { return; }
-                var any = false;
-                foreach (var (key, _) in keys) { any |= keyboard[key].isPressed; }
-                if (any == _held[index]) { return; }
-                _held[index] = any;
-                Queue(new Intent(any ? down : up, EventTime(context)));
+                if (context.control is not KeyControl control) { return; }
+                for (var i = 0; i < keys.Length; i++)
+                {
+                    if (keys[i].Key != control.keyCode) { continue; }
+                    Queue(new Intent(control.isPressed ? down : up, EventTime(context), i));
+                    return;
+                }
             };
         }
 
@@ -175,10 +178,9 @@ namespace Game.Unity
             _hasFocus = focus;
             if (Flow == null || EvidenceCapture.IsRunning) { return; }
 
-            // 同じフレームに届いていた入力も捨てる（フォーカス喪失の後に再開しないように）。押していたキーも離したとみなす。
+            // 同じフレームに届いていた入力も捨てる（フォーカス喪失の後に再開しないように）。押していたキーは Flow が離したとみなす。
             Flow.SetFocus(focus);
             _intents.Clear();
-            if (!focus) { Array.Clear(_held, 0, _held.Length); }
         }
 
         /// <summary>出来事を音と演出にする。撮影台本も Tick を進めた後に呼ぶ。</summary>

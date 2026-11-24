@@ -149,6 +149,57 @@ namespace Game.App.Tests
             Assert.That(flow.Held, Is.EqualTo(new PinballInput(false, false, false)), "再開してもキーは押していないとみなす");
         }
 
+        /// <summary>
+        /// レビュー P2-1：1 つの操作に割り当てた別のキーは、一時停止・フォーカス喪失をまたいでも新しく押せば効く。
+        /// 離したとみなしたキー（物理的には押したまま）は、新しいキーを離した後に操作を残さない。
+        /// </summary>
+        [Test]
+        public void AnotherBoundKeyWorksAfterAPauseWhileTheOldKeyIsStillHeld([Values(true, false)] bool focusLoss)
+        {
+            var flow = AppKit.Flow();
+            flow.Apply(new Intent(IntentKind.Submit, 0));
+            flow.Apply(new Intent(IntentKind.LeftDown, 0.1, 0));
+            Assert.That(flow.Held.Left, Is.True);
+
+            if (focusLoss)
+            {
+                flow.SetFocus(false);
+                flow.SetFocus(true);
+            }
+            else
+            {
+                flow.Apply(new Intent(IntentKind.Cancel, 0.2));
+            }
+
+            flow.Apply(new Intent(IntentKind.Submit, 0.3));
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Playing));
+            Assert.That(flow.Held.Left, Is.False, "再開しても前から押したままのキーは効かない");
+
+            flow.Apply(new Intent(IntentKind.LeftDown, 0.4, 1));
+            Assert.That(flow.Held.Left, Is.True, "別の割り当てのキーを新しく押せば上がる");
+            flow.Apply(new Intent(IntentKind.LeftUp, 0.5, 1));
+            Assert.That(flow.Held.Left, Is.False, "新しいキーを離すと下がる（古いキーは押したままでも残らない）");
+
+            flow.Apply(new Intent(IntentKind.LeftUp, 0.6, 0));
+            flow.Apply(new Intent(IntentKind.LeftDown, 0.7, 0));
+            Assert.That(flow.Held.Left, Is.True, "古いキーも離して押し直せば効く");
+        }
+
+        [Test]
+        public void BoundKeysRollOver()
+        {
+            var flow = AppKit.Flow();
+            flow.Apply(new Intent(IntentKind.Submit, 0));
+            flow.Apply(new Intent(IntentKind.RightDown, 0.1, 0));
+            flow.Apply(new Intent(IntentKind.RightDown, 0.2, 2));
+            flow.Apply(new Intent(IntentKind.RightUp, 0.3, 0));
+            Assert.That(flow.Held.Right, Is.True, "片方を離してももう片方で上がったまま");
+            flow.Apply(new Intent(IntentKind.RightUp, 0.4, 2));
+            Assert.That(flow.Held.Right, Is.False);
+            flow.Apply(new Intent(IntentKind.RightUp, 0.5, 1));
+            Assert.That(flow.Held.Right, Is.False, "押していないキーの解放は何もしない");
+        }
+
         [Test]
         public void InputsWhileUnfocusedAreIgnored()
         {
@@ -221,6 +272,8 @@ namespace Game.App.Tests
         {
             Assert.That(() => new Intent(IntentKind.Submit, double.NaN), Throws.InstanceOf<ArgumentOutOfRangeException>());
             Assert.That(() => new Intent((IntentKind)99, 0), Throws.InstanceOf<ArgumentOutOfRangeException>());
+            Assert.That(() => new Intent(IntentKind.LeftDown, 0, -1), Throws.InstanceOf<ArgumentOutOfRangeException>());
+            Assert.That(() => new Intent(IntentKind.LeftDown, 0, Intent.MaxKeys), Throws.InstanceOf<ArgumentOutOfRangeException>());
         }
     }
 }
