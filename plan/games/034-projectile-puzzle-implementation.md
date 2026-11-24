@@ -141,3 +141,15 @@
   - `SiegeRun.Clone` は先読みに使わないので作らなかった。やり直しは試合と物理の世界を作り直す。
   - 操縦役（`PlannedPilot`）は構えられるようになってから 40 Tick 静かに待って撃つ（撮影で構えの絵を撮るため）。
 - 次（セッション2）：Unity 層（Physics2D の Stage・Tick 駆動・弾道の点・HUD・音・シーン生成）と、5 面の解答の探索。
+
+## セッション2の結果（2026-11-24）
+
+- Unity 層：`PebbleSiegeWorld`（`ISiegeWorld` の Physics2D 実装）と `SiegeBody`、`PebbleSiegeStage`（発射台・構えた弾・ゴム・弾道の点 32・爆発・土ぼこり 12・部材と弾の見本）、`PebbleSiegeGame`（マウスとキーの入力・HUD・音）、`PebbleSiegeSettings`、`PebbleSiegeArtGenerator`・`PebbleSiegeSceneBuilder`、撮影台本 11 枚。
+- 5 面の解答 `Assets/Game/Data/Solutions.txt` は、PlayMode の `[Explicit]` テスト `SolutionSearch` が実際の Physics2D で 1 発ずつ角度（0〜75 度、2.5 度刻み）× 引きの長さ（4 通り）× 起爆の Tick（爆発の弾だけ 4 通り）を総当たりして見つけた（5 面で約 3 秒）。面のデータは仮の配置のまま全面が解けた。
+- PlayMode 実シーン 16 件と雛形の 16 件が通った。Windows ビルドと撮影が通った。
+- 計画との差：
+  - 面を読み込むたびに局所の物理を持つ新しいシーン（`LocalPhysicsMode.Physics2D`）を作り、その `PhysicsScene2D` だけを進める。Box2D の世界ごと作り直すので、前の面・やり直しの履歴に依らず同じ結果になる（別の面を挟んで同じ面を再生し、ハッシュと全部材の位置の一致をテスト）。
+  - 部材は当たりの大きさを変えると起きるので、組み終えてから眠らせる（面の始めの 1.5 cm の沈み込みがなくなった）。
+  - 衝突のダメージは、各部材が自分の `OnCollisionEnter2D` で自分の分だけを報告する（相手は -1）。2 つの部材がぶつかると両方が自分の撃力を受け、Core の「両方が受ける」と同じになる。
+  - 弾道プレビューと実際の飛行は 3 種とも 40 Tick の間 1e-4 m 以内で一致した。
+- 次（セッション3）：同一ビルドの撮影再現、`evidence/README.md`、README の更新、「検証待ち」。
