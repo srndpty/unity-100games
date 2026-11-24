@@ -1,0 +1,75 @@
+{
+    "Product": "INK VIGIL",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "722756ac85474c708d11c386e3c18ade",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-23T20:06:58.7583551Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Hp\":3,\"Lanes\":5,\"Easy\":{\"MinTier\":1,\"MaxTier\":1,\"MaxEnemies\":2,\"ApproachTicks\":600,\"Goal\":10,\"FirstSpawnTicks\":30,\"SpawnMinTicks\":150,\"SpawnMaxTicks\":210},\"Normal\":{\"MinTier\":1,\"MaxTier\":2,\"MaxEnemies\":3,\"ApproachTicks\":540,\"Goal\":15,\"FirstSpawnTicks\":30,\"SpawnMinTicks\":120,\"SpawnMaxTicks\":180},\"Hard\":{\"MinTier\":2,\"MaxTier\":3,\"MaxEnemies\":4,\"ApproachTicks\":600,\"Goal\":20,\"FirstSpawnTicks\":30,\"SpawnMinTicks\":120,\"SpawnMaxTicks\":180}}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "6d71796c6333e69b4052b46d640b2a9345c725ce641d2887d6682353431f16d6",
+            "Note": "タイトル（難度の選択と操作の説明）"
+        },
+        {
+            "File": "02-approach.jpg",
+            "Sha256": "c336288670fb170b4e8ab3a435eb778b4113d1826106f8fe526385245dbcd441",
+            "Note": "ふつう：奥から 3 体が迫る。札に表示文・読み・ローマ字の案内。経過 400 Tick、撃破 0/15、体力 3、得点 0、誤字 0、狙い なし"
+        },
+        {
+            "File": "03-locked.jpg",
+            "Sha256": "111ac8ff4c45b672a517bc26c92eb8e4ad857279854bc7f83f333908990f2a81",
+            "Note": "最初の 1 打で手前の敵（銀）を狙い、打った部分の色が変わる。経過 400 Tick、撃破 0/15、体力 3、得点 30、誤字 0、狙い 銀（gin）"
+        },
+        {
+            "File": "04-miss.jpg",
+            "Sha256": "5e4fe78fcab0a5084241bb6f5ab9b58dafae611dc1a8b1e00f127e5b119d2e87",
+            "Note": "誤字：狙いの言葉は進まず、連続が 0 に戻り、下の表示が赤くなる。経過 400 Tick、撃破 0/15、体力 3、得点 30、誤字 1、狙い 銀（gin）"
+        },
+        {
+            "File": "05-backspace.jpg",
+            "Sha256": "e4dd801a16d7f86bdd0f0c4d48f790c56dbb9a5114756904a19f49ed2af5aed4",
+            "Note": "Backspace：狙いを外し、その敵の打った分を最初に戻す。経過 401 Tick、撃破 0/15、体力 3、得点 30、誤字 1、狙い なし"
+        },
+        {
+            "File": "06-alternative.jpg",
+            "Sha256": "ad13bcc2cb4d5bd4b773d050fc3613d7c6ed15e9102ae959e4f41e892f5983a9",
+            "Note": "別の綴り：静かな図書室（しずかなとしょしつ）の「し」を si で打っても受け付け、案内は続きを示す。経過 425 Tick、撃破 0/15、体力 3、得点 90、誤字 1、狙い 静かな図書室（sizuka）"
+        },
+        {
+            "File": "07-defeated.jpg",
+            "Sha256": "45c5afe3811e6d6744f846c5d8ccc82a3f9233163f0dcbcf72199ce07f28bc4c",
+            "Note": "静かな図書室 を打ち切って撃破（煙の演出）。経過 429 Tick、撃破 1/15、体力 3、得点 670、誤字 1、狙い なし"
+        },
+        {
+            "File": "08-hit.jpg",
+            "Sha256": "d1efbbdfc5502d12b3836f14ea4d64780540d5826a1618d725bf4fccf4ed07fb",
+            "Note": "打たずにいた敵が手前の線に着いて被弾（体力が減り、画面が赤く揺れる）。経過 573 Tick、撃破 1/15、体力 2、得点 670、誤字 1、狙い なし"
+        },
+        {
+            "File": "09-paused.jpg",
+            "Sha256": "ff5c9f18c12268f699651948324d30e357d21a4611087801710ef5df0f8dd0ba",
+            "Note": "一時停止。経過 573 Tick、撃破 1/15、体力 2、得点 670、誤字 1、狙い なし"
+        },
+        {
+            "File": "10-cleared.jpg",
+            "Sha256": "63651ba5edb7be46a4b8f59ef2d63f4cfb78028224b1e06317447fc7a1a70c28",
+            "Note": "速い操縦役（7.5 打/秒、誤字 4%）でふつうをクリアした結果。経過 2294 Tick、撃破 15/15、体力 3、得点 3730、誤字 1、狙い なし"
+        },
+        {
+            "File": "11-failed.jpg",
+            "Sha256": "7987ff28cd1b1a58b752e185b9eb603497b4d266a5f13e5df74ac735a5b09044",
+            "Note": "遅い操縦役（2 打/秒）でむずかしいに失敗した結果。経過 1708 Tick、撃破 5/20、体力 0、得点 2200、誤字 0、狙い なし"
+        }
+    ]
+}

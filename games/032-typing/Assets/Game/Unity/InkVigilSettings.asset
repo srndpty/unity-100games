@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62643d939e8282644af440c137d34898, type: 3}
+  m_Name: InkVigilSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.InkVigilSettings
+  Rules:
+    Hp: 3
+    Lanes: 5
+    Easy:
+      MinTier: 1
+      MaxTier: 1
+      MaxEnemies: 2
+      ApproachTicks: 600
+      Goal: 10
+      FirstSpawnTicks: 30
+      SpawnMinTicks: 150
+      SpawnMaxTicks: 210
+    Normal:
+      MinTier: 1
+      MaxTier: 2
+      MaxEnemies: 3
+      ApproachTicks: 540
+      Goal: 15
+      FirstSpawnTicks: 30
+      SpawnMinTicks: 120
+      SpawnMaxTicks: 180
+    Hard:
+      MinTier: 2
+      MaxTier: 3
+      MaxEnemies: 4
+      ApproachTicks: 600
+      Goal: 20
+      FirstSpawnTicks: 30
+      SpawnMinTicks: 120
+      SpawnMaxTicks: 180
+  Words: {fileID: 4900000, guid: 79e8f64ac92689847836689c74696686, type: 3}
+  Volume: 0.12
+  EffectTicks: 24
