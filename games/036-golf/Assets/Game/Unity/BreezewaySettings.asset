@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b5662de3799ac14a805390f858f40c4, type: 3}
+  m_Name: BreezewaySettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.BreezewaySettings
+  Rules:
+    Gravity: 2722
+    Drag: 150
+    WindPush: 413
+    MaxWindSteps: 6
+    WindStep: 16667
+    ClubSpeed: 154b11006b390d00f5a9090018730100i
+    ClubLoft: 610b000011110000721c000000000000i
+    ClubBite: 00100000b80b00004006000000100000i
+    LoftPerImpact: 364
+    BitePerImpact: 400
+    SpinPerImpact: 260
+    SpinPerErrorTick: 130
+    PuttAnglePerErrorTick: 160
+    MeterHalfTicks: 45
+    ImpactWindow: 8
+    MishitPower: 500
+    BounceRestitution: 840300001405000014050000e8030000c80000000000000000000000i
+    BounceKeep: d00700006009000060090000fc080000200300000000000000000000i
+    RollDecel: 57040000b6020000b602000099000000050d00000000000000000000i
+    LiePower: 52030000e8030000e8030000e80300008a0200000000000000000000i
+    RollThreshold: 16667
+    StopSpeed: 300
+    CupRadius: 54000
+    CupMaxSpeed: 20000
+    TreeRestitution: 1500
+    MaxShotTicks: 3600
+    MaxOver: 5
+    RestTicks: 45
+    PenaltyTicks: 90
+    HoleOutTicks: 150
+    AimStep: 64
+    PuttAimStep: 16
+    PuttPreviewTicks: 40
+  Course: {fileID: 4900000, guid: f7f7ce8973c0cd14da45948cedb3365c, type: 3}
+  Volume: 0.12
+  HeightScale: 0.5
+  BannerSeconds: 2
+  CapturePilotSeed: 3

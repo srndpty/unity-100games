@@ -1,0 +1,31 @@
+.hud { position: absolute; width: 100%; height: 100%; color: rgb(240, 246, 232); justify-content: center; align-items: center; }
+.box { position: absolute; padding: 14px 22px; background-color: rgba(14, 32, 22, 0.84); border-radius: 14px; border-width: 2px; border-color: rgb(120, 190, 120); }
+.top-left { left: 36px; top: 28px; }
+.top-right { right: 36px; top: 28px; align-items: center; min-width: 200px; }
+.bottom-left { left: 36px; bottom: 28px; min-width: 520px; }
+.bottom-right { right: 36px; bottom: 28px; }
+.logo { font-size: 26px; -unity-font-style: bold; color: rgb(170, 230, 150); margin-bottom: 4px; }
+.caption { font-size: 20px; color: rgb(170, 200, 170); }
+.big { font-size: 38px; -unity-font-style: bold; }
+.stat { font-size: 26px; -unity-font-style: bold; margin-top: 2px; }
+.soft { color: rgb(200, 220, 190); }
+.wind-row { flex-direction: row; align-items: center; }
+.wind-arrow { font-size: 52px; color: rgb(150, 220, 255); width: 64px; height: 64px; -unity-text-align: middle-center; margin-right: 10px; }
+.shot-row { flex-direction: row; align-items: center; }
+.shot-text { flex-grow: 1; margin-right: 24px; }
+.impact-box { align-items: center; }
+.impact-ball { width: 96px; height: 96px; border-radius: 48px; background-color: rgb(245, 245, 240); border-width: 3px; border-color: rgb(60, 70, 60); margin-top: 4px; }
+.impact-dot { position: absolute; width: 18px; height: 18px; border-radius: 9px; background-color: rgb(220, 50, 50); left: 39px; top: 39px; }
+.diff { font-size: 22px; color: rgb(255, 200, 120); margin-top: 8px; }
+.meter { position: absolute; bottom: 28px; width: 800px; align-items: center; padding: 12px 20px 8px 20px; background-color: rgba(14, 32, 22, 0.84); border-radius: 14px; border-width: 2px; border-color: rgb(120, 190, 120); }
+.meter-track { width: 760px; height: 40px; background-color: rgba(10, 24, 16, 0.9); border-radius: 8px; border-width: 2px; border-color: rgb(200, 220, 190); overflow: hidden; }
+.meter-band { position: absolute; top: 0; height: 100%; background-color: rgba(120, 200, 255, 0.45); }
+.meter-fill { position: absolute; top: 0; left: 0; height: 100%; background-color: rgba(255, 190, 70, 0.75); }
+.meter-power { position: absolute; top: 0; width: 4px; height: 100%; background-color: rgb(255, 80, 60); }
+.meter-cursor { position: absolute; top: 0; width: 6px; height: 100%; background-color: rgb(255, 255, 255); }
+.meter-text { font-size: 24px; -unity-font-style: bold; margin-top: 6px; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(10, 20, 10); }
+.controls { font-size: 21px; white-space: normal; }
+.banner { position: absolute; top: 150px; font-size: 64px; -unity-font-style: bold; color: rgb(255, 236, 150); -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(30, 40, 20); -unity-text-align: middle-center; }
+.panel { width: 760px; padding: 28px 36px; background-color: rgba(10, 26, 18, 0.94); border-radius: 18px; border-width: 2px; border-color: rgb(170, 230, 150); }
+.headline { font-size: 58px; -unity-font-style: bold; color: rgb(170, 230, 150); -unity-text-align: middle-center; white-space: normal; }
+.message { margin-top: 14px; font-size: 25px; white-space: normal; -unity-text-align: middle-center; }

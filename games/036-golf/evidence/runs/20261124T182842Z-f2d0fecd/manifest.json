@@ -1,0 +1,79 @@
+{
+    "Product": "BREEZEWAY LINKS",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "4f77499217f84baf98b1cf45cf982340",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-24T18:28:40.8934258Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Gravity\":2722,\"Drag\":150,\"WindPush\":413,\"MaxWindSteps\":6,\"WindStep\":16667,\"ClubSpeed\":[1133333,866667,633333,95000],\"ClubLoft\":[2913,4369,7282,0],\"ClubBite\":[4096,3000,1600,4096],\"LoftPerImpact\":364,\"BitePerImpact\":400,\"SpinPerImpact\":260,\"SpinPerErrorTick\":130,\"PuttAnglePerErrorTick\":160,\"MeterHalfTicks\":45,\"ImpactWindow\":8,\"MishitPower\":500,\"BounceRestitution\":[900,1300,1300,1000,200,0,0],\"BounceKeep\":[2000,2400,2400,2300,800,0,0],\"RollDecel\":[1111,694,694,153,3333,0,0],\"LiePower\":[850,1000,1000,1000,650,0,0],\"RollThreshold\":16667,\"StopSpeed\":300,\"CupRadius\":54000,\"CupMaxSpeed\":20000,\"TreeRestitution\":1500,\"MaxShotTicks\":3600,\"MaxOver\":5,\"RestTicks\":45,\"PenaltyTicks\":90,\"HoleOutTicks\":150,\"AimStep\":64,\"PuttAimStep\":16,\"PuttPreviewTicks\":40}"
+        },
+        {
+            "Key": "pilotSeed",
+            "Value": "3"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "360424ff4a58330e3f884247b8cf5c347f556d4dfb8fedcaaab2d801bdc0c5d9",
+            "Note": "タイトル（遊び方の説明と操作）"
+        },
+        {
+            "File": "02-aim.jpg",
+            "Sha256": "85a99e46e065d35895bd5d409fa9bd2e860a299c888df98e222972dbf027ffde",
+            "Note": "1 番ホールのティー：向きはカップへ、届くクラブを自動で選ぶ。白い点は予測線（パワー 100%・ずれ 0）、輪は着地の予測。1 番ホール、打数 0、合計 0、経過 0 Tick、ハッシュ 0x9843E848"
+        },
+        {
+            "File": "03-meter.jpg",
+            "Sha256": "0a4c203d3ce826775a54e85a2b769799f692ac8d29e1102da8d6b9f7360fd7f3",
+            "Note": "メーター：40 Tick 目でパワーを決め（赤い線）、カーソルが左端の青いインパクト帯へ戻る。予測線は決めたパワーで描き直す。1 番ホール、打数 0、合計 0、経過 52 Tick、ハッシュ 0x503041D9"
+        },
+        {
+            "File": "04-flight.jpg",
+            "Sha256": "9ce9b845fd59162d0dde4f6cbad0b9dc88db08ee9433952ee8f354ee268fcd11",
+            "Note": "飛んでいる球：影から上へずらして高さを描く。白い点が予測線、橙の点が実際の軌跡（ずれ 0 なので重なる）。1 番ホール、打数 1、合計 0、経過 130 Tick、ハッシュ 0xC3BE9838"
+        },
+        {
+            "File": "05-tree.jpg",
+            "Sha256": "0fbfcffefde5de1d6943fa2fb4e5207cf7f309a24891aad714ce5a9b65720772",
+            "Note": "木に当たった Tick：手前で跳ね返り、その Tick の残りを新しい速度で計算し直す（予測線も同じ計算）。1 番ホール、打数 1、合計 0、経過 361 Tick、ハッシュ 0xE60DC03E"
+        },
+        {
+            "File": "06-penalty.jpg",
+            "Sha256": "9ab84cc8d40e05d0b48d64962a70de6eb5841a11d324641c08be32a127a22bd5",
+            "Note": "池に入った：1 打罰を加えて前の位置から打ち直す（打数 3）。1 番ホール、打数 3、合計 0、経過 694 Tick、ハッシュ 0xDA14C876"
+        },
+        {
+            "File": "07-green.jpg",
+            "Sha256": "c537287632f3782944483ae0cc9d40c097868d45f97ff96b15d0d4e8a751a85e",
+            "Note": "グリーンでは寄った表示：矢印は傾き（低いほうへ）。パターの予測線は最初の 40 Tick だけ。2 番ホール、打数 2、合計 5、経過 2597 Tick、ハッシュ 0xB84B6F60"
+        },
+        {
+            "File": "08-putt.jpg",
+            "Sha256": "6e356afac8e6b173e10537a5411fa2808c55c1d86b59077e8946c1385e1bb438",
+            "Note": "パットの途中：橙の点が実際の転がり（傾きで曲がる）。2 番ホール、打数 3、合計 5、経過 2737 Tick、ハッシュ 0x6EC6BDEB"
+        },
+        {
+            "File": "09-holeout.jpg",
+            "Sha256": "1853b8376e2f25af870da8c51398938e6f107bb7ad8c06d7ea946f9a7ae16cbe",
+            "Note": "カップイン：球の速さが上限以下で円に入った。スコアカードを出して次のホールへ。2 番ホール、打数 3、合計 8、経過 2907 Tick、ハッシュ 0x5D66E001"
+        },
+        {
+            "File": "10-paused.jpg",
+            "Sha256": "1d785506161670a285c3e1822cbd76ba18ba113b4b99ef3fa6c6fd2f12fa8794",
+            "Note": "Esc で一時停止（振っている途中なら取り消す）。3 番ホール、打数 0、合計 8、経過 3037 Tick、ハッシュ 0x40B85278"
+        },
+        {
+            "File": "11-result.jpg",
+            "Sha256": "8606c8a322126092435238c97f139d864d8ca5198ea641c1c5a937c9550f1e3d",
+            "Note": "3 ホールの結果：スコアカード・合計とパー差・起動中の最少打数。3 番ホール、打数 3、合計 11、経過 4600 Tick、ハッシュ 0x04A13B00"
+        }
+    ]
+}

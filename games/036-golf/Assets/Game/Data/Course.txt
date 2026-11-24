@@ -1,0 +1,59 @@
+# BREEZEWAY LINKS（仮）のコース。書式は Game.Core.Course を参照。長さは m、傾きは ‰。
+# x はホールの奥へ、y は横（画面の上）。地面は全てラフで始まり、書いた順に塗る。
+
+hole 1 par 3 size 200 80
+paint ob rect 0 0 200 3
+paint ob rect 0 77 200 80
+paint fairway capsule 40 40 150 42 10
+paint tee rect 10 34 22 46
+paint water ellipse 120 26 14 9
+paint green ellipse 168 42 14 11
+paint bunker ellipse 160 56 7 3.5
+paint bunker ellipse 184 30 4 6
+tee 15 40
+cup 171 44
+tree 80 60 3 12
+tree 92 18 3.5 14
+tree 190 58 3 11
+slope 154 31 182 53 6 -14
+
+hole 2 par 4 size 380 120
+paint ob rect 0 0 380 4
+paint ob rect 0 116 380 120
+paint fairway capsule 40 50 215 55 14
+paint fairway capsule 215 55 330 86 13
+paint tee rect 10 44 22 56
+paint bunker ellipse 232 38 9 5
+paint bunker ellipse 248 70 6 4
+paint green ellipse 346 88 15 12
+paint bunker ellipse 330 103 8 3.5
+paint bunker ellipse 362 72 4 6
+tee 15 50
+cup 349 86
+tree 150 74 3.5 14
+tree 168 30 3 12
+tree 262 95 3.5 15
+tree 285 102 3 12
+tree 300 62 3 13
+slope 331 76 361 100 -12 10
+
+hole 3 par 5 size 500 120
+paint ob rect 0 0 500 4
+paint ob rect 0 116 500 120
+paint fairway capsule 40 60 225 58 15
+paint tee rect 10 54 22 66
+paint water rect 252 4 266 116
+paint fairway capsule 280 62 430 72 14
+paint bunker ellipse 190 40 8 4
+paint bunker ellipse 400 88 9 4
+paint green ellipse 462 72 16 12
+paint bunker ellipse 445 88 7 3.5
+paint bunker ellipse 478 58 5 4
+tee 15 60
+cup 466 70
+tree 120 80 3.5 14
+tree 140 38 3 12
+tree 320 42 3.5 14
+tree 360 92 3 13
+tree 410 50 3 12
+slope 446 60 478 84 10 12

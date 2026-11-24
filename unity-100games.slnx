@@ -209,6 +209,12 @@
     <Project Path="games/035-pinball/dotnet/Core.Tests/G035.Core.Tests.csproj" />
     <Project Path="games/035-pinball/dotnet/Core/G035.Core.csproj" />
   </Folder>
+  <Folder Name="/036-golf/">
+    <Project Path="games/036-golf/dotnet/App.Tests/G036.App.Tests.csproj" />
+    <Project Path="games/036-golf/dotnet/App/G036.App.csproj" />
+    <Project Path="games/036-golf/dotnet/Core.Tests/G036.Core.Tests.csproj" />
+    <Project Path="games/036-golf/dotnet/Core/G036.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />
