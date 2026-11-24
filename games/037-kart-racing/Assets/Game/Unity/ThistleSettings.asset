@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30e4b5924a8b0c549a0b7cf80581d1d1, type: 3}
+  m_Name: ThistleSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.ThistleSettings
+  Rules:
+    Radius: 450
+    Accel: 8
+    MaxSpeed: 340
+    BoostSpeed: 500
+    Drag: 3
+    Brake: 14
+    ReverseSpeed: 140
+    TurnAtLow: 700
+    TurnAtHigh: 160
+    DriftTurn: 280
+    DriftDrag: 4
+    DriftMinSpeed: 160
+    SlipAngle: 600
+    MiniTurboTicks: 8
+    BoostTicks: 40
+    Lookahead: 8000
+    DriftCorner: 5000
+    CornerSpeed: 170
+    StuckTicks: 40
+    RecoverTicks: 35
+    CpuPace1: 880
+    CpuPace2: 800
+    CpuPace3: 720
+    StartDelayTicks: 90
+    MaxRaceTicks: 20000
+  Track: {fileID: 4900000, guid: c6d2b91b85347e449b22c74ed9239d9d, type: 3}
+  Volume: 0.12
