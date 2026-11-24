@@ -120,3 +120,16 @@
 
 - `feature/game036` で `dev new 036`（2D テンプレート）を実行し、int-geometry と tile-motion を `manifest.json`（`testables`）・Core の asmdef・Core の csproj から参照して、雛形と slnx 登録を最小コミットした。Unity の EditMode（パッケージのテストを含む 63 件）、`dev lint/check/test 036` が通った。
 - 次（セッション1）：ルール表を README に固定し、Core（`BallSim`・`Predictor`・`Meter`・`CourseBook`・`GolfRound`）と App（`GolfFlow`・`Autopilot`）をテストから作る。
+
+## セッション1の結果（2026-11-25）
+
+- ルール表は [README](../../games/036-golf/README.md) の「採用ルール」を正とする。
+- Core：`Units`・`GolfConfig`・`CircleSweep`（1 Tick の経路を 256 等分した点の列と円）・`Course`（行指向のコースデータ、図形を 1 m のマスへ塗る）・`BallSim`・`Launch`/`ShotSetup`・`Predictor`・`Meter`・`GolfRound`。App：`Intent`・`GolfFlow`・`Autopilot`。コース `Assets/Game/Data/Course.txt`（par 3・4・5）。
+- Core 84 件・App 15 件が .NET で、共通パッケージを含む 161 件が Mono で通った。操縦役で 20 シード全部が全ホール par 以内、シード 1 の最終ハッシュ 0x6E6BB7DA が .NET と Mono で一致した。
+- 計画との差：
+  - 木・カップの接触は `Sweep.First` ではなく、1 Tick の経路を 256 等分した点の列で決める（µm の座標が `Sweep.FirstLimit` を超える。N 倍した座標の整数の比較で厳密）。
+  - カップは「円に入った点の速さ」で決め、速すぎた球は円から出るまで入らない（円の中で遅くなって落ちると、上限 + 1 でも次の Tick に入る）。
+  - 風は相対速度の抵抗ではなく、風速に比例した一定の力（相対速度の抵抗では 5 m/s で 3 m しか流れなかった）。
+  - スイングは「振り始め・パワー・インパクト」の 3 回押し（計画の「2 回押し」は振り始めの後の 2 回）。
+  - グリーンの上のパターの向きは 16 単位刻み（0.09°）。64 単位では 10 m で 6 cm ずれ、カップ（半径 54 mm）を狙えない。
+- 次（セッション2）：Unity 層（ホールの地面の絵をコースデータから生成・Stage Prefab・HUD・音・シーン生成・撮影台本）。
