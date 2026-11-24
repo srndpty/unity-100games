@@ -53,6 +53,7 @@ MonoBehaviour:
     Bomb:
       Radius: 0.36
       Density: 5
+    ShotAngularDamping: 3
     BlastRadius: 2.8
     BlastDamage: 180
     BlastImpulse: 16

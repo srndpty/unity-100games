@@ -55,7 +55,6 @@ namespace Game.Core
         private readonly uint _fingerprint;
         private V2? _pendingLaunch;
         private bool _pendingDetonate;
-        private bool _pendingRemove;
         private bool _launchedOnce;
         private int _pieceScore;
         private RunEvents _events;
@@ -127,6 +126,12 @@ namespace Game.Core
         /// <summary>直前の <see cref="EndTick"/> で、壊れた部材に付いていたため外す接合の番号。</summary>
         public ReadOnlyCollection<int> JointsToRemove { get; }
 
+        /// <summary>
+        /// 直前の <see cref="EndTick"/> で静止したため、盤に残っている弾を消すか（Unity はすぐに消す）。
+        /// 静止で勝敗が決まると次の Tick がないので、次の命令ではなくこの Tick の結果として返す。
+        /// </summary>
+        public bool ShotRemovedThisTick { get; private set; }
+
         public int Health(int piece) => _health[CheckPiece(piece)];
 
         public bool IsBroken(int piece) => _broken[CheckPiece(piece)];
@@ -171,9 +176,6 @@ namespace Game.Core
 
             if (_pendingLaunch is { } velocity && Phase == RunPhase.Aiming)
             {
-                // 前の弾が残っていれば、撃つ前に消す。
-                remove = _pendingRemove;
-                _pendingRemove = false;
                 launch = velocity;
                 kind = Stage.Shots[ShotsUsed];
                 ShotsUsed++;
@@ -202,11 +204,6 @@ namespace Game.Core
                     ShotAlive = false;
                 }
             }
-            else if (_pendingRemove)
-            {
-                remove = true;
-                _pendingRemove = false;
-            }
 
             _pendingLaunch = null;
             _pendingDetonate = false;
@@ -219,6 +216,7 @@ namespace Game.Core
             if (report == null) { throw new ArgumentNullException(nameof(report)); }
             _brokenThisTick.Clear();
             _jointsToRemove.Clear();
+            ShotRemovedThisTick = false;
             if (IsOver) { return; }
             Validate(report);
             Ticks++;
@@ -237,6 +235,11 @@ namespace Game.Core
 
             foreach (var hit in report.Blasts) { Damage(hit.Piece, BlastDamageOf(_config, hit.Distance)); }
             foreach (var piece in report.FellOut) { Break(piece); }
+
+            // 消す順番を番号順にそろえる。報告の順番（Unity の衝突のコールバックの順番）はメモリの配置で変わり、
+            // 消す順番が変わると Box2D の体の並びと計算の順番が変わって、同じ操作でも結果がわずかに分かれる。
+            _brokenThisTick.Sort();
+            _jointsToRemove.Sort();
 
             if (Phase == RunPhase.Flying)
             {
@@ -286,7 +289,6 @@ namespace Game.Core
             hash.Mix(Detonated);
             hash.Mix(QuietTicks);
             hash.Mix(_launchedOnce);
-            hash.Mix(_pendingRemove);
             hash.Mix(_pendingDetonate);
             hash.Mix(_pendingLaunch != null);
             if (_pendingLaunch is { } v)
@@ -326,7 +328,7 @@ namespace Game.Core
 
         private void Settle()
         {
-            if (ShotAlive) { _pendingRemove = true; }
+            ShotRemovedThisTick = ShotAlive;
             ShotAlive = false;
             if (TargetsLeft == 0) { Finish(RunPhase.Won); }
             else if (ShotsLeft == 0) { Finish(RunPhase.Lost); }
@@ -423,7 +425,7 @@ namespace Game.Core
                 hash.Mix(Bits(config.Spec(kind).Density));
             }
 
-            foreach (var value in new[] { config.Gravity, config.MaxPull, config.MinPull, config.MaxSpeed, config.BlastRadius, config.BlastImpulse, config.RestSpeed, config.RestAngular })
+            foreach (var value in new[] { config.Gravity, config.MaxPull, config.MinPull, config.MaxSpeed, config.ShotAngularDamping, config.BlastRadius, config.BlastImpulse, config.RestSpeed, config.RestAngular })
             {
                 hash.Mix(Bits(value));
             }

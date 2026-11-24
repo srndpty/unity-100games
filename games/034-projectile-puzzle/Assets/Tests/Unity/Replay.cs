@@ -30,7 +30,7 @@ namespace Game.Unity.Tests
                 report.Clear();
                 world.Simulate(commands, report);
                 run.EndTick(report);
-                world.Remove(run.BrokenThisTick, run.JointsToRemove);
+                world.Remove(run.BrokenThisTick, run.JointsToRemove, run.ShotRemovedThisTick);
             }
 
             return run;

@@ -46,7 +46,14 @@ namespace Game.App.Tests
             }
         }
 
-        public void Remove(IReadOnlyList<int> pieces, IReadOnlyList<int> joints) => RemovedPieces.AddRange(pieces);
+        public void Remove(IReadOnlyList<int> pieces, IReadOnlyList<int> joints, bool shot)
+        {
+            RemovedPieces.AddRange(pieces);
+            if (shot) { ShotRemovals++; }
+        }
+
+        /// <summary>静止して弾を消した回数。</summary>
+        public int ShotRemovals { get; private set; }
 
         public void Clear() => Clears++;
 
@@ -418,6 +425,33 @@ namespace Game.App.Tests
             var second = _world.Commands.IndexOf(launches[1]);
             var detonation = _world.Commands.FindIndex(c => c.Detonate);
             Assert.That(detonation - second, Is.EqualTo(30));
+        }
+
+        [Test]
+        public void ConfigIsACopyThatCannotChangeTheFlow()
+        {
+            // レビュー P2-2：検証済みの設定を外から書き換えられると、次の面で例外になる・物理と Core の設定が分かれる。
+            var exposed = _flow.Config;
+            exposed.MaxPull = 0f;
+            exposed.MaxSpeed = 1f;
+            Assert.That(_flow.Config.MaxPull, Is.EqualTo(_config.MaxPull));
+            Assert.That(_flow.Config, Is.Not.SameAs(_flow.Config));
+            StartStage();
+            Drag(_release);
+            Ticks(1);
+            Assert.That(_world.Commands[0].Launch, Is.EqualTo(Launch.Velocity(_release - _launcher, _config)));
+        }
+
+        [Test]
+        public void TheShotIsRemovedWhenTheRunEndsOnSettling()
+        {
+            // レビュー P3-1：静止で勝敗が決まると次の Tick がないので、その Tick に弾を消す。
+            StartStage();
+            KnockDownAllTargets();
+            Drag(_release);
+            Ticks(_world.MovingTicks + _config.RestTicks + 1);
+            Assert.That(_flow.Screen, Is.EqualTo(AppScreen.Outcome));
+            Assert.That(_world.ShotRemovals, Is.EqualTo(1));
         }
 
         [Test]

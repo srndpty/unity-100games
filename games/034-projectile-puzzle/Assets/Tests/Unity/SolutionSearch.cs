@@ -15,7 +15,7 @@ namespace Game.Unity.Tests
     /// <summary>
     /// 5 面の解答を、実際の Physics2D で探す（作業用。通常のテストでは走らない）。
     /// 1 発ずつ、角度 × 引きの長さ（× 爆発の弾は起爆の Tick）を総当たりし、勝つか、壊した標的・得点が最も多い撃ち方を選んで次の弾へ進む。
-    /// 結果は Logs/solutions-found.txt に書く。見つけた手順は Assets/Game/Data/Solutions.txt に写し、通常のテストで再生する。
+    /// 結果は Logs/solutions-found.txt に書く（引きは丸めずに書く。崩れ方が敏感な面では小数 3 桁に丸めただけで結果が変わった）。見つけた手順は Assets/Game/Data/Solutions.txt に写し、通常のテストで再生する。
     /// 実行：<c>unity test games/034-projectile-puzzle --mode PlayMode --filter SolutionSearch</c>
     /// </summary>
     [Explicit]
@@ -76,7 +76,7 @@ namespace Game.Unity.Tests
                 output.Append(FormattableString.Invariant($"stage  # {i + 1} {stage.Name}: {best?.Phase} 標的残り {best?.TargetsLeft} 得点 {best?.Score} Tick {best?.Ticks}\n"));
                 foreach (var step in plan)
                 {
-                    output.Append(FormattableString.Invariant($"shot {step.Pull.X:0.###} {step.Pull.Y:0.###}{(step.DetonateAfter >= 0 ? " " + step.DetonateAfter : string.Empty)}\n"));
+                    output.Append(FormattableString.Invariant($"shot {step.Pull.X:R} {step.Pull.Y:R}{(step.DetonateAfter >= 0 ? " " + step.DetonateAfter : string.Empty)}\n"));
                 }
 
                 output.Append("end\n");

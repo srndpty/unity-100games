@@ -40,6 +40,7 @@ namespace Game.Unity
     /// Physics2D の世界（<see cref="ISiegeWorld"/>）。面を読み込むたびに、局所の物理を持つ新しいシーン（<c>LocalPhysicsMode.Physics2D</c>）を作るので、
     /// 前の面・やり直しの履歴に依らず、同じ面・同じ命令の列なら同じ結果になる（同じビルド・同じ機械）。
     /// 物理は <see cref="Simulate"/> が 1 Tick に 1 回だけ進める。衝突の撃力・外れた接合・消滅線・最大の速さを <see cref="TickReport"/> に書く。
+    /// 重力は設定の <see cref="SiegeConfig.Gravity"/> に合わせ、動く体ごとの <c>gravityScale</c> で与える（プロジェクト全体の重力は書き換えない）。
     /// </summary>
     public sealed class PebbleSiegeWorld : ISiegeWorld, IDisposable
     {
@@ -58,12 +59,16 @@ namespace Game.Unity
         private TickReport _report;
         private static int _sceneCount;
         private int _nextPuff;
+        private float _gravityScale;
 
         public PebbleSiegeWorld(PebbleSiegeStage stage, SiegeConfig config)
         {
             _stage = stage != null ? stage : throw new ArgumentNullException(nameof(stage));
             _config = (config ?? throw new ArgumentNullException(nameof(config))).Copy();
             _config.Validate();
+            var gravity = Physics2D.gravity;
+            if (gravity.x != 0 || !(gravity.y < 0)) { throw new InvalidOperationException($"Physics2D の重力は真下向きにしてください（今は {gravity}）。"); }
+            _gravityScale = _config.Gravity / gravity.y;
             ResetPuffs();
         }
 
@@ -121,6 +126,7 @@ namespace Game.Unity
                 var body = root.AddComponent<Rigidbody2D>();
                 body.sleepMode = RigidbodySleepMode2D.StartAsleep;
                 body.useAutoMass = true;
+                body.gravityScale = _gravityScale;
                 var shape = root.AddComponent<BoxCollider2D>();
                 shape.size = new Vector2(def.Size.X, def.Size.Y);
                 shape.density = _config.Spec(def.Material).Density;
@@ -172,8 +178,9 @@ namespace Game.Unity
             }
         }
 
-        public void Remove(IReadOnlyList<int> pieces, IReadOnlyList<int> joints)
+        public void Remove(IReadOnlyList<int> pieces, IReadOnlyList<int> joints, bool shot)
         {
+            if (shot) { RemoveShot(); }
             if (pieces == null) { throw new ArgumentNullException(nameof(pieces)); }
             if (joints == null) { throw new ArgumentNullException(nameof(joints)); }
             for (var i = 0; i < joints.Count; i++) { DropJoint(joints[i]); }
@@ -238,7 +245,9 @@ namespace Game.Unity
             root.transform.position = PebbleSiegeStage.ToWorld(Stage.Launcher);
             var body = root.AddComponent<Rigidbody2D>();
             body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            body.angularDamping = _config.ShotAngularDamping;
             body.useAutoMass = true;
+            body.gravityScale = _gravityScale;
             var shape = root.AddComponent<CircleCollider2D>();
             shape.radius = spec.Radius;
             shape.density = spec.Density;

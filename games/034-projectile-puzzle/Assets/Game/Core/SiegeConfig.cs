@@ -131,6 +131,11 @@ namespace Game.Core
 
         public ShotSpec Bomb = new(0.36f, 5f);
 
+        /// <summary>
+        /// 弾の回転の減衰（Physics2D の <c>angularDamping</c>）。地面を転がる弾を止める。飛ぶ間の位置には効かない（弾道プレビューと一致したまま）。
+        /// </summary>
+        public float ShotAngularDamping = 3f;
+
         /// <summary>爆発の届く半径（m）。</summary>
         public float BlastRadius = 2.8f;
 
@@ -224,6 +229,7 @@ namespace Game.Core
                 Require(spec.Density, 0.05f, 100f, kind + ".Density");
             }
 
+            Require(ShotAngularDamping, 0f, 100f, nameof(ShotAngularDamping));
             Require(BlastRadius, 0.5f, 8f, nameof(BlastRadius));
             Require(BlastDamage, 0, 100000, nameof(BlastDamage));
             Require(BlastImpulse, 0f, 1000f, nameof(BlastImpulse));

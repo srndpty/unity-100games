@@ -41,6 +41,7 @@ namespace Game.Unity
         private Font _font;
         private AudioSource _audio;
         private float _cameraSize;
+        private SiegeConfig _rules;
 
         public SiegeFlow Flow { get; private set; }
 
@@ -78,8 +79,10 @@ namespace Game.Unity
                 throw new InvalidOperationException("Stage は原点に大きさ 1 で置いてください（ワールド座標 = 盤の座標）。");
             }
 
-            World = new PebbleSiegeWorld(_stage, _settings.Rules);
-            Flow = new SiegeFlow(_settings.Rules, book, World);
+            // 検証済みの設定の複製を 1 つだけ作り、Flow・物理の世界・描画が同じ値を使う（設定アセットを後から書き換えても分かれない）。
+            _rules = _settings.Rules.Copy();
+            World = new PebbleSiegeWorld(_stage, _rules);
+            Flow = new SiegeFlow(_rules, book, World);
             _cameraSize = _camera.orthographicSize;
 
             _audio = GetComponent<AudioSource>();
@@ -224,8 +227,8 @@ namespace Game.Unity
             // タイトル・面選択の背景には、選んでいる面の初期配置を置く（物理は進めない）。
             if (Flow.Run == null && World.Loaded != Flow.Cursor) { World.Load(Flow.Cursor, Flow.Book.Stages[Flow.Cursor]); }
 
-            _stage.RenderLauncher(Flow, _settings.Rules);
-            _stage.RenderEffects(World, _settings.Rules, _settings.EffectTicks);
+            _stage.RenderLauncher(Flow, _rules);
+            _stage.RenderEffects(World, _rules, _settings.EffectTicks);
             RenderPieces();
             RenderHud();
         }
@@ -238,7 +241,7 @@ namespace Game.Unity
             {
                 var piece = World.Piece(i);
                 if (piece == null) { continue; }
-                var full = _settings.Rules.Spec(World.Stage.Pieces[i].Material).Health;
+                var full = _rules.Spec(World.Stage.Pieces[i].Material).Health;
                 var ratio = run == null ? 1f : (float)run.Health(i) / full;
                 piece.Visual.color = Color.Lerp(_worn, Color.white, ratio);
             }

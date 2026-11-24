@@ -34,8 +34,8 @@ namespace Game.App
         /// <summary>命令を反映して物理を 1 Tick 進め、結果を <paramref name="report"/>（空にして渡す）に書く。</summary>
         void Simulate(TickCommands commands, TickReport report);
 
-        /// <summary>壊れた部材と、外す接合を消す。</summary>
-        void Remove(IReadOnlyList<int> pieces, IReadOnlyList<int> joints);
+        /// <summary>壊れた部材と、外す接合を消す。<paramref name="shot"/> なら盤に残っている弾も消す（静止したとき）。</summary>
+        void Remove(IReadOnlyList<int> pieces, IReadOnlyList<int> joints, bool shot);
 
         /// <summary>面を片付ける（タイトル・面選択へ戻ったとき）。</summary>
         void Clear();
@@ -103,7 +103,8 @@ namespace Game.App
 
         public StageBook Book => _book;
 
-        public SiegeConfig Config => _config;
+        /// <summary>検証済みの設定の複製（書き換えても Flow・試合・物理の世界には効かない）。</summary>
+        public SiegeConfig Config => _config.Copy();
 
         public Progress Progress { get; }
 
@@ -348,7 +349,7 @@ namespace Game.App
             _report.Clear();
             _world.Simulate(commands, _report);
             run.EndTick(_report);
-            _world.Remove(run.BrokenThisTick, run.JointsToRemove);
+            _world.Remove(run.BrokenThisTick, run.JointsToRemove, run.ShotRemovedThisTick);
             CheckEnd();
         }
 

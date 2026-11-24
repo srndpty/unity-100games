@@ -124,6 +124,22 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void PiecesAndJointsToRemoveAreInIndexOrderWhateverTheReportOrder()
+        {
+            // 報告の順番（衝突のコールバックの順番）に依らず、消す順番を番号順にする。
+            var run = Run();
+            Shoot(run);
+            var report = Hit(3, -1, 1000f);
+            report.Impacts.Add(new Impact(1, -1, 1000f));
+            report.FellOut.Add(0);
+            Step(run, report);
+            Assert.That(run.BrokenThisTick.Count, Is.EqualTo(3));
+            Assert.That(run.BrokenThisTick[0], Is.EqualTo(0));
+            Assert.That(run.BrokenThisTick[1], Is.EqualTo(1));
+            Assert.That(run.BrokenThisTick[2], Is.EqualTo(3));
+        }
+
+        [Test]
         public void BreakingAPieceRemovesItsJointsOnce()
         {
             var run = Run();
@@ -270,9 +286,45 @@ namespace Game.Core.Tests
             Steps(run, _config.RestTicks);
             Assert.That(run.Phase, Is.EqualTo(RunPhase.Aiming));
             Assert.That(run.TakeEvents() & RunEvents.Ready, Is.EqualTo(RunEvents.Ready));
-            Assert.That(run.BeginTick().RemoveShot, Is.True, "止まった弾は消す");
+            Assert.That(run.ShotRemovedThisTick, Is.True, "止まった弾は静止した Tick に消す");
+            Assert.That(run.ShotAlive, Is.False);
+            Assert.That(run.BeginTick().RemoveShot, Is.False, "次の Tick の命令では消さない");
             run.EndTick(Quiet());
-            Assert.That(run.BeginTick().RemoveShot, Is.False);
+            Assert.That(run.ShotRemovedThisTick, Is.False);
+        }
+
+        [Test]
+        public void SettlingIntoAWinOrLossAlsoRemovesTheShotInThatTick()
+        {
+            // 静止で勝敗が決まると次の Tick がないので、その Tick の結果で弾を消す（レビュー P3-1）。
+            var lost = Run("normal");
+            Shoot(lost);
+            Steps(lost, _config.RestTicks - 1);
+            Assert.That(lost.ShotRemovedThisTick, Is.False);
+            Step(lost);
+            Assert.That(lost.Phase, Is.EqualTo(RunPhase.Lost));
+            Assert.That(lost.ShotRemovedThisTick, Is.True);
+
+            var won = Run("normal normal");
+            Shoot(won);
+            Step(won, Fell(1, 2));
+            Steps(won, _config.RestTicks);
+            Assert.That(won.Phase, Is.EqualTo(RunPhase.Won));
+            Assert.That(won.ShotRemovedThisTick, Is.True);
+        }
+
+        [Test]
+        public void GoneShotIsNotRemovedAgainOnSettling()
+        {
+            var run = Run();
+            Shoot(run);
+            var gone = Quiet();
+            gone.ShotGone = true;
+            Step(run, gone);
+            Assert.That(run.ShotAlive, Is.False);
+            Steps(run, _config.RestTicks);
+            Assert.That(run.Phase, Is.EqualTo(RunPhase.Aiming));
+            Assert.That(run.ShotRemovedThisTick, Is.False, "盤の外へ出た弾は Unity が既に消している");
         }
 
         [Test]
@@ -463,6 +515,8 @@ namespace Game.Core.Tests
             Assert.Throws<ArgumentOutOfRangeException>(() => new SiegeRun(new SiegeConfig { MinPull = 3f }, Small()));
             Assert.Throws<ArgumentOutOfRangeException>(() => new SiegeRun(new SiegeConfig { Gravity = 1f }, Small()));
             Assert.Throws<ArgumentOutOfRangeException>(() => new SiegeRun(new SiegeConfig { ShotLifeTicks = 10000 }, Small()));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new SiegeRun(new SiegeConfig { ShotAngularDamping = float.NaN }, Small()));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new SiegeRun(new SiegeConfig { ShotAngularDamping = -1f }, Small()));
             var config = new SiegeConfig();
             config.Ice.Density = float.PositiveInfinity;
             Assert.Throws<ArgumentOutOfRangeException>(() => new SiegeRun(config, Small()));

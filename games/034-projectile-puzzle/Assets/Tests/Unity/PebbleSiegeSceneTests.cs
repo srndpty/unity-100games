@@ -123,19 +123,22 @@ namespace Game.Unity.Tests
         // ---- 射出ベクトルと弾道プレビュー ----
 
         [UnityTest]
-        public IEnumerator PreviewMatchesTheActualFlightForEveryShotKind()
+        public IEnumerator PreviewMatchesTheActualFlightForEveryShotKind([Values(-9.81f, -5f, -19.62f)] float gravity)
         {
+            // 重力の設定を変えても、プレビューと実際の弾道が一致する（レビュー P2-1：物理側にも設定の重力を反映する）。
             _game.enabled = false;
+            var config = Config.Copy();
+            config.Gravity = gravity;
             var stage = StageBook.Parse("stage 空\nhint -\nlauncher 4 2.5\nshots normal heavy bomb\nblock lantern 30 0.3 0.6 0.6\nend\n").Stages[0];
-            var world = new PebbleSiegeWorld(_game.Stage, Config);
+            var world = new PebbleSiegeWorld(_game.Stage, config);
             try
             {
                 foreach (var kind in new[] { ShotKind.Normal, ShotKind.Heavy, ShotKind.Bomb })
                 {
                     world.Load(0, stage);
-                    var velocity = Launch.Velocity(new V2(-2f, -1.1f), Config)!.Value;
+                    var velocity = Launch.Velocity(new V2(-2f, -1.1f), config)!.Value;
                     var expected = new V2[40];
-                    Trajectory.Fill(stage.Launcher, velocity, Config.Gravity, expected);
+                    Trajectory.Fill(stage.Launcher, velocity, config.Gravity, expected);
                     var report = new TickReport();
                     world.Simulate(new TickCommands(velocity, kind, false, false), report);
                     for (var t = 0; t < expected.Length; t++)
@@ -152,6 +155,33 @@ namespace Game.Unity.Tests
                         Assert.That(report.ShotTouched, Is.False);
                     }
                 }
+            }
+            finally
+            {
+                world.Dispose();
+            }
+
+            Assert.That(Physics2D.gravity, Is.EqualTo(new Vector2(0, -9.81f)), "プロジェクト全体の重力は書き換えない");
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator ShotRestingOnTheFieldIsRemovedWhenTheRunIsDecided()
+        {
+            // レビュー P3-1：盤に残った弾が静止して勝敗が決まった Tick に、物理の世界からも消える。
+            _game.enabled = false;
+            var stage = StageBook.Parse("stage 残る弾\nhint -\nlauncher 4 2.5\nshots normal\nblock lantern 30 0.3 0.6 0.6\nend\n").Stages[0];
+            var world = new PebbleSiegeWorld(_game.Stage, Config);
+            try
+            {
+                var weak = new[] { new ShotStep(new V2(-.3f, -.8f), -1) };
+                var run = Replay.Play(world, Config, stage, 0, weak, limit: PlannedPilot.AimDelay + 30);
+                Assert.That(run.Phase, Is.EqualTo(RunPhase.Flying));
+                Assert.That(world.Shot, Is.Not.Null, "撃った弾はまだ盤にある");
+                run = Replay.Play(world, Config, stage, 0, weak);
+                Assert.That(run.Phase, Is.EqualTo(RunPhase.Lost));
+                Assert.That(run.TicksSinceLaunch, Is.LessThan(Config.ShotLifeTicks), "寿命で消える前に、弾が盤に残ったまま静止した");
+                Assert.That(world.Shot, Is.Null, "勝敗が決まった Tick に弾を消す");
             }
             finally
             {
@@ -232,7 +262,13 @@ namespace Game.Unity.Tests
                     Assert.That(second.Phase, Is.EqualTo(RunPhase.Won), book.Stages[i].Name);
                     Assert.That(second.Hash(), Is.EqualTo(first.Hash()), book.Stages[i].Name);
                     Assert.That(Positions(world), Is.EqualTo(firstPositions), book.Stages[i].Name);
+
+                    // フレームをまたいで古いシーンが片付いた後も同じ（衝突のコールバックの順番が変わっても、消す順番は番号順）。
                     yield return null;
+                    yield return null;
+                    var third = Replay.Play(world, Config, book.Stages[i], i, solutions[i]);
+                    Assert.That(third.Hash(), Is.EqualTo(first.Hash()), book.Stages[i].Name);
+                    Assert.That(Positions(world), Is.EqualTo(firstPositions), $"{book.Stages[i].Name}（フレームをまたいだ後）");
                 }
             }
             finally
