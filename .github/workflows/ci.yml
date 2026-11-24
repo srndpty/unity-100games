@@ -1,9 +1,13 @@
 name: CI
 
+# PR だけで走らせる。main への push（マージ）は PR で検証済みの内容なので走らせない。
+# 文書・証跡だけの変更では走らせない（コードの検証結果は変わらない）。
 on:
-  push:
-    branches: [main]
   pull_request:
+    paths-ignore:
+      - 'plan/**'
+      - '**/*.md'
+      - 'games/*/evidence/**'
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -12,16 +16,20 @@ concurrency:
 jobs:
   dotnet:
     # Unity 非依存の Game.Core / Game.App を検証する。Unity 層はローカルの dev test -Unity / dev build で確認する。
+    # PR の変更が影響する作品だけを検証する（共通ファイル（build/・packages/・.github/・dev.ps1 など）の変更なら全作品）。
+    # PR のチェックアウトは base と PR をマージしたコミットなので、その 1 つ目の親（base）からの差分が PR の変更になる。
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
       - name: Lint
-        run: pwsh ./dev.ps1 lint
+        run: pwsh ./dev.ps1 lint -Since HEAD^1
       - name: Type check
-        run: pwsh ./dev.ps1 check
+        run: pwsh ./dev.ps1 check -Since HEAD^1
       - name: Test
-        run: pwsh ./dev.ps1 test
+        run: pwsh ./dev.ps1 test -Since HEAD^1

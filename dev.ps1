@@ -13,7 +13,9 @@ param(
     # new: 2d または 3d (URP テンプレート)
     [ValidateSet('2d', '3d')][string]$Template = '2d',
     # lint / check: git にステージした変更が影響する作品だけを対象にする (pre-commit 用)
-    [switch]$Staged
+    [switch]$Staged,
+    # lint / check / test: このリビジョンからの変更 (git diff <Since>...HEAD) が影響する作品だけを対象にする (CI の PR 用)
+    [string]$Since
 )
 
 # 本体は PowerShell 7 前提。Windows PowerShell 5.1 から呼ばれた場合は pwsh で実行し直す。
@@ -22,6 +24,7 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
     if ($Game) { $forward += $Game }
     if ($Unity) { $forward += '-Unity' }
     if ($Staged) { $forward += '-Staged' }
+    if ($Since) { $forward += '-Since', $Since }
     & pwsh -NoProfile -File $PSCommandPath @forward -Mode $Mode -Template $Template
     exit $LASTEXITCODE
 }
@@ -42,7 +45,7 @@ $CaptureTimeoutSeconds = 120
 # ソリューションは壊れていないか・参照先が正しいかをソリューション全体のビルドでしか確かめられないので、ここに含める。
 # slnx が変わるのは実質 `dev new` だけなので、作品の作成直後に最小コミットしておけば、以降のコミットはその作品だけの検査になる。
 # packages/ はどの作品が使っているかを辿らず、変わったら全作品を対象にする。
-$SharedPathPattern = '^(build/|packages/|\.editorconfig$|global\.json$|unity-100games\.slnx$|dev\.ps1$)'
+$SharedPathPattern = '^(build/|packages/|\.github/|\.editorconfig$|global\.json$|unity-100games\.slnx$|dev\.ps1$)'
 
 # 外部コマンドを実行し、失敗したらその終了コードで即終了する。
 # `--option` 形式の引数をそのまま渡すため、param ブロックを使わず $args で受ける。
@@ -90,11 +93,11 @@ function Get-BuildExe($GameDir) {
     Join-Path $GameDir.FullName "Builds/Windows/$($GameDir.Name).exe"
 }
 
-# lint / check の対象作品。-Staged ならステージした変更が影響する作品だけ (共通ファイルの変更なら全作品)、
-# 番号指定ならその作品、どちらもなければ全作品。
+# lint / check / test の対象作品。-Staged ならステージした変更、-Since ならそのリビジョンからの変更が影響する作品だけ
+# (共通ファイルの変更なら全作品)、番号指定ならその作品、どれもなければ全作品。
 function Get-TargetGameDirs {
-    if ($Staged) {
-        $files = @(git -C $RepoRoot diff --cached --name-only)
+    if ($Staged -or $Since) {
+        $files = if ($Staged) { @(git -C $RepoRoot diff --cached --name-only) } else { @(git -C $RepoRoot diff --name-only "$Since...HEAD") }
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         if ($files -match $SharedPathPattern) { return Get-GameDirs }
         $names = @($files | ForEach-Object { if ($_ -match '^games/(\d{3}-[^/]+)/') { $Matches[1] } } | Sort-Object -Unique)
@@ -208,8 +211,11 @@ function Test-EvidenceLinks($GameDirs) {
     }
 }
 
+# 変更の影響で絞り込むか、番号指定か。どちらでもなければ全作品。
+function Test-Narrowed { $Staged -or $Since -or $Game }
+
 function Invoke-Check {
-    if (-not $Staged -and -not $Game) {
+    if (-not (Test-Narrowed)) {
         Invoke-Native dotnet build $Solution
         return
     }
@@ -223,6 +229,24 @@ function Invoke-Check {
     foreach ($gameDir in $targets) {
         foreach ($project in Get-ChildItem (Join-Path $gameDir.FullName 'dotnet') -Recurse -Filter '*.Tests.csproj') {
             Invoke-Native dotnet build $project.FullName
+        }
+    }
+}
+
+# Core / App のテスト。全作品が対象ならソリューションを 1 回で、絞り込んだらその作品のテストプロジェクトだけを実行する。
+function Invoke-DotnetTest {
+    $targets = @(Get-TargetGameDirs)
+    if (-not (Test-Narrowed) -or ($targets.Count -gt 1 -and $targets.Count -eq @(Get-GameDirs).Count)) {
+        Invoke-Native dotnet test $Solution
+        return
+    }
+    if ($targets.Count -eq 0) {
+        Write-Host '変更が影響する作品がないので、テストを省略します。'
+        return
+    }
+    foreach ($gameDir in $targets) {
+        foreach ($project in Get-ChildItem (Join-Path $gameDir.FullName 'dotnet') -Recurse -Filter '*.Tests.csproj') {
+            Invoke-Native dotnet test $project.FullName
         }
     }
 }
@@ -321,13 +345,17 @@ function Show-Help {
   build [NNN]                   Windows 向けにビルド (games/NNN-*/Builds/Windows/)
   run [NNN]                     ビルド済みのゲームを起動
   capture [NNN]                 ビルドを撮影モードで起動し、証跡を evidence/ に公開 (画像は captures/、撮影記録は runs/。自動で終了)
-  test                          全作品の Core / App テストを dotnet で実行 (高速、Unity 不要)
+  test [NNN] [-Staged|-Since <ref>]
+                                Core / App テストを dotnet で実行 (高速、Unity 不要)。番号省略時は全作品
   test [NNN] -Unity [-Mode EditMode|PlayMode]
                                 Unity 上でテストを実行
-  lint [NNN] [-Staged]          .meta・証跡 README のリンク・空白整形の検証 (変更しない、コンパイル不要で速い)
+  lint [NNN] [-Staged|-Since <ref>]
+                                .meta・証跡 README のリンク・空白整形の検証 (変更しない、コンパイル不要で速い)
   format                        コードを整形 (スタイル・アナライザーの自動修正を含む)
-  check [NNN] [-Staged]         Core / App のビルド。型・コードスタイル・アナライザーを検査 (警告はエラー扱い)
+  check [NNN] [-Staged|-Since <ref>]
+                                Core / App のビルド。型・コードスタイル・アナライザーを検査 (警告はエラー扱い)
                                 -Staged: git にステージした変更が影響する作品だけ (pre-commit 用)
+                                -Since <ref>: <ref>...HEAD の変更が影響する作品だけ (CI の PR 用。共通ファイルの変更なら全作品)
   clean [NNN]                   生成物 (Library, Builds, bin, obj など) を削除。番号省略時は全作品
   help                          このヘルプ
 
@@ -383,7 +411,7 @@ switch ($Command) {
             Invoke-Native unity test $gameDir.FullName --mode $Mode --output $report
         }
         else {
-            Invoke-Native dotnet test $Solution
+            Invoke-DotnetTest
         }
     }
     'lint' { Invoke-Lint }
