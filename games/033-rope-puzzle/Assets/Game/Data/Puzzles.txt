@@ -1,0 +1,119 @@
+# DEWDROP SNIP の問題集。座標は 1/16 マス（盤は 256 × 144、原点は左下、y は上向き）。
+# 書式は PuzzleBook を参照。
+
+puzzle はじめの一刀
+hint ドラッグでロープを横切ると切れる
+par 1
+body 128 100
+rope 128 136 40 10
+goal 128 24 10
+end
+
+puzzle ふたつの糸
+hint 切る順番で落ちる場所が変わる
+par 2
+body 128 104
+rope 96 136 48 12
+rope 160 136 48 12
+goal 176 24 10
+end
+
+puzzle ふりこ
+hint 揺れている間に切る時機をはかる
+par 1
+body 60 120
+rope 100 136 48 12
+goal 170 24 10
+end
+
+puzzle トゲの上
+hint 真下にはトゲ。片方を切って振り出す
+par 2
+body 128 96
+rope 80 136 64 14
+rope 176 136 64 14
+spike 96 12 8
+spike 112 12 8
+spike 128 12 8
+spike 144 12 8
+spike 160 12 8
+goal 32 20 10
+end
+
+puzzle 棚をすべる
+hint 棚に落とせば転がっていく
+par 1
+body 104 128
+rope 150 136 48 12
+wall 120 56 200 64
+spike 96 12 8
+spike 112 12 8
+goal 216 24 10
+end
+
+puzzle 吊られたまま
+hint 目標に触れればロープが残っていてもよい
+par 1
+body 60 110
+rope 60 136 26 8
+rope 128 136 80 16
+spike 44 12 8
+spike 60 12 8
+spike 76 12 8
+goal 128 52 9
+end
+
+puzzle 三本の糸
+hint どれから切るかが鍵
+par 3
+body 128 100
+rope 64 136 78 14
+rope 128 136 38 10
+rope 192 136 78 14
+spike 112 12 8
+spike 128 12 8
+spike 144 12 8
+goal 228 28 10
+end
+
+puzzle すき間
+hint 揺れが収まるのを待つのも手
+par 2
+body 156 104
+rope 128 136 46 12
+rope 200 136 58 12
+wall 100 0 114 72
+wall 142 0 156 72
+spike 107 76 7
+spike 149 76 7
+goal 128 16 8
+end
+
+puzzle 高い棚
+hint 振り上げた先で切る
+par 1
+body 60 120
+rope 130 140 76 16
+wall 196 76 252 84
+spike 120 12 8
+spike 136 12 8
+spike 152 12 8
+spike 168 12 8
+spike 184 12 8
+goal 228 98 10
+end
+
+puzzle 仕上げ
+hint 3 本と棚とトゲ
+par 3
+body 100 108
+rope 40 136 68 14
+rope 96 140 38 10
+rope 168 136 76 16
+wall 150 40 220 48
+spike 72 12 8
+spike 88 12 8
+spike 104 12 8
+spike 120 12 8
+goal 234 20 10
+end

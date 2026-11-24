@@ -1,0 +1,21 @@
+.hud { position: absolute; width: 100%; height: 100%; color: rgb(236, 240, 226); justify-content: center; align-items: center; }
+.bar { position: absolute; left: 0; right: 0; top: 0; height: 64px; padding: 0 28px; flex-direction: row; align-items: center; background-color: rgba(16, 26, 22, 0.88); border-bottom-width: 2px; border-color: rgb(110, 160, 110); }
+.stat { font-size: 26px; -unity-font-style: bold; margin-right: 44px; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(6, 12, 8); }
+.puzzle { color: rgb(200, 236, 170); }
+.moves { color: rgb(255, 226, 140); }
+.best { position: absolute; right: 28px; margin-right: 0; color: rgb(170, 220, 255); }
+.hint { position: absolute; top: 72px; padding: 6px 20px; font-size: 22px; color: rgb(230, 236, 220); background-color: rgba(16, 26, 22, 0.72); border-radius: 10px; }
+.panel { width: 1120px; padding: 30px 44px; background-color: rgba(14, 22, 18, 0.95); border-radius: 18px; border-width: 2px; border-color: rgb(120, 180, 120); }
+.panel.outcome { position: absolute; top: 84px; width: 980px; padding: 18px 36px; background-color: rgba(14, 22, 18, 0.88); }
+.headline { font-size: 58px; -unity-font-style: bold; color: rgb(190, 240, 170); -unity-text-align: middle-center; white-space: normal; }
+.outcome .headline { font-size: 44px; }
+.message { margin-top: 14px; font-size: 24px; white-space: normal; -unity-text-align: middle-center; }
+.tiles { margin-top: 22px; flex-direction: row; flex-wrap: wrap; justify-content: center; }
+.tile { width: 190px; height: 112px; margin: 8px; padding: 6px; align-items: center; justify-content: center; background-color: rgb(30, 46, 38); border-width: 2px; border-color: rgb(80, 110, 90); border-radius: 12px; color: rgb(230, 236, 220); }
+.tile:hover { background-color: rgb(40, 62, 50); }
+.tile:disabled { opacity: 0.45; }
+.tile.selected { border-width: 4px; border-color: rgb(255, 214, 110); }
+.tile.solved { background-color: rgb(36, 64, 44); }
+#tile-number { font-size: 30px; -unity-font-style: bold; }
+#tile-name { font-size: 20px; }
+#tile-best { font-size: 17px; color: rgb(170, 220, 255); }

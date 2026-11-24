@@ -44,8 +44,8 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - 共通コードは、3題以上で再利用価値が明確になってから `packages/` にローカル UPM パッケージとして抽出する。
   - 作品からは `Packages/manifest.json` に `"file:../../../packages/<名前>"` と `testables` を書き、`dev test NNN -Unity` でパッケージのテストも Mono で流す。dotnet 側は作品の Core の csproj から `ProjectReference` する。
   - パッケージも Core と同じく Unity API に依存しない（`noEngineReferences`）。中身を変えると全作品が検査対象になる（`dev lint/check -Staged`）。
-  - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う。
-  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）。025〜027 の実装から抽出し、028 から使う（032 は `SeededRandom` だけを使う）。
+  - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う（033 は `StateHash` だけを使う）。
+  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）。025〜027 の実装から抽出し、028 から使う（032 は `SeededRandom` だけ、033 は `Vec2i`・`IntMath`・`Sweep` を使う）。
 
 ## 技術スタック
 
@@ -225,6 +225,11 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - **読み取り専用のリストの要素が書き換えられる型なら、要素も読み取り専用の窓口で公開する。** `IReadOnlyList<Enemy>` でも `Enemy.Matcher` が照合器そのものなら、試合を通さずに打ち切れて倒せない敵ができる。状態を変える操作を持たない別の型（キャストもできない）を返す（032）。
 - **NUnit の `Does.Contain(文字列)` は .NET（ICU）でカルチャ依存の比較になる。** 長音「ー」などを無視して見つからないことがある。かなを含む部分文字列は `string.Contains(…, StringComparison.Ordinal)` で確かめる。Unity の NUnit には `Does.Contain(物)` がないので、要素は `Has.Member` で確かめる（032）。
 - **選択の印（▶）を中央ぞろえの文字列に混ぜない。** 印の有無で行の幅が変わり、選び直すたびに項目名が動く。印・項目名・付記を固定幅の列に分け、左右の列を同じ幅にして項目名を中央に保つ。PlayMode で選び直しの前後の `worldBound` を比べる（032）。
+- **位置ベースの拘束を整数で解くときは、補正が丸めで 0 になる不感帯に注意する。** 重い点への補正は「伸び × 逆質量 ÷ 逆質量の和」で、1 マス = 4096 単位では小さな伸びが 0 に丸められ、振り子が真下から外れて止まった。1 マス = 65536 単位にし、減衰は 0 方向へ切り捨てて小さい速さを止める（033 の `PuzzleRun`）。
+- **ロープや鎖の描画は Core と同じ「節が効いているか」の判定で決める。** 切った節・外れた断片の節を描画側で別に判定すると、拘束と見た目が食い違う。Core の判定（033 の `IsLinkActive`）を公開して描画も使い、Mesh の頂点が節点と一致することを PlayMode で確かめる。頂点を Stage の座標で書くなら、置き場の Transform が Stage と同じ座標系であることも Prefab の検査に含める。
+- **画面を移るクリックの離しで、移った先の UI ボタンが押されないようにする。** UI Toolkit の `clicked` は離したときに届くので、タイトルのクリックで問題選択へ移ると、同じクリックの離しで札が押される。札のクリックは「その画面で押したクリック」にだけ 1 回効かせ（押下の時点の画面を覚える）、フォーカス復帰で捨てた押下も持ち主にしない。押下 → 札 → 離す、押下 → 離す → 札の両方の順序をテストする（033）。
+- **なぞり・ドラッグの判定は、離した位置までの線分も含める。** 移動の出来事だけで判定すると、最後の移動と解放が同じ入力の更新で届いたとき（位置のコールバックの時点でボタンが離れている）や、移動が届かないときに最後の線分を取りこぼす。PlayMode で位置と解放を 1 つの `MouseState` で送ってテストする（033）。
+- **パズルの問は、解ける手順を総当たりで確かめてから置く。** 切る順序 × 時機を刻んで探すと、見た目で作った 10 問のうち 2 問は解けなかった。見つけた手順をデータ（033 の `Solutions.txt`）に残し、テストと撮影で再生する。
 
 ## 注意点
 
