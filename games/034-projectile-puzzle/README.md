@@ -77,6 +77,18 @@ dev capture 034  # 証跡を evidence/ に撮る（画像は captures/<画像世
 - 1 Tick の順序：Core の `BeginTick` が命令（射出・起爆・弾の消去）を返す → Unity が命令を反映して `Physics2D.Simulate` → Unity が報告を書く → Core の `EndTick` がダメージ・破壊・静止・勝敗を決め、消す部材と接合を返す → Unity が消す。操作（撃つ・起爆）は次の Tick の境目でだけ効き、物理の途中に割り込まない。
 - App（`SiegeFlow`）は物理の世界を `ISiegeWorld` として受け取る。App のテストは物理のない偽物の世界で画面遷移・構え・射出・起爆・勝敗を確かめる。
 - **再現性の範囲**：Core と App は物理なしで .NET と Mono の両方でテストする。物理を含む通し（5 面の解答の再生）は同じビルド・同じ機械・Script モードで同じ結果になることを確かめ、.NET と Mono の物理の一致は求めない。
+- **面ごとに物理の世界を作り直す**：`PebbleSiegeWorld` は面を読み込むたびに、局所の物理を持つ新しいシーン（`LocalPhysicsMode.Physics2D`）を作り、その `PhysicsScene2D` だけを 1 Tick に 1 回進める。Box2D の世界ごと作り直すので、前の面・やり直しの履歴に依らず、同じ面・同じ命令の列なら同じ結果になる。部材は組み終えてから眠らせ、触れられるまで動かない。
+- **衝突の報告**：各部材が自分の `OnCollisionEnter2D` で、自分が受けた法線撃力の合計だけを報告する（2 つの部材の衝突なら両方が自分の分を報告し、Core の「両方が受ける」と同じになる）。弾は触れたことだけを報告する（爆発の弾の導火線）。接合の外れは `OnJointBreak2D` で報告し、Core が壊れた部材の接合を外せと返したものは Unity が消す。
+- **爆発**：起爆の Tick に、弾の位置から各部材の当たりの最も近い点までの距離を測り、半径内の部材に外向きの撃力（距離で減る）を与えて距離を報告する。爆風は壁に遮られない。
+- Unity（`PebbleSiegeGame`）はマウスの左ボタン・右ボタン・位置を PassThrough のアクションで 1 つずつ拾い、画面 → ワールド座標に直して時刻つきで渡す。カメラは盤の幅（32 m と余白）が収まるよう、画面の縦横比から大きさを決める。
+- 描画は Stage Prefab（`Art/PebbleSiegeStage.prefab`：背景・地面・発射台・構えた弾・ゴム・弾道の点 32・爆発・土ぼこり 12、部材と弾の見本 7）を正とする。面の部材と弾は見本を物理のシーンへ複製し、Physics2D の体と当たりを付ける。部材の色は残りの HP で暗くする。タイトル・面選択の背景には、選んでいる面の初期配置を物理を進めずに置く。
+- 5 面の解答（`Assets/Game/Data/Solutions.txt`）は、PlayMode の `[Explicit]` テスト `SolutionSearch` が実際の Physics2D で 1 発ずつ、角度（0〜75 度、2.5 度刻み）× 引きの長さ（4 通り）× 起爆の Tick（爆発の弾だけ）を総当たりして見つけた。面のデータ・設定・物理の設定を変えたら探し直す（`unity test games/034-projectile-puzzle --mode PlayMode --filter SolutionSearch`）。撮影とテストだけが使い、ゲームの画面には出さない。
+- シーンは `unity run games/034-projectile-puzzle -- -executeMethod Game.Unity.Editor.PebbleSiegeSceneBuilder.Build` で生成する（既存の Prefab と設定アセットは上書きしない。Physics2D の simulationMode を Script にする）。絵は `PebbleSiegeArtGenerator` が描く。射出・素材・弾・爆発・静止の値と音量は `PebbleSiegeSettings.asset` にある。
+
+### 許容誤差
+
+- 弾道プレビューと実際の弾の位置：何にも触れない間、3 種とも 40 Tick で 1e-4 m 以内（テストの基準）。
+- 静止の判定：速さ 0.12 m/s・角速度 10 度/s 未満が 30 Tick。積み上げは面の始めの 900 Tick で 1 cm 以上動かない（テストの基準）。
 
 ## テスト
 
@@ -84,12 +96,15 @@ dev capture 034  # 証跡を evidence/ に撮る（画像は captures/<画像世
 |---|---|---|---|
 | Core（EditMode / dotnet） | `Assets/Tests/Core/` | 72 | 初速が引きだけで一貫する（向き・比例・頭打ち・取り消しの境界と隣接 float・弾の種類に依らない）、弾道が閉じた式と一致、二重得点しない（同じ Tick の複数の衝突・爆発・消滅線、壊れた後の報告、接合の重複）、静止の後だけ結果が決まる（動いている間・1 Tick 足りない・揺れの間の破壊・弾切れ・タイムアウト）、爆発（起爆 1 回・導火線・距離の減衰）、ハッシュ、設定と面データの負例 |
 | App（EditMode / dotnet） | `Assets/Tests/App/` | 21 | 画面遷移、構え・引き・射出の時刻、経路に依らない初速、取り消し（短い引き・右クリック・Esc）、起爆（クリック・Space、撃った離しでは起爆しない、1 回だけ）、勝ちで次へ・負けでやり直し、解放、フォーカス、Tick 上限、操縦役 |
+| 実シーン（PlayMode） | `Assets/Tests/Unity/PebbleSiegeSceneTests.cs` | 16 | 弾道プレビューと実際の飛行の一致（3 種）、何もしなければ 5 面とも崩れない、解答で 5 面をクリアして結果へ、別の面を挟んだ再生で同じ結果、命中で構造が崩れ接合が外れる、マウスのドラッグで撃つ・短い引きと右クリックの取り消し・爆発の弾の起爆、構えたときのゴムと弾道の点、フォーカス喪失、やり直し、タイトルへ戻った表示、未解放の札、設定アセットと Script モード、Stage Prefab の照合、弾道の点の数の検証 |
 
 ```
 dev test                 # Core / App（dotnet）
 dev test 034 -Unity      # EditMode（Mono、tile-motion のテストも含む）
 dev test 034 -Unity -Mode PlayMode
 ```
+
+検証の結果と画面は [検証記録](evidence/README.md) を参照。
 
 ## 未実装範囲
 
