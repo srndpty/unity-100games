@@ -189,7 +189,11 @@ namespace Game.Core
 
         public BallView BallAt(int slot) => new(_balls[slot].State, _balls[slot].Position, _balls[slot].Velocity);
 
+        /// <summary>フリッパーの複製（読み取り用。毎フレームの描画には割り当てのない <see cref="FlipperAngle"/> を使う）。</summary>
         public Flipper FlipperOf(FlipperSide side) => (side == FlipperSide.Left ? _left : _right).Clone();
+
+        /// <summary>フリッパーの今の角度（割り当てなし）。</summary>
+        public int FlipperAngle(FlipperSide side) => (side == FlipperSide.Left ? _left : _right).Angle;
 
         public bool TargetUp(int number) => _targetsUp[number];
 

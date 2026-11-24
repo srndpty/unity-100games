@@ -75,6 +75,7 @@ namespace Game.Unity
             // 再戦のシードは起動時の値から試合ごとに進める（010 の知見）。撮影では固定のシード。
             var seed = EvidenceCapture.IsRunning ? EvidenceCapture.Seed : Environment.TickCount;
             Flow = new PinballFlow(_settings.Rules, table, seed);
+            _stage.Configure(_settings.Rules);
 
             // タイトルの背景に出す台の初期状態。描画のために毎フレーム作らないよう、起動時に 1 回だけ作る（008 の知見）。
             _preview = new PinballRun(_settings.Rules, table, 0);

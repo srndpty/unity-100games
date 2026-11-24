@@ -34,8 +34,13 @@ namespace Game.Unity
         [SerializeField] private SpriteRenderer[] _balls = Array.Empty<SpriteRenderer>();
         [SerializeField] private SpriteRenderer _plunger;
 
-        private readonly long[] _litAt = { long.MinValue, long.MinValue, long.MinValue };
+        /// <summary>まだ光っていないバンパーの印（引き算で桁あふれさせないよう、比べる前に除く）。</summary>
+        private const long NeverLit = -1;
+
+        private readonly long[] _litAt = { NeverLit, NeverLit, NeverLit };
         private PinballRun _shownRun;
+        private int _plungerMaxTicks = 1;
+        private float _ballRadius = .5f;
 
         public SpriteRenderer Background => _background;
 
@@ -96,18 +101,25 @@ namespace Game.Unity
             _plunger.transform.localPosition = PlungerAt(table, config, 0);
         }
 
-        /// <summary>試合の状態を描く。<paramref name="flashTicks"/> はバンパーを光らせる長さ。</summary>
+        /// <summary>描画に使う設定の値を受け取る（毎フレーム設定の複製を作らないよう、起動時に 1 回）。</summary>
+        public void Configure(PinballConfig config)
+        {
+            if (config == null) { throw new ArgumentNullException(nameof(config)); }
+            _plungerMaxTicks = config.PlungerMaxTicks;
+            _ballRadius = (float)config.BallRadius / Board.Unit;
+        }
+
+        /// <summary>試合の状態を描く（割り当てなし）。<paramref name="flashTicks"/> はバンパーを光らせる長さ。</summary>
         public void Render(PinballRun run, int flashTicks)
         {
             if (run == null) { throw new ArgumentNullException(nameof(run)); }
             if (!ReferenceEquals(_shownRun, run))
             {
                 _shownRun = run;
-                for (var i = 0; i < _litAt.Length; i++) { _litAt[i] = long.MinValue; }
+                for (var i = 0; i < _litAt.Length; i++) { _litAt[i] = NeverLit; }
             }
 
-            var config = run.Config;
-            var pullShare = (float)run.Pull / config.PlungerMaxTicks;
+            var pullShare = (float)run.Pull / _plungerMaxTicks;
             for (var slot = 0; slot < _balls.Length; slot++)
             {
                 var ball = run.BallAt(slot);
@@ -118,14 +130,14 @@ namespace Game.Unity
                 _balls[slot].transform.localPosition = position;
             }
 
-            _leftFlipper.transform.localRotation = Quaternion.Euler(0, 0, Degrees(run.FlipperOf(FlipperSide.Left).Angle));
-            _rightFlipper.transform.localRotation = Quaternion.Euler(0, 0, Degrees(run.FlipperOf(FlipperSide.Right).Angle));
-            _plunger.transform.localPosition = PlungerAt(run.Table, config, pullShare);
+            _leftFlipper.transform.localRotation = Quaternion.Euler(0, 0, Degrees(run.FlipperAngle(FlipperSide.Left)));
+            _rightFlipper.transform.localRotation = Quaternion.Euler(0, 0, Degrees(run.FlipperAngle(FlipperSide.Right)));
+            _plunger.transform.localPosition = ToLocal(run.Table.LaneRest) + new Vector3(0, -_ballRadius - (pullShare * PullTravel), 0);
 
             for (var i = 0; i < _targets.Length; i++) { _targets[i].color = run.TargetUp(i) ? Color.white : _down; }
             for (var i = 0; i < _bumpers.Length; i++)
             {
-                var lit = run.Ticks - _litAt[i] < flashTicks;
+                var lit = _litAt[i] != NeverLit && run.Ticks - _litAt[i] < flashTicks;
                 _bumpers[i].color = lit ? _lit : Color.white;
             }
         }
