@@ -316,6 +316,116 @@ namespace Game.Core.Tests
             Assert.That(duel.At(1).X, Is.EqualTo(x));
         }
 
+        [TestCase(true, true, false, false, "special")]
+        [TestCase(true, false, true, false, "heavy")]
+        [TestCase(true, false, false, true, null)]
+        [TestCase(false, true, false, false, "special")]
+        [TestCase(false, false, true, false, "heavy")]
+        [TestCase(false, false, false, true, null)]
+        [TestCase(true, true, true, false, "throw")]
+        [TestCase(false, true, true, false, "throw")]
+        public void Motion_UsesLightOnly_AndSimultaneousThrowWins(bool right, bool light, bool heavy, bool sweep, string? expected)
+        {
+            var duel = FightLab.NewDuel();
+            FightLab.Place(duel, 180);
+            if (!right)
+            {
+                int x = duel.At(0).X;
+                duel.At(0).X = duel.At(1).X;
+                duel.At(1).X = x;
+            }
+
+            StepDir(duel, 2);
+            StepDir(duel, right ? 3 : 1);
+            duel.Step(new Pad(right ? 6 : 4, light, heavy, sweep), Pad.Neutral);
+            Assert.That(duel.At(0).Move?.Id, Is.EqualTo(expected));
+        }
+
+        [TestCase(1, false)]
+        [TestCase(80, false)]
+        [TestCase(1, true)]
+        public void AirHitStun_AlwaysReachesTheGround(int stun, bool hitStop)
+        {
+            var duel = FightLab.NewDuel();
+            FightLab.Place(duel, hitStop ? 30 : 180);
+            if (hitStop)
+            {
+                FightLab.Tap(duel, 0, "light");
+                for (int i = 0; i < 20 && duel.HitStop == 0; i++) { duel.Step(Pad.Neutral, Pad.Neutral); }
+                Assert.That(duel.HitStop, Is.GreaterThan(0));
+            }
+
+            var fighter = duel.At(1);
+            fighter.State = FighterState.HitStun;
+            fighter.Pose = BodyPose.Air;
+            fighter.Y = 40 * 256;
+            fighter.Vy = 0;
+            fighter.Remaining = stun;
+            int stop = duel.HitStop;
+            for (int i = 0; i < stop; i++)
+            {
+                duel.Step(Pad.Neutral, Pad.Neutral);
+                Assert.That(fighter.Y, Is.EqualTo(40 * 256));
+                Assert.That(fighter.Remaining, Is.EqualTo(stun));
+            }
+
+            duel.Step(Pad.Neutral, Pad.Neutral);
+            if (stun == 1)
+            {
+                Assert.That(fighter.State, Is.EqualTo(FighterState.Air));
+                Assert.That(fighter.Pose, Is.EqualTo(BodyPose.Air));
+                Assert.That(duel.CanAct(1), Is.False);
+            }
+
+            var attack = new Pad(5, true, true, false);
+            for (int i = 0; i < 100 && fighter.Y > 0; i++)
+            {
+                Assert.That(duel.CanAct(1), Is.False, "空中で地上技を使えない");
+                int y = fighter.Y;
+                duel.Step(Pad.Neutral, attack);
+                Assert.That(fighter.Y, Is.LessThan(y));
+                Assert.That(fighter.State, Is.Not.EqualTo(FighterState.Attack));
+            }
+
+            Assert.That(fighter.Y, Is.EqualTo(0));
+            Assert.That(fighter.State, Is.EqualTo(stun == 1 ? FighterState.Land : FighterState.Knockdown));
+            for (int i = 0; i < 120 && !duel.CanAct(1); i++) { duel.Step(Pad.Neutral, Pad.Neutral); }
+            Assert.That(duel.CanAct(1), Is.True);
+        }
+
+        [TestCase(true, false, false)]
+        [TestCase(false, true, false)]
+        [TestCase(false, false, true)]
+        public void Hash_DistinguishesHeldAndReleasedButtons_AndClonePreservesEdges(bool light, bool heavy, bool sweep)
+        {
+            var held = FightLab.NewDuel();
+            FightLab.Place(held, 180);
+            var press = new Pad(sweep ? 2 : 5, light, heavy, sweep);
+            held.Step(press, Pad.Neutral);
+            var released = held.Clone();
+            held.Step(press, Pad.Neutral);
+            released.Step(new Pad(press.Direction, false, false, false), Pad.Neutral);
+            Assert.That(held.At(0).Frame, Is.EqualTo(released.At(0).Frame));
+            Assert.That(held.Hash(), Is.Not.EqualTo(released.Hash()));
+            var heldCopy = held.Clone();
+            var releasedCopy = released.Clone();
+            held.Step(press, Pad.Neutral);
+            released.Step(press, Pad.Neutral);
+            heldCopy.Step(press, Pad.Neutral);
+            releasedCopy.Step(press, Pad.Neutral);
+            Assert.That(heldCopy.Hash(), Is.EqualTo(held.Hash()));
+            Assert.That(releasedCopy.Hash(), Is.EqualTo(released.Hash()));
+            int activation = held.At(0).Activation;
+            for (int i = 0; i < 50 && held.At(0).Activation == activation; i++)
+            {
+                held.Step(press, Pad.Neutral);
+                heldCopy.Step(press, Pad.Neutral);
+            }
+
+            Assert.That(held.At(0).Activation, Is.EqualTo(activation), "保持では押下エッジを作らない");
+            Assert.That(heldCopy.Hash(), Is.EqualTo(held.Hash()));
+        }
+
         private static int Measure(int character, Move move, bool block)
         {
             var duel = FightLab.NewDuel(character, character);

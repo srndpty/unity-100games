@@ -99,7 +99,7 @@ namespace Game.Core
 
         public bool SpecialReady(int facing, DuelConfig config)
         {
-            if (!_armed || !_buffer.IsActive) { return false; }
+            if (!_armed || !_buffer.IsActive || _button != AttackButton.Light) { return false; }
             var need = facing > 0 ? _rightMotion : _leftMotion;
             int cursor = _armedTick;
             int window = config.ButtonWindow;
@@ -135,6 +135,10 @@ namespace Game.Core
 
         public void Contribute(ref StateHash hash)
         {
+            hash.Mix(_direction);
+            hash.Mix(_lightHeld);
+            hash.Mix(_heavyHeld);
+            hash.Mix(_sweepHeld);
             hash.Mix(_marks.Count);
             for (int i = 0; i < _marks.Count; i++)
             {

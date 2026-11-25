@@ -34,9 +34,7 @@ namespace Game.Unity
         private int _hudVersion = -1;
         private bool _hasFocus = true;
         private int _focusRestoredFrame = -1;
-        private int _seenHealth0 = -1;
-        private int _seenHealth1 = -1;
-        private FighterState _seenState0;
+        private readonly CombatFeedback _feedback = new();
         private Label _banner;
         private Label _timer;
         private Label _stars;
@@ -404,35 +402,13 @@ namespace Game.Unity
 
         private void PlaySounds()
         {
-            var match = Flow.Match;
-            if (match == null || AudioPolicy.ShouldMute)
-            {
-                _seenHealth0 = -1;
-                return;
-            }
-
-            var a = match.Duel.At(0);
-            var b = match.Duel.At(1);
-            if (_seenHealth0 < 0)
-            {
-                _seenHealth0 = a.Health;
-                _seenHealth1 = b.Health;
-                _seenState0 = a.State;
-                return;
-            }
-
+            var cue = _feedback.Observe(Flow.Match?.Duel);
+            if (AudioPolicy.ShouldMute) { return; }
             _audio.volume = _settings.Volume;
-            if (a.State == FighterState.Attack && _seenState0 != FighterState.Attack) { _audio.PlayOneShot(_swing); }
-            if (a.Health < _seenHealth0 || b.Health < _seenHealth1)
-            {
-                var blocked = a.State == FighterState.BlockStun || b.State == FighterState.BlockStun;
-                _audio.PlayOneShot(blocked ? _guard : _hit);
-            }
-
-            if ((a.Health == 0 && _seenHealth0 > 0) || (b.Health == 0 && _seenHealth1 > 0)) { _audio.PlayOneShot(_ko); }
-            _seenHealth0 = a.Health;
-            _seenHealth1 = b.Health;
-            _seenState0 = a.State;
+            if ((cue & CombatCue.Swing) != 0) { _audio.PlayOneShot(_swing); }
+            if ((cue & CombatCue.Hit) != 0) { _audio.PlayOneShot(_hit); }
+            if ((cue & CombatCue.Guard) != 0) { _audio.PlayOneShot(_guard); }
+            if ((cue & CombatCue.Ko) != 0) { _audio.PlayOneShot(_ko); }
         }
 
         private static string Stars(int wins)

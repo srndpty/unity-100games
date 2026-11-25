@@ -190,6 +190,37 @@ namespace Game.App.Tests
             Assert.That(sawLight, Is.False);
         }
 
+        [TestCase(0, false, false)]
+        [TestCase(1, false, false)]
+        [TestCase(0, true, false)]
+        [TestCase(1, true, false)]
+        [TestCase(0, false, true)]
+        public void CombatFeedback_ReportsBothSidesWithoutRepeating(int actor, bool block, bool ko)
+        {
+            var feedback = new CombatFeedback();
+            var duel = new Duel(Table(), new(), 0, 0);
+            duel.At(0).X = 220 * 256;
+            duel.At(1).X = 250 * 256;
+            int victim = 1 - actor;
+            int health = ko ? 1 : duel.At(victim).Health;
+            duel.At(victim).Health = health;
+            var guard = block ? new Pad(actor == 0 ? 6 : 4, false, false, false) : Pad.Neutral;
+            var light = new Pad(5, true, false, false);
+            Assert.That(feedback.Observe(duel), Is.EqualTo(CombatCue.None));
+            duel.Step(actor == 0 ? light : guard, actor == 1 ? light : guard);
+            Assert.That(feedback.Observe(duel), Is.EqualTo(CombatCue.Swing));
+            Assert.That(feedback.Observe(duel), Is.EqualTo(CombatCue.None));
+            for (int i = 0; i < 80; i++) { duel.Step(actor == 0 ? Pad.Neutral : guard, actor == 1 ? Pad.Neutral : guard); }
+            var expected = block ? CombatCue.Guard : CombatCue.Hit;
+            if (ko) { expected |= CombatCue.Ko; }
+            Assert.That(feedback.Observe(duel), Is.EqualTo(expected), "描画を挟まず硬直が終わっても通知する");
+            Assert.That(duel.At(victim).Health, block ? Is.EqualTo(health) : Is.LessThan(health));
+            Assert.That(feedback.Observe(duel), Is.EqualTo(CombatCue.None));
+            Assert.That(feedback.Observe(duel.Clone()), Is.EqualTo(CombatCue.Swing | expected));
+            Assert.That(feedback.Observe(null), Is.EqualTo(CombatCue.None));
+            Assert.That(feedback.Observe(new Duel(Table(), new(), 0, 0)), Is.EqualTo(CombatCue.None));
+        }
+
         private static void RunToResult(DuelFlow flow)
         {
             int guard = 0;

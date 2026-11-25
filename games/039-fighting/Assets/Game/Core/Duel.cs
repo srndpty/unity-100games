@@ -37,6 +37,15 @@ namespace Game.Core
 
         public int HitStop { get; private set; }
 
+        // 描画の間に複数 Tick 進んでも、効果音の出来事を取りこぼさない累計。
+        public int AttacksStarted { get; private set; }
+
+        public int Hits { get; private set; }
+
+        public int Blocks { get; private set; }
+
+        public int Knockouts { get; private set; }
+
         public bool RecordLog { get; set; }
 
         public int LogTicks => _rows.Count / 2;
@@ -115,6 +124,10 @@ namespace Game.Core
             var hash = StateHash.Start();
             hash.Mix(Tick);
             hash.Mix(HitStop);
+            hash.Mix(AttacksStarted);
+            hash.Mix(Hits);
+            hash.Mix(Blocks);
+            hash.Mix(Knockouts);
             for (int i = 0; i < 2; i++)
             {
                 var f = _fighters[i];
@@ -154,6 +167,10 @@ namespace Game.Core
             {
                 Tick = Tick,
                 HitStop = HitStop,
+                AttacksStarted = AttacksStarted,
+                Hits = Hits,
+                Blocks = Blocks,
+                Knockouts = Knockouts,
                 RecordLog = false,
             };
             copy._fighters[0] = _fighters[0].Copy();
@@ -191,16 +208,16 @@ namespace Game.Core
             bool ready = CanAct(index);
             bool cancel = f.CancelOpen && f.State == FighterState.Attack;
             if (!ready && !cancel) { return false; }
-            if (cmd.SpecialReady(f.Facing, Config))
+            if (ready && cmd.ThrowReady(Tick))
             {
-                Begin(f, "special");
+                Begin(f, "throw");
                 cmd.Consume();
                 return true;
             }
 
-            if (ready && cmd.ThrowReady(Tick))
+            if (cmd.SpecialReady(f.Facing, Config))
             {
-                Begin(f, "throw");
+                Begin(f, "special");
                 cmd.Consume();
                 return true;
             }
@@ -231,8 +248,9 @@ namespace Game.Core
             return false;
         }
 
-        private static void Begin(Fighter f, string id)
+        private void Begin(Fighter f, string id)
         {
+            AttacksStarted++;
             f.Move = f.Character.Find(id);
             f.State = FighterState.Attack;
             f.Frame = 0;
@@ -414,6 +432,13 @@ namespace Game.Core
             }
 
             if (f.Remaining > 0) { return; }
+            if (f.Y > 0)
+            {
+                f.State = FighterState.Air;
+                f.Pose = BodyPose.Air;
+                return;
+            }
+
             f.State = f.Pose == BodyPose.Crouch ? FighterState.Crouch : FighterState.Idle;
         }
 
@@ -496,6 +521,7 @@ namespace Game.Core
             var move = atk.Move;
             if (move == null) { return; }
             victim.Health -= move.Damage;
+            Hits++;
             victim.Move = null;
             victim.CancelOpen = false;
             victim.Y = 0;
@@ -505,6 +531,7 @@ namespace Game.Core
             {
                 victim.Health = 0;
                 victim.State = FighterState.Ko;
+                Knockouts++;
                 return;
             }
 
@@ -600,6 +627,7 @@ namespace Game.Core
             int stop = blocked ? hit.Move.BlockStop : hit.Move.HitStop;
             if (blocked)
             {
+                Blocks++;
                 if (hit.Move.Id == "special")
                 {
                     int next = def.Health - hit.ChipFrom.Chip;
@@ -614,6 +642,7 @@ namespace Game.Core
             }
             else
             {
+                Hits++;
                 def.Health -= hit.Move.Damage;
                 def.Move = null;
                 def.CancelOpen = false;
@@ -621,6 +650,7 @@ namespace Game.Core
                 {
                     def.Health = 0;
                     def.State = FighterState.Ko;
+                    Knockouts++;
                 }
                 else if (hit.Move.Height == StrikeHeight.Low)
                 {
