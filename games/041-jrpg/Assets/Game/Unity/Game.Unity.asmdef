@@ -1,0 +1,14 @@
+{
+  "name": "Game.Unity",
+  "rootNamespace": "Game.Unity",
+  "references": ["Game.Core", "Game.App", "Unity.InputSystem", "IntGeometry", "TileMotion"],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
