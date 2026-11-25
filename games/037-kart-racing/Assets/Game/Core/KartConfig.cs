@@ -1,4 +1,5 @@
 using System;
+using IntGeometry;
 
 namespace Game.Core
 {
@@ -13,8 +14,8 @@ namespace Game.Core
 
         public const int LapsToFinish = 3;
 
-        /// <summary>車の半径（mm）。</summary>
-        public int Radius = 450;
+        /// <summary>車の半径（mm）。車同士・壁との当たりはこの円。</summary>
+        public int Radius = 600;
 
         /// <summary>加速（mm/Tick²）。</summary>
         public int Accel = 8;
@@ -58,6 +59,21 @@ namespace Game.Core
         /// <summary>ブーストの長さ（Tick）。</summary>
         public int BoostTicks = 40;
 
+        /// <summary>芝（ターマックの外）での速さの上限（mm/Tick）。ブースト中も同じ。後退の上限より小さくはしない。</summary>
+        public int OffroadSpeed = 150;
+
+        /// <summary>芝で上限を超えているときの 1 Tick の減速（mm/Tick²）。</summary>
+        public int OffroadDrag = 12;
+
+        /// <summary>車同士の接触の反発（1000 分率）。0 は法線方向の速さをそろえるだけ、1000 は入れ替える。</summary>
+        public int BumpBounce = 400;
+
+        /// <summary>CPU が前の車をよけ始める、中心線に沿った距離（mm）。</summary>
+        public int AvoidRange = 7000;
+
+        /// <summary>よけるときに、前の車との横の間に車の直径から足す余裕（mm）。</summary>
+        public int AvoidGap = 400;
+
         /// <summary>CPU がハンドルを向ける、中心線上の先の点までの距離（mm）。速度はこれより先の曲率も見る。</summary>
         public int Lookahead = 8000;
 
@@ -83,7 +99,7 @@ namespace Game.Core
         /// <summary>スタートしてから車を動かさない Tick 数。</summary>
         public int StartDelayTicks = 90;
 
-        /// <summary>この Tick で未完走が残っていても順位を確定する。</summary>
+        /// <summary>この Tick でプレイヤーが未完走でも順位を確定する。</summary>
         public int MaxRaceTicks = 20000;
 
         /// <summary>速さ <paramref name="speed"/> の 1 Tick の旋回量。0 では 0。</summary>
@@ -124,6 +140,11 @@ namespace Game.Core
             Require(SlipAngle, 1, TrigQuarter(), nameof(SlipAngle));
             Require(MiniTurboTicks, 1, 600, nameof(MiniTurboTicks));
             Require(BoostTicks, 1, 600, nameof(BoostTicks));
+            Require(OffroadSpeed, ReverseSpeed, MaxSpeed, nameof(OffroadSpeed));
+            Require(OffroadDrag, 1, MaxSpeed, nameof(OffroadDrag));
+            Require(BumpBounce, 0, 1000, nameof(BumpBounce));
+            Require(AvoidRange, 0, 40000, nameof(AvoidRange));
+            Require(AvoidGap, 0, 4000, nameof(AvoidGap));
             Require(Lookahead, 1000, 40000, nameof(Lookahead));
             Require(DriftCorner, 1, 20000, nameof(DriftCorner));
             Require(CornerSpeed, 1, MaxSpeed, nameof(CornerSpeed));
@@ -139,8 +160,21 @@ namespace Game.Core
                 throw new ArgumentOutOfRangeException(nameof(BoostSpeed), BoostSpeed, "1 Tick の移動が壁の線分の上限を超えます。");
             }
 
+            if (ContactSweepBound(BoostSpeed, Radius) > Sweep.FirstLimit)
+            {
+                throw new ArgumentOutOfRangeException(nameof(Radius), Radius, "車同士の接触の掃引が上限を超えます。ブーストの速さか半径を小さくしてください。");
+            }
+
             return Copy();
         }
+
+        /// <summary>
+        /// 車同士の接触で掃引する値の各成分の上界（<see cref="KartContact"/> の説明を参照）。
+        /// 1 台の移動は 1 回の接触で「前の移動と速さの上限の大きい方 + 半径 + 3」まで伸び、相手は 3 台まで。
+        /// 2 台ぶんの移動に直径を足し、丸めの余裕を 6 足す。
+        /// </summary>
+        public static int ContactSweepBound(int boostSpeed, int radius) =>
+            (2 * (boostSpeed + ((KartCount - 1) * (radius + 3)))) + (2 * radius) + 6;
 
         private static int TrigQuarter() => 65536 / 8;
 

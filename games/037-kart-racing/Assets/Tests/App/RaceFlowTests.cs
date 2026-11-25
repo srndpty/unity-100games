@@ -42,21 +42,31 @@ namespace Game.App.Tests
         }
 
         [Test]
-        public void TheAutopilotWinsAndTheCpusFinish()
+        public void TheResultOpensOnTheTickThePlayerFinishesWithoutWaitingForCpus()
         {
             var flow = TestKit.Flow();
             flow.Pilot = new Autopilot();
             flow.Apply(new Intent(IntentKind.Submit, 0));
+            flow.TakeEvents();
             var guard = 0;
-            while (flow.Screen == AppScreen.Playing && guard < new KartConfig().MaxRaceTicks + 5)
+            while (!flow.Race.KartAt(0).Finished && guard < new KartConfig().MaxRaceTicks + 5)
             {
+                Assert.That(flow.Screen, Is.EqualTo(AppScreen.Playing));
                 flow.StepTick();
                 guard++;
             }
 
-            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Result));
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Result), "完走した Tick に結果へ移る");
+            Assert.That(flow.TakeEvents() & FlowEvents.Result, Is.EqualTo(FlowEvents.Result));
+            Assert.That(flow.Race.Tick, Is.EqualTo(flow.Race.KartAt(0).FinishTick));
             Assert.That(flow.Won, Is.True, $"順位 {flow.Race.PlaceOf(0)}");
-            for (var i = 1; i <= 3; i++) { Assert.That(flow.Race.KartAt(i).Finished, Is.True, $"CPU {i}"); }
+            var running = 0;
+            for (var i = 1; i <= 3; i++) { if (!flow.Race.KartAt(i).Finished) { running++; } }
+            Assert.That(running, Is.GreaterThan(0), "CPU の完走を待っていない");
+
+            var tick = flow.Race.Tick;
+            flow.StepTick();
+            Assert.That(flow.Race.Tick, Is.EqualTo(tick), "結果の後は CPU も進めない");
         }
 
         [Test]
@@ -165,11 +175,12 @@ namespace Game.App.Tests
         {
             var text = new System.Text.StringBuilder();
             void Station(int x, int y) => text.Append("station ").Append(x).Append(' ').Append(y).Append(" 4000\n");
-            for (var x = 0; x <= 60000; x += 4000) { Station(x, 0); }
+            for (var x = 28000; x <= 60000; x += 4000) { Station(x, 0); }
             for (var y = 4000; y <= 40000; y += 4000) { Station(60000, y); }
             for (var x = 56000; x >= 0; x -= 4000) { Station(x, 40000); }
             for (var y = 36000; y >= 4000; y -= 4000) { Station(0, y); }
-            text.Append("checkpoint 0\ncheckpoint 15\ncheckpoint 25\ncheckpoint 40\n");
+            for (var x = 0; x <= 24000; x += 4000) { Station(x, 0); }
+            text.Append("runoff 0\ncheckpoint 0\ncheckpoint 15\ncheckpoint 25\ncheckpoint 40\n");
             return text.ToString();
         }
     }

@@ -5,7 +5,7 @@ namespace Game.Core.Tests
 {
     public sealed class HashTests
     {
-        private const uint Scripted = 1723866012u;
+        private const uint Scripted = 108021296u;
 
         [Test]
         public void TheSameInputsMatchTheFixedHash()

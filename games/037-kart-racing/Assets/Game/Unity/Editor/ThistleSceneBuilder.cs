@@ -10,7 +10,8 @@ using Object = UnityEngine.Object;
 namespace Game.Unity.Editor
 {
     /// <summary>
-    /// シーンと Stage Prefab を生成する。既存の Prefab は上書きせず、中心線と一致するかだけ確かめる。
+    /// シーンと Stage Prefab を生成する。既存の Prefab は上書きせず、コースと一致するかだけ確かめる
+    /// （作り直すときは Prefab・Circuit.asset・Ground.mat を消してから実行する）。
     /// 実行：<c>unity run games/037-kart-racing -- -executeMethod Game.Unity.Editor.ThistleSceneBuilder.Build</c>
     /// </summary>
     public static class ThistleSceneBuilder
@@ -18,55 +19,35 @@ namespace Game.Unity.Editor
         private const string Root = "Assets/Game/Unity/";
         private const string ScenePath = "Assets/Scenes/ThistleCircuit.unity";
         private const string StagePath = ThistleArtGenerator.ArtRoot + "ThistleStage.prefab";
+        private const string CircuitPath = ThistleArtGenerator.ArtRoot + "Circuit.asset";
+        private const string MaterialPath = ThistleArtGenerator.ArtRoot + "Ground.mat";
         private const string Prefix = "Thistle";
 
         [MenuItem("Game/Rebuild Thistle Circuit")]
         public static void Build()
         {
-            ThistleArtGenerator.GenerateIfMissing();
-            Directory.CreateDirectory(Root + "UI");
-            if (!File.Exists(Root + "UI/Hud.uxml"))
-            {
-                File.WriteAllText(Root + "UI/Hud.uxml", "<ui:UXML xmlns:ui=\"UnityEngine.UIElements\"><ui:VisualElement /></ui:UXML>\n");
-            }
-
+            ThistleArtGenerator.Generate();
             AssetDatabase.Refresh();
-            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath) == null)
-            {
-                var error = AssetDatabase.MoveAsset("Assets/Scenes/SampleScene.unity", ScenePath);
-                if (!string.IsNullOrEmpty(error)) { throw new InvalidOperationException(error); }
-            }
-
             var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
-            var settings = LoadOrCreate(Root + "ThistleSettings.asset", () =>
-            {
-                var value = ScriptableObject.CreateInstance<ThistleSettings>();
-                value.Track = AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/Game/Data/Track.txt");
-                return value;
-            });
-            settings.Validate();
+            var settings = AssetDatabase.LoadAssetAtPath<ThistleSettings>(Root + "ThistleSettings.asset");
+            if (settings == null) { throw new InvalidOperationException("ThistleSettings.asset がありません。"); }
+            var rules = settings.Validate();
+            var track = Track.Parse(settings.Track.text, rules);
 
-            var panel = LoadOrCreate(Root + "UI/ThistlePanel.asset", () =>
-            {
-                var value = ScriptableObject.CreateInstance<PanelSettings>();
-                value.scaleMode = PanelScaleMode.ScaleWithScreenSize;
-                value.referenceResolution = new Vector2Int(1920, 1080);
-                value.screenMatchMode = PanelScreenMatchMode.MatchWidthOrHeight;
-                value.match = 0.5f;
-                return value;
-            });
+            var panel = AssetDatabase.LoadAssetAtPath<PanelSettings>(Root + "UI/ThistlePanel.asset");
+            if (panel == null) { throw new InvalidOperationException("ThistlePanel.asset がありません。"); }
 
             foreach (var root in scene.GetRootGameObjects())
             {
                 if (root.name.StartsWith(Prefix, StringComparison.Ordinal)) { Object.DestroyImmediate(root); }
             }
 
-            var instance = (GameObject)PrefabUtility.InstantiatePrefab(LoadStage(settings));
+            var instance = (GameObject)PrefabUtility.InstantiatePrefab(LoadStage(track));
             var stage = instance.GetComponent<ThistleStage>();
             var camera = Object.FindAnyObjectByType<Camera>();
             camera.orthographic = true;
             camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = new Color(0.16f, 0.28f, 0.18f);
+            camera.backgroundColor = ThistlePalette.Field;
             camera.transform.position = new Vector3(0f, 0f, -20f);
 
             var gameObject = new GameObject(Prefix + "Game");
@@ -82,6 +63,14 @@ namespace Game.Unity.Editor
             serialized.ApplyModifiedPropertiesWithoutUndo();
             gameObject.AddComponent<ThistleCaptureScenario>();
 
+            var stages = 0;
+            foreach (var root in scene.GetRootGameObjects())
+            {
+                if (root.GetComponent<ThistleStage>() != null) { stages++; }
+            }
+
+            if (stages != 1) { throw new InvalidOperationException($"Stage が {stages} 個あります。"); }
+
             EditorSceneManager.SaveScene(scene);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
             PlayerSettings.companyName = "100games";
@@ -94,98 +83,58 @@ namespace Game.Unity.Editor
             Debug.Log("[ThistleSceneBuilder] シーン生成完了");
         }
 
-        private static GameObject LoadStage(ThistleSettings settings)
+        private static GameObject LoadStage(Track track)
         {
             var existing = AssetDatabase.LoadAssetAtPath<GameObject>(StagePath);
             if (existing != null)
             {
-                var track = Track.Parse(settings.Track.text, settings.Validate());
                 var mismatch = existing.GetComponent<ThistleStage>().Mismatch(track);
                 if (mismatch != null) { throw new InvalidOperationException(StagePath + " がコースと一致しません：" + mismatch); }
                 return existing;
             }
 
-            var rules = settings.Validate();
-            var parsed = Track.Parse(settings.Track.text, rules);
-            var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Sprites/Default");
-            var material = new Material(shader);
-            if (material.HasProperty("_BaseColor")) { material.SetColor("_BaseColor", new Color(0.28f, 0.30f, 0.28f)); }
-            AssetDatabase.CreateAsset(material, ThistleArtGenerator.ArtRoot + "Unlit.mat");
+            if (File.Exists(CircuitPath) || File.Exists(MaterialPath))
+            {
+                throw new InvalidOperationException("Prefab がないのに Circuit.asset か Ground.mat が残っています。消してから作り直してください。");
+            }
+
+            var material = new Material(Shader.Find("Thistle/Ground")) { name = "Ground" };
+            AssetDatabase.CreateAsset(material, MaterialPath);
+            var mesh = ThistleTrackMesh.Build(track);
+            AssetDatabase.CreateAsset(mesh, CircuitPath);
+
             var root = new GameObject("ThistleStage");
             try
             {
                 root.AddComponent<ThistleStage>();
-                var road = new GameObject("Road");
-                road.transform.SetParent(root.transform, false);
-                var mesh = Road(parsed);
-                AssetDatabase.CreateAsset(mesh, ThistleArtGenerator.ArtRoot + "Road.asset");
-                road.AddComponent<MeshFilter>().sharedMesh = mesh;
-                var renderer = road.AddComponent<MeshRenderer>();
+                var circuit = new GameObject(ThistleStage.CircuitName);
+                circuit.transform.SetParent(root.transform, false);
+                circuit.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var renderer = circuit.AddComponent<MeshRenderer>();
                 renderer.sharedMaterial = material;
-                for (var i = 0; i < parsed.StationCount; i++)
-                {
-                    var marker = new GameObject("Marker-" + i);
-                    marker.transform.SetParent(root.transform, false);
-                    marker.transform.localPosition = ThistleLayout.At(parsed.StationPosition(i));
-                }
+                renderer.sortingOrder = -10;
 
-                for (var i = 0; i < KartConfig.KartCount; i++)
+                var smoke = new GameObject(ThistleStage.SmokeName);
+                smoke.transform.SetParent(root.transform, false);
+                var puffs = new SerializedObject(smoke.AddComponent<ThistleSmoke>());
+                puffs.FindProperty("_puff").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Sprite>(ThistleArtGenerator.SmokePath);
+                puffs.ApplyModifiedPropertiesWithoutUndo();
+
+                for (var i = KartConfig.KartCount - 1; i >= 0; i--)
                 {
-                    var kart = new GameObject("Kart-" + i);
+                    var kart = new GameObject(ThistleStage.KartName(i));
                     kart.transform.SetParent(root.transform, false);
                     var sprite = kart.AddComponent<SpriteRenderer>();
-                    sprite.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(ThistleArtGenerator.ArtRoot + "kart-" + i + ".png");
-                    sprite.sortingOrder = 10;
+                    sprite.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(ThistleArtGenerator.KartPath(i));
+                    sprite.sortingOrder = i == 0 ? 11 : 10;
                 }
 
-                var prefab = PrefabUtility.SaveAsPrefabAsset(root, StagePath);
-                return prefab;
+                return PrefabUtility.SaveAsPrefabAsset(root, StagePath);
             }
             finally
             {
                 Object.DestroyImmediate(root);
             }
-        }
-
-        private static Mesh Road(Track track)
-        {
-            var count = track.StationCount;
-            var vertices = new Vector3[count * 2];
-            var colors = new Color[count * 2];
-            var triangles = new int[count * 6];
-            var asphalt = new Color(0.28f, 0.30f, 0.28f);
-            for (var i = 0; i < count; i++)
-            {
-                vertices[i * 2] = ThistleLayout.At(track.Left(i));
-                vertices[(i * 2) + 1] = ThistleLayout.At(track.Right(i));
-                colors[i * 2] = asphalt;
-                colors[(i * 2) + 1] = asphalt;
-                var next = (i + 1) % count;
-                var t = i * 6;
-                triangles[t] = i * 2;
-                triangles[t + 1] = next * 2;
-                triangles[t + 2] = (i * 2) + 1;
-                triangles[t + 3] = (i * 2) + 1;
-                triangles[t + 4] = next * 2;
-                triangles[t + 5] = (next * 2) + 1;
-            }
-
-            var mesh = new Mesh { name = "Road" };
-            mesh.vertices = vertices;
-            mesh.colors = colors;
-            mesh.triangles = triangles;
-            mesh.RecalculateBounds();
-            return mesh;
-        }
-
-        private static T LoadOrCreate<T>(string path, Func<T> create)
-            where T : Object
-        {
-            var existing = AssetDatabase.LoadAssetAtPath<T>(path);
-            if (existing != null) { return existing; }
-            var created = create();
-            AssetDatabase.CreateAsset(created, path);
-            return created;
         }
     }
 }

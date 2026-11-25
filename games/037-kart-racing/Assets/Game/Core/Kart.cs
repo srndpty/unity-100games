@@ -37,6 +37,15 @@ namespace Game.Core
 
         public int RecoverLeft;
 
+        /// <summary>この Tick の始めに芝（ターマックの外）にいたか。</summary>
+        public bool Offroad;
+
+        /// <summary>この Tick に使った操作（表示用。以後の動きには使わない）。</summary>
+        public Drive Input;
+
+        /// <summary>この Tick に他の車と触れたか（表示用）。</summary>
+        public bool Bumped;
+
         /// <summary>完走した Tick。していないときは -1。</summary>
         public int FinishTick;
 

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Game.Unity
 {
-    /// <summary>エンジンは速さで高さを変える。ドリフト、ブースト、周回、結果は短い音。撮影とバッチでは鳴らさない。</summary>
+    /// <summary>エンジンは速さで高さを変える。ドリフト、ブースト、周回、結果、自分の車の接触は短い音。撮影とバッチでは鳴らさない。</summary>
     public sealed class ThistleAudio : MonoBehaviour
     {
         private AudioSource _engine;
@@ -39,6 +39,7 @@ namespace Game.Unity
             if ((moment & RaceMoment.Boost) != 0) { Blip(1.6f); }
             else if ((moment & RaceMoment.Lap) != 0) { Blip(1.1f); }
             else if ((moment & RaceMoment.Finished) != 0 || (moment & RaceMoment.Over) != 0) { Blip(0.7f); }
+            else if ((moment & RaceMoment.Bump) != 0 && race.KartAt(0).Bumped) { Blip(0.5f); }
             else if (race.KartAt(0).DriftTicks > 0) { Blip(0.9f); }
         }
 

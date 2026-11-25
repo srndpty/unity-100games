@@ -3,7 +3,7 @@ using IntGeometry;
 
 namespace Game.Core
 {
-    /// <summary>1 台の加速・旋回・ドリフト。壁とゲートは知らない。</summary>
+    /// <summary>1 台の加速・旋回・ドリフト。壁・ゲート・他の車は知らない。路面（ターマックか芝か）は引数で受け取る。</summary>
     public static class Vehicle
     {
         /// <summary>
@@ -11,8 +11,10 @@ namespace Game.Core
         /// ドリフトのボタンだけを離し、加速と旋回と速さが条件を満たしたままなら、
         /// <paramref name="releasedTicks"/> に押していた Tick 数を入れる。ブーストの残りはここでは増やさない。
         /// 加速を離した、旋回をやめた、壁以外で条件を外したときは溜めを消すだけで、releasedTicks は 0。
+        /// <paramref name="offroad"/> なら、加速・ブレーキの後で速さを <see cref="KartConfig.OffroadSpeed"/> へ
+        /// <see cref="KartConfig.OffroadDrag"/> ずつ下げる（ブースト中も）。
         /// </summary>
-        public static Vec2i Integrate(KartConfig config, ref Kart kart, Drive drive, out int releasedTicks)
+        public static Vec2i Integrate(KartConfig config, ref Kart kart, Drive drive, bool offroad, out int releasedTicks)
         {
             releasedTicks = 0;
             var steering = drive.Steer == -1 || drive.Steer == 1;
@@ -50,6 +52,10 @@ namespace Game.Core
             }
 
             if (kart.DriftTicks > 0) { kart.Speed = Math.Max(0, kart.Speed - config.DriftDrag); }
+            if (offroad && kart.Speed > config.OffroadSpeed)
+            {
+                kart.Speed = Math.Max(config.OffroadSpeed, kart.Speed - config.OffroadDrag);
+            }
 
             if (kart.Speed != 0 && drive.Steer != 0)
             {

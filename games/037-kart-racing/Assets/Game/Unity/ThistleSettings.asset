@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ThistleSettings
   m_EditorClassIdentifier: Game.Unity::Game.Unity.ThistleSettings
   Rules:
-    Radius: 450
+    Radius: 600
     Accel: 8
     MaxSpeed: 340
     BoostSpeed: 500
@@ -28,6 +28,11 @@ MonoBehaviour:
     SlipAngle: 600
     MiniTurboTicks: 8
     BoostTicks: 40
+    OffroadSpeed: 150
+    OffroadDrag: 12
+    BumpBounce: 400
+    AvoidRange: 7000
+    AvoidGap: 400
     Lookahead: 8000
     DriftCorner: 5000
     CornerSpeed: 170

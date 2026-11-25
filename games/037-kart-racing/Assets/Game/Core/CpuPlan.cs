@@ -1,18 +1,32 @@
+using System;
 using IntGeometry;
 
 namespace Game.Core
 {
-    /// <summary>ウェイポイントと曲率の速度計画。その Tick の車の状態だけから操作を決める。</summary>
+    /// <summary>
+    /// ウェイポイントと曲率の速度計画。その Tick の始めの全車の状態だけから操作を決める。
+    /// 中心線に沿って前の <see cref="KartConfig.AvoidRange"/> 以内に、横の間が直径 + <see cref="KartConfig.AvoidGap"/> より狭い車がいれば、
+    /// 向ける点をその車の横へずらして追い越す。
+    /// </summary>
     public static class CpuPlan
     {
         private const int SteerWindow = 350;
 
-        public static Drive Intent(Kart kart, Track track, KartConfig config, int pacePermille)
+        /// <summary>中心線からずらせる横の距離の、ターマックの端からの残り（mm）。</summary>
+        private const int EdgeMargin = 500;
+
+        public static Drive Intent(Kart[] karts, int index, Track track, KartConfig config, int pacePermille)
         {
+            if (karts == null) { throw new ArgumentNullException(nameof(karts)); }
+            if (track == null) { throw new ArgumentNullException(nameof(track)); }
+            if (config == null) { throw new ArgumentNullException(nameof(config)); }
+
+            var kart = karts[index];
             if (kart.Finished) { return Drive.None; }
             var place = new TrackPlace(kart.Station, kart.Along);
             var ahead = track.Travel(place, config.Lookahead);
-            var steer = SteerToward(kart, track.PointAt(ahead));
+            var lane = kart.RecoverLeft > 0 ? 0 : AvoidLane(karts, index, track, config);
+            var steer = SteerToward(kart, track.Offset(ahead, lane));
             if (kart.RecoverLeft > 0)
             {
                 // 後退中はハンドルの符号が反転するので、鼻先を目標へ向けるには逆に切る。
@@ -54,6 +68,45 @@ namespace Game.Core
 
             var drift = drifting && steer != 0;
             return new Drive(accelerate, brake, steer, drift);
+        }
+
+        /// <summary>
+        /// 前のいちばん近い、同じ筋の車の横を通る横の位置（左が正）。いなければ 0（中心線）。
+        /// 自分がその車より右（同じを含む）なら右を、左なら左を通る。前の車は中心線へ戻ってくるので、
+        /// 通る筋はその車と中心線の両方から直径 + 余裕だけ離す。ターマックの端から <see cref="EdgeMargin"/> 内に収める。
+        /// 完走した車は止まった幽霊なのでよけない。
+        /// </summary>
+        public static int AvoidLane(Kart[] karts, int index, Track track, KartConfig config)
+        {
+            if (karts == null) { throw new ArgumentNullException(nameof(karts)); }
+            if (track == null) { throw new ArgumentNullException(nameof(track)); }
+            if (config == null) { throw new ArgumentNullException(nameof(config)); }
+
+            var self = karts[index];
+            var place = new TrackPlace(self.Station, self.Along);
+            var lateral = track.LateralOf(self.Position, self.Station);
+            var clearance = (config.Radius * 2) + config.AvoidGap;
+            var nearest = int.MaxValue;
+            var blocker = 0;
+            var found = false;
+            for (var i = 0; i < karts.Length; i++)
+            {
+                if (i == index || karts[i].Finished) { continue; }
+                var other = karts[i];
+                var gap = track.AdvanceOf(place, new TrackPlace(other.Station, other.Along));
+                if (gap <= 0 || gap > config.AvoidRange || gap >= nearest) { continue; }
+                var otherLateral = track.LateralOf(other.Position, self.Station);
+                if (Math.Abs(otherLateral - lateral) >= clearance) { continue; }
+                nearest = gap;
+                blocker = otherLateral;
+                found = true;
+            }
+
+            if (!found) { return 0; }
+            var room = track.HalfWidth(self.Station) - config.Radius - EdgeMargin;
+            if (room <= 0) { return 0; }
+            var lane = lateral <= blocker ? Math.Min(blocker, 0) - clearance : Math.Max(blocker, 0) + clearance;
+            return IntMath.Clamp(lane, -room, room);
         }
 
         private static int WorstTurn(Track track, TrackPlace place, int horizon)

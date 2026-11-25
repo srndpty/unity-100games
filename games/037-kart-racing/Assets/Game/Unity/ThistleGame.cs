@@ -1,4 +1,3 @@
-using System;
 using Game.App;
 using Game.Core;
 using Game.Unity.Evidence;
@@ -13,7 +12,14 @@ namespace Game.Unity
     /// <summary>キーを時刻つきの意図にして Flow へ渡し、その Tick の状態をそのまま描く。</summary>
     public sealed class ThistleGame : MonoBehaviour
     {
-        public const float ViewMeters = 28f;
+        /// <summary>レース中に画面の縦に入る長さ（m）。</summary>
+        public const float ViewMeters = 20f;
+
+        /// <summary>カメラが自機より前を見る距離（m）。</summary>
+        public const float LookAhead = 4.5f;
+
+        /// <summary>タイトルでコースの全景を置く、画面の右側の割合（左はタイトルの札）。</summary>
+        public const float TitleViewShare = 0.57f;
 
         [SerializeField] private ThistleSettings _settings;
         [SerializeField] private PanelRenderer _hudRenderer;
@@ -21,12 +27,16 @@ namespace Game.Unity
         [SerializeField] private ThistleStage _stage;
 
         private RaceFlow _flow;
+        private Track _track;
+        private KartConfig _rules;
         private ThistleAudio _audio;
+        private ThistleHud _hud;
         private VisualElement _root;
-        private Label _body;
         private int _hudVersion = -1;
         private int _held;
         private bool _focused = true;
+        private Vector2 _trackMin;
+        private Vector2 _trackMax;
 
         public RaceFlow Flow => _flow;
 
@@ -36,11 +46,16 @@ namespace Game.Unity
 
         public VisualElement HudRoot => _root;
 
+        public ThistleHud Hud => _hud;
+
+        public Camera View => _camera;
+
         private void Awake()
         {
-            var rules = _settings.Validate();
-            var track = Track.Parse(_settings.Track.text, rules);
-            _flow = new RaceFlow(rules, track);
+            _rules = _settings.Validate();
+            _track = Track.Parse(_settings.Track.text, _rules);
+            _flow = new RaceFlow(_rules, _track);
+            ThistleTrackMesh.Bounds(_track, out _trackMin, out _trackMax);
             _audio = gameObject.AddComponent<ThistleAudio>();
             _audio.Bind(_settings.Volume);
         }
@@ -68,21 +83,44 @@ namespace Game.Unity
             if (_flow == null) { return; }
             PresentWorld();
             _audio.Play(_flow.Race, _flow.TakeMoments());
-            DrawHud();
+            _hud?.Show(_flow);
         }
 
-        /// <summary>車とカメラだけを、その Tick の状態で置く。HUD の文字列は作らない。</summary>
+        /// <summary>車・煙・カメラだけを、その Tick の状態で置く。HUD の文字列は作らない。</summary>
         public void PresentWorld()
         {
             if (_flow == null) { return; }
+            if (_flow.Screen == AppScreen.Title)
+            {
+                _stage.ClearEffects();
+                _stage.Show(_flow.Race);
+                FrameCircuit();
+                return;
+            }
+
             _stage.Show(_flow.Race);
             var kart = _flow.Race.KartAt(0);
             var forward = new Vector3(Trig.Cos(kart.Heading) / (float)Trig.One, Trig.Sin(kart.Heading) / (float)Trig.One, 0f);
             _camera.orthographic = true;
             _camera.orthographicSize = ViewMeters * 0.5f;
             _camera.transform.rotation = ThistleLayout.CameraRotation(kart.Heading);
-            var look = ThistleLayout.At(kart.Position) + (forward * 3f);
+            var look = ThistleLayout.At(kart.Position) + (forward * LookAhead);
             _camera.transform.position = new Vector3(look.x, look.y, -20f);
+        }
+
+        /// <summary>タイトル：北を上にコース全体を画面の右側へ収める。</summary>
+        private void FrameCircuit()
+        {
+            var aspect = Mathf.Max(1f, _camera.aspect);
+            var size = _trackMax - _trackMin;
+            var half = Mathf.Max(size.y * 0.6f, size.x * 0.55f / (TitleViewShare * aspect));
+            _camera.orthographic = true;
+            _camera.orthographicSize = half;
+            _camera.transform.rotation = Quaternion.identity;
+            var center = (_trackMin + _trackMax) * 0.5f;
+            var width = 2f * half * aspect;
+            var shift = ((1f - TitleViewShare) + (TitleViewShare * 0.5f) - 0.5f) * width;
+            _camera.transform.position = new Vector3(center.x - shift, center.y, -20f);
         }
 
         private void ReadKeys()
@@ -119,72 +157,8 @@ namespace Game.Unity
             if (_root != null && _hudVersion == version) { return; }
             _root = root;
             _hudVersion = version;
-            root.Clear();
-            root.style.paddingTop = 16;
-            root.style.paddingLeft = 24;
-            _body = new Label { name = "body" };
-            _body.style.color = Color.white;
-            _body.style.fontSize = 28;
-            _body.style.whiteSpace = WhiteSpace.Normal;
-            _body.style.unityFontStyleAndWeight = FontStyle.Bold;
-            root.Add(_body);
-            DrawHud();
-        }
-
-        private void DrawHud()
-        {
-            if (_body == null || _flow == null) { return; }
-            var race = _flow.Race;
-            var player = race.KartAt(0);
-            _body.text = _flow.Screen switch
-            {
-                AppScreen.Title => "THISTLE CIRCUIT\nEnter でスタート\nW 加速  A D 旋回  Space ドリフト",
-                AppScreen.Paused => "一時停止\nEnter で再開   R でやり直し   Backspace でタイトル",
-                AppScreen.Result => ResultText(race),
-                _ => $"周回 {player.Laps + 1}/3   {race.PlaceOf(0)} 位   {player.Speed * 60 / 1000f:0} m/s\n" +
-                     Charge(player) + Order(race),
-            };
-        }
-
-        private static string Charge(Kart kart)
-        {
-            if (kart.BoostLeft > 0) { return "ブースト"; }
-            if (kart.DriftTicks > 0) { return "ドリフト " + kart.DriftTicks; }
-            return " ";
-        }
-
-        private static string Order(Race race)
-        {
-            var line = "\n";
-            for (var place = 1; place <= KartConfig.KartCount; place++)
-            {
-                for (var i = 0; i < KartConfig.KartCount; i++)
-                {
-                    if (race.PlaceOf(i) != place) { continue; }
-                    line += place + " " + (i == 0 ? "YOU" : "CPU " + i) + "  ";
-                }
-            }
-
-            return line;
-        }
-
-        private string ResultText(Race race)
-        {
-            var title = _flow.Won ? "勝利" : "敗北";
-            var lines = title + "\n";
-            for (var place = 1; place <= KartConfig.KartCount; place++)
-            {
-                for (var i = 0; i < KartConfig.KartCount; i++)
-                {
-                    if (race.PlaceOf(i) != place) { continue; }
-                    var kart = race.KartAt(i);
-                    var name = i == 0 ? "YOU" : "CPU " + i;
-                    var time = kart.Finished ? (kart.FinishTick / (float)RaceFlow.TickRate).ToString("0.00") + " 秒" : "時間切れ";
-                    lines += place + " " + name + "  " + time + "\n";
-                }
-            }
-
-            return lines + "Enter で再戦   Esc でタイトル";
+            _hud = new ThistleHud(root, _track, _rules);
+            if (_flow != null) { _hud.Show(_flow); }
         }
     }
 }

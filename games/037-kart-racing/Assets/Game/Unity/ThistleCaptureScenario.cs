@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Game.Unity
 {
-    /// <summary>タイトル、グリッド、加速、ヘアピン、ブースト、順位、周回、フィニッシュ、結果を Tick で進めて撮る。</summary>
+    /// <summary>タイトル、グリッド（カウントダウン）、スタートの煙、順位、ドリフトの煙、ブースト、周回、結果を Tick で進めて撮る。結果はプレイヤーの完走の Tick。</summary>
     public sealed class ThistleCaptureScenario : MonoBehaviour, ICaptureScenario
     {
         public async Awaitable RunAsync(CaptureContext capture)
@@ -22,9 +22,9 @@ namespace Game.Unity
             game.Render();
             await capture.ShootAsync("02-grid", "スタート待ちのグリッド");
 
-            Step(game, 80);
+            Step(game, (game.Settings.Rules.StartDelayTicks / 2) + 10);
             game.Render();
-            await capture.ShootAsync("03-straight", "直線の加速");
+            await capture.ShootAsync("03-launch", "スタートのホイールスピン");
 
             var order = OrderOf(game);
             StepUntil(game, () => OrderOf(game) != order, "順位");

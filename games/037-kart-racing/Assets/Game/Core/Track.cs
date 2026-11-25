@@ -68,7 +68,8 @@ namespace Game.Core
     }
 
     /// <summary>
-    /// 閉じた中心線、左右の壁、ゲート。点列から <see cref="Parse"/> が作る。
+    /// 閉じた中心線、ターマックの左右の端、その外の芝（ランオフ）の帯、帯の外側のガード壁、ゲート。点列から <see cref="Parse"/> が作る。
+    /// 車はターマックの外も走れるが、ガード壁は越えられない。ゲートはガードからガードまで張るので、芝の上を通っても数える。
     /// 描画も当たりも、この点が返す左右の位置を使う。
     /// </summary>
     public sealed class Track
@@ -77,24 +78,35 @@ namespace Game.Core
         private readonly int[] _halfWidth;
         private readonly Vec2i[] _left;
         private readonly Vec2i[] _right;
+        private readonly Vec2i[] _guardLeft;
+        private readonly Vec2i[] _guardRight;
         private readonly int[] _length;
         private readonly int[] _checkpoints;
 
-        private Track(Vec2i[] position, int[] halfWidth, Vec2i[] left, Vec2i[] right, int[] length, int[] checkpoints, WallSeg[] walls, Gate[] gates)
+        private Track(Vec2i[] position, int[] halfWidth, int runoff, Vec2i[] left, Vec2i[] right, Vec2i[] guardLeft, Vec2i[] guardRight, int[] length, int[] checkpoints, WallSeg[] walls, Gate[] gates)
         {
             _position = position;
             _halfWidth = halfWidth;
+            Runoff = runoff;
             _left = left;
             _right = right;
+            _guardLeft = guardLeft;
+            _guardRight = guardRight;
             _length = length;
             _checkpoints = checkpoints;
             Walls = walls;
             Gates = gates;
         }
 
+        /// <summary>芝の幅の上限（mm）。</summary>
+        public const int MaxRunoff = 20000;
+
         public int StationCount => _position.Length;
 
         public int CheckpointCount => _checkpoints.Length;
+
+        /// <summary>ターマックの端からガード壁までの芝の幅（mm、全周で同じ）。</summary>
+        public int Runoff { get; }
 
         public WallSeg[] Walls { get; }
 
@@ -118,6 +130,11 @@ namespace Game.Core
 
         public Vec2i Right(int station) => _right[station];
 
+        /// <summary>左のガード壁の点（ターマックの端からさらに <see cref="Runoff"/> 外）。</summary>
+        public Vec2i GuardLeft(int station) => _guardLeft[station];
+
+        public Vec2i GuardRight(int station) => _guardRight[station];
+
         public int SegmentLength(int station) => _length[station];
 
         public int CheckpointStation(int gate) => _checkpoints[gate];
@@ -140,6 +157,7 @@ namespace Game.Core
             var count = 0;
             var checkpointList = new int[32];
             var checkpointCount = 0;
+            var runoff = -1;
             var lineNumber = 0;
             foreach (var raw in text.Split('\n'))
             {
@@ -161,6 +179,13 @@ namespace Game.Core
                     if (checkpointCount == checkpointList.Length) { throw Bad(lineNumber, "チェックポイントが多すぎます。"); }
                     checkpointList[checkpointCount++] = ParseInt(parts[1], lineNumber);
                 }
+                else if (parts[0] == "runoff")
+                {
+                    if (parts.Length != 2) { throw Bad(lineNumber, "runoff は芝の幅（mm）です。"); }
+                    if (runoff >= 0) { throw Bad(lineNumber, "runoff は 1 行だけ書いてください。"); }
+                    runoff = ParseInt(parts[1], lineNumber);
+                    if (runoff < 0 || runoff > MaxRunoff) { throw Bad(lineNumber, $"runoff は 0〜{MaxRunoff} にしてください。"); }
+                }
                 else
                 {
                     throw Bad(lineNumber, "未知の行です。");
@@ -169,6 +194,7 @@ namespace Game.Core
 
             if (count < 4) { throw new FormatException("点は 4 個以上にしてください。"); }
             if (checkpointCount < 4) { throw new FormatException("チェックポイントは 4 個以上にしてください。"); }
+            if (runoff < 0) { throw new FormatException("runoff（芝の幅）を書いてください。"); }
 
             var position = new Vec2i[count];
             var halfWidth = new int[count];
@@ -191,6 +217,8 @@ namespace Game.Core
 
             var left = new Vec2i[count];
             var right = new Vec2i[count];
+            var guardLeft = new Vec2i[count];
+            var guardRight = new Vec2i[count];
             var length = new int[count];
             for (var i = 0; i < count; i++)
             {
@@ -207,7 +235,9 @@ namespace Game.Core
                 if (bisector.LengthSquared < 250000) { bisector = outgoing; }
                 var leftDir = new Vec2i(-bisector.Y, bisector.X);
                 left[i] = position[i] + IntMath.Scale(leftDir, halfWidth[i]);
-                right[i] = position[i] + IntMath.Scale(new Vec2i(-leftDir.X, -leftDir.Y), halfWidth[i]);
+                right[i] = position[i] + IntMath.Scale(-leftDir, halfWidth[i]);
+                guardLeft[i] = position[i] + IntMath.Scale(leftDir, halfWidth[i] + runoff);
+                guardRight[i] = position[i] + IntMath.Scale(-leftDir, halfWidth[i] + runoff);
                 length[i] = (int)IntMath.Sqrt((next - position[i]).LengthSquared);
                 if (length[i] < 500 || length[i] > Units.MaxSegment)
                 {
@@ -219,8 +249,8 @@ namespace Game.Core
             for (var i = 0; i < count; i++)
             {
                 var next = (i + 1) % count;
-                walls[i] = MakeWall(left[i], left[next], leftSide: true);
-                walls[count + i] = MakeWall(right[i], right[next], leftSide: false);
+                walls[i] = MakeWall(guardLeft[i], guardLeft[next], leftSide: true);
+                walls[count + i] = MakeWall(guardRight[i], guardRight[next], leftSide: false);
                 if (SegmentLength(walls[i]) > Units.MaxSegment || SegmentLength(walls[count + i]) > Units.MaxSegment)
                 {
                     throw new FormatException($"点 {i} の壁が {Units.MaxSegment} mm を超えています。");
@@ -234,18 +264,21 @@ namespace Game.Core
             {
                 var station = checkpoints[i];
                 var aheadPoint = position[station] + IntMath.Scale(new Vec2i(Trig.Cos(DirectionOf(position, station)), Trig.Sin(DirectionOf(position, station))), 1000);
-                var side = Geom.Sign(Geom.Cross(right[station] - left[station], aheadPoint - left[station]));
+                var a = guardLeft[station];
+                var b = guardRight[station];
+                var side = Geom.Sign(Geom.Cross(b - a, aheadPoint - a));
                 if (side == 0) { throw new FormatException($"ゲート {i} の進行方向が決まりません。"); }
-                var span = (int)IntMath.Sqrt((right[station] - left[station]).LengthSquared);
-                if (span < halfWidth[station] || span > halfWidth[station] * 3)
+                var reach = halfWidth[station] + runoff;
+                var span = (int)IntMath.Sqrt((b - a).LengthSquared);
+                if (span < reach || span > reach * 3)
                 {
                     throw new FormatException($"ゲート {i} がコースの幅をまたいでいません。");
                 }
 
-                gates[i] = new Gate(left[station], right[station], side, station);
+                gates[i] = new Gate(a, b, side, station);
             }
 
-            return new Track(position, halfWidth, left, right, length, checkpoints, walls, gates);
+            return new Track(position, halfWidth, runoff, left, right, guardLeft, guardRight, length, checkpoints, walls, gates);
         }
 
         /// <summary>ヒントの近くだけを見て、点にいちばん近い中心線上の位置を返す。</summary>
@@ -267,6 +300,41 @@ namespace Game.Core
             }
 
             return new TrackPlace(bestStation, bestAlong);
+        }
+
+        /// <summary>
+        /// 点がターマックの上か。ヒントの前後の区間の四角形（左右の端の点を結んだ、描画と同じ形）のどれかに入っていれば true。
+        /// 四角形の辺の上はターマックとする。
+        /// </summary>
+        public bool OnTarmac(Vec2i point, int hint)
+        {
+            for (var delta = -2; delta <= 2; delta++)
+            {
+                var station = Geom.Mod(hint + delta, StationCount);
+                var next = (station + 1) % StationCount;
+                if (InsideQuad(point, _right[station], _right[next], _left[next], _left[station])) { return true; }
+            }
+
+            return false;
+        }
+
+        /// <summary>区間 <paramref name="station"/> の中心線から、左を正とした横の距離（mm）。</summary>
+        public int LateralOf(Vec2i point, int station)
+        {
+            var a = _position[station];
+            var b = _position[(station + 1) % StationCount];
+            return (int)(Geom.Cross(b - a, point - a) / _length[station]);
+        }
+
+        /// <summary>中心線上の位置から左へ <paramref name="lateral"/> mm ずらした点（右は負）。</summary>
+        public Vec2i Offset(TrackPlace place, int lateral)
+        {
+            var center = PointAt(place);
+            if (lateral == 0) { return center; }
+            var a = _position[place.Station];
+            var b = _position[(place.Station + 1) % StationCount];
+            var leftDir = new Vec2i(-(b.Y - a.Y), b.X - a.X);
+            return center + IntMath.Scale(lateral > 0 ? leftDir : -leftDir, Math.Abs(lateral));
         }
 
         /// <summary>中心線に沿って <paramref name="distance"/> 先の位置。</summary>
@@ -352,6 +420,8 @@ namespace Game.Core
                 hash.Mix(_halfWidth[i]);
             }
 
+            hash.Mix(Runoff);
+
             for (var i = 0; i < CheckpointCount; i++) { hash.Mix(_checkpoints[i]); }
         }
 
@@ -397,6 +467,9 @@ namespace Game.Core
             distanceSquared = (dx * dx) + (dy * dy);
             return along;
         }
+
+        private static bool InsideQuad(Vec2i point, Vec2i a, Vec2i b, Vec2i c, Vec2i d) =>
+            Geom.Orient(a, b, point) >= 0 && Geom.Orient(b, c, point) >= 0 && Geom.Orient(c, d, point) >= 0 && Geom.Orient(d, a, point) >= 0;
 
         private int ForwardSteps(int from, int to) => (to - from + StationCount) % StationCount;
 

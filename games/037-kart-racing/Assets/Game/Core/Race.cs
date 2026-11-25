@@ -21,11 +21,13 @@ namespace Game.Core
         Lap = 4,
         Finished = 8,
         Over = 16,
+        Bump = 32,
     }
 
     /// <summary>
-    /// 1 レース。Tick の順は、全員の操作、各車の移動と壁、各車のゲート、順位、終了判定。
-    /// 車の動きと、周回・順位は別の型が決める。
+    /// 1 レース。Tick の順は、全員の操作（Tick の始めの全車の状態から）、各車の加速と旋回、車同士の接触、
+    /// 各車の壁とゲート、順位、終了判定。プレイヤー（0 番）が完走した Tick に終わり、CPU の未完走は進みの順位で確定する。
+    /// 車の動きと、周回・順位・接触は別の型が決める。
     /// </summary>
     public sealed class Race
     {
@@ -35,6 +37,11 @@ namespace Game.Core
         private readonly Vec2i[] _path = new Vec2i[4];
         private readonly int[] _order = { 0, 1, 2, 3 };
         private readonly int[] _places = new int[KartConfig.KartCount];
+        private readonly Drive[] _drives = new Drive[KartConfig.KartCount];
+        private readonly Vec2i[] _deltas = new Vec2i[KartConfig.KartCount];
+        private readonly int[] _released = new int[KartConfig.KartCount];
+        private readonly TrackPlace[] _before = new TrackPlace[KartConfig.KartCount];
+        private readonly int[] _lapsBefore = new int[KartConfig.KartCount];
 
         public Race(KartConfig config, Track track)
         {
@@ -72,6 +79,9 @@ namespace Game.Core
 
         public Race Clone() => new(_config, _track, _karts, Tick, Phase);
 
+        /// <summary><paramref name="index"/> 番の車を、今の全車の状態から速度計画で走らせる操作（CPU と操縦役が使う）。</summary>
+        public Drive PlanFor(int index, int pacePermille) => CpuPlan.Intent(_karts, index, _track, _config, pacePermille);
+
         /// <summary>プレイヤーのドリフトを、ブーストにせず消す（フォーカスを失ったとき）。</summary>
         public void CancelDrift()
         {
@@ -93,26 +103,48 @@ namespace Game.Core
             var moment = RaceMoment.None;
             for (var i = 0; i < _karts.Length; i++)
             {
+                if (_karts[i].Finished) { _drives[i] = Drive.None; }
+                else { _drives[i] = i == 0 ? player : PlanFor(i, _config.PaceOf(i)); }
+            }
+
+            var active = 0;
+            for (var i = 0; i < _karts.Length; i++)
+            {
                 var kart = _karts[i];
+                kart.Bumped = false;
+                _deltas[i] = Vec2i.Zero;
+                _released[i] = 0;
                 if (kart.Finished)
                 {
+                    kart.Input = Drive.None;
                     _karts[i] = kart;
                     continue;
                 }
 
-                var lapsBefore = kart.Laps;
-                var placeBefore = new TrackPlace(kart.Station, kart.Along);
-                var drive = i == 0 ? player : CpuPlan.Intent(kart, _track, _config, _config.PaceOf(i));
+                active |= 1 << i;
+                _lapsBefore[i] = kart.Laps;
+                _before[i] = new TrackPlace(kart.Station, kart.Along);
                 if (kart.RecoverLeft > 0) { kart.RecoverLeft--; }
-                var delta = Vehicle.Integrate(_config, ref kart, drive, out var released);
-                var hit = Move(ref kart, delta);
-                if (hit)
-                {
-                    kart.DriftTicks = 0;
-                    released = 0;
-                    moment |= RaceMoment.Wall;
-                }
-                else if (released >= _config.MiniTurboTicks)
+                kart.Offroad = !_track.OnTarmac(kart.Position, kart.Station);
+                kart.Input = _drives[i];
+                _deltas[i] = Vehicle.Integrate(_config, ref kart, _drives[i], kart.Offroad, out _released[i]);
+                _karts[i] = kart;
+            }
+
+            var bumped = KartContact.Resolve(_karts, _deltas, active, _config);
+            if (bumped != 0) { moment |= RaceMoment.Bump; }
+
+            for (var i = 0; i < _karts.Length; i++)
+            {
+                if ((active & (1 << i)) == 0) { continue; }
+                var kart = _karts[i];
+                kart.Bumped = (bumped & (1 << i)) != 0;
+                var lapsBefore = _lapsBefore[i];
+                var placeBefore = _before[i];
+                var hit = Move(ref kart, _deltas[i]);
+                if (hit) { moment |= RaceMoment.Wall; }
+                if (hit || kart.Bumped) { kart.DriftTicks = 0; }
+                else if (_released[i] >= _config.MiniTurboTicks)
                 {
                     kart.BoostLeft = _config.BoostTicks;
                     moment |= RaceMoment.Boost;
@@ -125,7 +157,7 @@ namespace Game.Core
                 {
                     kart.SectionAlong = _track.SectionProgress(place, kart.NextGate);
                     var advanced = kart.Laps > lapsBefore || _track.AdvanceOf(placeBefore, place) > 30;
-                    if (advanced) { kart.StallTicks = 0; }
+                    if (advanced || kart.RecoverLeft > 0) { kart.StallTicks = 0; }
                     else
                     {
                         kart.StallTicks++;
@@ -143,7 +175,7 @@ namespace Game.Core
             }
 
             Standings.Write(_karts, _track.CheckpointCount, _places, _order);
-            if (AllFinished() || Tick >= _config.MaxRaceTicks)
+            if (_karts[0].Finished || Tick >= _config.MaxRaceTicks)
             {
                 Phase = RacePhase.Over;
                 moment |= RaceMoment.Over;
@@ -257,16 +289,6 @@ namespace Game.Core
             return stuck;
         }
 
-        private bool AllFinished()
-        {
-            for (var i = 0; i < _karts.Length; i++)
-            {
-                if (!_karts[i].Finished) { return false; }
-            }
-
-            return true;
-        }
-
         private void MixConfig(ref StateHash hash)
         {
             hash.Mix(_config.Radius);
@@ -284,6 +306,11 @@ namespace Game.Core
             hash.Mix(_config.SlipAngle);
             hash.Mix(_config.MiniTurboTicks);
             hash.Mix(_config.BoostTicks);
+            hash.Mix(_config.OffroadSpeed);
+            hash.Mix(_config.OffroadDrag);
+            hash.Mix(_config.BumpBounce);
+            hash.Mix(_config.AvoidRange);
+            hash.Mix(_config.AvoidGap);
             hash.Mix(_config.Lookahead);
             hash.Mix(_config.DriftCorner);
             hash.Mix(_config.CornerSpeed);

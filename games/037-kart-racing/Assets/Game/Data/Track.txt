@@ -1,4 +1,6 @@
 # THISTLE CIRCUIT. millimeters, closed loop.
+# runoff: ターマックの端からガード壁までの芝の幅（mm）。
+runoff 3000
 station 108000 0 5000
 station 112000 0 5000
 station 116000 0 5000

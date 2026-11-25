@@ -1,13 +1,33 @@
+using System.Collections.Generic;
 using Game.Core;
 using UnityEngine;
 
 namespace Game.Unity
 {
-    /// <summary>コースと 4 台の車。位置は <see cref="ThistleLayout"/> と同じ式で Prefab と照合する。</summary>
+    /// <summary>
+    /// コースの地面（Circuit）、4 台の車、煙。車の位置は <see cref="ThistleLayout"/> の式で置き、
+    /// 地面は <see cref="ThistleTrackMesh"/> が作るメッシュと Prefab に保存したメッシュを照合する。
+    /// </summary>
     public sealed class ThistleStage : MonoBehaviour
     {
+        public const string CircuitName = "Circuit";
+
+        public const string SmokeName = "Smoke";
+
         private Transform[] _karts;
         private SpriteRenderer[] _sprites;
+        private ThistleSmoke _smoke;
+
+        public ThistleSmoke Smoke
+        {
+            get
+            {
+                EnsureViews();
+                return _smoke;
+            }
+        }
+
+        public static string KartName(int index) => "Kart-" + index;
 
         public void Show(Race race)
         {
@@ -19,12 +39,50 @@ namespace Game.Unity
                 var kart = race.KartAt(i);
                 view.localPosition = ThistleLayout.At(kart.Position);
                 view.localRotation = Quaternion.Euler(0f, 0f, ThistleLayout.Degrees(kart.Heading));
-                var color = _sprites[i];
-                if (color == null) { continue; }
-                var tint = color.color;
+                var sprite = _sprites[i];
+                if (sprite == null) { continue; }
+                var tint = sprite.color;
                 tint.a = kart.Finished ? 0.45f : 1f;
-                color.color = tint;
+                sprite.color = tint;
             }
+
+            if (_smoke != null) { _smoke.Show(race); }
+        }
+
+        /// <summary>煙を消す（タイトルへ戻ったとき）。</summary>
+        public void ClearEffects()
+        {
+            EnsureViews();
+            if (_smoke != null) { _smoke.Clear(); }
+        }
+
+        /// <summary>地面のメッシュを Track から作り直した結果と比べる。1 点でもずれていれば理由を返し、一致すれば null。</summary>
+        public string Mismatch(Track track)
+        {
+            if (track == null) { return "コースがありません。"; }
+            var circuit = transform.Find(CircuitName);
+            var filter = circuit != null ? circuit.GetComponent<MeshFilter>() : null;
+            if (filter == null || filter.sharedMesh == null) { return CircuitName + " のメッシュがありません。"; }
+
+            var expected = new List<Vector3>();
+            ThistleTrackMesh.Write(track, expected, new List<Color>(), new List<Vector2>(), new List<int>());
+            var actual = new List<Vector3>();
+            filter.sharedMesh.GetVertices(actual);
+            if (actual.Count != expected.Count) { return $"{CircuitName} の頂点の数が違います（{actual.Count} と {expected.Count}）。"; }
+            for (var i = 0; i < expected.Count; i++)
+            {
+                if ((actual[i] - expected[i]).sqrMagnitude > 1e-6f) { return $"{CircuitName} の頂点 {i} の位置が違います。"; }
+            }
+
+            for (var i = 0; i < KartConfig.KartCount; i++)
+            {
+                var kart = transform.Find(KartName(i));
+                if (kart == null || kart.GetComponent<SpriteRenderer>() == null) { return KartName(i) + " がありません。"; }
+            }
+
+            var smoke = transform.Find(SmokeName);
+            if (smoke == null || smoke.GetComponent<ThistleSmoke>() == null) { return SmokeName + " がありません。"; }
+            return null;
         }
 
         private void EnsureViews()
@@ -34,30 +92,12 @@ namespace Game.Unity
             _sprites = new SpriteRenderer[KartConfig.KartCount];
             for (var i = 0; i < KartConfig.KartCount; i++)
             {
-                _karts[i] = transform.Find("Kart-" + i);
+                _karts[i] = transform.Find(KartName(i));
                 if (_karts[i] != null) { _sprites[i] = _karts[i].GetComponent<SpriteRenderer>(); }
             }
-        }
 
-        /// <summary>点を 1 つ動かした Prefab は不一致になる。一致するときは null。</summary>
-        public string Mismatch(Track track)
-        {
-            if (track == null) { return "コースがありません。"; }
-            for (var i = 0; i < track.StationCount; i++)
-            {
-                var marker = transform.Find("Marker-" + i);
-                if (marker == null) { return "Marker-" + i + " がありません。"; }
-                var expected = ThistleLayout.At(track.StationPosition(i));
-                var delta = marker.localPosition - expected;
-                if (delta.sqrMagnitude > 0.0001f) { return "Marker-" + i + " の位置が違います。"; }
-            }
-
-            for (var i = 0; i < KartConfig.KartCount; i++)
-            {
-                if (transform.Find("Kart-" + i) == null) { return "Kart-" + i + " がありません。"; }
-            }
-
-            return null;
+            var smoke = transform.Find(SmokeName);
+            if (smoke != null) { _smoke = smoke.GetComponent<ThistleSmoke>(); }
         }
     }
 }

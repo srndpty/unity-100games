@@ -11,11 +11,11 @@ namespace Game.Core.Tests
             var kart = new Kart();
             var drive = new Drive(accelerate: true, brake: false, steer: 0, drift: false);
             var ticks = (config.MaxSpeed - 1) / config.Accel;
-            for (var i = 0; i < ticks; i++) { Vehicle.Integrate(config, ref kart, drive, out _); }
+            for (var i = 0; i < ticks; i++) { Vehicle.Integrate(config, ref kart, drive, false, out _); }
             Assert.That(kart.Speed, Is.EqualTo(ticks * config.Accel));
-            Vehicle.Integrate(config, ref kart, drive, out _);
+            Vehicle.Integrate(config, ref kart, drive, false, out _);
             Assert.That(kart.Speed, Is.EqualTo(config.MaxSpeed));
-            Vehicle.Integrate(config, ref kart, drive, out _);
+            Vehicle.Integrate(config, ref kart, drive, false, out _);
             Assert.That(kart.Speed, Is.EqualTo(config.MaxSpeed));
         }
 
@@ -24,7 +24,7 @@ namespace Game.Core.Tests
         {
             var config = new KartConfig();
             var kart = new Kart { Heading = 12345 };
-            var delta = Vehicle.Integrate(config, ref kart, new Drive(false, false, 1, false), out _);
+            var delta = Vehicle.Integrate(config, ref kart, new Drive(false, false, 1, false), false, out _);
             Assert.That(kart.Heading, Is.EqualTo(12345));
             Assert.That(delta, Is.EqualTo(IntGeometry.Vec2i.Zero));
         }
@@ -35,8 +35,8 @@ namespace Game.Core.Tests
             var config = new KartConfig();
             var forward = new Kart { Speed = 200, Heading = 10000 };
             var reverse = new Kart { Speed = -200, Heading = 10000 };
-            Vehicle.Integrate(config, ref forward, new Drive(false, false, 1, false), out _);
-            Vehicle.Integrate(config, ref reverse, new Drive(false, false, 1, false), out _);
+            Vehicle.Integrate(config, ref forward, new Drive(false, false, 1, false), false, out _);
+            Vehicle.Integrate(config, ref reverse, new Drive(false, false, 1, false), false, out _);
             Assert.That(forward.Heading, Is.GreaterThan(10000));
             Assert.That(reverse.Heading, Is.LessThan(10000));
             Assert.That(forward.Heading - 10000, Is.EqualTo(10000 - reverse.Heading));
@@ -89,7 +89,7 @@ namespace Game.Core.Tests
         {
             var config = new KartConfig();
             var kart = Charging(config, 10);
-            Vehicle.Integrate(config, ref kart, new Drive(false, false, 1, true), out var released);
+            Vehicle.Integrate(config, ref kart, new Drive(false, false, 1, true), false, out var released);
             Assert.That(released, Is.EqualTo(0));
             Assert.That(kart.DriftTicks, Is.EqualTo(0));
         }
@@ -100,8 +100,8 @@ namespace Game.Core.Tests
             var config = new KartConfig();
             var kart = new Kart { Speed = config.MaxSpeed, Heading = 0 };
             var drive = new Drive(true, false, 1, true);
-            Vehicle.Integrate(config, ref kart, drive, out _);
-            var delta = Vehicle.Integrate(config, ref kart, drive, out _);
+            Vehicle.Integrate(config, ref kart, drive, false, out _);
+            var delta = Vehicle.Integrate(config, ref kart, drive, false, out _);
             Assert.That(kart.DriftTicks, Is.GreaterThan(0));
             Assert.That(delta.Y, Is.LessThan((int)(((long)kart.Speed * IntGeometry.Trig.Sin(kart.Heading)) / IntGeometry.Trig.One)));
         }
@@ -121,7 +121,7 @@ namespace Game.Core.Tests
         private static int Hold(KartConfig config, int ticks)
         {
             var kart = Charging(config, ticks);
-            Vehicle.Integrate(config, ref kart, new Drive(true, false, 1, false), out var released);
+            Vehicle.Integrate(config, ref kart, new Drive(true, false, 1, false), false, out var released);
             return released;
         }
 
@@ -129,7 +129,7 @@ namespace Game.Core.Tests
         {
             var kart = new Kart { Speed = config.MaxSpeed };
             var drive = new Drive(true, false, 1, true);
-            for (var i = 0; i < ticks; i++) { Vehicle.Integrate(config, ref kart, drive, out _); }
+            for (var i = 0; i < ticks; i++) { Vehicle.Integrate(config, ref kart, drive, false, out _); }
             return kart;
         }
     }

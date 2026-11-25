@@ -27,11 +27,39 @@ namespace Game.Unity.Tests
         }
 
         [UnityTest]
-        public IEnumerator TheTitleNamesTheCircuit()
+        public IEnumerator TheTitleScreenNamesTheCircuitAndHidesTheRaceHud()
         {
             _game.Render();
             yield return null;
-            Assert.That(_game.HudRoot.Q<Label>("body").text, Does.Contain("THISTLE CIRCUIT"));
+            var title = _game.HudRoot.Q("title-screen");
+            Assert.That(title.resolvedStyle.display, Is.EqualTo(DisplayStyle.Flex));
+            Assert.That(_game.HudRoot.Q("race-hud").resolvedStyle.display, Is.EqualTo(DisplayStyle.None));
+            var words = title.Query<Label>().ToList().ConvertAll(label => label.text);
+            Assert.That(words, Has.Member("THISTLE"));
+            Assert.That(words, Has.Member("CIRCUIT"));
+            Assert.That(title.Q<Label>("title-start").text, Does.StartWith("Enter"));
+
+            _game.Flow.Apply(new Intent(IntentKind.Submit, 0));
+            _game.Render();
+            yield return null;
+            Assert.That(title.resolvedStyle.display, Is.EqualTo(DisplayStyle.None));
+            Assert.That(_game.HudRoot.Q("race-hud").resolvedStyle.display, Is.EqualTo(DisplayStyle.Flex));
+        }
+
+        [UnityTest]
+        public IEnumerator TheTitleCameraShowsTheWholeCircuitBesideTheTitleCard()
+        {
+            _game.Render();
+            yield return null;
+            var track = Track.Parse(_game.Settings.Track.text, _game.Settings.Validate());
+            ThistleTrackMesh.Bounds(track, out var min, out var max);
+            var cardShare = 1f - ThistleGame.TitleViewShare;
+            foreach (var corner in new[] { new Vector3(min.x, min.y), new Vector3(max.x, min.y), new Vector3(min.x, max.y), new Vector3(max.x, max.y) })
+            {
+                var viewport = _game.View.WorldToViewportPoint(corner);
+                Assert.That(viewport.x, Is.InRange(cardShare, 1f), $"{corner} が札に隠れるか画面の外");
+                Assert.That(viewport.y, Is.InRange(0f, 1f), $"{corner} が画面の外");
+            }
         }
 
         [UnityTest]
@@ -39,12 +67,99 @@ namespace Game.Unity.Tests
         {
             var track = Track.Parse(_game.Settings.Track.text, _game.Settings.Validate());
             Assert.That(_game.Stage.Mismatch(track), Is.Null);
-            var marker = _game.Stage.transform.Find("Marker-0");
-            var original = marker.localPosition;
-            marker.localPosition += Vector3.right;
-            Assert.That(_game.Stage.Mismatch(track), Is.Not.Null);
-            marker.localPosition = original;
+            var filter = _game.Stage.transform.Find(ThistleStage.CircuitName).GetComponent<MeshFilter>();
+            var original = filter.sharedMesh;
+            var moved = Object.Instantiate(original);
+            try
+            {
+                var vertices = moved.vertices;
+                vertices[vertices.Length / 2] += Vector3.right * 0.5f;
+                moved.vertices = vertices;
+                filter.sharedMesh = moved;
+                Assert.That(_game.Stage.Mismatch(track), Does.Contain("頂点"));
+            }
+            finally
+            {
+                filter.sharedMesh = original;
+                Object.Destroy(moved);
+            }
+
             Assert.That(_game.Stage.Mismatch(track), Is.Null);
+            var text = _game.Settings.Track.text.Replace("runoff 3000", "runoff 2500", StringComparison.Ordinal);
+            Assert.That(_game.Stage.Mismatch(Track.Parse(text, _game.Settings.Validate())), Is.Not.Null, "芝の幅を変えたコースとは一致しない");
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator TheMinimapPutsEveryKartInsideItsBox()
+        {
+            var flow = _game.Flow;
+            flow.Pilot = new Autopilot();
+            flow.Apply(new Intent(IntentKind.Submit, 0));
+            for (var i = 0; i < 1200; i++) { flow.StepTick(); }
+            _game.Render();
+            yield return null;
+            var minimap = _game.Hud.Minimap;
+            Assert.That(minimap.resolvedStyle.width, Is.EqualTo(ThistleMinimap.MapWidth).Within(2f));
+            Assert.That(minimap.resolvedStyle.height, Is.EqualTo(ThistleMinimap.MapHeight).Within(2f));
+            for (var i = 0; i < KartConfig.KartCount; i++)
+            {
+                var point = minimap.KartPoint(i);
+                var mapped = minimap.Frame.Map(flow.Race.KartAt(i).Position);
+                Assert.That(point.x, Is.EqualTo(mapped.X));
+                Assert.That(point.x, Is.InRange(0f, ThistleMinimap.MapWidth), $"車 {i}");
+                Assert.That(point.y, Is.InRange(0f, ThistleMinimap.MapHeight), $"車 {i}");
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator TheResultOpensWhenThePlayerFinishesAndListsRunningCpus()
+        {
+            var flow = _game.Flow;
+            flow.Pilot = new Autopilot();
+            flow.Apply(new Intent(IntentKind.Submit, 0));
+            for (var i = 0; i < 20000 && flow.Screen != AppScreen.Result; i++) { flow.StepTick(); }
+            Assert.That(flow.Race.Tick, Is.EqualTo(flow.Race.KartAt(0).FinishTick));
+            _game.Render();
+            yield return null;
+            Assert.That(_game.HudRoot.Q("result-screen").resolvedStyle.display, Is.EqualTo(DisplayStyle.Flex));
+            Assert.That(_game.HudRoot.Q<Label>("result-title").text, Is.EqualTo("勝利"));
+            var rows = _game.HudRoot.Q("result-rows").Query<Label>(className: "result-time").ToList();
+            Assert.That(rows, Has.Count.EqualTo(KartConfig.KartCount));
+            Assert.That(rows[0].text, Is.EqualTo(ThistleHud.Time(flow.Race.KartAt(0).FinishTick)));
+            Assert.That(rows.Exists(label => label.text.StartsWith("走行中", StringComparison.Ordinal)), Is.True, "CPU の完走を待たずに出る");
+        }
+
+        [UnityTest]
+        public IEnumerator TheLaunchSmokesAndTheTitleClearsIt()
+        {
+            var flow = _game.Flow;
+            flow.Apply(new Intent(IntentKind.Submit, 0));
+            flow.Apply(new Intent(IntentKind.AccelDown, 0));
+            _game.Render();
+            Assert.That(_game.Stage.Smoke.Alive, Is.EqualTo(0), "スタート前は出ない");
+            for (var i = 0; i < _game.Settings.Rules.StartDelayTicks + 6; i++) { flow.StepTick(); }
+            Assert.That(TyreSmoke.Of(flow.Race.KartAt(0)) & Smoke.Launch, Is.EqualTo(Smoke.Launch));
+            _game.Render();
+            Assert.That(_game.Stage.Smoke.Alive, Is.GreaterThan(0), "スタートの加速で煙が出る");
+
+            flow.Apply(new Intent(IntentKind.Cancel, 0));
+            flow.Apply(new Intent(IntentKind.Back, 0));
+            _game.Render();
+            Assert.That(_game.Stage.Smoke.Alive, Is.EqualTo(0), "タイトルに戻ると消える");
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator TheSmokeIsTheSameForTheSameTicks()
+        {
+            var first = SmokeAfter(_game, 24);
+            _game.Flow.Apply(new Intent(IntentKind.Cancel, 0));
+            _game.Flow.Apply(new Intent(IntentKind.Back, 0));
+            _game.Render();
+            var second = SmokeAfter(_game, 24);
+            Assert.That(second, Is.EqualTo(first));
+            Assert.That(first, Is.Not.Empty);
             yield return null;
         }
 
@@ -99,9 +214,6 @@ namespace Game.Unity.Tests
             for (var i = 0; i < 20000 && flow.Screen != AppScreen.Result; i++) { flow.StepTick(); }
             Assert.That(flow.Screen, Is.EqualTo(AppScreen.Result));
             Assert.That(flow.Won, Is.True);
-            Assert.That(flow.Race.KartAt(1).Finished, Is.True);
-            Assert.That(flow.Race.KartAt(2).Finished, Is.True);
-            Assert.That(flow.Race.KartAt(3).Finished, Is.True);
             flow.Apply(new Intent(IntentKind.Submit, 0));
             Assert.That(flow.Screen, Is.EqualTo(AppScreen.Playing));
             Assert.That(flow.Race.Tick, Is.EqualTo(0));
@@ -138,7 +250,7 @@ namespace Game.Unity.Tests
             flow.Apply(new Intent(IntentKind.Submit, 0));
             for (var i = 0; i < config.StartDelayTicks + 8; i++)
             {
-                flow.Race.Step(CpuPlan.Intent(flow.Race.KartAt(0), track, config, 1000));
+                flow.Race.Step(flow.Race.PlanFor(0, 1000));
                 _game.PresentWorld();
             }
 
@@ -154,7 +266,7 @@ namespace Game.Unity.Tests
             var baseline = recorder.LastValue;
             for (var i = 0; i < Samples; i++)
             {
-                var drive = CpuPlan.Intent(flow.Race.KartAt(0), track, config, 1000);
+                var drive = flow.Race.PlanFor(0, 1000);
                 watch.Restart();
                 flow.Race.Step(drive);
                 step[i] = watch.Elapsed.TotalMilliseconds;
@@ -180,6 +292,31 @@ namespace Game.Unity.Tests
             Assert.That(measured - baseline, Is.LessThanOrEqualTo(0), "Step と描画の更新で割り当てをしない");
             Assert.That(step[Samples * 95 / 100], Is.LessThan(8));
             Assert.That(render[Samples * 95 / 100], Is.LessThan(8));
+        }
+
+        /// <summary>操縦役で <paramref name="ticks"/> Tick 走り、10 Tick ごとに描いた後の煙の粒の位置。</summary>
+        private static string SmokeAfter(ThistleGame game, int ticks)
+        {
+            var flow = game.Flow;
+            flow.Pilot = new Autopilot();
+            flow.Apply(new Intent(IntentKind.Submit, 0));
+            for (var i = 0; i < game.Settings.Rules.StartDelayTicks + ticks; i++)
+            {
+                flow.StepTick();
+                if ((i % 10) == 0) { game.Render(); }
+            }
+
+            game.Render();
+            var text = new System.Text.StringBuilder();
+            foreach (Transform puff in game.Stage.Smoke.transform)
+            {
+                var sprite = puff.GetComponent<SpriteRenderer>();
+                if (!sprite.enabled) { continue; }
+                text.Append(puff.localPosition.ToString("F4")).Append(sprite.color.a.ToString("F4")).Append(';');
+            }
+
+            flow.Pilot = null;
+            return text.ToString();
         }
     }
 }

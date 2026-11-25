@@ -48,7 +48,7 @@ namespace Game.Core.Tests
         public void PushingOutOfTheLeftWallMovesTowardTheCenter()
         {
             var track = TestKit.Circuit();
-            var outside = track.Left(0);
+            var outside = track.GuardLeft(0);
             var inward = track.Walls[0].Inward;
             var buried = outside - IntMath.Scale(inward, 200);
             var pushed = WallContact.PushOut(buried, track.Walls[0], 450);
@@ -65,7 +65,7 @@ namespace Game.Core.Tests
             var guard = 0;
             while (race.KartAt(0).Laps < 1 && guard < config.MaxRaceTicks)
             {
-                race.Step(CpuPlan.Intent(race.KartAt(0), race.Track, config, 1000));
+                race.Step(race.PlanFor(0, 1000));
                 var kart = race.KartAt(0);
                 for (var w = 0; w < race.Track.Walls.Length; w++)
                 {

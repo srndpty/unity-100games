@@ -40,9 +40,9 @@ namespace Game.Core.Tests
             Assert.That(shifted.Left(1), Is.Not.EqualTo(original.Left(1)));
         }
 
-        [TestCase("station 0 0 5000\nstation 4000 0 5000\nstation 4000 4000 5000\n", "点は 4 個以上")]
-        [TestCase("station 0 0 5000\nstation 4000 0 5000\nstation 8000 0 5000\nstation 12000 0 5000\ncheckpoint 0\ncheckpoint 1\ncheckpoint 2\n", "チェックポイントは 4 個以上")]
-        [TestCase("station 0 0 500\nstation 4000 0 500\nstation 4000 4000 500\nstation 0 4000 500\ncheckpoint 0\ncheckpoint 1\ncheckpoint 2\ncheckpoint 3\n", "半幅")]
+        [TestCase("runoff 0\nstation 0 0 5000\nstation 4000 0 5000\nstation 4000 4000 5000\n", "点は 4 個以上")]
+        [TestCase("runoff 0\nstation 0 0 5000\nstation 4000 0 5000\nstation 8000 0 5000\nstation 12000 0 5000\ncheckpoint 0\ncheckpoint 1\ncheckpoint 2\n", "チェックポイントは 4 個以上")]
+        [TestCase("runoff 0\nstation 0 0 500\nstation 4000 0 500\nstation 4000 4000 500\nstation 0 4000 500\ncheckpoint 0\ncheckpoint 1\ncheckpoint 2\ncheckpoint 3\n", "半幅")]
         public void ParseRejects(string text, string fragment)
         {
             var error = Assert.Throws<FormatException>(() => Track.Parse(text, new KartConfig()));
@@ -52,7 +52,7 @@ namespace Game.Core.Tests
         [Test]
         public void ParseRejectsACheckpointOutOfOrder()
         {
-            var text = "station 0 0 5000\nstation 4000 0 5000\nstation 4000 4000 5000\nstation 0 4000 5000\n" +
+            var text = "runoff 0\nstation 0 0 5000\nstation 4000 0 5000\nstation 4000 4000 5000\nstation 0 4000 5000\n" +
                        "checkpoint 0\ncheckpoint 2\ncheckpoint 1\ncheckpoint 3\n";
             Assert.Throws<FormatException>(() => Track.Parse(text, new KartConfig()));
         }
@@ -60,7 +60,7 @@ namespace Game.Core.Tests
         [Test]
         public void ParseRejectsASegmentThatIsTooLong()
         {
-            var text = "station 0 0 5000\nstation 20000 0 5000\nstation 20000 4000 5000\nstation 0 4000 5000\n" +
+            var text = "runoff 0\nstation 0 0 5000\nstation 20000 0 5000\nstation 20000 4000 5000\nstation 0 4000 5000\n" +
                        "checkpoint 0\ncheckpoint 1\ncheckpoint 2\ncheckpoint 3\n";
             var error = Assert.Throws<FormatException>(() => Track.Parse(text, new KartConfig()));
             Assert.That(error!.Message, Does.Contain("区間の長さ"));
