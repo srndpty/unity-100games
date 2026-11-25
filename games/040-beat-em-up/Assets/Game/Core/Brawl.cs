@@ -322,7 +322,20 @@ namespace Game.Core
 
         private void StartMove(Actor a, MoveDef move)
         {
-            SetState(a, a.State == ActorState.Jump || a.State == ActorState.Grab ? a.State : ActorState.Attack);
+            switch (move.Kind)
+            {
+                case MoveKind.Air:
+                    SetState(a, ActorState.Jump);
+                    break;
+                case MoveKind.Knee:
+                case MoveKind.Throw:
+                    SetState(a, ActorState.Grab);
+                    break;
+                default:
+                    SetState(a, ActorState.Attack);
+                    break;
+            }
+
             a.Move = move;
             a.MoveTick = 0;
             a.Activation = ++Activations;
@@ -605,7 +618,7 @@ namespace Game.Core
             p.Timer = _config.GrabTicks;
             p.Knees = 0;
             p.Partner = best;
-            ReleaseToken(held, false);
+            ReleaseToken(held, true);
             SetState(held, ActorState.Grabbed);
             held.Move = null;
             held.VX = 0;
@@ -706,7 +719,7 @@ namespace Game.Core
 
             attacker.HitStop = Math.Max(attacker.HitStop, move.HitStop);
             target.HitStop = move.HitStop;
-            ReleaseToken(target, false);
+            ReleaseToken(target, true);
             if (move.Kind == MoveKind.Knee && target.State == ActorState.Grabbed && target.Health > 0) { return; }
             if (target.Partner >= 0)
             {
@@ -801,6 +814,7 @@ namespace Game.Core
             hash.Mix(_rng);
             hash.Mix(Serials);
             hash.Mix(Activations);
+            hash.Mix(TokensGranted);
             MixStage(ref hash);
             for (int i = 0; i < _actors.Length; i++)
             {
@@ -890,6 +904,7 @@ namespace Game.Core
             GrabCount = other.GrabCount;
             SpecialCount = other.SpecialCount;
             Deaths = other.Deaths;
+            TokensGranted = other.TokensGranted;
             SectionIndex = other.SectionIndex;
             Locked = other.Locked;
             SectionTick = other.SectionTick;
