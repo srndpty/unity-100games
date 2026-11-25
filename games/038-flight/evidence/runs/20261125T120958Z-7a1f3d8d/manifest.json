@@ -1,0 +1,83 @@
+{
+    "Product": "HALCYON SORTIE",
+    "Version": "0.1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "e63f83b1fae946478259014e7f700299",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-25T12:09:57.1618249Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "flight",
+            "Value": "{\"Gravity\":2722,\"Thrust\":2722,\"MaxSpeed\":3333200,\"SpeedLimit\":5499780,\"LevelSpeed\":1999920,\"LevelAngle\":546,\"StallAngle\":3641,\"StallLiftPercent\":40,\"StallSpeed\":833300,\"SideAngle\":1092,\"ControlSpeed\":1333280,\"PitchRate\":76,\"RollRate\":364,\"YawRate\":27,\"StallPitchDrop\":91,\"Weathervane\":40,\"ThrottleRate\":12,\"GearHeight\":2000000,\"RotateSpeed\":999960,\"MaxGroundPitch\":2185,\"GroundPitchRate\":40,\"TaxiTurnRate\":12,\"RollingFriction\":136}"
+        },
+        {
+            "Key": "mission",
+            "Value": "{\"ArenaHalfWidth\":6000,\"Ceiling\":6000,\"OutOfAreaTicks\":600,\"MissionTicks\":18000,\"RunwayStartZ\":-5500,\"RunwayLength\":1500,\"RunwayHalfWidth\":25,\"EnemyCenterZ\":2500,\"EnemyAltitude\":1500,\"EnemySpacing\":1200,\"EnemyJitter\":300,\"EnemySpeed\":2499900,\"PatrolRadius\":1200,\"EngageRange\":5000,\"EnemyCruiseSpeed\":2833220,\"EnemyAgility\":75,\"EnemyPursuitTicks\":600,\"EnemyBreakTicks\":240,\"EnemyWaitRadius\":2500,\"EnemyFloor\":400,\"EnemyLeadTicks\":45,\"EnemyEvadeRange\":800,\"EnemyAimJitter\":150,\"EnemyJitterTicks\":90,\"LockCone\":2185,\"LockRange\":2500,\"EnemyLockCone\":1456,\"EnemyLockRange\":1500,\"LockTicks\":60,\"EnemyLockTicks\":240,\"Missiles\":16,\"EnemyMissiles\":4,\"Reload\":30,\"EnemyReload\":360,\"PlayerHealth\":3,\"LaunchBoost\":499980,\"MissileAccel\":40000,\"MissileSpeed\":6999720,\"EnemyMissileSpeed\":4666480,\"MissileTurn\":68050,\"EnemyMissileTurn\":16332,\"MissileLife\":720,\"FuseRadius\":12000000,\"NavGain\":4}"
+        },
+        {
+            "Key": "seed",
+            "Value": "2"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "a6e262fa11fe17a5395bc93dd506617ba32a40fff4498f574280c1fd77f8a250",
+            "Note": "タイトルと操作説明"
+        },
+        {
+            "File": "02-roll.jpg",
+            "Sha256": "00032fad8c49d990df865823221a0dda838f39b6359d8d96c4490fde7f1dbc34",
+            "Note": "滑走路を加速する"
+        },
+        {
+            "File": "03-takeoff.jpg",
+            "Sha256": "709853f1e9df67b16520afc95abe61ddac284d9170b6d35f75c34521aa579365",
+            "Note": "離陸（機首の十字と速度の円がずれる）"
+        },
+        {
+            "File": "04-locking.jpg",
+            "Sha256": "81cf4b61d2df6cbac4c1e775e431993d182e45a69b5dfd9994cceb281559d909",
+            "Note": "ロック中"
+        },
+        {
+            "File": "05-lock.jpg",
+            "Sha256": "223e4debbf61605f8258530e7b918da3521b8d57e0c7f9c731fb6c9aa39b617a",
+            "Note": "LOCK"
+        },
+        {
+            "File": "06-launch.jpg",
+            "Sha256": "582f23a574ae2cac30bc6eb41350a5c19942cb471c10d8ce62eb0f0b84d9a99e",
+            "Note": "ミサイルの発射と煙"
+        },
+        {
+            "File": "07-kill.jpg",
+            "Sha256": "1f6e16f1167abb6f8ef20b25a0683d7c8b52eae1336da8a42ba0fcd70eb0daef",
+            "Note": "撃墜"
+        },
+        {
+            "File": "08-warning.jpg",
+            "Sha256": "a57a952c69433cf65623c6c2a2780824b7bdae069b374266b24acdf42472ba34",
+            "Note": "敵に狙われている警告（ロックの進み）"
+        },
+        {
+            "File": "09-complete.jpg",
+            "Sha256": "33378a25d634a729ac22e9943eac23bb100e1dfbb24a9657aa1eafd2eb732a92",
+            "Note": "成功の結果"
+        },
+        {
+            "File": "10-stall.jpg",
+            "Sha256": "2feeda91782af8c9547148e2d24908d611c24b6cb3eddfc287ed979c6507e280",
+            "Note": "失速（STALL、機首が下がる）"
+        },
+        {
+            "File": "11-failed.jpg",
+            "Sha256": "9e4c66263ba0584553168eaa20501de0e9e594fc85d664052053a9382856026d",
+            "Note": "失敗の結果（墜落）"
+        }
+    ]
+}

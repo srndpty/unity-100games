@@ -1,0 +1,68 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:VisualElement name="flight-hud" class="layer" picking-mode="Ignore">
+            <ui:VisualElement name="hit-flash" class="hit-flash" picking-mode="Ignore" />
+            <ui:VisualElement name="targets" class="layer" picking-mode="Ignore">
+                <ui:VisualElement name="target-1" class="target" picking-mode="Ignore"><ui:Label name="target-label-1" class="target-label" text=" " /></ui:VisualElement>
+                <ui:VisualElement name="target-2" class="target" picking-mode="Ignore"><ui:Label name="target-label-2" class="target-label" text=" " /></ui:VisualElement>
+                <ui:VisualElement name="target-3" class="target" picking-mode="Ignore"><ui:Label name="target-label-3" class="target-label" text=" " /></ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="boresight" class="boresight" picking-mode="Ignore">
+                <ui:VisualElement class="bore-h" picking-mode="Ignore" />
+                <ui:VisualElement class="bore-v" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:VisualElement name="fpm" class="fpm" picking-mode="Ignore">
+                <ui:VisualElement class="fpm-ring" picking-mode="Ignore" />
+                <ui:VisualElement class="fpm-wing fpm-left" picking-mode="Ignore" />
+                <ui:VisualElement class="fpm-wing fpm-right" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:VisualElement name="stats-left" class="stats stats-left" picking-mode="Ignore">
+                <ui:Label name="speed" class="stat" text=" " />
+                <ui:Label name="altitude" class="stat" text=" " />
+                <ui:Label name="throttle" class="stat stat-small" text=" " />
+                <ui:Label name="alpha" class="stat stat-small" text=" " />
+            </ui:VisualElement>
+            <ui:VisualElement name="stats-right" class="stats stats-right" picking-mode="Ignore">
+                <ui:Label name="missiles" class="stat" text=" " />
+                <ui:Label name="enemies" class="stat" text=" " />
+                <ui:Label name="time" class="stat stat-small" text=" " />
+                <ui:Label name="health" class="stat stat-small" text=" " />
+            </ui:VisualElement>
+            <ui:Label name="warning" class="warning" text=" " picking-mode="Ignore" />
+            <ui:Label name="kill" class="kill" text=" " picking-mode="Ignore" />
+            <ui:Label name="lock-state" class="lock-state" text=" " picking-mode="Ignore" />
+            <ui:VisualElement name="radar" class="radar" picking-mode="Ignore">
+                <ui:VisualElement class="radar-ring" picking-mode="Ignore" />
+                <ui:VisualElement name="radar-dot-0" class="radar-dot radar-self" picking-mode="Ignore" />
+                <ui:VisualElement name="radar-dot-1" class="radar-dot radar-enemy" picking-mode="Ignore" />
+                <ui:VisualElement name="radar-dot-2" class="radar-dot radar-enemy" picking-mode="Ignore" />
+                <ui:VisualElement name="radar-dot-3" class="radar-dot radar-enemy" picking-mode="Ignore" />
+                <ui:VisualElement name="radar-runway" class="radar-runway" picking-mode="Ignore" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="title-screen" class="panel title-panel" picking-mode="Ignore">
+            <ui:Label class="headline" text="HALCYON SORTIE" />
+            <ui:Label class="subline" text="滑走路から離陸し、敵機 3 機をミサイルで撃墜せよ" />
+            <ui:VisualElement class="controls" picking-mode="Ignore">
+                <ui:Label class="control" text="Shift / Ctrl　スロットル（離陸は全開で）" />
+                <ui:Label class="control" text="S・↓ 機首上げ　　W・↑ 機首下げ" />
+                <ui:Label class="control" text="A D・← →　押している間その向きへ旋回（離すと水平。地上では左右）" />
+                <ui:Label class="control" text="Q E　ヨー" />
+                <ui:Label class="control" text="Space　ミサイル（LOCK 中だけ）　Tab　目標切替" />
+                <ui:Label class="control" text="Esc　一時停止" />
+                <ui:Label class="hint" text="速度が落ちすぎる・引きすぎると失速（STALL）。失速中は機首が下がり、ロックできない" />
+            </ui:VisualElement>
+            <ui:Label class="prompt" text="Enter で出撃" />
+        </ui:VisualElement>
+        <ui:VisualElement name="pause-screen" class="panel small-panel" picking-mode="Ignore">
+            <ui:Label class="headline" text="PAUSE" />
+            <ui:Label class="prompt" text="Enter / Esc 再開　　R やり直し　　Backspace タイトルへ" />
+        </ui:VisualElement>
+        <ui:VisualElement name="result-screen" class="panel small-panel" picking-mode="Ignore">
+            <ui:Label name="result-title" class="headline" text=" " />
+            <ui:Label name="result-sub" class="subline" text=" " />
+            <ui:Label class="prompt" text="Enter もう一度　　Esc タイトルへ" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

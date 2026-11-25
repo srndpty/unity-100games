@@ -1,0 +1,80 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63e5b3a4173f8384bbe13bdc71aa5519, type: 3}
+  m_Name: HalcyonSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.HalcyonSettings
+  Flight:
+    Gravity: 2722
+    Thrust: 2722
+    MaxSpeed: 3333200
+    SpeedLimit: 5499780
+    LevelSpeed: 1999920
+    LevelAngle: 546
+    StallAngle: 3641
+    StallLiftPercent: 40
+    StallSpeed: 833300
+    SideAngle: 1092
+    ControlSpeed: 1333280
+    PitchRate: 76
+    RollRate: 364
+    YawRate: 27
+    StallPitchDrop: 91
+    Weathervane: 40
+    ThrottleRate: 12
+    GearHeight: 2000000
+    RotateSpeed: 999960
+    MaxGroundPitch: 2185
+    GroundPitchRate: 40
+    TaxiTurnRate: 12
+    RollingFriction: 136
+  Mission:
+    ArenaHalfWidth: 6000
+    Ceiling: 6000
+    OutOfAreaTicks: 600
+    MissionTicks: 18000
+    RunwayStartZ: -5500
+    RunwayLength: 1500
+    RunwayHalfWidth: 25
+    EnemyCenterZ: 2500
+    EnemyAltitude: 1500
+    EnemySpacing: 1200
+    EnemyJitter: 300
+    EnemySpeed: 2499900
+    PatrolRadius: 1200
+    EngageRange: 5000
+    EnemyCruiseSpeed: 2833220
+    EnemyFloor: 400
+    EnemyLeadTicks: 45
+    EnemyEvadeRange: 800
+    EnemyAimJitter: 150
+    EnemyJitterTicks: 90
+    LockCone: 2185
+    LockRange: 2500
+    EnemyLockCone: 1456
+    EnemyLockRange: 1500
+    LockTicks: 60
+    EnemyLockTicks: 240
+    Missiles: 16
+    EnemyMissiles: 4
+    Reload: 30
+    EnemyReload: 360
+    PlayerHealth: 3
+    LaunchBoost: 499980
+    MissileAccel: 40000
+    MissileSpeed: 6999720
+    EnemyMissileSpeed: 4666480
+    MissileTurn: 68050
+    EnemyMissileTurn: 16332
+    MissileLife: 720
+    FuseRadius: 12000000
+    NavGain: 4
+  Volume: 0.12
