@@ -2,9 +2,9 @@
     "Product": "HALCYON SORTIE",
     "Version": "0.1.0",
     "UnityVersion": "6000.6.9f1",
-    "BuildGuid": "2720e60375cf4bdca016fd4160e68a21",
+    "BuildGuid": "d3ee0b41e4b84b32999bef3a8decba3f",
     "Seed": 1,
-    "CapturedAtUtc": "2026-11-25T10:42:10.9611029Z",
+    "CapturedAtUtc": "2026-11-25T11:19:35.8846268Z",
     "Info": [
         {
             "Key": "imageEncoding",
@@ -16,7 +16,7 @@
         },
         {
             "Key": "mission",
-            "Value": "{\"ArenaHalfWidth\":6000,\"Ceiling\":6000,\"OutOfAreaTicks\":600,\"MissionTicks\":18000,\"RunwayStartZ\":-5500,\"RunwayLength\":1500,\"RunwayHalfWidth\":25,\"EnemyCenterZ\":2500,\"EnemyAltitude\":1500,\"EnemySpacing\":1200,\"EnemyJitter\":300,\"EnemySpeed\":2499900,\"PatrolRadius\":1200,\"EngageRange\":5000,\"EnemyCruiseSpeed\":2833220,\"EnemyFloor\":400,\"EnemyLeadTicks\":45,\"EnemyEvadeRange\":800,\"EnemyAimJitter\":150,\"EnemyJitterTicks\":90,\"LockCone\":2185,\"LockRange\":2500,\"EnemyLockRange\":1800,\"LockTicks\":60,\"EnemyLockTicks\":180,\"Missiles\":16,\"EnemyMissiles\":4,\"Reload\":30,\"EnemyReload\":360,\"PlayerHealth\":3,\"LaunchBoost\":499980,\"MissileAccel\":40000,\"MissileSpeed\":6999720,\"EnemyMissileSpeed\":4666480,\"MissileTurn\":68050,\"EnemyMissileTurn\":16332,\"MissileLife\":720,\"FuseRadius\":12000000,\"NavGain\":4}"
+            "Value": "{\"ArenaHalfWidth\":6000,\"Ceiling\":6000,\"OutOfAreaTicks\":600,\"MissionTicks\":18000,\"RunwayStartZ\":-5500,\"RunwayLength\":1500,\"RunwayHalfWidth\":25,\"EnemyCenterZ\":2500,\"EnemyAltitude\":1500,\"EnemySpacing\":1200,\"EnemyJitter\":300,\"EnemySpeed\":2499900,\"PatrolRadius\":1200,\"EngageRange\":5000,\"EnemyCruiseSpeed\":2833220,\"EnemyFloor\":400,\"EnemyLeadTicks\":45,\"EnemyEvadeRange\":800,\"EnemyAimJitter\":150,\"EnemyJitterTicks\":90,\"LockCone\":2185,\"LockRange\":2500,\"EnemyLockCone\":1456,\"EnemyLockRange\":1500,\"LockTicks\":60,\"EnemyLockTicks\":240,\"Missiles\":16,\"EnemyMissiles\":4,\"Reload\":30,\"EnemyReload\":360,\"PlayerHealth\":3,\"LaunchBoost\":499980,\"MissileAccel\":40000,\"MissileSpeed\":6999720,\"EnemyMissileSpeed\":4666480,\"MissileTurn\":68050,\"EnemyMissileTurn\":16332,\"MissileLife\":720,\"FuseRadius\":12000000,\"NavGain\":4}"
         },
         {
             "Key": "seed",
@@ -56,13 +56,13 @@
         },
         {
             "File": "07-kill.jpg",
-            "Sha256": "6ff99333af96692203619ad6d89bd3cc8f2cbd28bbcf606a0db814c0b01b0987",
+            "Sha256": "78a6374e915e305bd3ea1601fdd7865081e693e6b9984d8ab3ef579b1b8d9980",
             "Note": "撃墜"
         },
         {
             "File": "08-warning.jpg",
-            "Sha256": "d0a20a7a8b46de9eeff00a84d768e48d613234841ac5efbd3e5f5b49d0e293c7",
-            "Note": "敵のミサイルの警告"
+            "Sha256": "a294369afafa9949d808b95b0d75185a74621f792686b3c9a82b85e0e42f8f51",
+            "Note": "敵にロックされている警告"
         },
         {
             "File": "09-complete.jpg",

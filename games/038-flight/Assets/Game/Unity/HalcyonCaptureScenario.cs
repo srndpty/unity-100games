@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Game.Unity
 {
     /// <summary>
-    /// タイトル、滑走、離陸、ロック中、LOCK、発射、撃墜、ミサイル警告、成功の結果（操縦役）と、
+    /// タイトル、滑走、離陸、ロック中、LOCK、発射、撃墜、ロックされている警告、成功の結果（操縦役）と、
     /// 失速、墜落の結果（決まった操縦）を Tick で進めて撮る。
     /// </summary>
     public sealed class HalcyonCaptureScenario : MonoBehaviour, ICaptureScenario
@@ -48,8 +48,8 @@ namespace Game.Unity
             Step(flow, 10);
             await Shoot(game, capture, "07-kill", "撃墜");
 
-            StepUntil(flow, () => Incoming(mission), "ミサイル警告");
-            await Shoot(game, capture, "08-warning", "敵のミサイルの警告");
+            StepUntil(flow, () => Locked(mission), "ロックされている警告");
+            await Shoot(game, capture, "08-warning", "敵にロックされている警告");
 
             StepUntil(flow, () => flow.Screen == AppScreen.Result, "成功の結果");
             await Shoot(game, capture, "09-complete", "成功の結果");
@@ -79,12 +79,13 @@ namespace Game.Unity
             return count;
         }
 
-        private static bool Incoming(Mission mission)
+        /// <summary>敵がプレイヤーを 1 秒以上ロックし続けている。</summary>
+        private static bool Locked(Mission mission)
         {
-            var position = mission.Player.View.Position;
-            foreach (var missile in mission.Missiles)
+            for (var i = 1; i < mission.Fighters.Count; i++)
             {
-                if (missile.Active && missile.Tracking && missile.Target == 0 && (missile.Position - position).Length < 1200 * Units.PerMeter) { return true; }
+                var enemy = mission.Fighters[i];
+                if (enemy.LockTarget == 0 && enemy.LockTicks >= Units.TickRate) { return true; }
             }
 
             return false;

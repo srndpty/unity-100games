@@ -59,9 +59,10 @@ MonoBehaviour:
     EnemyJitterTicks: 90
     LockCone: 2185
     LockRange: 2500
-    EnemyLockRange: 1800
+    EnemyLockCone: 1456
+    EnemyLockRange: 1500
     LockTicks: 60
-    EnemyLockTicks: 180
+    EnemyLockTicks: 240
     Missiles: 16
     EnemyMissiles: 4
     Reload: 30

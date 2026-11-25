@@ -229,7 +229,8 @@ namespace Game.Core
             if (distance > range * Units.PerMillimeter) { return null; }
             if (distance == 0) { return Fixed.One; }
             var cos = Vec3l.Dot(shooter.Plane.Attitude.Forward, dm) / distance;
-            return cos >= Fixed.Cos(_config.LockCone) ? cos : null;
+            var cone = shooter.IsPlayer ? _config.LockCone : _config.EnemyLockCone;
+            return cos >= Fixed.Cos(cone) ? cos : null;
         }
 
         public Mission Clone()

@@ -76,14 +76,17 @@ namespace Game.Core
         /// <summary>ロックオンの距離（m）。</summary>
         public int LockRange = 2500;
 
+        /// <summary>敵のロックオンの円錐の半角（プレイヤーより狭い）。</summary>
+        public int EnemyLockCone = Units.Degrees(8);
+
         /// <summary>敵のロックオンの距離（m）。</summary>
-        public int EnemyLockRange = 1800;
+        public int EnemyLockRange = 1500;
 
         /// <summary>LOCK までに続ける Tick 数（プレイヤー）。</summary>
         public int LockTicks = 60;
 
         /// <summary>LOCK までに続ける Tick 数（敵）。</summary>
-        public int EnemyLockTicks = 180;
+        public int EnemyLockTicks = 240;
 
         /// <summary>プレイヤーの残弾。</summary>
         public int Missiles = 16;
@@ -162,6 +165,7 @@ namespace Game.Core
             Require(EnemyJitterTicks, 1, 6000, nameof(EnemyJitterTicks));
             Require(LockCone, 1, Units.Degrees(60), nameof(LockCone));
             Require(LockRange, 100, 2 * ArenaHalfWidth, nameof(LockRange));
+            Require(EnemyLockCone, 1, Units.Degrees(60), nameof(EnemyLockCone));
             Require(EnemyLockRange, 100, 2 * ArenaHalfWidth, nameof(EnemyLockRange));
             Require(LockTicks, 1, 6000, nameof(LockTicks));
             Require(EnemyLockTicks, 1, 6000, nameof(EnemyLockTicks));

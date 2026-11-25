@@ -144,6 +144,25 @@ namespace Game.Core.Tests
             Assert.That(mission.Player.LockTarget, Is.EqualTo(1), "円錐の中の敵を順に回る（敵 3 は円錐の外）");
         }
 
+        [Test]
+        public void EnemiesLockOnlyInsideTheirOwnNarrowerCone()
+        {
+            // 敵 1 がプレイヤーの 600 m 後ろを同じ向きに飛ぶ。プレイヤーを横へずらして、敵の機首から 10°（敵の円錐 8° の外、プレイヤーの 12° の内）と 6° に置く。
+            foreach (var (degrees, expected) in new[] { (10, false), (6, true) })
+            {
+                var mission = Behind();
+                var flight = mission.Flight;
+                var side = (long)Math.Round(600 * Math.Tan(degrees * Math.PI / 180) * Units.PerMeter);
+                mission.Place(0, Aircraft.InFlight(flight, new Vec3l(side, Altitude, 0), 0, Cruise, 600));
+                mission.Place(1, Aircraft.InFlight(flight, new Vec3l(0, Altitude, -600 * Units.PerMeter), 0, Cruise, 600));
+                mission.FighterAt(1).Engaged = true;
+                for (var tick = 0; tick < 10; tick++) { mission.Step(Fly()); }
+                Assert.That(mission.Fighters[1].LockTicks > 0, Is.EqualTo(expected), $"{degrees}°");
+            }
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => new MissionConfig { EnemyLockCone = 0 }.Validate(new FlightConfig().Validate()));
+        }
+
         // ---- 追尾の終了 ----
 
         [Test]
