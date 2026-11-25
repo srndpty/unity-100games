@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c9aa531a9f41d04f9b9cade4ad54703, type: 3}
+  m_Name: Class_priest
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.Data.ClassAsset
+  Def:
+    Id: priest
+    Name: "\u50E7\u4FB6"
+    HeroName: "\u30EA\u30CA"
+    BaseHp: 34
+    BaseMp: 20
+    BaseAtk: 11
+    BaseDef: 9
+    BaseAgi: 11
+    HpGain: 6
+    MpGain: 5
+    AtkGain: 3
+    DefGain: 2
+    AgiGain: 2
+    StartWeaponId: oak_staff
+    StartArmorId: linen_robe
+    Spells:
+    - Level: 1
+      SpellId: heal
+    - Level: 2
+      SpellId: holy_bolt
+    - Level: 4
+      SpellId: aura_heal
+    - Level: 5
+      SpellId: revive

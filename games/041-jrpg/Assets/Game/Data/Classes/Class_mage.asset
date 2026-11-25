@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c9aa531a9f41d04f9b9cade4ad54703, type: 3}
+  m_Name: Class_mage
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.Data.ClassAsset
+  Def:
+    Id: mage
+    Name: "\u9B54\u6CD5\u4F7F\u3044"
+    HeroName: "\u30BB\u30AA"
+    BaseHp: 28
+    BaseMp: 24
+    BaseAtk: 7
+    BaseDef: 7
+    BaseAgi: 13
+    HpGain: 5
+    MpGain: 6
+    AtkGain: 2
+    DefGain: 2
+    AgiGain: 3
+    StartWeaponId: ash_wand
+    StartArmorId: linen_robe
+    Spells:
+    - Level: 1
+      SpellId: ember
+    - Level: 2
+      SpellId: frost_lance
+    - Level: 3
+      SpellId: flame_wave
+    - Level: 5
+      SpellId: glacier

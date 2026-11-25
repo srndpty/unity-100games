@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef3cfa3ca71d415489de2283504e2c5e, type: 3}
+  m_Name: Enemy_ember_hound
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.Data.EnemyAsset
+  Def:
+    Id: ember_hound
+    Name: "\u706B\u7FA4\u30AA\u30AA\u30AB\u30DF"
+    IsBoss: 0
+    MaxHp: 35
+    MaxMp: 0
+    Atk: 22
+    Def: 12
+    Agi: 13
+    ExpReward: 17
+    GoldReward: 22
+    WeakElement: 2
+    Actions:
+    - Kind: 0
+      SpellId: 
+      Weight: 65
+    - Kind: 1
+      SpellId: 
+      Weight: 35
+    Phase2Actions: []
+  BattleSprite: {fileID: 21300000, guid: aa97298a93636854ea4e2ecf8238656a, type: 3}
