@@ -1,0 +1,84 @@
+{
+    "Product": "SOOT ALLEY",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "a96387260e574729a1e71edb74577e92",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-25T17:36:49.3240361Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "volume",
+            "Value": "0.15"
+        },
+        {
+            "Key": "seed",
+            "Value": "1"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "298ac73dfcb2f218ad9eed1fadd70d2f197c961dfed06c9acaced4f2f2ae6619",
+            "Note": "タイトル"
+        },
+        {
+            "File": "02-howto.jpg",
+            "Sha256": "c65a96090f3b5f2686115c1b754c622995d027974023fcae02cd6eadaf9c7cb4",
+            "Note": "操作説明"
+        },
+        {
+            "File": "03-melee.jpg",
+            "Sha256": "8ae38991cb2465a6c18582b476fb55fec0eb897337c07810851e6bcca3e466eb",
+            "Note": "乱戦  Tick 1718"
+        },
+        {
+            "File": "04-combo.jpg",
+            "Sha256": "caedb7046461e0672328507663ece7fe14b3f995352b75a56a164ae3a8ba71e5",
+            "Note": "コンボの 3 段目（アッパー）  Tick 2647"
+        },
+        {
+            "File": "05-grab.jpg",
+            "Sha256": "2688c9ea77ad9d7f16b06cb6ce13161e19ec2f40275ae744460d7a6d44053d4c",
+            "Note": "掴み  Tick 2809"
+        },
+        {
+            "File": "06-go.jpg",
+            "Sha256": "183d1647787405278bed7efd112b12d01227425c4ff811251b9304ee393cef28",
+            "Note": "区画を片付けて GO →  Tick 3720"
+        },
+        {
+            "File": "07-item.jpg",
+            "Sha256": "183d1647787405278bed7efd112b12d01227425c4ff811251b9304ee393cef28",
+            "Note": "倒した敵が落とした回復アイテム  Tick 3720"
+        },
+        {
+            "File": "08-special.jpg",
+            "Sha256": "60279e657a29ffc2338d8cc4a10f54e9dd054b08582070eb67a9b1afae89c0aa",
+            "Note": "緊急技  Tick 4583"
+        },
+        {
+            "File": "09-depth.jpg",
+            "Sha256": "ac6937e2971b51b01b5a590b0b795fd92db55974e6ce7c3fe391537c6e038f67",
+            "Note": "判定箱：横と高さは重なるが奥行きがずれて当たらない  Tick 4777"
+        },
+        {
+            "File": "10-boss.jpg",
+            "Sha256": "101a150fea12a2bf749caa759eec0f858c937cc9fdb3910f78fe758e214f8291",
+            "Note": "ボス戦  Tick 4867"
+        },
+        {
+            "File": "11-clear.jpg",
+            "Sha256": "4d2e6c89a67f56fa29d9aa72ddca2d5ed8b504cfab47f850a8d557fe0fbc7ce2",
+            "Note": "面クリア  Cleared  Tick 6445"
+        },
+        {
+            "File": "12-gameover.jpg",
+            "Sha256": "4de40cf6f766f18bbfdb477bc5057376c24b300496459b4decc8bf920678d292",
+            "Note": "入力なしで敗北  Lost  Tick 4052"
+        }
+    ]
+}

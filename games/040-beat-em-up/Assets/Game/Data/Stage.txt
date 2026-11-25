@@ -1,0 +1,34 @@
+# SOOT ALLEY の 1 面。位置と z は px、遅れは区画に入ってからの Tick。
+# 画面の横幅は 384 px。section は画面を止めたときの左端。最後の区画にだけボス。
+# wave の最後に food を書いた敵は、倒れて消えると回復アイテムを落とす。
+start 96
+
+section 0
+wave grunt right 40 30
+wave grunt right 72 30
+wave grunt left 20 150
+
+section 420
+wave grunt right 30 20
+wave kicker right 70 60
+wave grunt left 50 120
+wave grunt right 80 200
+
+section 840
+wave brute right 50 20 food
+wave grunt right 20 40
+wave kicker left 80 120
+wave grunt right 60 200
+
+section 1260
+wave grunt right 20 20
+wave grunt left 80 20
+wave brute right 50 60 food
+wave kicker right 85 100
+wave grunt left 40 140
+wave kicker left 10 220
+
+section 1680
+wave boss right 48 40
+wave grunt left 30 200 food
+wave grunt right 70 420
