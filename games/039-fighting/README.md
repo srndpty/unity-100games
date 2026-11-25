@@ -2,6 +2,8 @@
 
 仕様書：[plan/games/039-fighting.md](../../plan/games/039-fighting.md)
 
+状態：完了。2026-11-26 にレビュー対応後の動作承認を受領。[検証記録](evidence/README.md)・[振り返り](retrospective.md)。
+
 ## 環境
 
 - Unity：6000.6.9f1
