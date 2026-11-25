@@ -1,0 +1,296 @@
+# EMBER DUEL の技表。1 行 1 項目。repeat は同じ箱の Tick をまとめたもの。
+# 箱は足元中央からの x y w h（右向き、1 px = 256）。
+
+character cinder シンダー
+walk 768
+back 512
+jumpX 640
+jumpY 2048
+gravity 112
+prejump 4
+land 4
+health 10000
+chip 300
+knockdown 24
+wakeup 8
+
+pose stand
+box push -3072 0 6144 20480
+box hurt -2560 2048 5120 17408
+box throwable -2048 6144 4096 8192
+
+pose crouch
+box push -3584 0 7168 12288
+box hurt -3072 0 6144 14336
+box throwable -2048 2048 4096 6144
+
+pose air
+box push -2560 0 5120 17920
+box hurt -2560 2048 5120 14336
+
+pose down
+box push -5120 0 10240 4096
+box hurt -5120 0 10240 5120
+
+move light 弱
+startup 4
+active 3
+recovery 7
+damage 700
+hitstun 14
+blockstun 10
+hitstop 8
+blockstop 4
+knockback 1536
+height high
+cancel special
+repeat 4
+use stand
+end
+repeat 3
+use stand
+box hit 2048 10752 7680 4608
+end
+repeat 7
+use stand
+end
+
+move heavy 強
+startup 8
+active 3
+recovery 14
+damage 1200
+hitstun 20
+blockstun 12
+hitstop 10
+blockstop 5
+knockback 2048
+height mid
+cancel none
+repeat 8
+use stand
+end
+repeat 3
+use stand
+box hit 2560 5120 10240 7168
+end
+repeat 14
+use stand
+end
+
+move sweep 足払い
+startup 6
+active 2
+recovery 16
+damage 1000
+hitstun 0
+blockstun 8
+hitstop 8
+blockstop 4
+knockback 1792
+height low
+cancel none
+repeat 6
+use crouch
+end
+repeat 2
+use crouch
+box hit 1536 0 7168 5120
+end
+repeat 16
+use crouch
+end
+
+move special 火球
+startup 14
+active 1
+recovery 20
+damage 1100
+hitstun 18
+blockstun 14
+hitstop 10
+blockstop 6
+knockback 1024
+height high
+cancel none
+projectile 2048
+shot 4096 10752 4096 3072
+repeat 14
+use stand
+end
+repeat 1
+use stand
+end
+repeat 20
+use stand
+end
+
+move throw 投げ
+startup 3
+active 2
+recovery 12
+damage 1200
+hitstun 0
+blockstun 0
+hitstop 0
+blockstop 0
+knockback 0
+height throw
+cancel none
+repeat 3
+use stand
+end
+repeat 2
+use stand
+box throw 0 4096 6144 8192
+end
+repeat 12
+use stand
+end
+
+character kiln キルン
+walk 512
+back 384
+jumpX 512
+jumpY 1920
+gravity 112
+prejump 5
+land 5
+health 11000
+chip 400
+knockdown 26
+wakeup 10
+
+pose stand
+box push -3584 0 7168 20480
+box hurt -3072 2048 6144 17408
+box throwable -2560 6144 5120 8192
+
+pose crouch
+box push -4096 0 8192 12288
+box hurt -3584 0 7168 14336
+box throwable -2560 2048 5120 6144
+
+pose air
+box push -3072 0 6144 17920
+box hurt -3072 2048 6144 14336
+
+pose down
+box push -5632 0 11264 4096
+box hurt -5632 0 11264 5120
+
+move light 弱
+startup 5
+active 3
+recovery 8
+damage 750
+hitstun 16
+blockstun 11
+hitstop 8
+blockstop 4
+knockback 1792
+height high
+cancel special
+repeat 5
+use stand
+end
+repeat 3
+use stand
+box hit 2560 10240 10240 5120
+end
+repeat 8
+use stand
+end
+
+move heavy 強
+startup 10
+active 4
+recovery 16
+damage 1400
+hitstun 22
+blockstun 14
+hitstop 11
+blockstop 6
+knockback 2560
+height mid
+cancel none
+repeat 10
+use stand
+end
+repeat 4
+use stand
+box hit 3072 4096 12800 8192
+end
+repeat 16
+use stand
+end
+
+move sweep 足払い
+startup 8
+active 3
+recovery 18
+damage 1100
+hitstun 0
+blockstun 10
+hitstop 9
+blockstop 5
+knockback 2048
+height low
+cancel none
+repeat 8
+use crouch
+end
+repeat 3
+use crouch
+box hit 2048 0 8960 4608
+end
+repeat 18
+use crouch
+end
+
+move special 突進
+startup 8
+active 8
+recovery 24
+damage 1500
+hitstun 22
+blockstun 16
+hitstop 12
+blockstop 8
+knockback 3072
+height mid
+cancel none
+advance 1280
+repeat 8
+use stand
+end
+repeat 8
+use stand
+box hit 2048 6144 11520 6144
+end
+repeat 24
+use stand
+end
+
+move throw 投げ
+startup 3
+active 2
+recovery 16
+damage 1400
+hitstun 0
+blockstun 0
+hitstop 0
+blockstop 0
+knockback 0
+height throw
+cancel none
+repeat 3
+use stand
+end
+repeat 2
+use stand
+box throw 0 4096 7168 8192
+end
+repeat 16
+use stand
+end

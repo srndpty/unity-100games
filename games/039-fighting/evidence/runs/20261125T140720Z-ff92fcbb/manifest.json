@@ -1,0 +1,74 @@
+{
+    "Product": "EMBER DUEL",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "d8cbf8cc9148415d9022b4adfd1edd99",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-25T14:07:19.7568980Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "volume",
+            "Value": "0.15"
+        },
+        {
+            "Key": "seed",
+            "Value": "1"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "99dc4938bca26d3a0170ca4a0b83e29e157334cb54618c5a7016436249271776",
+            "Note": "タイトル"
+        },
+        {
+            "File": "02-select.jpg",
+            "Sha256": "a95d4aea5248886b875cbe20d216adf98049def64a5cafe3bed42ec47ba806d5",
+            "Note": "キャラ選択（シンダー）"
+        },
+        {
+            "File": "03-round.jpg",
+            "Sha256": "c8f32f26078c6cfd1e68b4401c7a760b1ca40c4a0b99a96f8621f5d1016d2766",
+            "Note": "ラウンド開始  Tick 0"
+        },
+        {
+            "File": "04-special.jpg",
+            "Sha256": "15dfb93bea37fe15ba97a219002e061dc6e704988c5090274f27a09d821f0a4b",
+            "Note": "必殺（火球）  Tick 3"
+        },
+        {
+            "File": "05-hit.jpg",
+            "Sha256": "aa175ff0044d53bd47839578eee16a075a369d0dc18c019aacb9d1f0b0ac8f42",
+            "Note": "通常技のヒット  Tick 60"
+        },
+        {
+            "File": "06-guard.jpg",
+            "Sha256": "2ba3d8ea0be3c2b236f33e1ddd014cfc57258968f0d3e2bb56e71f51b2c4f6e4",
+            "Note": "ガード  Tick 69"
+        },
+        {
+            "File": "07-throw.jpg",
+            "Sha256": "16eb58efe9ee5298927508c72cb030dae0a7203c28690bff6f81cf41a685365d",
+            "Note": "投げ  Tick 89"
+        },
+        {
+            "File": "08-boxes.jpg",
+            "Sha256": "0a2b113d2125ba6d077efff349b8854e3770e33092256c1749153631c50641e5",
+            "Note": "判定箱  Tick 89"
+        },
+        {
+            "File": "09-ko.jpg",
+            "Sha256": "c07307222031c15069ce8949ab3bf43b8035450b17ba98892dac68c2894df74f",
+            "Note": "KO  Tick 508"
+        },
+        {
+            "File": "10-result.jpg",
+            "Sha256": "c4143c6e26d077e84a61e7df423d04dc17610ae45a25a9d71a648e66666c7d5d",
+            "Note": "結果 Right"
+        }
+    ]
+}

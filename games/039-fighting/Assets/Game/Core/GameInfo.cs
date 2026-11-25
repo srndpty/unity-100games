@@ -4,5 +4,7 @@ namespace Game.Core
     public static class GameInfo
     {
         public const string Id = "039-fighting";
+
+        public const string Title = "EMBER DUEL";
     }
 }

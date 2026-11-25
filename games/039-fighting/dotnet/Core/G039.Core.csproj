@@ -3,4 +3,8 @@
     <GameLayer>Core</GameLayer>
   </PropertyGroup>
   <Import Project="../../../../build/Game.Library.props" />
+  <ItemGroup>
+    <ProjectReference Include="../../../../packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />
+    <ProjectReference Include="../../../../packages/com.games100.tile-motion/dotnet~/TileMotion/TileMotion.csproj" />
+  </ItemGroup>
 </Project>
