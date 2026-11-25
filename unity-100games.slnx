@@ -215,6 +215,12 @@
     <Project Path="games/036-golf/dotnet/Core.Tests/G036.Core.Tests.csproj" />
     <Project Path="games/036-golf/dotnet/Core/G036.Core.csproj" />
   </Folder>
+  <Folder Name="/037-kart-racing/">
+    <Project Path="games/037-kart-racing/dotnet/App.Tests/G037.App.Tests.csproj" />
+    <Project Path="games/037-kart-racing/dotnet/App/G037.App.csproj" />
+    <Project Path="games/037-kart-racing/dotnet/Core.Tests/G037.Core.Tests.csproj" />
+    <Project Path="games/037-kart-racing/dotnet/Core/G037.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />

@@ -1,0 +1,64 @@
+{
+    "Product": "THISTLE CIRCUIT",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "f1495b8e058c4610bdf6f87ebff8e2e2",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-25T03:17:40.7088908Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Radius\":600,\"Accel\":8,\"MaxSpeed\":340,\"BoostSpeed\":500,\"Drag\":3,\"Brake\":14,\"ReverseSpeed\":140,\"TurnAtLow\":700,\"TurnAtHigh\":160,\"DriftTurn\":280,\"DriftDrag\":4,\"DriftMinSpeed\":160,\"SlipAngle\":600,\"MiniTurboTicks\":8,\"BoostTicks\":40,\"OffroadSpeed\":150,\"OffroadDrag\":12,\"BumpBounce\":400,\"AvoidRange\":7000,\"AvoidGap\":400,\"Lookahead\":8000,\"DriftCorner\":5000,\"CornerSpeed\":170,\"StuckTicks\":40,\"RecoverTicks\":35,\"CpuPace1\":880,\"CpuPace2\":800,\"CpuPace3\":720,\"StartDelayTicks\":90,\"MaxRaceTicks\":20000}"
+        },
+        {
+            "Key": "track",
+            "Value": "# THISTLE CIRCUIT. millimeters, closed loop.\n# runoff: ターマックの端からガード壁までの芝の幅（mm）。\nrunoff 3000\nstation 108000 0 5000\nstation 112000 0 5000\nstation 116000 0 5000\nstation 120000 0 5000\nstation 124000 0 5000\nstation 128000 0 5000\nstation 132000 0 5000\nstation 136000 0 5000\nstation 140000 0 5000\nstation 144000 0 5000\nstation 148000 0 5000\nstation 152000 0 5000\nstation 156000 0 5000\nstation 160000 0 5000\nstation 164000 0 5000\nstation 168000 0 5000\nstation 172000 0 5000\nstation 176000 0 5000\nstation 180000 0 5000\nstation 184000 0 5000\nstation 188000 0 5000\nstation 192000 0 5000\nstation 196000 0 5000\nstation 200000 0 5000\nstation 203944 567 5000\nstation 207569 2222 5000\nstation 210580 4832 5000\nstation 212735 8184 5000\nstation 213858 12008 5000\nstation 213858 15992 5000\nstation 212735 19816 5000\nstation 210580 23168 5000\nstation 207569 25778 5000\nstation 203944 27433 5000\nstation 200000 28000 5000\nstation 196000 28000 5000\nstation 192000 28000 5000\nstation 188000 28000 5000\nstation 184000 28000 5000\nstation 180000 28000 5000\nstation 176000 28000 5000\nstation 172000 28000 5000\nstation 168000 28000 5000\nstation 164000 28000 5000\nstation 160000 28000 5000\nstation 156000 28510 5000\nstation 152000 29975 5000\nstation 148000 32209 5000\nstation 144000 34926 5000\nstation 140000 37780 5000\nstation 136000 40407 5000\nstation 132000 42472 5000\nstation 128000 43712 5000\nstation 124000 43968 5000\nstation 120000 43208 5000\nstation 116000 41529 5000\nstation 112000 39144 5000\nstation 108000 36359 5000\nstation 104000 33528 5000\nstation 100000 31012 5000\nstation 96000 29132 5000\nstation 92000 28129 5000\nstation 88000 28000 5000\nstation 84000 28000 5000\nstation 80000 28000 5000\nstation 76000 28000 5000\nstation 72000 28000 5000\nstation 68000 28000 5000\nstation 64000 28000 5000\nstation 60000 28000 5000\nstation 56000 28000 5000\nstation 52000 28000 5000\nstation 48000 28000 5000\nstation 44000 28000 5000\nstation 40000 28000 5000\nstation 36056 27433 5000\nstation 32431 25778 5000\nstation 29420 23168 5000\nstation 27265 19816 5000\nstation 26142 15992 5000\nstation 26142 12008 5000\nstation 27265 8184 5000\nstation 29420 4832 5000\nstation 32431 2222 5000\nstation 36056 567 5000\nstation 40000 0 5000\nstation 44000 0 5000\nstation 48000 0 5000\nstation 52000 0 5000\nstation 56000 0 5000\nstation 60000 0 5000\nstation 64000 0 5000\nstation 68000 0 5000\nstation 72000 0 5000\nstation 76000 0 5000\nstation 80000 0 5000\nstation 84000 0 5000\nstation 88000 0 5000\nstation 92000 0 5000\nstation 96000 0 5000\nstation 100000 0 5000\nstation 104000 0 5000\ncheckpoint 0\ncheckpoint 33\ncheckpoint 52\ncheckpoint 71\n"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "fad5e30678df1e1477d9ddff10c929141d3dd526f05844c8fff22901c6a29462",
+            "Note": "タイトル"
+        },
+        {
+            "File": "02-grid.jpg",
+            "Sha256": "827a572e6dea1e82662486204e4cf1e8d36f0dd8b9166baf326facab57cb0d31",
+            "Note": "スタート待ちのグリッド"
+        },
+        {
+            "File": "03-launch.jpg",
+            "Sha256": "c4f9c5e6dcbc645efa534138ee2f29af0703f30a8faf3fc9386e55b04bfb7092",
+            "Note": "スタートのホイールスピン"
+        },
+        {
+            "File": "04-order.jpg",
+            "Sha256": "4ee898bc741de306537ae260fda9a0da430a0df5daca1ac4edcee1b6feb32406",
+            "Note": "順位が変わる"
+        },
+        {
+            "File": "05-drift.jpg",
+            "Sha256": "48689519c2a91683901810056257a2e8f2f083a1dfb81c6890a58445629a4789",
+            "Note": "ヘアピンのドリフト"
+        },
+        {
+            "File": "06-boost.jpg",
+            "Sha256": "79130c49d569d23c71661818279953a27cee5183421d8179ddb1ae58ff68fae7",
+            "Note": "ブースト"
+        },
+        {
+            "File": "07-lap.jpg",
+            "Sha256": "52035dc8c1014450e535859da9ebc4761464cd3823c8d74e6d7fe0177e93e799",
+            "Note": "1 周目の通過"
+        },
+        {
+            "File": "08-result.jpg",
+            "Sha256": "d111afa8b978a4e0d67e50e3b3ea0bb089d0cb6c33a9547841586ff29c2c66f5",
+            "Note": "結果"
+        }
+    ]
+}

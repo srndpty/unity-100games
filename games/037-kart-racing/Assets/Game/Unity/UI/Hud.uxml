@@ -1,0 +1,59 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:VisualElement name="race-hud" class="layer" picking-mode="Ignore">
+            <ui:VisualElement class="place-card" picking-mode="Ignore">
+                <ui:VisualElement class="place-row" picking-mode="Ignore">
+                    <ui:Label name="place" text="4" class="place" />
+                    <ui:Label name="place-suffix" text="th" class="place-suffix" />
+                    <ui:Label text="/ 4" class="place-of" />
+                </ui:VisualElement>
+                <ui:Label name="lap" text="LAP 1/3" class="lap" />
+            </ui:VisualElement>
+            <ui:VisualElement name="order" class="order" picking-mode="Ignore" />
+            <ui:VisualElement name="minimap-card" class="minimap-card" picking-mode="Ignore" />
+            <ui:VisualElement class="speed-card" picking-mode="Ignore">
+                <ui:Label name="speed" text="0" class="speed" />
+                <ui:Label text="km/h" class="speed-unit" />
+            </ui:VisualElement>
+            <ui:Label name="charge" text="" class="charge" />
+            <ui:Label name="countdown" text="" class="countdown" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="title-screen" class="layer title-screen" picking-mode="Ignore">
+            <ui:VisualElement class="title-card" picking-mode="Ignore">
+                <ui:Label text="THISTLE" class="title-word" />
+                <ui:Label text="CIRCUIT" class="title-word title-accent" />
+                <ui:Label text="3 LAPS  ·  4 KARTS  ·  1 CIRCUIT" class="title-sub" />
+                <ui:VisualElement class="divider" />
+                <ui:VisualElement class="controls" picking-mode="Ignore">
+                    <ui:VisualElement class="control-row"><ui:Label text="W / ↑" class="key" /><ui:Label text="アクセル" class="control-text" /></ui:VisualElement>
+                    <ui:VisualElement class="control-row"><ui:Label text="S / ↓" class="key" /><ui:Label text="ブレーキ・バック" class="control-text" /></ui:VisualElement>
+                    <ui:VisualElement class="control-row"><ui:Label text="A D / ← →" class="key" /><ui:Label text="ハンドル" class="control-text" /></ui:VisualElement>
+                    <ui:VisualElement class="control-row"><ui:Label text="Space" class="key" /><ui:Label text="ドリフト（離すとミニターボ）" class="control-text" /></ui:VisualElement>
+                    <ui:VisualElement class="control-row"><ui:Label text="Esc" class="key" /><ui:Label text="一時停止" class="control-text" /></ui:VisualElement>
+                </ui:VisualElement>
+                <ui:Label text="芝は遅く、ガードの外へは出られない。先に 3 周した車の勝ち。" class="title-note" />
+                <ui:Label name="title-start" text="Enter でスタート" class="title-start" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:VisualElement name="pause-screen" class="layer overlay" picking-mode="Ignore">
+            <ui:VisualElement class="card" picking-mode="Ignore">
+                <ui:Label text="一時停止" class="card-title" />
+                <ui:Label text="Enter / Esc  再開" class="card-line" />
+                <ui:Label text="R  やり直し" class="card-line" />
+                <ui:Label text="Backspace  タイトルへ" class="card-line" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <ui:VisualElement name="result-screen" class="layer overlay" picking-mode="Ignore">
+            <ui:VisualElement class="card result-card" picking-mode="Ignore">
+                <ui:Label name="result-title" text="勝利" class="result-title" />
+                <ui:Label name="result-sub" text="" class="result-sub" />
+                <ui:VisualElement name="result-rows" class="result-rows" picking-mode="Ignore" />
+                <ui:Label text="Enter  もう一度     Esc  タイトルへ" class="card-hint" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

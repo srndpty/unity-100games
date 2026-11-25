@@ -1,4 +1,6 @@
 # Unity (各作品は games/NNN-name/ 配下の独立プロジェクト)
+# リポジトリ直下で Unity CLI を動かしたときにできる一時フォルダ
+/Library/
 /games/*/Library/
 /games/*/Temp/
 /games/*/Obj/
