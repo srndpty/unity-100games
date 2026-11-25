@@ -25,6 +25,7 @@ namespace Game.Core
         private bool _attackEdge;
         private bool _jumpEdge;
         private bool _specialEdge;
+        private readonly uint _fingerprint;
         private uint _rng;
 
         public Brawl(MoveTable table, BrawlConfig config, StageData stage, int seed)
@@ -49,6 +50,7 @@ namespace Game.Core
             player.X = Stage.Sections[0].CameraX + Stage.StartX;
             player.Z = (_config.ZMin + _config.ZMax) / 2;
             CameraX = Stage.Sections[0].CameraX;
+            _fingerprint = Fingerprint.Of(_table, _config, Stage);
             EnterSection(0);
         }
 
@@ -69,6 +71,12 @@ namespace Game.Core
         public long Score { get; private set; }
 
         public int CameraX { get; private set; }
+
+        /// <summary>
+        /// 緊急技の押下を出せるまで持ち越しているか。プレイヤーのヒットストップの間だけ残り、動ける最初の Tick に 1 回だけ使う
+        /// （出せない状態・体力不足なら捨てる）。フォーカス喪失・一時停止（<see cref="ClearInput"/>）でも捨てる。
+        /// </summary>
+        public bool SpecialPending { get; private set; }
 
         /// <summary>先行入力の残り Tick。</summary>
         public int AttackBuffer { get; private set; }
@@ -195,11 +203,12 @@ namespace Game.Core
         {
             if (Outcome != Outcome.Running) { return; }
             Tick++;
-            _attackEdge = pad.Attack && !_held.Attack;
-            _jumpEdge = pad.Jump && !_held.Jump;
-            _specialEdge = pad.Special && !_held.Special;
-            _held = pad;
+            _attackEdge = pad.AttackPressed || (pad.Attack && !_held.Attack);
+            _jumpEdge = pad.JumpPressed || (pad.Jump && !_held.Jump);
+            _specialEdge = pad.SpecialPressed || (pad.Special && !_held.Special);
+            _held = new Pad(pad.X, pad.Z, pad.Attack, pad.Jump, pad.Special);
             if (_attackEdge) { AttackBuffer = _config.BufferTicks; }
+            if (_specialEdge) { SpecialPending = true; }
 
             SpawnFromQueue();
             UpdateTokens();
@@ -217,6 +226,7 @@ namespace Game.Core
         {
             _held = Pad.Neutral;
             AttackBuffer = 0;
+            SpecialPending = false;
         }
 
         private void StepActor(Actor a)
@@ -232,7 +242,12 @@ namespace Game.Core
             if (a.Cooldown > 0) { a.Cooldown--; }
             a.StateTick++;
             bool player = a.Slot == 0;
-            if (player && _specialEdge && CanSpecial(a) && TryStartSpecial(a)) { return; }
+            if (player && SpecialPending)
+            {
+                // 止まりの間に押した緊急技は止まり明けまで持ち越す。出せない状態・体力不足なら捨てる（1 回の押下で 1 回まで）。
+                SpecialPending = false;
+                if (CanSpecial(a) && TryStartSpecial(a)) { return; }
+            }
             switch (a.State)
             {
                 case ActorState.Idle:
@@ -808,7 +823,10 @@ namespace Game.Core
             hash.Mix(Lives);
             hash.Mix(Score);
             hash.Mix(CameraX);
+            hash.Mix(_fingerprint);
+            hash.Mix(AiEnabled);
             hash.Mix(AttackBuffer);
+            hash.Mix(SpecialPending);
             hash.Mix(_held.X);
             hash.Mix(_held.Z);
             hash.Mix(_held.Attack);
@@ -898,6 +916,8 @@ namespace Game.Core
             Score = other.Score;
             CameraX = other.CameraX;
             AttackBuffer = other.AttackBuffer;
+            SpecialPending = other.SpecialPending;
+            _fingerprint = other._fingerprint;
             AiEnabled = other.AiEnabled;
             Serials = other.Serials;
             Activations = other.Activations;

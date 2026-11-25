@@ -128,10 +128,19 @@ namespace Game.Core
         public BrawlConfig Copy() => (BrawlConfig)MemberwiseClone();
     }
 
-    /// <summary>プレイヤーの 1 Tick の入力。X は右が正、Z は奥が正。</summary>
+    /// <summary>
+    /// プレイヤーの 1 Tick の入力。X は右が正、Z は奥が正。Attack・Jump・Special はその Tick の終わりに押しているか、
+    /// *Pressed はその Tick の間に押下が起きたか（押して同じ Tick に離した、離して押し直した、を取りこぼさない）。
+    /// 押下は「Pressed か、前の Tick に押していなくて今押している」で決める。
+    /// </summary>
     public readonly struct Pad : IEquatable<Pad>
     {
         public Pad(int x, int z, bool attack, bool jump, bool special)
+            : this(x, z, attack, jump, special, false, false, false)
+        {
+        }
+
+        public Pad(int x, int z, bool attack, bool jump, bool special, bool attackPressed, bool jumpPressed, bool specialPressed)
         {
             if (x < -1 || x > 1 || z < -1 || z > 1) { throw new ArgumentOutOfRangeException(nameof(x), "方向は -1, 0, 1 です。"); }
             X = x;
@@ -139,6 +148,9 @@ namespace Game.Core
             Attack = attack;
             Jump = jump;
             Special = special;
+            AttackPressed = attackPressed;
+            JumpPressed = jumpPressed;
+            SpecialPressed = specialPressed;
         }
 
         public static Pad Neutral => default;
@@ -153,11 +165,19 @@ namespace Game.Core
 
         public bool Special { get; }
 
-        public bool Equals(Pad other) => X == other.X && Z == other.Z && Attack == other.Attack && Jump == other.Jump && Special == other.Special;
+        public bool AttackPressed { get; }
+
+        public bool JumpPressed { get; }
+
+        public bool SpecialPressed { get; }
+
+        public bool Equals(Pad other) =>
+            X == other.X && Z == other.Z && Attack == other.Attack && Jump == other.Jump && Special == other.Special
+            && AttackPressed == other.AttackPressed && JumpPressed == other.JumpPressed && SpecialPressed == other.SpecialPressed;
 
         public override bool Equals(object? obj) => obj is Pad other && Equals(other);
 
-        public override int GetHashCode() => HashCode.Combine(X, Z, Attack, Jump, Special);
+        public override int GetHashCode() => HashCode.Combine(X, Z, Attack, Jump, Special, AttackPressed, JumpPressed, SpecialPressed);
 
         public static bool operator ==(Pad left, Pad right) => left.Equals(right);
 

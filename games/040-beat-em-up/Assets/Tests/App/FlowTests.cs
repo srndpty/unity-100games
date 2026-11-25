@@ -135,6 +135,42 @@ namespace Game.App.Tests
             }
         }
 
+        [TestCase(IntentKind.AttackDown, IntentKind.AttackUp)]
+        [TestCase(IntentKind.JumpDown, IntentKind.JumpUp)]
+        [TestCase(IntentKind.SpecialDown, IntentKind.SpecialUp)]
+        public void TapInsideOneTickIsNotLost(IntentKind down, IntentKind up)
+        {
+            var flow = Started();
+            flow.Apply(new Intent(down, 0.003));
+            flow.Apply(new Intent(up, 0.008));
+            flow.Advance(0.020);
+            var p = flow.Brawl!.Player;
+            Assert.That(flow.Brawl.Tick, Is.EqualTo(1));
+            if (down == IntentKind.JumpDown) { Assert.That(p.State, Is.EqualTo(ActorState.Jump)); }
+            else { Assert.That(p.Move?.Id, Is.EqualTo(down == IntentKind.AttackDown ? "jab1" : "special")); }
+            Assert.That(flow.KeyPad(), Is.EqualTo(Pad.Neutral), "押下の印は渡した Tick で消える");
+        }
+
+        [Test]
+        public void HoldingAttackFiresOnceAndPauseDropsPresses()
+        {
+            var flow = Started();
+            Press(flow, IntentKind.AttackDown, 0.003);
+            flow.Advance(0.5);
+            flow.EndFrame();
+            for (double t = 0.5; t < 2.0; t += 1.0 / 60) { flow.Advance(t); }
+            Assert.That(flow.Brawl!.AttacksStarted, Is.EqualTo(1), "押したままでは 1 回");
+
+            var paused = Started();
+            Press(paused, IntentKind.AttackDown, 0.003);
+            Press(paused, IntentKind.AttackUp, 0.004);
+            Press(paused, IntentKind.Cancel, 0.005);
+            Assert.That(paused.KeyPad(), Is.EqualTo(Pad.Neutral), "一時停止で押下の印も捨てる");
+            Press(paused, IntentKind.Cancel, 1.0);
+            paused.Advance(1.02);
+            Assert.That(paused.Brawl!.AttacksStarted, Is.Zero);
+        }
+
         [Test]
         public void KeyBitsKeepTwoKeysForOneDirection()
         {
@@ -167,7 +203,7 @@ namespace Game.App.Tests
         {
             var brawl = AppLab.Play(1, new Autopilot(1), 15000);
             Assert.That(brawl.Outcome, Is.EqualTo(Outcome.Cleared));
-            Assert.That((brawl.Tick, brawl.Hash()), Is.EqualTo((5631L, 1448739372u)));
+            Assert.That((brawl.Tick, brawl.Hash()), Is.EqualTo((5631L, 4208120995u)));
         }
 
         [Test]

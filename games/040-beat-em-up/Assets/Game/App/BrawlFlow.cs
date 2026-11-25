@@ -32,6 +32,9 @@ namespace Game.App
         private int _attack;
         private int _jump;
         private int _special;
+        private bool _attackPressed;
+        private bool _jumpPressed;
+        private bool _specialPressed;
         private bool _hasFocus = true;
         private double _origin;
         private long _ticksDone;
@@ -120,12 +123,15 @@ namespace Game.App
             Step();
         }
 
-        /// <summary>キーの状態から作る今の入力。</summary>
+        /// <summary>
+        /// キーの状態から作る次の Tick の入力。移動と押したままは今のキーの状態から、押下は前の Tick から今までに
+        /// 押下の出来事があったか（同じ Tick に押して離しても、離して押し直しても取りこぼさない）から作る。
+        /// </summary>
         public Pad KeyPad()
         {
             int x = (_left != 0 ? -1 : 0) + (_right != 0 ? 1 : 0);
             int z = (_down != 0 ? -1 : 0) + (_up != 0 ? 1 : 0);
-            return new Pad(x, z, _attack != 0, _jump != 0, _special != 0);
+            return new Pad(x, z, _attack != 0, _jump != 0, _special != 0, _attackPressed, _jumpPressed, _specialPressed);
         }
 
         private void ApplyLive(Intent intent)
@@ -141,11 +147,20 @@ namespace Game.App
                 case IntentKind.UpUp: _up &= ~bit; break;
                 case IntentKind.DownDown: _down |= bit; break;
                 case IntentKind.DownUp: _down &= ~bit; break;
-                case IntentKind.AttackDown: _attack |= bit; break;
+                case IntentKind.AttackDown:
+                    _attackPressed |= (_attack & bit) == 0;
+                    _attack |= bit;
+                    break;
                 case IntentKind.AttackUp: _attack &= ~bit; break;
-                case IntentKind.JumpDown: _jump |= bit; break;
+                case IntentKind.JumpDown:
+                    _jumpPressed |= (_jump & bit) == 0;
+                    _jump |= bit;
+                    break;
                 case IntentKind.JumpUp: _jump &= ~bit; break;
-                case IntentKind.SpecialDown: _special |= bit; break;
+                case IntentKind.SpecialDown:
+                    _specialPressed |= (_special & bit) == 0;
+                    _special |= bit;
+                    break;
                 case IntentKind.SpecialUp: _special &= ~bit; break;
                 case IntentKind.Cancel: Pause(); break;
                 case IntentKind.Back: ToTitle(); break;
@@ -158,6 +173,7 @@ namespace Game.App
             var brawl = Brawl;
             if (brawl == null) { return; }
             var pad = Pilot != null ? Pilot.PadFor(brawl) : KeyPad();
+            ClearPresses();
             brawl.Step(pad);
             if (brawl.Outcome != Outcome.Running)
             {
@@ -223,6 +239,14 @@ namespace Game.App
             _attack = 0;
             _jump = 0;
             _special = 0;
+            ClearPresses();
+        }
+
+        private void ClearPresses()
+        {
+            _attackPressed = false;
+            _jumpPressed = false;
+            _specialPressed = false;
         }
     }
 }

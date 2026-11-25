@@ -176,6 +176,7 @@ namespace Game.Core
             PushWidth = pushWidth;
             PushDepth = pushDepth;
             _moves = moves;
+            Moves = Array.AsReadOnly(moves);
             Opener = opener;
             Far = far;
             Close = close;
@@ -232,7 +233,7 @@ namespace Game.Core
 
         public string Close { get; }
 
-        public IReadOnlyList<MoveDef> Moves => Array.AsReadOnly(_moves);
+        public IReadOnlyList<MoveDef> Moves { get; }
 
         public MoveDef Find(string id)
         {
@@ -266,9 +267,13 @@ namespace Game.Core
 
         private readonly ActorDef[] _actors;
 
-        private MoveTable(ActorDef[] actors) => _actors = actors;
+        private MoveTable(ActorDef[] actors)
+        {
+            _actors = actors;
+            Actors = Array.AsReadOnly(actors);
+        }
 
-        public IReadOnlyList<ActorDef> Actors => Array.AsReadOnly(_actors);
+        public IReadOnlyList<ActorDef> Actors { get; }
 
         public ActorDef this[ActorKind kind] => _actors[(int)kind];
 

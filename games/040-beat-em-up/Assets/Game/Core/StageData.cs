@@ -53,11 +53,13 @@ namespace Game.Core
         {
             CameraX = cameraX;
             _waves = waves;
+            Waves = Array.AsReadOnly(waves);
         }
 
         public int CameraX { get; }
 
-        public IReadOnlyList<WaveEntry> Waves => Array.AsReadOnly(_waves);
+        /// <summary>毎 Tick 参照するので、包みは作ったときに 1 回だけ作る。</summary>
+        public IReadOnlyList<WaveEntry> Waves { get; }
 
         public bool HasBoss
         {
@@ -85,6 +87,7 @@ namespace Game.Core
         {
             StartX = startX;
             _sections = sections;
+            Sections = Array.AsReadOnly(sections);
             IsArena = isArena;
         }
 
@@ -93,7 +96,7 @@ namespace Game.Core
 
         public bool IsArena { get; }
 
-        public IReadOnlyList<Section> Sections => Array.AsReadOnly(_sections);
+        public IReadOnlyList<Section> Sections { get; }
 
         public int MaxWaveCount
         {
