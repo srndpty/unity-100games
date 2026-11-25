@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: feb6f7f721d67294799e6b0e639c969f, type: 3}
+  m_Name: Map_dungeon_f2
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.Data.MapAsset
+  Id: dungeon_f2
+  MapName: "\u7114\u9396\u306E\u5751\u9053 B2F"
+  IsSafeZone: 0
+  EncounterTableId: enc_f2
+  GridFile: {fileID: 4900000, guid: c9df42589404e664db6dd4e6abf76e84, type: 3}
+  Portals:
+  - X: 2
+    Y: 1
+    TargetMapId: dungeon_f1
+    TargetX: 14
+    TargetY: 10
+  - X: 15
+    Y: 10
+    TargetMapId: dungeon_f3
+    TargetX: 2
+    TargetY: 10
+  Chests:
+  - X: 14
+    Y: 2
+    OpenedFlag: chest_f2_key
+    RewardItemId: 
+    RewardEquipId: 
+    RewardGold: 0
+    RewardFlag: flag_iron_key
+    RewardLabel: "\u9244\u683C\u5B50\u306E\u9375"
+  - X: 3
+    Y: 10
+    OpenedFlag: chest_f2_armor
+    RewardItemId: 
+    RewardEquipId: ward_plate
+    RewardGold: 0
+    RewardFlag: 
+    RewardLabel: "\u5B88\u8B77\u306E\u80F8\u7532"
+  Doors: []
+  Npcs: []
+  Boss:
+    Enabled: 0
+    TriggerX: 0
+    TriggerY: 0
+    BossTileX: 0
+    BossTileY: 0
+    BossGroupId: 
+    DefeatedFlag: 
+    IntroMessage: 

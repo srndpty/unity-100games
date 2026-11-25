@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f93309c8d3972ca4faccee504602d271, type: 3}
+  m_Name: Encounter_enc_f3
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.Data.EncounterAsset
+  Def:
+    Id: enc_f3
+    RatePercent: 18
+    GraceSteps: 4
+    Entries:
+    - GroupId: f3_guard
+      Weight: 50
+    - GroupId: f3_pack
+      Weight: 35
+    - GroupId: f2_cult
+      Weight: 15

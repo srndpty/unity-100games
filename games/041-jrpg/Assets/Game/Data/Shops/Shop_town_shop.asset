@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3360447720af8f42837e9d5fe25ba87, type: 3}
+  m_Name: Shop_town_shop
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.Data.ShopAsset
+  Def:
+    Id: town_shop
+    Name: "\u706F\u5B88\u308A\u306E\u3088\u308D\u305A\u5C4B"
+    ProductIds:
+    - herb
+    - hi_herb
+    - ether_dew
+    - iron_blade
+    - silver_mace
+    - chain_mail
+    - silk_cloak

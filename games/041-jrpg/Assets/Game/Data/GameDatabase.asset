@@ -1,0 +1,103 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff69c7b1f60d2044cae74af0647808dc, type: 3}
+  m_Name: GameDatabase
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.Data.GameDatabase
+  BaseRules:
+    TickRate: 60
+    StepTicks: 8
+    StartGold: 60
+    MaxGold: 99999
+    MaxItemStack: 99
+    InnCost: 15
+    ReviveCostPerLevel: 20
+    FleeBasePercent: 60
+    FleeMinPercent: 25
+    FleeMaxPercent: 95
+    EncounterRateMultiplier: 1
+    PartyClassIds:
+    - warrior
+    - priest
+    - mage
+    StartItems:
+    - ItemId: herb
+      Count: 3
+    - ItemId: ether_dew
+      Count: 1
+    StartMapId: town
+    StartX: 8
+    StartY: 7
+    ChurchMapId: town
+    ChurchRespawnX: 14
+    ChurchRespawnY: 5
+    BossDefeatedFlag: boss_defeated
+  ExpTable:
+    MaxLevel: 10
+    RequiredExp: 00000000180000004100000082000000e60000007201000030020000200300004c040000aa050000i
+  Classes:
+  - {fileID: 11400000, guid: f33b0ae528396774183f0f38eae38b9d, type: 2}
+  - {fileID: 11400000, guid: 48feec1aa7fef7245bb9816a94044cd3, type: 2}
+  - {fileID: 11400000, guid: 25d3e80d39bcfa14499d67abeb5d774f, type: 2}
+  Spells:
+  - {fileID: 11400000, guid: b455e1ca167c3f04c9afdf70b62b63b0, type: 2}
+  - {fileID: 11400000, guid: 67b6e6b05eb21b24d8ff77d53edc7ad2, type: 2}
+  - {fileID: 11400000, guid: 53d36923659d16042974a4bd7fdcbe77, type: 2}
+  - {fileID: 11400000, guid: e2db545d71cfb70489629b2520c1532e, type: 2}
+  - {fileID: 11400000, guid: 1a3935c5ce95f644a91a16b4cfd61c2c, type: 2}
+  - {fileID: 11400000, guid: 5540d042c5b632b46a3d60f766003acd, type: 2}
+  - {fileID: 11400000, guid: 8cc01efd417d47a4096ed18998ca2c96, type: 2}
+  - {fileID: 11400000, guid: 9bfff7b7209ba1c4b901793087ff2648, type: 2}
+  Items:
+  - {fileID: 11400000, guid: 3065439bde20b324f9d18637a6dbd7e4, type: 2}
+  - {fileID: 11400000, guid: fbb299bf53811e74bb4ce8a4b738e9af, type: 2}
+  - {fileID: 11400000, guid: 49fbc952f0f057e4ea7abcbdab9387a3, type: 2}
+  Equips:
+  - {fileID: 11400000, guid: 6a114949deb1b144b9622486a9c505ec, type: 2}
+  - {fileID: 11400000, guid: 0adf13f40a0437f4f974b344d61a91ec, type: 2}
+  - {fileID: 11400000, guid: 479b3cc01d935a64da5530168307c7a7, type: 2}
+  - {fileID: 11400000, guid: ce1824b514634a34aac96ecb30c74744, type: 2}
+  - {fileID: 11400000, guid: 5cdf2f378ab20b44c9f8d536d8c19de7, type: 2}
+  - {fileID: 11400000, guid: 2891597f952d035448432e883f3978cb, type: 2}
+  - {fileID: 11400000, guid: 9e5af2a1fb3635c44bf854b04db31566, type: 2}
+  - {fileID: 11400000, guid: b3587eb136504d64cbd32f149bfa014e, type: 2}
+  - {fileID: 11400000, guid: 6490232cbcae2c944ae24314fdb52f1f, type: 2}
+  - {fileID: 11400000, guid: 6dee92e6247420149b408b7f72d754eb, type: 2}
+  - {fileID: 11400000, guid: 3c38eb129b850c84295b0faa206a5fd1, type: 2}
+  - {fileID: 11400000, guid: 1213d6ba6c621794faa3f4df6895f8ad, type: 2}
+  Enemies:
+  - {fileID: 11400000, guid: 811cbc61b19d0524ba965d8a644002aa, type: 2}
+  - {fileID: 11400000, guid: 0de242594ebaee34fb349a890f009383, type: 2}
+  - {fileID: 11400000, guid: e522457b2e7a0ea49872556aa0e11b51, type: 2}
+  - {fileID: 11400000, guid: 8bc71f908a2d1e142b12a6a990edcc89, type: 2}
+  - {fileID: 11400000, guid: 51077d25cc789684fa48cc4303a0f388, type: 2}
+  - {fileID: 11400000, guid: f7abdc6010661d64da9d5fbc8cc4ba44, type: 2}
+  EnemyGroups:
+  - {fileID: 11400000, guid: 652b39ad88328064294491351293e165, type: 2}
+  - {fileID: 11400000, guid: ee781ca1c58355042a503872598193f6, type: 2}
+  - {fileID: 11400000, guid: 0d1752945255c824b84b090dc3e8c1f1, type: 2}
+  - {fileID: 11400000, guid: 55b8fd27d86481f4280656a84e92e75f, type: 2}
+  - {fileID: 11400000, guid: 1f0b901c9f12089478b79f02160d2089, type: 2}
+  - {fileID: 11400000, guid: 2b431a6370a474742abba4f9f86d880b, type: 2}
+  - {fileID: 11400000, guid: df96cee7e82280a48bbeb6599f9219e9, type: 2}
+  - {fileID: 11400000, guid: 37b7cdab2e9ac6f44a88039fc09e9215, type: 2}
+  EncounterTables:
+  - {fileID: 11400000, guid: 8daab166e77af5d4ba98b6e1b5ce85b2, type: 2}
+  - {fileID: 11400000, guid: a55179b86773ab74cb365620f47965c1, type: 2}
+  - {fileID: 11400000, guid: ec58d9690a7f5c4468423b8cf7ce7916, type: 2}
+  Shops:
+  - {fileID: 11400000, guid: 2b2df831f2bb9bc4da4a9284bec01b8f, type: 2}
+  Maps:
+  - {fileID: 11400000, guid: 4046e823bf05d55449ab68046e5fc5e4, type: 2}
+  - {fileID: 11400000, guid: e41e94f656a53664b905510626e8599f, type: 2}
+  - {fileID: 11400000, guid: 7cbab438f4bf2644f85903fecf9ca02a, type: 2}
+  - {fileID: 11400000, guid: 76b51dd2f54e08b43bed8e1d6b65b1b4, type: 2}
+  - {fileID: 11400000, guid: 76bb8f08d605391468a8859362b60884, type: 2}

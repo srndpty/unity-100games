@@ -1,0 +1,107 @@
+{
+    "Product": "EMBERLOCK HOLLOW",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "eee1dac3e0904249ba91c3afbf2ba60b",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-25T19:42:41.7743008Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "dataFingerprint",
+            "Value": "AF9AE773"
+        },
+        {
+            "Key": "stepTicks",
+            "Value": "8"
+        },
+        {
+            "Key": "eventDurationTicks",
+            "Value": "18"
+        },
+        {
+            "Key": "encounterMultiplier",
+            "Value": "1"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01_title.jpg",
+            "Sha256": "a25de3d48153c547ce5065612b2dbe05c6f6c4f3afd02b1d36d403a6ce085a54",
+            "Note": "Title screen (seed=1, clean save store)"
+        },
+        {
+            "File": "02_howto.jpg",
+            "Sha256": "20419e8e43a37f0b705a0afe0bd85385476909d5c379dfeb5b9d511573e3960f",
+            "Note": "How-to-play screen"
+        },
+        {
+            "File": "03_town_field.jpg",
+            "Sha256": "614b06fbd1afa4d6754ef0cd6b6ad649a3991b0ec6b09bfb11a27340e6ba5960",
+            "Note": "Town field (town, tick=4)"
+        },
+        {
+            "File": "04_shop_equip.jpg",
+            "Sha256": "d2d4e3a0fb69996049251f1c8fae83ed57468fbbc9d5d991a0121e8fcbd5f28a",
+            "Note": "Town shop buy & equip preview (tick=4)"
+        },
+        {
+            "File": "05_church_save.jpg",
+            "Sha256": "00732331d825f538d1aefc0d1bc46056a97230286635d175f7c9b503a57bd760",
+            "Note": "Church save completed (tick=4)"
+        },
+        {
+            "File": "06_dungeon_chest.jpg",
+            "Sha256": "1c736414432d49ef91de11c2594df8f655587e7bdc772aae89396070f67bbe83",
+            "Note": "Dungeon B1F treasure chest opened (tick=4)"
+        },
+        {
+            "File": "07_battle_command.jpg",
+            "Sha256": "dba8781465e39553e220af0fdf6b0832964bb5ffd5902143a8c2d1962bf8395d",
+            "Note": "Dungeon battle command input (tick=84)"
+        },
+        {
+            "File": "08_battle_spell_hit.jpg",
+            "Sha256": "10ebd2da17d78748a42b3d4ed404a1c40bfbd574b05253aab808b3403fd3476e",
+            "Note": "Battle spell hit & damage popup (tick=138)"
+        },
+        {
+            "File": "09_level_up.jpg",
+            "Sha256": "6b63f4a7c97d1263b0a37917fd775c807e879a201aff9f93c2058639c684df08",
+            "Note": "Party level-up announcement (tick=359)"
+        },
+        {
+            "File": "10_battle_mp_shortage.jpg",
+            "Sha256": "36040e7436c341b46fc876ffdacca1de9e2664ec72450726f2f91e2f084e8e08",
+            "Note": "Battle spell greyed out & MP shortage message (tick=492)"
+        },
+        {
+            "File": "11_wipeout_church.jpg",
+            "Sha256": "dc6b0fce777d76e4aad53163ff383461d1455bccbabb5865f2ef4038bbcf4221",
+            "Note": "Wipeout respawn at church (tick=5492)"
+        },
+        {
+            "File": "12_boss_valug.jpg",
+            "Sha256": "3988547f127e681e4fa791c51b4f9cd22ec029ffe8852cb6ea745425188b9f96",
+            "Note": "Boss battle against Valug (tick=2374)"
+        },
+        {
+            "File": "13_ending.jpg",
+            "Sha256": "a6e33bb011f496476003e6ed4bedb46b2d3b89555c5bbb47495e80b0f06d629a",
+            "Note": "Ending screen (tick=2436, hash=0x5CA021E4)"
+        },
+        {
+            "File": "14_result.jpg",
+            "Sha256": "47a68a88aaa18d36f1874dcfb69790656683b910008c85f1b3ea05fffc09e7a7",
+            "Note": "Result screen (tick=2436, hash=0x5CA021E4)"
+        },
+        {
+            "File": "15_title_corrupt_save.jpg",
+            "Sha256": "bcf4b3ae3f932ccc65125d53adc10677721867edf353ff6ba5df854c332a55b2",
+            "Note": "Title screen with corrupt save warning & Continue hidden"
+        }
+    ]
+}

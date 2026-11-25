@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c9aa531a9f41d04f9b9cade4ad54703, type: 3}
+  m_Name: Class_warrior
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.Data.ClassAsset
+  Def:
+    Id: warrior
+    Name: "\u6226\u58EB"
+    HeroName: "\u30A2\u30EC\u30F3"
+    BaseHp: 44
+    BaseMp: 0
+    BaseAtk: 17
+    BaseDef: 12
+    BaseAgi: 9
+    HpGain: 9
+    MpGain: 0
+    AtkGain: 4
+    DefGain: 3
+    AgiGain: 2
+    StartWeaponId: bronze_sword
+    StartArmorId: leather_vest
+    Spells: []
