@@ -361,6 +361,7 @@ namespace Game.Core
                 if (result == FlightEvent.Crashed)
                 {
                     fighter.Down = true;
+                    fighter.DownTick = Tick;
                     if (!fighter.IsPlayer) { moments |= MissionMoment.EnemyDown; }
                 }
             }
@@ -475,9 +476,11 @@ namespace Game.Core
         private MissionMoment Damage(Fighter target)
         {
             target.Health--;
+            target.HitTick = Tick;
             if (target.Health > 0) { return target.IsPlayer ? MissionMoment.PlayerHit : MissionMoment.None; }
 
             target.Down = true;
+            target.DownTick = Tick;
             target.ShotDown = true;
 
             // 撃墜した目標を追っていたミサイルは、同じ Tick の後の順番のものも含めて追尾をやめる。

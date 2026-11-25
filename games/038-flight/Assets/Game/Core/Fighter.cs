@@ -31,6 +31,12 @@ namespace Game.Core
         /// <summary>撃墜されたか、墜落したか。</summary>
         public bool Down { get; internal set; }
 
+        /// <summary>撃墜・墜落した Tick（まだなら -1）。爆発の描画に使う。</summary>
+        public int DownTick { get; internal set; } = -1;
+
+        /// <summary>直近に被弾した Tick（まだなら -1）。</summary>
+        public int HitTick { get; internal set; } = -1;
+
         /// <summary>ミサイルで撃墜された（墜落ではない）。</summary>
         public bool ShotDown { get; internal set; }
 
@@ -68,6 +74,8 @@ namespace Game.Core
             hash.Mix(Health);
             hash.Mix(Down);
             hash.Mix(ShotDown);
+            hash.Mix(DownTick);
+            hash.Mix(HitTick);
             hash.Mix(Ammo);
             hash.Mix(Reload);
             hash.Mix(LockTarget);
