@@ -1,4 +1,5 @@
 using System;
+using TileMotion;
 
 namespace Game.Core
 {
@@ -11,6 +12,12 @@ namespace Game.Core
     {
         /// <summary>速さの上限の上限（600 m/s）。これ以下で、揚力の基準の速さが 20 m/s 以上なら、揚力・抗力の中間値が long に収まる。</summary>
         public const int MaxSpeedLimit = 600 * Units.MetersPerSecond;
+
+        /// <summary>
+        /// 1 Tick の風見の回転の上限（10°）。姿勢の小回転は 1 次の近似 (1, ω/2) で、要求 θ に対して実際は 2·atan(θ/2) 回る。
+        /// 10° なら誤差は 0.03° 程度。舵・失速の角速度も検証で 10° 以下にしてある。
+        /// </summary>
+        public static readonly int MaxWeathervaneTurn = Units.Degrees(10);
 
         /// <summary>重力加速度（9.8 m/s²）。</summary>
         public int Gravity = 2722;
@@ -80,6 +87,34 @@ namespace Game.Core
 
         /// <summary>地上の転がり抵抗の減速。</summary>
         public int RollingFriction = 136;
+
+        /// <summary>全ての設定値を決まった順で混ぜる（状態のハッシュが設定の違いも見分けるため）。値を足したらここにも足す（テストが全フィールドを確かめる）。</summary>
+        internal void Mix(ref StateHash hash)
+        {
+            hash.Mix(Gravity);
+            hash.Mix(Thrust);
+            hash.Mix(MaxSpeed);
+            hash.Mix(SpeedLimit);
+            hash.Mix(LevelSpeed);
+            hash.Mix(LevelAngle);
+            hash.Mix(StallAngle);
+            hash.Mix(StallLiftPercent);
+            hash.Mix(StallSpeed);
+            hash.Mix(SideAngle);
+            hash.Mix(ControlSpeed);
+            hash.Mix(PitchRate);
+            hash.Mix(RollRate);
+            hash.Mix(YawRate);
+            hash.Mix(StallPitchDrop);
+            hash.Mix(Weathervane);
+            hash.Mix(ThrottleRate);
+            hash.Mix(GearHeight);
+            hash.Mix(RotateSpeed);
+            hash.Mix(MaxGroundPitch);
+            hash.Mix(GroundPitchRate);
+            hash.Mix(TaxiTurnRate);
+            hash.Mix(RollingFriction);
+        }
 
         public FlightConfig Copy() => (FlightConfig)MemberwiseClone();
 

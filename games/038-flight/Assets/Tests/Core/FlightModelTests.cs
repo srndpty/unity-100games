@@ -79,6 +79,31 @@ namespace Game.Core.Tests
             Assert.That(nosedDown.Alpha, Is.EqualTo(-800));
         }
 
+        [TestCase(40, 45)]
+        [TestCase(40, 90)]
+        [TestCase(40, 180)]
+        [TestCase(1000, 45)]
+        [TestCase(1000, 90)]
+        [TestCase(1000, 180)]
+        public void WeathervaneTurnsByTheIntendedAngleInOneTick(int weathervane, int slipDegrees)
+        {
+            // 機首は北、速度は機首から slipDegrees 右（横滑り角 = slipDegrees）。舵は使わない。
+            var config = new FlightConfig { Weathervane = weathervane }.Validate();
+            var plane = Level(config, 150);
+            var beta = Units.Degrees(slipDegrees);
+            var speed = 150L * Units.MetersPerSecond;
+            plane.Velocity = new Vec3l(Fixed.Round(Fixed.Sin(beta) * speed), 0, Fixed.Round(Fixed.Cos(beta) * speed));
+            Assert.That(Math.Abs(AirData.Of(config, plane.Velocity, plane.Attitude, false).Beta), Is.EqualTo(Fixed.Wrap(beta) == Units.FullTurn / 2 ? Units.FullTurn / 2 : beta).Within(16));
+
+            FlightModel.Step(config, plane, Controls.None, _runway);
+
+            // 要求は 横滑り角 × 割合、ただし 1 Tick に 10° まで。1 次近似でも要求どおりに回る。
+            var intended = Math.Min(slipDegrees * weathervane / 1000.0, 10.0);
+            var forward = plane.Attitude.Forward;
+            var turned = Math.Atan2(forward.X, forward.Z) * 180 / Math.PI;
+            Assert.That(turned, Is.EqualTo(intended).Within(0.1), $"風見 {weathervane}‰、横滑り {slipDegrees}°");
+        }
+
         // ---- 失速・速度低下 ----
 
         [Test]

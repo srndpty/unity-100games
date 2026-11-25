@@ -169,6 +169,46 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void HashTellsMissionsWithDifferentSettingsApart()
+        {
+            // 初期の動的状態は同じだが、片方だけ 60 Tick で終わる。
+            var shorter = New(new MissionConfig { MissionTicks = 60 });
+            var longer = New(new MissionConfig { MissionTicks = 120 });
+            Assert.That(shorter.Hash(), Is.Not.EqualTo(longer.Hash()));
+            Assert.That(New().Hash(), Is.EqualTo(New().Hash()), "同じ設定・シードなら同じ");
+
+            var lighter = new Mission(new FlightConfig { Gravity = 2700 }, new MissionConfig(), 1);
+            Assert.That(lighter.Hash(), Is.Not.EqualTo(New().Hash()), "飛行の設定も見分ける");
+        }
+
+        [Test]
+        public void EverySettingFieldChangesTheFingerprint()
+        {
+            // 設定に値を足して Mix に足し忘れると失敗する。
+            AssertEveryField(new FlightConfig(), (FlightConfig c, ref TileMotion.StateHash h) => c.Mix(ref h));
+            AssertEveryField(new MissionConfig(), (MissionConfig c, ref TileMotion.StateHash h) => c.Mix(ref h));
+        }
+
+        private delegate void Mixer<T>(T config, ref TileMotion.StateHash hash);
+
+        private static void AssertEveryField<T>(T original, Mixer<T> mix)
+            where T : class
+        {
+            var baseHash = TileMotion.StateHash.Start();
+            mix(original, ref baseHash);
+            var fields = typeof(T).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+            Assert.That(fields, Is.Not.Empty);
+            foreach (var field in fields)
+            {
+                var copy = (T)typeof(T).GetMethod("Copy")!.Invoke(original, null)!;
+                field.SetValue(copy, (int)field.GetValue(copy)! + 1);
+                var hash = TileMotion.StateHash.Start();
+                mix(copy, ref hash);
+                Assert.That(hash.Value, Is.Not.EqualTo(baseHash.Value), $"{typeof(T).Name}.{field.Name}");
+            }
+        }
+
+        [Test]
         public void CloneIsIndependent()
         {
             var mission = CombatTests.Behind();

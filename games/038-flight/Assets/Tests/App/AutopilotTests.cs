@@ -5,8 +5,11 @@ namespace Game.App.Tests
 {
     public sealed class AutopilotTests
     {
-        /// <summary>シード 1 を操縦役で最後まで進めた最終ハッシュ。整数だけなので .NET と Mono で同じ値になる。</summary>
-        private const uint SeedOneFinalHash = 2464520460u;
+        /// <summary>
+        /// シード 1 を操縦役で最後まで進めた最終ハッシュ。整数だけなので .NET と Mono で同じ値になる。
+        /// レビュー対応で設定もハッシュに混ぜたので 2464520460 から変わった（動的状態の変化ではなく、ハッシュの対象を増やした差）。
+        /// </summary>
+        private const uint SeedOneFinalHash = 925928182u;
 
         [Test]
         public void AutopilotTakesOffAndWinsEverySeed()

@@ -44,7 +44,7 @@ dev capture 038  # 証跡を evidence/ に撮る（画像は captures/<画像世
 | 舵 | 角速度の上限はピッチ 25°/s・ロール 120°/s・ヨー 9°/s。効きは (速さ / 80 m/s)² で、80 m/s 以上は全部効く |
 | 推力・抗力 | 推力は機首の向きに、スロットル 100% で 1 G。抗力は速度の逆向きに 推力 × (速さ / 200 m/s)²（水平の最高速度 200 m/s）。速さは 330 m/s を超えない |
 | 揚力 | 機体の上方向に、重力 × (迎角 / 3°) × (速さ / 120 m/s)²。機体の上方向は迎角の分だけ後ろへ傾いているので、引くほど減速する |
-| 横力 | 機体の左方向に、重力 × (横滑り角 / 6°) × (速さ / 120 m/s)²（横滑り角は ±20° で頭打ち）。さらに毎 Tick 横滑り角の 4% だけ機首を速度の向きへ回す（風見） |
+| 横力 | 機体の左方向に、重力 × (横滑り角 / 6°) × (速さ / 120 m/s)²（横滑り角は ±20° で頭打ち）。さらに毎 Tick 横滑り角の 4% だけ機首を速度の向きへ回す（風見。1 Tick に 10° まで） |
 | 失速 | 空中で、迎角が 20° を超えるか、速さが 50 m/s 未満。揚力は 20° での値の 40% に落ち、機首を速度の向きへ 30°/s で下げる（ピッチの上限より速いので、引き続けても下がる）。失速中はロックオンが切れる |
 | 地上 | 滑走路の上で車輪で走る。ロールとヨーで向きを変える（止まっていれば変えない）。60 m/s 以上で機首上げを押すと機首が上がり（12° まで）、離すと下がる。転がり抵抗 0.05 G。揚力が重力を超えた Tick に浮く（既定では約 61 m/s）。接地中に滑走路の外へ出たら墜落 |
 | 墜落 | 空中で機体の中心が車輪の高さ（2 m）より下になるか、ちょうどその高さで下りていたら墜落。地面は平面なので Tick の終わりの高さで判定すれば軌跡の接触を見逃さない。墜落した機体は動かない |
@@ -66,6 +66,8 @@ dev capture 038  # 証跡を evidence/ に撮る（画像は captures/<画像世
 - 描画は Core の座標をそのまま m にして置く（区域は ±6 km なので float の精度で足りる）。その Tick の状態を描き、補間しない。カメラは機体に固定した後ろ上から機首の先を見る（機体と一緒に傾く）。撃墜・墜落の後は最後の位置を水平に見る。
 - 機首と速度方向のずれは HUD で見せる：十字が機首の 1 km 先、翼つきの円が速度の向きの 1 km 先。迎角の値も出す。
 - 爆発・被弾の赤い画面・撃墜の表示・煙は Core の Tick（`Fighter.DownTick`・`HitTick`）から描くので、撮影は同じ絵になる。
+- 姿勢の小回転は 1 次の近似 (1, ω/2) で、要求 θ に対して 2·atan(θ/2) 回る。1 Tick の回転は舵・失速の検証と風見の上限で各軸 10° 以下に収め、誤差を 0.03° 程度に保つ。
+- `Mission.Hash()` は動的状態に加えて検証済みの設定の全フィールドを混ぜる（設定だけが違う 2 つのミッションを見分ける）。
 - Q30 の積（4 項の和）は 2^62 以下なので long に収まる。ベクトルの回転は成分 2^31 まで。速さの上限 600 m/s（設定の検証）と、揚力の基準の速さ 20 m/s 以上で、揚力・抗力の中間値も long に収まる。
 - 揚力は「迎角に比例・速さの 2 乗に比例」の近似で、機体の上方向に向ける（速度に直交させない）。迎角を取ると揚力が後ろ向きの成分を持ち、旋回で速さが落ちる。
 - 追尾誘導の分離：誘導は `IGuidance`（既定は `ProNav`）で、目標とミサイルの位置・速度だけを受け取って欲しい横向きの加速を返す。曲げられる上限・速さ・寿命はミサイルの運動（`MissileBody`）と `Mission` が持つ。誘導の中間値は mm 単位の long で、最後の割り算だけ BigInteger。
@@ -83,12 +85,12 @@ dev capture 038  # 証跡を evidence/ に撮る（画像は captures/<画像世
 
 | 種類 | 場所 | 実行 | 件数 |
 |---|---|---|---|
-| Core（.NET） | `Assets/Tests/Core/`（`MathTests`・`FlightModelTests`・`CombatTests`・`GuidanceTests`・`MissionTests`・`EnemyRoleTests`） | `dev test 038` | 72 |
+| Core（.NET） | `Assets/Tests/Core/`（`MathTests`・`FlightModelTests`・`CombatTests`・`GuidanceTests`・`MissionTests`・`EnemyRoleTests`） | `dev test 038` | 80 |
 | App（.NET） | `Assets/Tests/App/`（`SortieFlowTests`・`AutopilotTests`・`PlayabilityTests`） | `dev test 038` | 18 |
-| EditMode（Mono） | 上の Core・App と共通パッケージ・証跡の公開 | `dev test 038 -Unity` | 152 |
-| PlayMode（実シーン） | `Assets/Tests/Unity/HalcyonSceneTests.cs` と雛形の証跡公開 | `dev test 038 -Unity -Mode PlayMode` | 28 |
+| EditMode（Mono） | 上の Core・App と共通パッケージ・証跡の公開 | `dev test 038 -Unity` | 160 |
+| PlayMode（実シーン） | `Assets/Tests/Unity/HalcyonSceneTests.cs` と雛形の証跡公開 | `dev test 038 -Unity -Mode PlayMode` | 29 |
 
-- 固定ハッシュ：飛行モデルの 3000 Tick（`1290656686`）と、操縦役のシード 1 の最終状態（`2464520460`）を .NET と Mono の両方で照合する。
+- 固定ハッシュ：飛行モデルの 3000 Tick（`1290656686`）と、操縦役のシード 1 の最終状態（`925928182`、設定を含む）を .NET と Mono の両方で照合する。
 - 性能と割り当ての計測は PlayMode の `AMissionStepAndTheWorldViewAreFastAndRenderingDoesNotAllocate`。結果は [evidence/README.md](evidence/README.md)。
 
 ## 未実装範囲

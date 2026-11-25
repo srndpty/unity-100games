@@ -160,6 +160,34 @@ namespace Game.Unity.Tests
         }
 
         [UnityTest]
+        public IEnumerator ASecondResultWithTheSameOutcomeShowsTheSecondMissionsRecord()
+        {
+            var flow = _game.Flow;
+            flow.Pilot = new Autopilot();
+            flow.Apply(new Intent(IntentKind.Submit, 0));
+            for (var i = 0; i < 20000 && flow.Screen != AppScreen.Result; i++) { flow.StepTick(); }
+            _game.Render();
+            yield return null;
+            var first = flow.Mission;
+            var sub = _game.HudRoot.Q<Label>("result-sub");
+            var firstText = sub.text;
+
+            // 同じ勝敗（成功）をもう一度。記録（時間・残弾）が違う試合を選ぶ。
+            flow.Apply(new Intent(IntentKind.Submit, 0));
+            for (var i = 0; i < 20000 && flow.Screen != AppScreen.Result; i++) { flow.StepTick(); }
+            var second = flow.Mission;
+            Assert.That(second, Is.Not.SameAs(first));
+            Assert.That(second.Outcome, Is.EqualTo(first.Outcome), "同じ勝敗");
+            Assert.That(second.FinishedTick, Is.Not.EqualTo(first.FinishedTick), "記録が違う試合で確かめる");
+            _game.Render();
+            yield return null;
+
+            Assert.That(sub.text, Is.Not.EqualTo(firstText), "前の試合の記録を残さない");
+            Assert.That(sub.text, Does.Contain("時間 " + HalcyonHud.Clock(second.FinishedTick)));
+            Assert.That(sub.text, Does.Contain("残弾 " + second.Player.Ammo));
+        }
+
+        [UnityTest]
         public IEnumerator TheDrawingFollowsTheCoreState()
         {
             var flow = _game.Flow;

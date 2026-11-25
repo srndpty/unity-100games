@@ -69,7 +69,7 @@ namespace Game.Unity
         private Warning _shownWarning = (Warning)(-1);
         private int _shownWarningValue = int.MinValue;
         private int _shownLock = int.MinValue;
-        private Outcome _shownOutcome = (Outcome)(-1);
+        private Mission _shownResult;
         private int _shownKill = -1;
 
         public HalcyonHud(VisualElement root, FlightConfig flight, MissionConfig config)
@@ -368,8 +368,9 @@ namespace Game.Unity
 
         private void ShowResult(Mission mission)
         {
-            if (mission.Outcome == _shownOutcome) { return; }
-            _shownOutcome = mission.Outcome;
+            // 結果は試合ごとに 1 度決まる。勝敗が同じでも別の試合なら書き直す（キャッシュの鍵は試合そのもの）。
+            if (ReferenceEquals(mission, _shownResult)) { return; }
+            _shownResult = mission;
             _resultTitle.text = mission.Outcome == Outcome.Won ? "MISSION COMPLETE" : "MISSION FAILED";
             var kills = MissionConfig.EnemyCount - mission.EnemiesLeft;
             _resultSub.text = $"{Reason(mission.Outcome)}　撃墜 {kills}/{MissionConfig.EnemyCount}　時間 {Clock(mission.FinishedTick)}　残弾 {mission.Player.Ammo}";

@@ -259,10 +259,14 @@ namespace Game.Core
             return copy;
         }
 
-        /// <summary>以後の動きを決める状態を全て混ぜたハッシュ。</summary>
+        /// <summary>以後の動きを決める状態（検証済みの設定を含む）を全て混ぜたハッシュ。</summary>
         public uint Hash()
         {
             var hash = StateHash.Start();
+
+            // 設定も混ぜる：同じ動的状態でも、設定が違えば以後の動き（終わる Tick など）が違う。
+            _flight.Mix(ref hash);
+            _config.Mix(ref hash);
             hash.Mix(Tick);
             hash.Mix((int)Outcome);
             hash.Mix(FinishedTick);

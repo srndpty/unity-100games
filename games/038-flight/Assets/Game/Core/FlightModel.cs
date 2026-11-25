@@ -44,7 +44,8 @@ namespace Game.Core
                 pitch += Math.Sign(before.Alpha) * config.StallPitchDrop;
             }
 
-            yaw += (int)Fixed.RoundDiv((long)before.Beta * config.Weathervane, 1000);
+            // 風見の補正は 1 Tick に MaxWeathervaneTurn まで（小回転の 1 次近似が成り立つ範囲。大きな横滑りでも 1 Tick で回しきらない）。
+            yaw += (int)Fixed.Clamp(Fixed.RoundDiv((long)before.Beta * config.Weathervane, 1000), -FlightConfig.MaxWeathervaneTurn, FlightConfig.MaxWeathervaneTurn);
             aircraft.Attitude = aircraft.Attitude.RotateBody(pitch, yaw, roll);
 
             // 新しい姿勢で力を求める。

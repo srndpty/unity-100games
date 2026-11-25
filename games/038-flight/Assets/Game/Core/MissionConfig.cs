@@ -1,4 +1,5 @@
 using System;
+using TileMotion;
 
 namespace Game.Core
 {
@@ -148,6 +149,56 @@ namespace Game.Core
         public Runway Runway => new(0, Meters(RunwayStartZ), Meters(RunwayLength), Meters(RunwayHalfWidth));
 
         public static long Meters(int meters) => meters * Units.PerMeter;
+
+        /// <summary>全ての設定値を決まった順で混ぜる（状態のハッシュが設定の違いも見分けるため）。値を足したらここにも足す（テストが全フィールドを確かめる）。</summary>
+        internal void Mix(ref StateHash hash)
+        {
+            hash.Mix(ArenaHalfWidth);
+            hash.Mix(Ceiling);
+            hash.Mix(OutOfAreaTicks);
+            hash.Mix(MissionTicks);
+            hash.Mix(RunwayStartZ);
+            hash.Mix(RunwayLength);
+            hash.Mix(RunwayHalfWidth);
+            hash.Mix(EnemyCenterZ);
+            hash.Mix(EnemyAltitude);
+            hash.Mix(EnemySpacing);
+            hash.Mix(EnemyJitter);
+            hash.Mix(EnemySpeed);
+            hash.Mix(PatrolRadius);
+            hash.Mix(EngageRange);
+            hash.Mix(EnemyCruiseSpeed);
+            hash.Mix(EnemyAgility);
+            hash.Mix(EnemyPursuitTicks);
+            hash.Mix(EnemyBreakTicks);
+            hash.Mix(EnemyWaitRadius);
+            hash.Mix(EnemyFloor);
+            hash.Mix(EnemyLeadTicks);
+            hash.Mix(EnemyEvadeRange);
+            hash.Mix(EnemyAimJitter);
+            hash.Mix(EnemyJitterTicks);
+            hash.Mix(LockCone);
+            hash.Mix(LockRange);
+            hash.Mix(EnemyLockCone);
+            hash.Mix(EnemyLockRange);
+            hash.Mix(LockTicks);
+            hash.Mix(EnemyLockTicks);
+            hash.Mix(Missiles);
+            hash.Mix(EnemyMissiles);
+            hash.Mix(Reload);
+            hash.Mix(EnemyReload);
+            hash.Mix(PlayerHealth);
+            hash.Mix(LaunchBoost);
+            hash.Mix(MissileAccel);
+            hash.Mix(MissileSpeed);
+            hash.Mix(EnemyMissileSpeed);
+            hash.Mix(MissileTurn);
+            hash.Mix(EnemyMissileTurn);
+            hash.Mix(MissileLife);
+            hash.Mix(FuseRadius);
+            hash.Mix(NavGain);
+            hash.Mix(MissileCapacity);
+        }
 
         public MissionConfig Copy() => (MissionConfig)MemberwiseClone();
 
