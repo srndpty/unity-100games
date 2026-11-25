@@ -150,25 +150,26 @@ MonoBehaviour:
   _ground: {fileID: 6268015073754365455}
   _backdrop: {fileID: 2784330559743481441}
   _cinder:
-  - {fileID: 21300000, guid: 33d0101da218066498288e0327dac291, type: 3}
-  - {fileID: 21300000, guid: 6fa8970ddb27346499f230e0daccc67a, type: 3}
-  - {fileID: 21300000, guid: a94ca1d9b77785545ac8a332c3caeef8, type: 3}
-  - {fileID: 21300000, guid: 3fbb232600647dd4a998a28127ca7e79, type: 3}
-  - {fileID: 21300000, guid: cb90453f869629a41983fd5c7cbf5e34, type: 3}
-  - {fileID: 21300000, guid: fa0c42db61f9df04992746fb4d9ade6c, type: 3}
-  - {fileID: 21300000, guid: 175065e415a5d074283d9b36be7dd140, type: 3}
-  - {fileID: 21300000, guid: 1b03b6eb49d201740a410d623abe78d0, type: 3}
+  - {fileID: 21300000, guid: 170df6ae132d56a4499050a674bb7327, type: 3}
+  - {fileID: 21300000, guid: 170df6ae132d56a4499050a674bb7327, type: 3}
+  - {fileID: 21300000, guid: c671d86b199229c428cc92cd357546a2, type: 3}
+  - {fileID: 21300000, guid: c671d86b199229c428cc92cd357546a2, type: 3}
+  - {fileID: 21300000, guid: 83211807e3a79374a9e48d2319521db2, type: 3}
+  - {fileID: 21300000, guid: a56a68c385b4b0848bec13a05d7b89e6, type: 3}
+  - {fileID: 21300000, guid: 29b50daa04ead3647bd7ae7125c0d6f8, type: 3}
+  - {fileID: 21300000, guid: c671d86b199229c428cc92cd357546a2, type: 3}
   _kiln:
-  - {fileID: 21300000, guid: 2955a14dde0b82a4a88df4d393685b59, type: 3}
-  - {fileID: 21300000, guid: db60665a9580211419cc105966fdc507, type: 3}
-  - {fileID: 21300000, guid: 7442958eb86fec64db9d5e9c8bc21bbc, type: 3}
-  - {fileID: 21300000, guid: af520ea5055a2d74c84514309b76ef92, type: 3}
-  - {fileID: 21300000, guid: fb59d25176a5c6245921ef7ee7137c1d, type: 3}
-  - {fileID: 21300000, guid: 8d05a7d44aa3d0f4c9d40295e2cba875, type: 3}
-  - {fileID: 21300000, guid: c1f25855129b1704981ad3821c7ad1d7, type: 3}
-  - {fileID: 21300000, guid: 8b795325bc7af9e43a459de603c9646f, type: 3}
+  - {fileID: 21300000, guid: 343af786e280ae441a079fa35c374efb, type: 3}
+  - {fileID: 21300000, guid: 343af786e280ae441a079fa35c374efb, type: 3}
+  - {fileID: 21300000, guid: 3dbd8406b3dda0c4294b8d50b0fea7d6, type: 3}
+  - {fileID: 21300000, guid: 3dbd8406b3dda0c4294b8d50b0fea7d6, type: 3}
+  - {fileID: 21300000, guid: cb0ecd0dcd828924687374be6466cc7d, type: 3}
+  - {fileID: 21300000, guid: 92c463d830afc6b4abc112a6e33ed089, type: 3}
+  - {fileID: 21300000, guid: b2d833a02ba6a5a40bcfaad76bebaa01, type: 3}
+  - {fileID: 21300000, guid: 3dbd8406b3dda0c4294b8d50b0fea7d6, type: 3}
   _boxes: {fileID: 3423659782703202738}
   _boxRenderer: {fileID: 2136615310020835194}
+  _flare: {fileID: 21300000, guid: 5f671e65a212b7b4aaaa0ec90cc48923, type: 3}
 --- !u!1 &3315228394915828487
 GameObject:
   m_ObjectHideFlags: 0
@@ -524,7 +525,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 10
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 33d0101da218066498288e0327dac291, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 170df6ae132d56a4499050a674bb7327, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -616,7 +617,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 10
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 2955a14dde0b82a4a88df4d393685b59, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 343af786e280ae441a079fa35c374efb, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 1
   m_FlipY: 0

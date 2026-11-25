@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
+using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
 namespace Game.Unity.Tests
@@ -37,6 +38,28 @@ namespace Game.Unity.Tests
             Time.timeScale = 1f;
             _keyboard.Dispose();
             yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator SelectionHighlightsThePlayerAndShowsTheirSpecialCommand()
+        {
+            var hud = _game.HudRoot;
+            Assert.That(hud.Q<Label>("banner").text, Is.EqualTo("EMBER DUEL"));
+            yield return _keyboard.Tap(Key.Enter);
+            var left = hud.Q<Button>("character-0");
+            var right = hud.Q<Button>("character-1");
+            Assert.That(left.Q<Label>("role").text, Does.Contain("選択中"));
+
+            yield return _keyboard.Tap(Key.RightArrow);
+            Assert.That(_game.Flow.Screen, Is.EqualTo(DuelScreen.Select));
+            Assert.That(left.Q<Label>("role").text, Does.Contain("CPU"));
+            Assert.That(right.Q<Label>("role").text, Does.Contain("選択中"));
+
+            yield return _keyboard.Tap(Key.Enter);
+            _game.Render();
+            Assert.That(_game.Flow.Match.Duel.At(0).Character.Id, Is.EqualTo("kiln"));
+            Assert.That(hud.Q("guide").style.display.value, Is.EqualTo(DisplayStyle.Flex));
+            Assert.That(hud.Q<Label>("special").text, Does.Contain("突進"));
         }
 
         [UnityTest]
@@ -122,6 +145,26 @@ namespace Game.Unity.Tests
             Assert.That(_game.Stage.Left.transform.localPosition, Is.EqualTo(bootLeft));
             Assert.That(_game.Stage.Right.transform.localPosition, Is.EqualTo(bootRight));
             Assert.That(_game.Stage.Left.flipX, Is.EqualTo(bootFlip));
+        }
+
+        [UnityTest]
+        public IEnumerator KnockoutPreservesTheScaleOfBothFighters()
+        {
+            yield return StartMatch();
+            var stage = _game.Stage;
+            var duel = _game.Flow.Match.Duel;
+            stage.Show(duel, false);
+            var standingLeft = stage.Left.bounds.size.y;
+            var standingRight = stage.Right.bounds.size.y;
+
+            foreach (var state in new[] { FighterState.Knockdown, FighterState.Wakeup, FighterState.Ko })
+            {
+                duel.At(0).State = state;
+                duel.At(1).State = state;
+                stage.Show(duel, false);
+                Assert.That(stage.Left.bounds.size.y / standingLeft, Is.InRange(0.6f, 0.8f), state.ToString());
+                Assert.That(stage.Right.bounds.size.y / standingRight, Is.InRange(0.6f, 0.8f), state.ToString());
+            }
         }
 
         [UnityTest]

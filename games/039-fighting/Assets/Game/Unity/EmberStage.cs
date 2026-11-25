@@ -25,6 +25,9 @@ namespace Game.Unity
         private readonly Vector3[] _vertices = new Vector3[MaxBoxes * 8];
         private readonly Color32[] _colors = new Color32[MaxBoxes * 8];
         private Mesh _mesh;
+        [SerializeField] private Sprite _flare;
+        private SpriteRenderer _effect0;
+        private SpriteRenderer _effect1;
         private MaterialPropertyBlock _block;
         private Stamp _leftStamp;
         private Stamp _rightStamp;
@@ -36,6 +39,8 @@ namespace Game.Unity
         public SpriteRenderer Right => _right;
 
         public Mesh BoxMesh => _mesh;
+
+        public Sprite Portrait(int index) => index == 0 ? _cinder[0] : _kiln[0];
 
         public void ShowTitle(DuelConfig config)
         {
@@ -53,6 +58,11 @@ namespace Game.Unity
             _right.enabled = true;
             _shot0.enabled = false;
             _shot1.enabled = false;
+            if (_effect0 != null)
+            {
+                _effect0.enabled = false;
+                _effect1.enabled = false;
+            }
             ShowBoxes(false);
         }
 
@@ -62,6 +72,8 @@ namespace Game.Unity
             PlaceFighter(_right, duel.At(1), ref _rightStamp);
             PlaceShot(_shot0, duel, 0, ref _shotStamp0);
             PlaceShot(_shot1, duel, 1, ref _shotStamp1);
+            PlaceEffect(_effect0, duel.At(0), duel.HitStop);
+            PlaceEffect(_effect1, duel.At(1), duel.HitStop);
             if (boxes) { DrawBoxes(duel); }
             else { ShowBoxes(false); }
         }
@@ -69,7 +81,7 @@ namespace Game.Unity
         /// <summary>Prefab の初期配置が Core の開始位置と一致しないときの説明。一致すれば null。</summary>
         public string Mismatch(DuelConfig config)
         {
-            if (_left == null || _right == null || _ground == null || _backdrop == null || _shot0 == null || _shot1 == null)
+            if (_left == null || _right == null || _ground == null || _backdrop == null || _shot0 == null || _shot1 == null || _flare == null)
             {
                 return "描画物の参照が欠けています。";
             }
@@ -90,6 +102,8 @@ namespace Game.Unity
 
         private void Awake()
         {
+            _effect0 = CreateEffect("Effect 1P");
+            _effect1 = CreateEffect("Effect CPU");
             _mesh = new Mesh { name = "EmberBoxes" };
             _mesh.MarkDynamic();
             var indices = new int[_vertices.Length];
@@ -103,6 +117,44 @@ namespace Game.Unity
             _block.SetVector("_Flip", new Vector4(1f, 1f, 0f, 0f));
             _boxRenderer.SetPropertyBlock(_block);
             ShowBoxes(false);
+        }
+
+        private SpriteRenderer CreateEffect(string name)
+        {
+            var item = new GameObject(name);
+            item.transform.SetParent(transform, false);
+            var renderer = item.AddComponent<SpriteRenderer>();
+            renderer.sharedMaterial = _shot0.sharedMaterial;
+            renderer.sortingOrder = 25;
+            renderer.sprite = _flare;
+            renderer.enabled = false;
+            return renderer;
+        }
+
+        private static void PlaceEffect(SpriteRenderer renderer, Fighter fighter, int hitStop)
+        {
+            var move = fighter.Move;
+            var attack = fighter.State == FighterState.Attack && move != null;
+            var active = attack && fighter.Frame >= move.Startup && fighter.Frame < move.Startup + move.Active;
+            var special = attack && move.Id == "special" && fighter.Frame < move.Startup + move.Active;
+            var guard = fighter.State == FighterState.BlockStun;
+            var impact = hitStop > 0 && (guard || fighter.State == FighterState.HitStun ||
+                fighter.State == FighterState.Knockdown || fighter.State == FighterState.Thrown || fighter.State == FighterState.Ko);
+            renderer.enabled = impact || special || active;
+            if (!renderer.enabled) { return; }
+
+            var sweep = attack && move.Id == "sweep";
+            var projectile = fighter.Character.Id == "cinder";
+            var x = impact ? 12f : special ? 28f : 24f;
+            var y = sweep ? 11f : impact && fighter.Pose == BodyPose.Crouch ? 23f : 43f;
+            renderer.transform.localPosition = new Vector3(fighter.X / 256f + x * fighter.Facing, fighter.Y / 256f + y, 0f);
+            renderer.transform.localRotation = Quaternion.Euler(0f, 0f, (impact ? 25f : sweep ? -20f : 12f) * fighter.Facing);
+            renderer.transform.localScale = impact ? new Vector3(1f, 1f, 1f) :
+                special ? new Vector3(projectile ? 1.15f : 2.35f, 0.85f, 1f) : new Vector3(1.3f, 0.48f, 1f);
+            renderer.color = impact
+                ? guard ? new Color(0.38f, 0.83f, 1f) : new Color(1f, 0.92f, 0.46f)
+                : special ? projectile ? new Color(1f, 0.52f, 0.16f) : new Color(0.48f, 0.87f, 1f)
+                : new Color(1f, 0.86f, 0.65f, 0.6f);
         }
 
         private void OnDestroy()
@@ -220,7 +272,8 @@ namespace Game.Unity
                 case FighterState.Air:
                     return 3;
                 case FighterState.Attack:
-                    return fighter.Move != null && fighter.Move.Id == "throw" ? 5 : 4;
+                    if (fighter.Move == null || fighter.Frame < fighter.Move.Startup) { return 0; }
+                    return fighter.Move.Id == "sweep" ? 2 : 4;
                 case FighterState.HitStun:
                 case FighterState.Thrown:
                     return 5;

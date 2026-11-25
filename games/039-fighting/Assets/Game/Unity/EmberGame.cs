@@ -40,7 +40,13 @@ namespace Game.Unity
         private Label _banner;
         private Label _timer;
         private Label _stars;
-        private Label _guide;
+        private VisualElement _guide;
+        private Label _specialCommand;
+        private readonly string[] _specialNames = new string[2];
+        private VisualElement _selection;
+        private readonly Button[] _characterCards = new Button[2];
+        private readonly Label[] _characterRoles = new Label[2];
+        private int _shownCharacter = -1;
         private VisualElement _fill0;
         private VisualElement _fill1;
         private float _fill0Width = -1f;
@@ -52,7 +58,6 @@ namespace Game.Unity
         private string _bannerText = string.Empty;
         private string _timerText = string.Empty;
         private string _starsText = string.Empty;
-        private string _guideText = string.Empty;
         private string _primaryText = string.Empty;
         private string _secondaryText = string.Empty;
         private DuelScreen _shownScreen = (DuelScreen)(-1);
@@ -211,7 +216,6 @@ namespace Game.Unity
             _bannerText = string.Empty;
             _timerText = string.Empty;
             _starsText = string.Empty;
-            _guideText = string.Empty;
             _primaryText = string.Empty;
             _secondaryText = string.Empty;
             _fill0Width = -1f;
@@ -236,9 +240,35 @@ namespace Game.Unity
             _timer = Label(root, "timer", 36);
             _timer.style.unityTextAlign = TextAnchor.UpperCenter;
             _timer.style.marginTop = 4;
-            _guide = Label(root, "guide", 18);
-            _guide.style.unityTextAlign = TextAnchor.UpperCenter;
-            _guide.style.color = new Color(1f, 0.85f, 0.6f);
+            _guide = Column("guide");
+            _guide.pickingMode = PickingMode.Ignore;
+            _guide.style.position = Position.Absolute;
+            _guide.style.left = 24;
+            _guide.style.top = 64;
+            _guide.style.minWidth = 260;
+            _guide.style.paddingLeft = 14;
+            _guide.style.paddingRight = 14;
+            _guide.style.paddingTop = 8;
+            _guide.style.paddingBottom = 8;
+            _guide.style.backgroundColor = new Color(0.04f, 0.05f, 0.08f, 0.87f);
+            var commandTitle = Label(_guide, "commands", 22);
+            commandTitle.text = "コマンド";
+            commandTitle.style.unityFontStyleAndWeight = FontStyle.Bold;
+            commandTitle.style.marginBottom = 5;
+            Label(_guide, "movement", 19).text = "移動・ジャンプ   矢印 / WASD";
+            Label(_guide, "guard", 19).text = "ガード   相手と逆方向";
+            Label(_guide, "light", 19).text = "弱攻撃   J";
+            Label(_guide, "heavy", 19).text = "強攻撃   K";
+            Label(_guide, "sweep", 19).text = "足払い   ↓ ＋ L";
+            Label(_guide, "throw", 19).text = "投げ   J ＋ K";
+            _specialCommand = Label(_guide, "special", 19);
+            for (var i = 0; i < _specialNames.Length; i++)
+            {
+                _specialNames[i] = Flow.Table[i].Find("special").Name + "   ↓ ↘ → ＋ J（右向き）";
+            }
+            Label(_guide, "reverse", 17).text = "左向きでは ↓ ↙ ← ＋ J";
+            Label(_guide, "pause", 16).text = "Esc  一時停止     F1  判定表示";
+            root.Add(_guide);
 
             _menu = Column("menu");
             _menu.style.position = Position.Absolute;
@@ -252,8 +282,44 @@ namespace Game.Unity
             _banner = Label(_menu, "banner", 40);
             _banner.style.unityTextAlign = TextAnchor.MiddleCenter;
             _banner.style.whiteSpace = WhiteSpace.Normal;
+            _selection = Column("selection");
+            _selection.style.alignItems = Align.Center;
+            var cards = new VisualElement();
+            cards.style.flexDirection = FlexDirection.Row;
+            for (var i = 0; i < _characterCards.Length; i++)
+            {
+                var card = new Button { name = "character-" + i, focusable = false };
+                var direction = i == 0 ? IntentKind.LeftDown : IntentKind.RightDown;
+                card.clicked += () => Queue(new Intent(direction, Time.realtimeSinceStartupAsDouble));
+                card.style.width = 236;
+                card.style.height = 280;
+                card.style.marginLeft = 8;
+                card.style.marginRight = 8;
+                card.style.alignItems = Align.Center;
+                card.style.justifyContent = Justify.Center;
+                card.style.borderBottomWidth = 5;
+                _characterRoles[i] = Label(card, "role", 18);
+                var portrait = new Image { sprite = _stage.Portrait(i), scaleMode = ScaleMode.ScaleToFit };
+                portrait.pickingMode = PickingMode.Ignore;
+                portrait.style.width = 204;
+                portrait.style.height = 174;
+                card.Add(portrait);
+                Label(card, "name", 24).text = Flow.Table[i].Name;
+                Label(card, "style", 16).text = i == 0 ? "柔道家  /  飛び道具" : "米軍出身  /  突進";
+                cards.Add(card);
+                _characterCards[i] = card;
+            }
+
+            _selection.Add(cards);
+            Label(_selection, "select-help", 17).text = "← → またはクリックで選択";
+            _menu.Add(_selection);
             _primary = Button(_menu, "primary");
+            _primary.style.backgroundColor = new Color(1f, 0.67f, 0.36f);
+            _primary.style.color = new Color(0.11f, 0.06f, 0.07f);
+            _primary.style.unityFontStyleAndWeight = FontStyle.Bold;
             _secondary = Button(_menu, "secondary");
+            _secondary.style.backgroundColor = new Color(0.16f, 0.12f, 0.15f);
+            _secondary.style.color = Color.white;
             _primary.clicked += () => Queue(new Intent(IntentKind.Submit, Time.realtimeSinceStartupAsDouble));
             _secondary.clicked += () => Queue(new Intent(IntentKind.Back, Time.realtimeSinceStartupAsDouble));
             root.Add(_menu);
@@ -268,12 +334,13 @@ namespace Game.Unity
             var health1 = match == null ? int.MinValue : match.Duel.At(1).Health;
             var second = match == null ? int.MinValue : match.Clock / 60;
             var round = match == null ? int.MinValue : match.Round;
-            if (screen == _shownScreen && health0 == _shownHealth0 && health1 == _shownHealth1 && second == _shownSecond && round == _shownRound)
+            if (screen == _shownScreen && Flow.PlayerCharacter == _shownCharacter && health0 == _shownHealth0 && health1 == _shownHealth1 && second == _shownSecond && round == _shownRound)
             {
                 return;
             }
 
             _shownScreen = screen;
+            _shownCharacter = Flow.PlayerCharacter;
             _shownHealth0 = health0;
             _shownHealth1 = health1;
             _shownSecond = second;
@@ -288,8 +355,17 @@ namespace Game.Unity
                 SetText(_timer, "timer", screen == DuelScreen.Intro ? "ROUND " + match.Round : string.Empty);
             }
 
-            var guide = fighting ? "弱 J   強 K   足払い L   投げ J＋K   必殺 ↓↘→＋J    F1 判定" : string.Empty;
-            SetText(_guide, "guide", guide);
+            _guide.style.display = fighting ? DisplayStyle.Flex : DisplayStyle.None;
+            if (fighting && _specialCommand.text != _specialNames[Flow.PlayerCharacter])
+            {
+                _specialCommand.text = _specialNames[Flow.PlayerCharacter];
+            }
+
+            var selecting = screen == DuelScreen.Select;
+            _selection.style.display = selecting ? DisplayStyle.Flex : DisplayStyle.None;
+            _menu.style.top = Length.Percent(selecting ? 19 : 28);
+            _banner.style.fontSize = screen == DuelScreen.Title ? 76 : 40;
+            _banner.style.unityFontStyleAndWeight = FontStyle.Bold;
             _menu.style.display = fighting ? DisplayStyle.None : DisplayStyle.Flex;
             switch (screen)
             {
@@ -299,8 +375,17 @@ namespace Game.Unity
                     SetButton(_secondary, "secondary", string.Empty);
                     break;
                 case DuelScreen.Select:
-                    var name = Flow.Table[Flow.PlayerCharacter].Name;
-                    SetText(_banner, "banner", "あなたは  " + name + "\n← → で選ぶ");
+                    SetText(_banner, "banner", "キャラクター選択");
+                    for (var i = 0; i < _characterCards.Length; i++)
+                    {
+                        var selected = i == Flow.PlayerCharacter;
+                        _characterRoles[i].text = selected ? "▶ 1P　選択中" : "CPU　対戦相手";
+                        _characterCards[i].style.backgroundColor = selected
+                            ? new Color(0.24f, 0.14f, 0.1f) : new Color(0.09f, 0.11f, 0.16f);
+                        _characterCards[i].style.borderBottomColor = selected
+                            ? new Color(1f, 0.65f, 0.29f) : new Color(0.28f, 0.38f, 0.53f);
+                    }
+
                     SetButton(_primary, "primary", "このキャラで戦う");
                     SetButton(_secondary, "secondary", "タイトルへ");
                     break;
@@ -380,12 +465,10 @@ namespace Game.Unity
             if (slot == "banner" && text == _bannerText) { return; }
             if (slot == "timer" && text == _timerText) { return; }
             if (slot == "stars" && text == _starsText) { return; }
-            if (slot == "guide" && text == _guideText) { return; }
             label.text = text;
             if (slot == "banner") { _bannerText = text; }
             else if (slot == "timer") { _timerText = text; }
-            else if (slot == "stars") { _starsText = text; }
-            else { _guideText = text; }
+            else { _starsText = text; }
         }
 
         private void SetButton(Button button, string slot, string text)

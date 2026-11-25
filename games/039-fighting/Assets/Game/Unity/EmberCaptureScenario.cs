@@ -38,9 +38,11 @@ namespace Game.Unity
             Hold(IntentKind.RightDown);
             StepUntil(() => Gap() < 36 * 256, "接近");
             Release();
+            var health0 = Duel.At(0).Health;
+            var health1 = Duel.At(1).Health;
             Hold(IntentKind.LightDown);
-            StepUntil(() => Duel.At(1).Health < Duel.At(1).MaxHealth || Duel.At(0).Health < Duel.At(0).MaxHealth, "ヒット");
-            await capture.ShootAsync("05-hit", "通常技のヒット  Tick " + Duel.Tick);
+            StepUntil(() => Duel.HitStop > 0 && (Duel.At(0).Health < health0 || Duel.At(1).Health < health1), "ヒット");
+            await capture.ShootAsync("05-hit", "ヒット  Tick " + Duel.Tick);
 
             Release();
             Hold(IntentKind.LeftDown);
@@ -53,7 +55,7 @@ namespace Game.Unity
             Release();
             Hold(IntentKind.LightDown);
             Hold(IntentKind.HeavyDown);
-            StepUntil(() => Duel.At(0).State == FighterState.Thrown || Duel.At(1).State == FighterState.Thrown || (Duel.At(0).Move != null && Duel.At(0).Move.Id == "throw"), "投げ");
+            StepUntil(() => Duel.At(0).State == FighterState.Thrown || Duel.At(1).State == FighterState.Thrown || (Duel.At(0).Move is Move move && move.Id == "throw" && Duel.At(0).Frame >= move.Startup), "投げ");
             await capture.ShootAsync("07-throw", "投げ  Tick " + Duel.Tick);
 
             Release();

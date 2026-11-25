@@ -7,11 +7,11 @@ using Object = UnityEngine.Object;
 
 namespace Game.Unity.Editor
 {
-    /// <summary>姿勢ごとのドット絵。既にあるファイルは上書きしない。</summary>
+    /// <summary>舞台と技エフェクト。既にあるファイルは上書きしない。</summary>
     public static class EmberArtGenerator
     {
         public const string ArtRoot = "Assets/Game/Unity/Art/";
-        public const int PixelsPerUnit = 1;
+        public static readonly string[] Poses = { "Guard", "Guard", "Crouch", "Crouch", "Strike", "Recoil", "Down", "Crouch" };
 
         public static readonly Color32 Night = new(28, 18, 28, 255);
 
@@ -19,35 +19,23 @@ namespace Game.Unity.Editor
         {
             Directory.CreateDirectory(ArtRoot);
             var created = new List<(string Path, Vector2 Pivot)>();
-            var feet = new Vector2(0.5f, 0f);
             var center = new Vector2(0.5f, 0.5f);
             Save(created, "Backdrop.png", 480, 270, center, Backdrop);
             Save(created, "Ground.png", 480, 24, new Vector2(0.5f, 1f), Ground);
             Save(created, "Shot.png", 16, 16, center, Shot);
-            for (var pose = 0; pose < EmberStage.PoseCount; pose++)
-            {
-                var index = pose;
-                Save(created, "Cinder" + pose + ".png", 40, 76, feet, canvas => Fighter(canvas, index, ember: true));
-                Save(created, "Kiln" + pose + ".png", 40, 76, feet, canvas => Fighter(canvas, index, ember: false));
-            }
+            Save(created, "Flare.png", 48, 48, center, Flare);
 
             AssetDatabase.Refresh();
             foreach (var (path, pivot) in created) { Import(path, pivot); }
-            ReimportAll();
-        }
-
-        /// <summary>既存の絵も 1 枚のスプライトとして読み直す。自動分割で体の一部だけになるのを防ぐ。</summary>
-        public static void ReimportAll()
-        {
             var feet = new Vector2(0.5f, 0f);
-            var center = new Vector2(0.5f, 0.5f);
-            Import(ArtRoot + "Backdrop.png", center);
-            Import(ArtRoot + "Ground.png", new Vector2(0.5f, 1f));
-            Import(ArtRoot + "Shot.png", center);
-            for (var pose = 0; pose < EmberStage.PoseCount; pose++)
+            foreach (var character in new[] { "Judoka", "Veteran" })
             {
-                Import(ArtRoot + "Cinder" + pose + ".png", feet);
-                Import(ArtRoot + "Kiln" + pose + ".png", feet);
+                foreach (var pose in new HashSet<string>(Poses))
+                {
+                    // ダウンの原画は縮小して書き出しているため、ワールド上で他の姿と体格を揃える。
+                    var pixelsPerUnit = pose == "Down" ? 2 : 4;
+                    Import(ArtRoot + character + pose + ".png", feet, pixelsPerUnit);
+                }
             }
         }
 
@@ -65,13 +53,14 @@ namespace Game.Unity.Editor
             created.Add((path, pivot));
         }
 
-        private static void Import(string path, Vector2 pivot)
+        private static void Import(string path, Vector2 pivot, int pixelsPerUnit = 1)
         {
             var importer = (TextureImporter)AssetImporter.GetAtPath(path);
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Single;
-            importer.spritePixelsPerUnit = PixelsPerUnit;
-            importer.filterMode = FilterMode.Point;
+            importer.spritePixelsPerUnit = pixelsPerUnit;
+            importer.filterMode = pixelsPerUnit == 1 ? FilterMode.Point : FilterMode.Bilinear;
+            importer.npotScale = TextureImporterNPOTScale.None;
             importer.textureCompression = TextureImporterCompression.Uncompressed;
             importer.alphaIsTransparency = true;
             importer.mipmapEnabled = false;
@@ -101,27 +90,21 @@ namespace Game.Unity.Editor
 
         private static void Shot(Canvas canvas) => canvas.Ellipse(8, 8, 7, 7, new Color32(255, 150, 40, 255));
 
-        private static void Fighter(Canvas canvas, int pose, bool ember)
+        private static void Flare(Canvas canvas)
         {
-            var cloth = ember ? new Color32(190, 60, 30, 255) : new Color32(50, 80, 150, 255);
-            var skin = new Color32(230, 180, 140, 255);
-            var ink = new Color32(20, 12, 16, 255);
-            if (pose == 6)
+            for (var y = 0; y < canvas.Height; y++)
             {
-                canvas.Rect(2, 8, 36, 12, cloth);
-                canvas.Rect(28, 14, 10, 10, skin);
-                return;
+                for (var x = 0; x < canvas.Width; x++)
+                {
+                    var dx = (x - 23.5f) / 24f;
+                    var dy = (y - 23.5f) / 24f;
+                    var radius = Mathf.Sqrt(dx * dx + dy * dy);
+                    var angle = Mathf.Atan2(dy, dx);
+                    var ray = Mathf.Pow(Mathf.Abs(Mathf.Cos(3f * angle)), 10f);
+                    var alpha = Mathf.Clamp01(1f - radius / (0.24f + 0.76f * ray));
+                    canvas.Dot(x, y, new Color32(255, 255, 255, (byte)(255f * Mathf.Sqrt(alpha))));
+                }
             }
-
-            var body = pose == 2 || pose == 7 ? 20 : 34;
-            var head = body + 12;
-            canvas.Rect(12, 0, 6, pose == 3 ? 10 : 18, ink);
-            canvas.Rect(22, 0, 6, pose == 1 ? 10 : 18, ink);
-            canvas.Rect(8, 14, 24, body, cloth);
-            canvas.Rect(12, head, 16, 14, skin);
-            if (pose == 4) { canvas.Rect(26, 24, 12, 6, skin); }
-            if (pose == 7) { canvas.Rect(10, 24, 20, 6, skin); }
-            if (pose == 5) { canvas.Rect(8, 30, 8, 6, skin); }
         }
 
         private sealed class Canvas
@@ -160,7 +143,7 @@ namespace Game.Unity.Editor
                 }
             }
 
-            private void Dot(int x, int y, Color32 color)
+            public void Dot(int x, int y, Color32 color)
             {
                 if (x < 0 || y < 0 || x >= Width || y >= Height) { return; }
                 Pixels[(y * Width) + x] = color;

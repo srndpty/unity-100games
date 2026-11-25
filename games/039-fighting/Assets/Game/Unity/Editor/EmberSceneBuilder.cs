@@ -9,7 +9,7 @@ using Object = UnityEngine.Object;
 namespace Game.Unity.Editor
 {
     /// <summary>
-    /// シーンと Stage Prefab を生成する。既存の Stage は上書きせず、Core の開始位置と照合する。
+    /// シーンと Stage Prefab を生成する。既存の Stage は素材参照だけ更新し、Core の開始位置と照合する。
     /// 実行：<c>unity run games/039-fighting -- -executeMethod Game.Unity.Editor.EmberSceneBuilder.Build</c>
     /// </summary>
     public static class EmberSceneBuilder
@@ -101,9 +101,21 @@ namespace Game.Unity.Editor
             var existing = AssetDatabase.LoadAssetAtPath<GameObject>(StagePath);
             if (existing != null)
             {
-                var mismatch = existing.GetComponent<EmberStage>().Mismatch(new DuelConfig());
-                if (mismatch != null) { throw new InvalidOperationException(StagePath + " が一致しません：" + mismatch); }
-                return existing;
+                var contents = PrefabUtility.LoadPrefabContents(StagePath);
+                try
+                {
+                    var stage = contents.GetComponent<EmberStage>();
+                    BindArt(new SerializedObject(stage));
+                    stage.Left.sprite = stage.Portrait(0);
+                    stage.Right.sprite = stage.Portrait(1);
+                    var mismatch = stage.Mismatch(new DuelConfig());
+                    if (mismatch != null) { throw new InvalidOperationException(StagePath + " が一致しません：" + mismatch); }
+                    return PrefabUtility.SaveAsPrefabAsset(contents, StagePath);
+                }
+                finally
+                {
+                    PrefabUtility.UnloadPrefabContents(contents);
+                }
             }
 
             var material = LoadOrCreate(Art + "Unlit.mat", () => new Material(Shader.Find("Sprites/Default")));
@@ -115,8 +127,8 @@ namespace Game.Unity.Editor
                 var ground = Sprite(root.transform, "Ground", "Ground.png", material, -50);
                 backdrop.transform.localPosition = new Vector3(240f, 135f, 0f);
                 ground.transform.localPosition = new Vector3(240f, 0f, 0f);
-                var left = Sprite(root.transform, "Left", "Cinder0.png", material, 10);
-                var right = Sprite(root.transform, "Right", "Kiln0.png", material, 10);
+                var left = Sprite(root.transform, "Left", "JudokaGuard.png", material, 10);
+                var right = Sprite(root.transform, "Right", "VeteranGuard.png", material, 10);
                 var shot0 = Sprite(root.transform, "Shot0", "Shot.png", material, 20);
                 var shot1 = Sprite(root.transform, "Shot1", "Shot.png", material, 20);
                 var boxes = new GameObject("Boxes");
@@ -125,14 +137,6 @@ namespace Game.Unity.Editor
                 var renderer = boxes.AddComponent<MeshRenderer>();
                 renderer.sharedMaterial = material;
                 renderer.sortingOrder = 40;
-                var cinder = new Object[EmberStage.PoseCount];
-                var kiln = new Object[EmberStage.PoseCount];
-                for (var i = 0; i < EmberStage.PoseCount; i++)
-                {
-                    cinder[i] = Load<Sprite>(Art + "Cinder" + i + ".png");
-                    kiln[i] = Load<Sprite>(Art + "Kiln" + i + ".png");
-                }
-
                 var serialized = new SerializedObject(stage);
                 Assign(serialized, "_left", left);
                 Assign(serialized, "_right", right);
@@ -142,9 +146,7 @@ namespace Game.Unity.Editor
                 Assign(serialized, "_backdrop", backdrop);
                 Assign(serialized, "_boxes", filter);
                 Assign(serialized, "_boxRenderer", renderer);
-                AssignArray(serialized, "_cinder", cinder);
-                AssignArray(serialized, "_kiln", kiln);
-                serialized.ApplyModifiedPropertiesWithoutUndo();
+                BindArt(serialized);
                 stage.ShowTitle(new DuelConfig());
                 var mismatch = stage.Mismatch(new DuelConfig());
                 if (mismatch != null) { throw new InvalidOperationException(mismatch); }
@@ -154,6 +156,23 @@ namespace Game.Unity.Editor
             {
                 Object.DestroyImmediate(root);
             }
+        }
+
+        private static void BindArt(SerializedObject stage)
+        {
+            var cinder = new Object[EmberStage.PoseCount];
+            var kiln = new Object[EmberStage.PoseCount];
+            for (var i = 0; i < EmberStage.PoseCount; i++)
+            {
+                var pose = EmberArtGenerator.Poses[i];
+                cinder[i] = Load<Sprite>(Art + "Judoka" + pose + ".png");
+                kiln[i] = Load<Sprite>(Art + "Veteran" + pose + ".png");
+            }
+
+            AssignArray(stage, "_cinder", cinder);
+            AssignArray(stage, "_kiln", kiln);
+            Assign(stage, "_flare", Load<Sprite>(Art + "Flare.png"));
+            stage.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static SpriteRenderer Sprite(Transform parent, string name, string file, Material material, int order)
