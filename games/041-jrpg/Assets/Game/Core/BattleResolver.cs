@@ -806,7 +806,7 @@ namespace Game.Core
                                     actor.SpendMp(spell.MpCost);
                                     events.Add(new BattleEvent(BattleEventKind.MpSpent, BattleSide.Ally, actorIndex, BattleSide.Ally, actorIndex, spell.MpCost, actionId: spell.Id));
                                     var target = party[cmd.TargetIndex];
-                                    var hpAmount = Math.Max(1, (target.MaxHp * spell.Power) / 100);
+                                    var hpAmount = (int)Math.Max(1L, (long)target.MaxHp * spell.Power / 100);
                                     var revivedHp = target.Revive(hpAmount);
                                     events.Add(new BattleEvent(
                                         BattleEventKind.UnitRevived,

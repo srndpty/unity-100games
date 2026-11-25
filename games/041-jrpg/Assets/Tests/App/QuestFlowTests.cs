@@ -170,6 +170,42 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void ReturningToTitleDuringBossIntroDoesNotCarryBossBattleIntoNextAdventure()
+        {
+            var data = DefaultGameData.Create();
+            var flow = new QuestFlow(data, new MemorySaveStore(), initialSeed: 6);
+
+            // ボスの導入会話を開き、一時停止メニューから「タイトルへ戻る」
+            flow.StartNewGameWithSeed(6);
+            flow.World!.Explorer.WarpTo("boss_room", 8, 4, Direction.Up);
+            flow.TapButton(InputButton.Confirm);
+            flow.StepTicks(1);
+            Assert.That(flow.Screen, Is.EqualTo(QuestScreen.Dialogue));
+            flow.TapButton(InputButton.Pause);
+            flow.StepTicks(1);
+            flow.TapButton(InputButton.Down);
+            flow.StepTicks(1);
+            flow.TapButton(InputButton.Confirm);
+            flow.StepTicks(1);
+            Assert.That(flow.Screen, Is.EqualTo(QuestScreen.Title));
+
+            // 新しい冒険で門番と話し、会話を決定で閉じてもボス戦は始まらない
+            Assert.That(flow.TitleOptions[0], Is.EqualTo(TitleOptionKind.NewGame));
+            flow.TapButton(InputButton.Confirm);
+            flow.StepTicks(1);
+            Assert.That(flow.Screen, Is.EqualTo(QuestScreen.Field));
+            flow.World!.Explorer.WarpTo("town", 7, 3, Direction.Up);
+            flow.TapButton(InputButton.Confirm);
+            flow.StepTicks(1);
+            Assert.That(flow.Screen, Is.EqualTo(QuestScreen.Dialogue));
+            Assert.That(flow.DialogueSpeaker, Is.EqualTo("門番"));
+            flow.TapButton(InputButton.Confirm);
+            flow.StepTicks(1);
+            Assert.That(flow.Screen, Is.EqualTo(QuestScreen.Field));
+            Assert.That(flow.ActiveBattle, Is.Null);
+        }
+
+        [Test]
         public void SaveStoreIoFailuresAreReportedOnScreenInsteadOfThrowing()
         {
             var data = DefaultGameData.Create();

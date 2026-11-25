@@ -206,9 +206,7 @@ namespace Game.App
         public void StartNewGameWithSeed(int seed)
         {
             ClearAllInputs();
-            IsPaused = false;
-            ActiveBattle = null;
-            ActiveShop = null;
+            ResetAdventureState();
             World = World.CreateNew(Data, seed);
             UnscaledPlaySeconds = 0.0;
             FieldBanner = "北の階段から『焔鎖の坑道』へ向かおう。";
@@ -319,10 +317,7 @@ namespace Game.App
         public void RefreshTitleState()
         {
             ClearAllInputs();
-            IsPaused = false;
-            World = null;
-            ActiveBattle = null;
-            ActiveShop = null;
+            ResetAdventureState();
             Screen = QuestScreen.Title;
 
             HasValidSave = false;
@@ -980,6 +975,7 @@ namespace Game.App
 
                         AudioCues.Confirm++;
                         ClearAllInputs();
+                        ResetAdventureState();
                         World = restored!;
                         UnscaledPlaySeconds = World.PlayTicks / (double)Data.Rules.TickRate;
                         FieldBanner = $"{World.CurrentMap.Name} から冒険を再開した。";
@@ -1882,6 +1878,20 @@ namespace Game.App
             Screen != QuestScreen.HowTo &&
             Screen != QuestScreen.Ending &&
             Screen != QuestScreen.Result;
+
+        /// <summary>前の冒険から持ち越してはいけない状態（保留中のボス戦・会話・施設の途中など）を消す。</summary>
+        private void ResetAdventureState()
+        {
+            IsPaused = false;
+            World = null;
+            ActiveBattle = null;
+            ActiveShop = null;
+            _pendingBossGroupId = string.Empty;
+            _campTargetRequiresDead = false;
+            _stagingActionId = string.Empty;
+            DialogueSpeaker = string.Empty;
+            DialogueMessage = string.Empty;
+        }
 
         private void ClearAllInputs()
         {

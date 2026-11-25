@@ -6,6 +6,36 @@ namespace Game.Core.Tests
     public sealed class PartyAndEquipTests
     {
         [Test]
+        public void HealAndMpRestoreSaturateAtMaxForHugeValidatedPower()
+        {
+            // 回復量は 1 以上なら検証を通るので、int.MaxValue の道具も有効なデータになる
+            var raw = DefaultGameData.CreateRaw();
+            var herbIndex = Array.FindIndex(raw.Items, i => i.Id == "herb");
+            var etherIndex = Array.FindIndex(raw.Items, i => i.Id == "ether_dew");
+            raw.Items[herbIndex].Power = int.MaxValue;
+            raw.Items[etherIndex].Power = int.MaxValue;
+            var data = GameData.Validate(raw);
+            var party = new Party(data);
+            var member = party[1];
+            member.TakeDamage(member.MaxHp - 1);
+            member.SpendMp(member.Mp - 1);
+
+            Assert.That(member.HealHp(data.GetItem("herb").Power), Is.EqualTo(member.MaxHp - 1));
+            Assert.That(member.Hp, Is.EqualTo(member.MaxHp));
+            Assert.That(member.RestoreMp(data.GetItem("ether_dew").Power), Is.EqualTo(member.MaxMp - 1));
+            Assert.That(member.Mp, Is.EqualTo(member.MaxMp));
+
+            // 満タンでも負にならず、回復量 0
+            Assert.That(member.HealHp(int.MaxValue), Is.EqualTo(0));
+            Assert.That(member.Hp, Is.EqualTo(member.MaxHp));
+
+            var enemy = new BattleState(data, data.GetGroup("f1_slimes")).Enemies[0];
+            enemy.SetVitals(1, enemy.Mp);
+            Assert.That(enemy.HealHp(int.MaxValue), Is.EqualTo(enemy.Info.MaxHp - 1));
+            Assert.That(enemy.Hp, Is.EqualTo(enemy.Info.MaxHp));
+        }
+
+        [Test]
         public void LevelUpBoundariesMultiLevelJumpAndDeadMemberZeroExp()
         {
             var data = DefaultGameData.Create();

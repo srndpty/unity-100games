@@ -129,7 +129,7 @@ namespace Game.Core
             }
 
             var before = Hp;
-            Hp = Math.Min(MaxHp, Hp + amount);
+            Hp = (int)Math.Min(MaxHp, (long)Hp + amount);
             return Hp - before;
         }
 
@@ -141,7 +141,7 @@ namespace Game.Core
             }
 
             var before = Mp;
-            Mp = Math.Min(MaxMp, Mp + amount);
+            Mp = (int)Math.Min(MaxMp, (long)Mp + amount);
             return Mp - before;
         }
 

@@ -8,8 +8,8 @@
 |---|---|
 | dev lint | 成功 |
 | dev check | 成功（警告 0） |
-| dev test | 成功。Core 21/21、App 6/6 |
-| Unity EditMode | 89/89（IntGeometry 52、TileMotion 10、Core 21、App 6。Mono） |
+| dev test | 成功。Core 22/22、App 7/7 |
+| Unity EditMode | 91/91（IntGeometry 52、TileMotion 10、Core 22、App 7。Mono） |
 | Unity PlayMode | 24/24（実シーン E2E 8、共通の証跡公開 16） |
 | Windows ビルド | 成功、StandaloneWindows64 |
 | ビルド起動 | dev capture で起動・全 15 場面撮影・正常終了 |

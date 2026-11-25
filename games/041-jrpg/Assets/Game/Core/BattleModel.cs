@@ -159,7 +159,7 @@ namespace Game.Core
             }
 
             var before = Hp;
-            Hp = Math.Min(Info.MaxHp, Hp + amount);
+            Hp = (int)Math.Min(Info.MaxHp, (long)Hp + amount);
             return Hp - before;
         }
 

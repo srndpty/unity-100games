@@ -73,7 +73,7 @@ namespace Game.Core
 
                     caster.SpendMp(spell.MpCost);
                     var target = world.Party[targetIndex];
-                    var hpAmount = Math.Max(1, (target.MaxHp * spell.Power) / 100);
+                    var hpAmount = (int)Math.Max(1L, (long)target.MaxHp * spell.Power / 100);
                     target.Revive(hpAmount);
                     message = $"{caster.Name}は {spell.Name} を唱えた！ {target.Name}が息を吹き返した！";
                     error = CommandError.None;
