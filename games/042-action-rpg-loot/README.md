@@ -2,7 +2,7 @@
 
 仕様書：[plan/games/042-action-rpg-loot.md](../../plan/games/042-action-rpg-loot.md)　実装計画：[plan/games/042-action-rpg-loot-implementation.md](../../plan/games/042-action-rpg-loot-implementation.md)
 
-状態：進行中（セッション2：戦闘・探索と App）。
+状態：検証待ち。[検証記録](evidence/README.md)。
 
 灰に沈んだ聖堂の地下 3 階を降り、最奥の番人を倒すハクスラ ARPG。敵が落とす装備には、シードで決まる Affix（能力修飾）が付く。
 
@@ -86,6 +86,10 @@ dev capture 042  # 証跡を evidence/ に撮る（画像は captures/<画像世
 - 試合は `DelveRun`（`Step`・`Clone`・`Hash`）。地図は `FloorSet`／`FloorMap`（`ISolidGrid`）、設定は `DelveConfig`（検証・複製・指紋）。状態のハッシュには設定・戦利品・地図の指紋を混ぜる。
 - **App（`Assets/Game/App`）**：`DelveFlow`（画面遷移、時刻付きの入力を Tick に割り当て、1 フレーム 5 Tick まで）、`HeldControls`（押したままと押下の印を分ける）、`Autopilot`（タイルの幅優先探索で動き、良い装備を拾って付け替え、階を一掃してから階段・番人へ）、`HumanlikePilot`（攻撃・照準・薬を 10 Tick 遅れて決める）。
 
+- **Unity（`Assets/Game/Unity`）**：`AshenStage`（Stage Prefab）は 3 階の `AshenFloorView`（床と壁の Tilemap・階段・入口・配置番号の順の敵の SpriteRenderer）と、自機・照準・攻撃の弧・薙ぎ払いの輪・突進の筋・飛び道具と地面の品の見本を持つ。敵は配置の SpriteRenderer をそのまま動かすので、プレイ前から Scene ビューで見える。`Mismatch` が Prefab の全タイル・階段・入口・敵の種類と位置を地図と照合する。`AshenGame` は入力（キー・マウスのボタンは時刻付きの意図、マウスの位置は照準点）・追従カメラ・音、`AshenHud` は HUD・名前札・持ち物の画面（UI Toolkit の `PanelRenderer`）。名前札・持ち物の操作も意図にして入力と同じ列で処理する。
+- **生成**：`unity run games/042-action-rpg-loot -- -executeMethod Game.Unity.Editor.AshenSceneBuilder.Build` でドット絵・設定アセット・Stage Prefab・シーンを作る（既存の Prefab と設定アセットは上書きせず、地図との一致だけ確かめる）。
+- **物理エンジン**：使わない。移動・衝突は Core の整数（tile-motion・int-geometry）。
+
 ## テスト
 
 `dev test 042` で Core と App を検証する。Unity 上は `dev test 042 -Unity`（EditMode）と `dev test 042 -Unity -Mode PlayMode`（PlayMode）。
@@ -101,10 +105,21 @@ dev capture 042  # 証跡を evidence/ に撮る（画像は captures/<画像世
 | 戦闘（`CombatTests`） | 防御・耐性（上限 75%）・最低 1、無敵の境界 Tick、攻撃速度から間隔、吸収は最大 HP まで、斜めの最低 1 単位、壁で止まる |
 | 試合（`RunTests`・`ItemOpsTests`・`SetupTests`） | 復活（入口・全快・持ち物と倒した敵は残る・生きている敵は戻る）、階段で次の階、番人で勝利と終了後の操作の無視、番人は倒れたら全快、同じシードと操作で同じハッシュ・複製も一致、規則・待ちの状態でハッシュが変わる、拾う範囲・満杯・クリックの距離（ちょうどは拾う）、薬（触れる・上限・待ち・満タン）、装備の入れ替えと HP の上限、捨てる（地面の上限）、公開リストは読み取り専用、地図と設定の負例 |
 | 画面遷移（`FlowTests`） | タイトル → 操作説明 → プレイ → 結果 → タイトル、結果の後の操作を無視、再戦は新しいシード、時刻から Tick（1 フレーム 5 Tick まで）、持ち物・一時停止の間は止まる、持ち物の操作は持ち物の画面だけ、短いクリックでも 1 回振る・押したままで続ける・薙ぎ払いは押下 1 回、フォーカス喪失、不正な意図の拒否 |
+| 実シーン（`AshenSceneTests`、PlayMode） | Stage Prefab が地図と一致しタイトルを表示、操作説明 → プレイで HUD、WASD で動き離すと止まる、左クリックでマウスの向きへ振って敵に当たり色が Core の状態から決まる、右クリックの薙ぎ払いの輪の大きさが当たりの範囲、E で拾い I で持ち物を開いて選ぶと説明・比較が Core の文と一致し装備で能力値の欄と HUD が変わる（開いている間は進まない）、名前札が希少度の色で出てクリックで拾い攻撃しない、倒れた姿と入口での復活、番人の体力のバーと弾の描画・激昂の表示、操縦役で結果まで進めてタイトルへ戻ると起動直後の表示と一致（021）、フォーカス喪失、フォーカスを戻すクリックで終了しない、設定アセットがコードの既定値と同じで操縦役の固定ハッシュと一致、性能、設定の負例 |
 | 操縦役（`AutopilotTests`） | 20 シード全部が番人を倒す（ドロップの判定 = 撃破数）、反応の遅い操縦役も 10 シード全勝（倒れることはある）、シード 1 の最終ハッシュ `0xA6B0053C` が .NET と Mono で一致、途中でやめた試合の後に使い回しても同じ結果、入力なしは進まない |
+
+## 試遊で見てほしい点
+
+`dev run 042` で遊ぶ。調整用の値は `Assets/Game/Unity/AshenSettings.asset`（`DelveConfig`・音量・画面の高さ）と `Assets/Game/Data/Loot.txt`（装備・Affix・ドロップ率）にある。
+
+- 照準と攻撃の感触（攻撃の間隔 30 Tick・構え 6 Tick・当たりの円、振っている間は止まる）、薙ぎ払いの待ち（4 秒）
+- 拾う・持ち物の操作（E・名前札のクリック・I の画面で選んで装備／外す／捨てる）
+- ドロップの量と強さの伸び（灰鬼 45%・骨弓 50%・角獣 70%、希少度の重み、階ごとの Affix の段）
+- 敵と番人の強さ（階の倍率 体力 100/160/230%・威力 100/135/170%、番人の体力 440、倒れると番人は全快）
+- 回復薬の量（始め 2・最大 5、40% 回復）、音量
 
 ## 未実装範囲
 
-仕様書の Out of scope のとおり、オンライン協力・無制限アイテム生成は実装しない。
+仕様書の Out of scope のとおり、オンライン協力・無制限アイテム生成は実装しない。セーブ・宝箱・店・敵の再出現・上の階へ戻る階段は作らない（品は敵のドロップだけで、総数は有限）。
 
 証跡画像はJPEG（`.jpg`）、品質85を標準とし、保存したJPEGのSHA-256をマニフェストに記録する。

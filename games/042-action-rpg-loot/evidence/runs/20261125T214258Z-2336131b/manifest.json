@@ -1,0 +1,95 @@
+{
+    "Product": "ASHEN RELIQUARY",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "ce702f9ad531462e854edd90fadadb35",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-25T21:42:55.3711487Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"HeroSpeed\":24,\"HeroRadius\":96,\"HeroBox\":192,\"AttackInterval\":30,\"AttackWindup\":6,\"AttackReach\":224,\"AttackRadius\":192,\"SkillCooldown\":240,\"SkillWindup\":10,\"SkillRadius\":480,\"SkillPercent\":150,\"InvulnTicks\":30,\"DeathTicks\":90,\"PotionHealPercent\":40,\"PotionCooldown\":60,\"MaxPotions\":5,\"StartPotions\":2,\"PickupRange\":384,\"ClickPickupRange\":768,\"PotionTouchRange\":160,\"InventorySize\":20,\"GroundCap\":48,\"ProjectileCap\":64,\"StartWeapon\":\"shortsword\",\"FloorLifePercent\":[100,160,230],\"FloorDamagePercent\":[100,135,170],\"Foes\":[{\"Life\":40,\"Damage\":10,\"Element\":0,\"Speed\":12,\"Radius\":96,\"Aggro\":1536,\"Range\":64,\"Keep\":0,\"Windup\":24,\"Cooldown\":45,\"ProjectileSpeed\":0,\"ProjectileRadius\":0,\"ChargeSpeed\":0,\"ChargeTicks\":0},{\"Life\":28,\"Damage\":9,\"Element\":2,\"Speed\":10,\"Radius\":80,\"Aggro\":1792,\"Range\":1280,\"Keep\":768,\"Windup\":20,\"Cooldown\":80,\"ProjectileSpeed\":40,\"ProjectileRadius\":48,\"ChargeSpeed\":0,\"ChargeTicks\":0},{\"Life\":60,\"Damage\":16,\"Element\":0,\"Speed\":10,\"Radius\":112,\"Aggro\":1792,\"Range\":1280,\"Keep\":0,\"Windup\":36,\"Cooldown\":70,\"ProjectileSpeed\":0,\"ProjectileRadius\":0,\"ChargeSpeed\":56,\"ChargeTicks\":28},{\"Life\":440,\"Damage\":12,\"Element\":0,\"Speed\":12,\"Radius\":192,\"Aggro\":2304,\"Range\":96,\"Keep\":0,\"Windup\":30,\"Cooldown\":70,\"ProjectileSpeed\":36,\"ProjectileRadius\":64,\"ChargeSpeed\":60,\"ChargeTicks\":30}],\"BossFanCount\":5,\"BossFanSpread\":2730,\"BossFanInterval\":160,\"BossFanIntervalEnraged\":110,\"BossFanDamage\":8,\"BossChargeInterval\":240,\"VictoryDelay\":120},\"Loot\":{\"instanceID\":1099511631808},\"Floors\":{\"instanceID\":1099511631809},\"Volume\":0.10000000149011612,\"ViewHeightTiles\":13.5}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "989d88f3d1e88bc80928e9641bbaeb665922f2a0e98592b41297a74c5fbe6a77",
+            "Note": "タイトル"
+        },
+        {
+            "File": "02-howto.jpg",
+            "Sha256": "5cc007bdfca97ce1f836c1d831b054f3843f71cbab282935327532cbe1482120",
+            "Note": "操作説明（操作・希少度の色・倒れたときの規則）"
+        },
+        {
+            "File": "03-fight.jpg",
+            "Sha256": "5815df36cc6de1e2f26489f46023a489bc449553b931320fe2153c2898016e4c",
+            "Note": "自動操縦が灰鬼へ基本攻撃を振る（白い弧が当たりの円）。1 階、Tick 113、HP 100/100、撃破 0、持ち物 0"
+        },
+        {
+            "File": "04-drop.jpg",
+            "Sha256": "3babb46867126555a8809e0f6496005be0048053f756a5231412b8c3d17b0e0c",
+            "Note": "倒した敵が装備を落とした。地面の品の上に名前札（色は希少度）。1 階、Tick 447、HP 70/100、撃破 2、持ち物 0"
+        },
+        {
+            "File": "05-inventory.jpg",
+            "Sha256": "c6726868e652ecc3c9d235436588d28451d66b76dd4b70eee9aaa9bb7c98a17d",
+            "Note": "持ち物の画面。選んだ品の効果（基礎と Affix の行）と、装備したときの能力値の変化。1 階、Tick 985、HP 87/110、撃破 4、持ち物 1"
+        },
+        {
+            "File": "06-equipped.jpg",
+            "Sha256": "54c64fc222a5484b9d978dd454e302e8f04b175c7e1218b6937d205fa315dcc7",
+            "Note": "装備中の武器を選んだところ。左の欄は今の能力値（装備一式から計算し直した値）。1 階、Tick 985、HP 87/110、撃破 4、持ち物 1"
+        },
+        {
+            "File": "07-floor2.jpg",
+            "Sha256": "d3301bcc583c9427133bc2ef2bc019dee901b6ac18063a479f77cce8098d2a48",
+            "Note": "階段を降りて地下 2 階（沈んだ書庫）。2 階、Tick 2759、HP 111/134、撃破 12、持ち物 2"
+        },
+        {
+            "File": "08-charger.jpg",
+            "Sha256": "e98eaef6edaf5bf19292b8566a45436788851ac2a38334d7310de2b330532dc0",
+            "Note": "角獣が突進の構え（黄色）。橙の帯が突進の通り道。2 階、Tick 4216、HP 77/134、撃破 16、持ち物 2"
+        },
+        {
+            "File": "09-floor3.jpg",
+            "Sha256": "fd259f6380b278d4c4b27235bb683c6217c995490a377908a2fc5109277abbe4",
+            "Note": "地下 3 階（番人の聖所）。3 階、Tick 9243、HP 44/119、撃破 28、持ち物 4"
+        },
+        {
+            "File": "10-boss.jpg",
+            "Sha256": "3e5d5e6194e7d2f7ae63fb45ac909e073bcb8c224287c86197c149bed7d35191",
+            "Note": "灰の番人との戦い。HP が半分を切ると激昂し、火の扇と突進が増える。3 階、Tick 12340、HP 61/119、撃破 35、持ち物 4"
+        },
+        {
+            "File": "11-boss-drop.jpg",
+            "Sha256": "a23c13e66ac4e59e7a1006a8706dd9e219c371965516bd10a71729716dedd355",
+            "Note": "番人を倒した。希少（金）の装備を 2 つ落とす。3 階、Tick 12573、HP 36/119、撃破 36、持ち物 4"
+        },
+        {
+            "File": "12-result.jpg",
+            "Sha256": "40ed496da03cf16dfef1049227724ee06d3f0d4bb118232c63db553e481c1995",
+            "Note": "結果（かかった時間・撃破・倒れた回数・拾った装備・最も希少な品）。3 階、Tick 12683、HP 36/150、撃破 36、持ち物 6"
+        },
+        {
+            "File": "13-down.jpg",
+            "Sha256": "d06889fdb84112f260c8e18f39550797a142cd30143609eb720508c5a9831e37",
+            "Note": "攻撃せずに敵へ向かい続けて HP 0。倒れて入口での復活を待つ。1 階、Tick 801、HP 0/100、撃破 0、持ち物 0"
+        },
+        {
+            "File": "14-respawn.jpg",
+            "Sha256": "d777a523003e20563ebb93bd9a6e2f1c652e4e29b09f977c1b92a385a2b6d852",
+            "Note": "その階の入口で HP 全快で復活。生きている敵は元の位置へ戻った。1 階、Tick 873、HP 100/100、撃破 0、持ち物 0"
+        },
+        {
+            "File": "15-pause.jpg",
+            "Sha256": "ebe45a3ce3cc469eae8bac738d961f3717b1626c7a19a313a08a4cfea4b7ec2a",
+            "Note": "一時停止。1 階、Tick 873、HP 100/100、撃破 0、持ち物 0"
+        }
+    ]
+}
