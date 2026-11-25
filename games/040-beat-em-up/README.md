@@ -2,7 +2,7 @@
 
 仕様書：[plan/games/040-beat-em-up.md](../../plan/games/040-beat-em-up.md)　実装計画：[plan/games/040-beat-em-up-implementation.md](../../plan/games/040-beat-em-up-implementation.md)
 
-状態：進行中。
+状態：検証待ち（人間の試遊を待つ）。[検証記録](evidence/README.md)。
 
 ## 環境
 
@@ -90,7 +90,7 @@ dev capture 040  # 証跡を evidence/ に撮る（画像は captures/<画像世
 
 ## テスト
 
-`dev test 040` で Core と App を検証する。
+`dev test 040` で Core と App を検証する。Unity 上は `dev test 040 -Unity` と `dev test 040 -Unity -Mode PlayMode`。
 
 | 対象 | 主な内容 |
 | --- | --- |
@@ -98,9 +98,22 @@ dev capture 040  # 証跡を evidence/ に撮る（画像は captures/<画像世
 | 技表（`MoveTableTests`） | README の表との一致、全打撃の発生・持続・硬直のログ照合、壊れた技表の拒否 |
 | 戦闘（`CombatTests`） | コンボの受付窓の境界、先行入力、多重ヒット防止、ヒットストップ、怯み、相打ち、掴み・膝・投げ、緊急技、残機、台本の固定ハッシュ |
 | 敵（`EnemyTests`） | 攻撃権の上限と偏りの無さ、返す条件、倒れた敵が再攻撃しない、同時出現の上限、区画とボス、壊れた面の拒否、32 体の乱戦の不変条件 |
+| 実シーン（`SootSceneTests`、PlayMode） | キー入力でコンボ・ジャンプ攻撃・緊急技・掴み（Core を直接呼ばない）、描画の位置と重なり順が Core の描画順と一致（奥へ回り込むと入れ替わる、跳んでも変わらない）、判定箱と奥行きの帯、タイトルへ戻ると起動直後の絵に戻る、Prefab と Core のデータの照合、操縦役で面クリアと HUD、敗北の画面、8 体の乱戦の性能と割り当て |
 | 流れ（`FlowTests`） | 画面の遷移と再戦のシード、一時停止、フォーカス喪失、フレームレートに依らない状態、操縦役が 20 シードでクリア、人寄りの操縦役、固定ハッシュ |
 
 操縦役（毎 Tick 判断）は 20 シード全部で面をクリアする。判断を 6 Tick ごとにし緊急技を使わない人寄りの操縦役も 10 シード全部でクリアし、多くの回で残機を 1 つ失う。
+
+性能（敵の置き場 8 体を全て使った乱戦、Unity エディタのバッチ実行・Mono）：Core の Step p95 0.065 ms、描画の更新 p95 0.026 ms、判定箱ありの描画のフレームの割り当て 0。
+
+## 試遊で見てほしい点
+
+`dev run 040` で遊ぶ。値は `Assets/Game/Unity/SootSettings.asset`（`Rules`）と `Assets/Game/Data/Moves.txt`・`Stage.txt` にある。
+
+- コンボの繋がりやすさ（受付窓 8 Tick、先行入力 `BufferTicks` 8 Tick）
+- 掴みの成立しやすさ（奥行きの差 `GrabDepth` 6 px、横の余裕 `GrabReach` 2 px）と、攻撃の奥行きの許容幅（ジャブの奥行きの半幅 8 px ＋ 体の半幅 6 px）
+- 囲まれ方（同時に攻める敵 `MaxAttackers` 2、画面の敵 `MaxActiveEnemies` 4、攻撃後に待つ `TokenCooldown` 45 Tick）
+- 敵とボスの強さ、緊急技の代償（体力 80）、残機 3、面の長さ（操縦役で約 95 秒）
+- 音量（`Volume` 0.15）
 
 ## 未実装範囲
 

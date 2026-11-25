@@ -255,6 +255,29 @@ namespace Game.Unity.Tests
         }
 
         [UnityTest]
+        public IEnumerator GameOverKeepsTheFallenPlayerOnScreen()
+        {
+            yield return StartMatch();
+            var seenDeath = false;
+            for (var i = 0; i < 60000 && _game.Flow.Screen == BrawlScreen.Playing; i++)
+            {
+                _game.Flow.StepTick();
+                if (Brawl.Player.State == ActorState.Dead && !seenDeath)
+                {
+                    seenDeath = true;
+                    _game.Render();
+                    Assert.That(_game.Stage.Body(0).enabled, Is.True, "倒れた直後は見えている");
+                }
+            }
+
+            _game.Render();
+            Assert.That(Brawl.Outcome, Is.EqualTo(Outcome.Lost), "入力なしは負ける");
+            Assert.That(_game.Stage.Body(0).enabled, Is.True, "敗北の画面にも倒れたプレイヤーを描く");
+            Assert.That(_game.Stage.Body(0).sprite, Is.Not.Null);
+            Assert.That(_game.HudRoot.Q<Label>("banner").text, Is.EqualTo("GAME OVER"));
+        }
+
+        [UnityTest]
         public IEnumerator CrowdedStepAndDrawStayCheap()
         {
             yield return StartMatch();

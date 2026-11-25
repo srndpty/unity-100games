@@ -145,7 +145,7 @@ namespace Game.Unity
                 var a = brawl.At(slot);
                 var alpha = 1f;
                 if (slot == 0 && a.Invuln > 0 && a.State != ActorState.Attack && ((brawl.Tick >> 2) & 1) == 0) { alpha = 0.45f; }
-                if (a.State == ActorState.Dead && a.Timer < 30 && ((a.Timer >> 2) & 1) == 0) { alpha = 0f; }
+                if (a.State == ActorState.Dead && a.Timer > 0 && a.Timer < 30 && ((a.Timer >> 2) & 1) == 0) { alpha = 0f; }
                 PlaceBody(slot, a.Kind, PoseOf(a), a.X, a.Y, a.Z, a.Facing, alpha, config);
                 _bodies[slot].sortingOrder = BodyOrder + rank;
                 PlaceFlare(slot, a, config);
