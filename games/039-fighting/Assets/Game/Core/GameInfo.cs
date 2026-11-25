@@ -1,0 +1,10 @@
+namespace Game.Core
+{
+    /// <summary>作品の識別情報。</summary>
+    public static class GameInfo
+    {
+        public const string Id = "039-fighting";
+
+        public const string Title = "EMBER DUEL";
+    }
+}
