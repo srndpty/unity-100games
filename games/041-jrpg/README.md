@@ -2,7 +2,7 @@
 
 仕様書：[plan/games/041-jrpg.md](../../plan/games/041-jrpg.md)　実装計画：[plan/games/041-jrpg-implementation.md](../../plan/games/041-jrpg-implementation.md)
 
-状態：検証待ち。[検証記録](evidence/README.md)。
+状態：完了（2026-11-26 人間の動作承認）。[振り返り](retrospective.md)。[検証記録](evidence/README.md)。
 
 ## 環境
 
