@@ -227,6 +227,12 @@
     <Project Path="games/038-flight/dotnet/Core.Tests/G038.Core.Tests.csproj" />
     <Project Path="games/038-flight/dotnet/Core/G038.Core.csproj" />
   </Folder>
+  <Folder Name="/039-fighting/">
+    <Project Path="games/039-fighting/dotnet/App.Tests/G039.App.Tests.csproj" />
+    <Project Path="games/039-fighting/dotnet/App/G039.App.csproj" />
+    <Project Path="games/039-fighting/dotnet/Core.Tests/G039.Core.Tests.csproj" />
+    <Project Path="games/039-fighting/dotnet/Core/G039.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />
