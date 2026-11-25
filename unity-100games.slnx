@@ -245,6 +245,12 @@
     <Project Path="games/041-jrpg/dotnet/Core.Tests/G041.Core.Tests.csproj" />
     <Project Path="games/041-jrpg/dotnet/Core/G041.Core.csproj" />
   </Folder>
+  <Folder Name="/042-action-rpg-loot/">
+    <Project Path="games/042-action-rpg-loot/dotnet/App.Tests/G042.App.Tests.csproj" />
+    <Project Path="games/042-action-rpg-loot/dotnet/App/G042.App.csproj" />
+    <Project Path="games/042-action-rpg-loot/dotnet/Core.Tests/G042.Core.Tests.csproj" />
+    <Project Path="games/042-action-rpg-loot/dotnet/Core/G042.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />
