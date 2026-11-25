@@ -286,7 +286,7 @@ namespace Game.Unity.Tests
         [UnityTest]
         public IEnumerator CorruptedSaveFileShowsWarningAndHidesContinueOnTitle()
         {
-            _saveStore.Write("version=1\nmap=town\ntruncated_without_checksum");
+            Assert.That(_saveStore.TryWrite("version=1\nmap=town\ntruncated_without_checksum", out _), Is.True);
 
             yield return SceneManager.LoadSceneAsync(SceneName);
             yield return null;

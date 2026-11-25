@@ -287,7 +287,11 @@ namespace Game.Unity
             await capture.ShootAsync("14_result", $"Result screen (tick={game.Flow.World!.PlayTicks}, hash=0x{game.Flow.World.Hash():X8})");
 
             // 15. 破損セーブ検知タイトル画面
-            isolatedStore.Write("version=1\ncorrupted_capture_test_without_checksum");
+            if (!isolatedStore.TryWrite("version=1\ncorrupted_capture_test_without_checksum", out var writeError))
+            {
+                throw new InvalidOperationException($"破損セーブを書き込めませんでした：{writeError}");
+            }
+
             game.Flow.RefreshTitleState();
             game.Render();
             await capture.ShootAsync("15_title_corrupt_save", "Title screen with corrupt save warning & Continue hidden");

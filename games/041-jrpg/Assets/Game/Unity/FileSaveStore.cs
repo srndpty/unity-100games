@@ -10,7 +10,7 @@ using UnityEngine;
 namespace Game.Unity
 {
     /// <summary>
-    /// 一時ファイル書き込み＋原子的置換を行うファイルセーブストア。
+    /// 一時ファイル書き込み＋原子的置換を行うファイルセーブストア。I/O の失敗は結果として返す。
     /// バッチ実行や証跡撮影では通常プレイの persistentDataPath を汚さないよう独立した一時領域を使う。
     /// </summary>
     public sealed class FileSaveStore : ISaveStore
@@ -45,34 +45,55 @@ namespace Game.Unity
             return new FileSaveStore(Path.Combine(Application.persistentDataPath, "save_slot1.txt"));
         }
 
-        public string? Read()
+        public SaveReadStatus TryRead(out string content, out string failure)
         {
-            if (!File.Exists(_filePath))
+            content = string.Empty;
+            failure = string.Empty;
+            try
             {
-                return null;
-            }
+                if (!File.Exists(_filePath))
+                {
+                    return SaveReadStatus.Missing;
+                }
 
-            return File.ReadAllText(_filePath, Utf8NoBom);
+                content = File.ReadAllText(_filePath, Utf8NoBom);
+                return SaveReadStatus.Loaded;
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                failure = ex.Message;
+                return SaveReadStatus.Failed;
+            }
         }
 
-        public void Write(string content)
+        public bool TryWrite(string content, out string failure)
         {
-            var dir = Path.GetDirectoryName(_filePath);
-            if (!string.IsNullOrEmpty(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
-
             var tempPath = _filePath + ".tmp";
-            File.WriteAllText(tempPath, content ?? string.Empty, Utf8NoBom);
+            try
+            {
+                var dir = Path.GetDirectoryName(_filePath);
+                if (!string.IsNullOrEmpty(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
 
-            if (File.Exists(_filePath))
-            {
-                File.Replace(tempPath, _filePath, destinationBackupFileName: null);
+                File.WriteAllText(tempPath, content ?? string.Empty, Utf8NoBom);
+                if (File.Exists(_filePath))
+                {
+                    File.Replace(tempPath, _filePath, destinationBackupFileName: null);
+                }
+                else
+                {
+                    File.Move(tempPath, _filePath);
+                }
+
+                failure = string.Empty;
+                return true;
             }
-            else
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
             {
-                File.Move(tempPath, _filePath);
+                failure = ex.Message;
+                return false;
             }
         }
 

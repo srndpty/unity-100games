@@ -69,7 +69,7 @@ namespace Game.App.Tests
             }
 
             Assert.That(canonicalFlow.Screen, Is.EqualTo(QuestScreen.Result));
-            Assert.That(canonicalFlow.World!.Hash(), Is.EqualTo(0x5CA021E4u));
+            Assert.That(canonicalFlow.World!.Hash(), Is.EqualTo(0x87AC4C76u));
         }
 
         [Test]
@@ -170,11 +170,48 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void SaveStoreIoFailuresAreReportedOnScreenInsteadOfThrowing()
+        {
+            var data = DefaultGameData.Create();
+
+            // 読み込みに失敗したら、タイトルの構築は続けて「つづきから」を出さず、理由を知らせる
+            var unreadable = new MemorySaveStore { ReadFailure = "access denied" };
+            var titleFlow = new QuestFlow(data, unreadable);
+            Assert.That(titleFlow.Screen, Is.EqualTo(QuestScreen.Title));
+            Assert.That(titleFlow.HasValidSave, Is.False);
+            Assert.That(titleFlow.TitleOptions, Has.No.Member(TitleOptionKind.Continue));
+            Assert.That(titleFlow.CorruptSaveNotice.Contains("access denied", StringComparison.Ordinal), Is.True);
+
+            // 教会での書き込みに失敗したら、セーブ完了とせず理由を表示する。直れば同じ操作で保存できる
+            var store = new MemorySaveStore { WriteFailure = "disk full" };
+            var flow = new QuestFlow(data, store, initialSeed: 4);
+            flow.StartNewGameWithSeed(4);
+            flow.World!.Explorer.WarpTo("town", 14, 5, Direction.Up);
+            flow.TapButton(InputButton.Confirm);
+            flow.StepTicks(1);
+            Assert.That(flow.Screen, Is.EqualTo(QuestScreen.Church));
+
+            var rejectBefore = flow.AudioCues.Reject;
+            flow.TapButton(InputButton.Confirm);
+            flow.StepTicks(1);
+            Assert.That(flow.MenuFeedback.Contains("disk full", StringComparison.Ordinal), Is.True);
+            Assert.That(flow.AudioCues.Reject, Is.EqualTo(rejectBefore + 1));
+            Assert.That(flow.AudioCues.Save, Is.EqualTo(0));
+            Assert.That(store.Content, Is.Null);
+
+            store.WriteFailure = null;
+            flow.TapButton(InputButton.Confirm);
+            flow.StepTicks(1);
+            Assert.That(flow.AudioCues.Save, Is.EqualTo(1));
+            Assert.That(store.Content, Is.Not.Null);
+        }
+
+        [Test]
         public void FocusLossClearsPendingInputsPausesRegardlessOfEventOrderAndCorruptSaveDisablesContinue()
         {
             var data = DefaultGameData.Create();
             var store = new MemorySaveStore();
-            store.Write("version=1\nbroken_save_without_checksum");
+            Assert.That(store.TryWrite("version=1\nbroken_save_without_checksum", out _), Is.True);
 
             // 破損セーブ時はエラー通知を出し、「つづきから」を選べないようにする
             var flow = new QuestFlow(data, store);

@@ -2,9 +2,9 @@
     "Product": "EMBERLOCK HOLLOW",
     "Version": "1.0",
     "UnityVersion": "6000.6.9f1",
-    "BuildGuid": "eee1dac3e0904249ba91c3afbf2ba60b",
+    "BuildGuid": "b7c30a0ec8af4102b734d3b61b9c168e",
     "Seed": 1,
-    "CapturedAtUtc": "2026-11-25T19:42:41.7743008Z",
+    "CapturedAtUtc": "2026-11-25T20:20:41.4273887Z",
     "Info": [
         {
             "Key": "imageEncoding",
@@ -70,33 +70,33 @@
         },
         {
             "File": "09_level_up.jpg",
-            "Sha256": "6b63f4a7c97d1263b0a37917fd775c807e879a201aff9f93c2058639c684df08",
+            "Sha256": "8065427842a538dfa35c86ecdc59473088599611b93a789c3f6221c1a8e64c52",
             "Note": "Party level-up announcement (tick=359)"
         },
         {
             "File": "10_battle_mp_shortage.jpg",
-            "Sha256": "36040e7436c341b46fc876ffdacca1de9e2664ec72450726f2f91e2f084e8e08",
+            "Sha256": "14b88fa4039c32ec7c0b42718797b43a232f8741e442f0100ebcb0db5f3eec94",
             "Note": "Battle spell greyed out & MP shortage message (tick=492)"
         },
         {
             "File": "11_wipeout_church.jpg",
-            "Sha256": "dc6b0fce777d76e4aad53163ff383461d1455bccbabb5865f2ef4038bbcf4221",
+            "Sha256": "5b02f9c553317d22cc7a60b18f1bba1fdaea87c158182c195a88da47d8b5a4b5",
             "Note": "Wipeout respawn at church (tick=5492)"
         },
         {
             "File": "12_boss_valug.jpg",
-            "Sha256": "3988547f127e681e4fa791c51b4f9cd22ec029ffe8852cb6ea745425188b9f96",
-            "Note": "Boss battle against Valug (tick=2374)"
+            "Sha256": "79d46ab955fa3f7c79c8b3431148ea52f52deb73eaf10d1652daf79919c60c0a",
+            "Note": "Boss battle against Valug (tick=2384)"
         },
         {
             "File": "13_ending.jpg",
             "Sha256": "a6e33bb011f496476003e6ed4bedb46b2d3b89555c5bbb47495e80b0f06d629a",
-            "Note": "Ending screen (tick=2436, hash=0x5CA021E4)"
+            "Note": "Ending screen (tick=2448, hash=0x87AC4C76)"
         },
         {
             "File": "14_result.jpg",
-            "Sha256": "47a68a88aaa18d36f1874dcfb69790656683b910008c85f1b3ea05fffc09e7a7",
-            "Note": "Result screen (tick=2436, hash=0x5CA021E4)"
+            "Sha256": "6c9b88551709b46fc790820c89c2681d96363d116114d847e9d5c78e6eabac48",
+            "Note": "Result screen (tick=2448, hash=0x87AC4C76)"
         },
         {
             "File": "15_title_corrupt_save.jpg",

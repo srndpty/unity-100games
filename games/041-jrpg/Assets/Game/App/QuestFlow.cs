@@ -325,27 +325,27 @@ namespace Game.App
             ActiveShop = null;
             Screen = QuestScreen.Title;
 
-            if (_saveStore.Exists)
+            HasValidSave = false;
+            CorruptSaveNotice = string.Empty;
+            _titleOptions = new[] { TitleOptionKind.NewGame, TitleOptionKind.HowTo };
+            switch (_saveStore.TryRead(out var raw, out var readError))
             {
-                var raw = _saveStore.Read();
-                if (SaveCodec.TryDecode(Data, raw, out _, out var saveErr))
-                {
-                    HasValidSave = true;
-                    CorruptSaveNotice = string.Empty;
-                    _titleOptions = new[] { TitleOptionKind.Continue, TitleOptionKind.NewGame, TitleOptionKind.HowTo };
-                }
-                else
-                {
-                    HasValidSave = false;
-                    CorruptSaveNotice = $"セーブデータが破損しているため読み込めません。（{saveErr!.Message}）";
-                    _titleOptions = new[] { TitleOptionKind.NewGame, TitleOptionKind.HowTo };
-                }
-            }
-            else
-            {
-                HasValidSave = false;
-                CorruptSaveNotice = string.Empty;
-                _titleOptions = new[] { TitleOptionKind.NewGame, TitleOptionKind.HowTo };
+                case SaveReadStatus.Loaded:
+                    if (SaveCodec.TryDecode(Data, raw, out _, out var saveErr))
+                    {
+                        HasValidSave = true;
+                        _titleOptions = new[] { TitleOptionKind.Continue, TitleOptionKind.NewGame, TitleOptionKind.HowTo };
+                    }
+                    else
+                    {
+                        CorruptSaveNotice = $"セーブデータが破損しているため読み込めません。（{saveErr!.Message}）";
+                    }
+
+                    break;
+
+                case SaveReadStatus.Failed:
+                    CorruptSaveNotice = $"セーブファイルを読み込めません。（{readError}）";
+                    break;
             }
 
             _titleOptionsView = Array.AsReadOnly(_titleOptions);
@@ -970,8 +970,8 @@ namespace Game.App
 
                 case TitleOptionKind.Continue:
                     {
-                        var raw = _saveStore.Read();
-                        if (!SaveCodec.TryDecode(Data, raw, out var restored, out _))
+                        if (_saveStore.TryRead(out var raw, out _) != SaveReadStatus.Loaded ||
+                            !SaveCodec.TryDecode(Data, raw, out var restored, out _))
                         {
                             AudioCues.Reject++;
                             RefreshTitleState();
@@ -1721,16 +1721,20 @@ namespace Game.App
                 switch (ChurchRootCursor)
                 {
                     case 0: // セーブ
-                        if (SaveCodec.TryEncodeAtChurch(World, out var saveText, out var saveErr))
-                        {
-                            _saveStore.Write(saveText);
-                            MenuFeedback = "冒険の記録を灯に刻んだ！（セーブ完了）";
-                            AudioCues.Save++;
-                        }
-                        else
+                        if (!SaveCodec.TryEncodeAtChurch(World, out var saveText, out var saveErr))
                         {
                             MenuFeedback = saveErr!.Message;
                             AudioCues.Reject++;
+                        }
+                        else if (!_saveStore.TryWrite(saveText, out var writeError))
+                        {
+                            MenuFeedback = $"記録を刻めなかった……（{writeError}）";
+                            AudioCues.Reject++;
+                        }
+                        else
+                        {
+                            MenuFeedback = "冒険の記録を灯に刻んだ！（セーブ完了）";
+                            AudioCues.Save++;
                         }
 
                         break;

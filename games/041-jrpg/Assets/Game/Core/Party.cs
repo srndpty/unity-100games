@@ -190,7 +190,7 @@ namespace Game.Core
             }
 
             var maxExp = _data.ExpTable.ExpForLevel(_data.ExpTable.MaxLevel);
-            Exp = Math.Min(maxExp, Exp + amount);
+            Exp = (int)Math.Min(maxExp, (long)Exp + amount);
             var targetLevel = _data.ExpTable.LevelForExp(Exp);
             if (targetLevel <= Level)
             {

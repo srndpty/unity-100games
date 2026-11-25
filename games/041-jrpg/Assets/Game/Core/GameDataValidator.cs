@@ -548,12 +548,20 @@ namespace Game.Core
             out DataError? error)
         {
             infos = new EnemyActionInfo[entries.Length];
+            var totalWeight = 0L;
             for (var i = 0; i < entries.Length; i++)
             {
                 var e = entries[i];
                 if (e.Weight <= 0)
                 {
                     error = new DataError(DataErrorKind.OutOfRange, $"{loc}[{i}]", "行動の重みは 1 以上である必要があります。");
+                    return false;
+                }
+
+                totalWeight += e.Weight;
+                if (totalWeight > int.MaxValue)
+                {
+                    error = new DataError(DataErrorKind.OutOfRange, $"{loc}[{i}]", $"行動の重みの合計は {int.MaxValue} 以下である必要があります。");
                     return false;
                 }
 
@@ -708,12 +716,20 @@ namespace Game.Core
                 }
 
                 var entries = new EncounterEntryInfo[d.Entries.Length];
+                var totalWeight = 0L;
                 for (var k = 0; k < d.Entries.Length; k++)
                 {
                     var e = d.Entries[k];
                     if (e.Weight <= 0)
                     {
                         error = new DataError(DataErrorKind.OutOfRange, $"{loc}.Entries[{k}]", "遭遇候補の重みは 1 以上である必要があります。");
+                        return false;
+                    }
+
+                    totalWeight += e.Weight;
+                    if (totalWeight > int.MaxValue)
+                    {
+                        error = new DataError(DataErrorKind.OutOfRange, $"{loc}.Entries[{k}]", $"遭遇候補の重みの合計は {int.MaxValue} 以下である必要があります。");
                         return false;
                     }
 

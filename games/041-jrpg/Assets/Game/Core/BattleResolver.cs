@@ -210,6 +210,11 @@ namespace Game.Core
     /// </summary>
     public static class BattleResolver
     {
+        public const int PhysicalPercentMin = 88;
+        public const int PhysicalPercentMax = 112;
+        public const int SpellPercentMin = 90;
+        public const int SpellPercentMax = 110;
+
         public static int ComputePhysicalDamage(int atk, int def, bool isTargetDefending, GameRng rng)
         {
             if (rng == null)
@@ -217,19 +222,9 @@ namespace Game.Core
                 throw new ArgumentNullException(nameof(rng));
             }
 
-            var baseDamage = Math.Max(0, (atk / 2) - (def / 4));
-            var damage = (baseDamage * rng.Range(7, 9)) / 8;
-            if (damage == 0)
-            {
-                damage = rng.Next(2);
-            }
-
-            if (isTargetDefending)
-            {
-                damage /= 2;
-            }
-
-            return damage;
+            var baseDamage = Math.Max(0L, ((long)atk / 2) - (def / 4));
+            var damage = Math.Max(1L, baseDamage * rng.Range(PhysicalPercentMin, PhysicalPercentMax) / 100);
+            return FinishDamage(damage, isTargetDefending);
         }
 
         public static int ComputeSpellDamage(SpellInfo spell, SpellElement targetWeakness, bool isTargetDefending, GameRng rng, out bool hitWeakness)
@@ -244,19 +239,25 @@ namespace Game.Core
                 throw new ArgumentNullException(nameof(rng));
             }
 
-            var damage = Math.Max(1, (spell.Power * rng.Range(7, 9)) / 8);
+            var damage = Math.Max(1L, (long)spell.Power * rng.Range(SpellPercentMin, SpellPercentMax) / 100);
             hitWeakness = spell.Element != SpellElement.None && spell.Element == targetWeakness;
             if (hitWeakness)
             {
-                damage = (damage * 3) / 2;
+                damage = damage * 3 / 2;
             }
 
+            return FinishDamage(damage, isTargetDefending);
+        }
+
+        /// <summary>防御で半減し（最低 1）、int に収める。</summary>
+        private static int FinishDamage(long damage, bool isTargetDefending)
+        {
             if (isTargetDefending)
             {
-                damage /= 2;
+                damage = Math.Max(1L, damage / 2);
             }
 
-            return damage;
+            return (int)Math.Min(int.MaxValue, damage);
         }
 
         public static int ComputeFleePercent(GameData data, BattleState battle, Party party)
@@ -1128,13 +1129,18 @@ namespace Game.Core
 
         private static void AwardVictory(BattleState battle, Party party, List<BattleEvent> events)
         {
-            var exp = 0;
-            var gold = 0;
+            // 1 体ずつは int に収まっても合計は収まらないことがあるので、long で足して飽和させる。
+            // 経験値はレベル上限、ゴールドは所持上限でさらに飽和する。
+            var expSum = 0L;
+            var goldSum = 0L;
             for (var i = 0; i < battle.Enemies.Count; i++)
             {
-                exp += battle.Enemies[i].Info.ExpReward;
-                gold += battle.Enemies[i].Info.GoldReward;
+                expSum += battle.Enemies[i].Info.ExpReward;
+                goldSum += battle.Enemies[i].Info.GoldReward;
             }
+
+            var exp = (int)Math.Min(int.MaxValue, expSum);
+            var gold = (int)Math.Min(int.MaxValue, goldSum);
 
             battle.MarkVictory(exp, gold);
             events.Add(new BattleEvent(

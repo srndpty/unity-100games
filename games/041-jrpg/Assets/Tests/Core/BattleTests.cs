@@ -82,6 +82,109 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void PhysicalDamageFollowsPercentRangeAndNeverDropsBelowOne()
+        {
+            // (ATK, DEF): 基礎 0（ATK 9 の魔法使い → DEF 22 の衛兵）、基礎 1、基礎 2（煤スライム → 防具を着た戦士）、基礎 50
+            var cases = new[] { (9, 22), (6, 8), (13, 16), (104, 8) };
+            foreach (var (atk, def) in cases)
+            {
+                var baseDamage = System.Math.Max(0, (atk / 2) - (def / 4));
+                var lo = System.Math.Max(1, baseDamage * BattleResolver.PhysicalPercentMin / 100);
+                var hi = System.Math.Max(1, baseDamage * BattleResolver.PhysicalPercentMax / 100);
+                var seen = new HashSet<int>();
+                for (var seed = 1; seed <= 400; seed++)
+                {
+                    var open = BattleResolver.ComputePhysicalDamage(atk, def, isTargetDefending: false, new GameRng(seed));
+                    var guarded = BattleResolver.ComputePhysicalDamage(atk, def, isTargetDefending: true, new GameRng(seed));
+                    Assert.That(open, Is.InRange(lo, hi), $"ATK {atk} DEF {def}");
+                    Assert.That(guarded, Is.EqualTo(System.Math.Max(1, open / 2)), $"ATK {atk} DEF {def}");
+                    seen.Add(open);
+                }
+
+                Assert.That(seen.Contains(lo) && seen.Contains(hi), Is.True, $"ATK {atk} DEF {def} は両端の倍率を引く");
+            }
+
+            // 倍率は 88〜112% の各整数を引く（3 択ではない）
+            var percents = new HashSet<int>();
+            for (var seed = 1; seed <= 2000; seed++)
+            {
+                percents.Add(BattleResolver.ComputePhysicalDamage(200, 0, isTargetDefending: false, new GameRng(seed)));
+            }
+
+            Assert.That(percents.Count, Is.EqualTo(BattleResolver.PhysicalPercentMax - BattleResolver.PhysicalPercentMin + 1));
+        }
+
+        [Test]
+        public void SpellDamageStaysExactForHugePowerWithWeaknessAndDefend()
+        {
+            var raw = DefaultGameData.CreateRaw();
+            var frostIndex = System.Array.FindIndex(raw.Spells, s => s.Id == "frost_lance");
+            foreach (var power in new[] { 1, 30, 400_000_000, int.MaxValue })
+            {
+                raw.Spells[frostIndex].Power = power;
+                var spell = GameData.Validate(raw).GetSpell("frost_lance");
+                for (var seed = 1; seed <= 200; seed++)
+                {
+                    var percent = new GameRng(seed).Range(BattleResolver.SpellPercentMin, BattleResolver.SpellPercentMax);
+                    var expectedNormal = System.Math.Max(1L, (long)power * percent / 100);
+                    var expectedWeak = expectedNormal * 3 / 2;
+                    var normal = BattleResolver.ComputeSpellDamage(spell, SpellElement.Fire, false, new GameRng(seed), out _);
+                    var weak = BattleResolver.ComputeSpellDamage(spell, SpellElement.Frost, false, new GameRng(seed), out var hitWeak);
+                    var weakGuarded = BattleResolver.ComputeSpellDamage(spell, SpellElement.Frost, true, new GameRng(seed), out _);
+                    Assert.That(hitWeak, Is.True);
+                    Assert.That(normal, Is.EqualTo((int)System.Math.Min(int.MaxValue, expectedNormal)), $"Power {power}");
+                    Assert.That(weak, Is.EqualTo((int)System.Math.Min(int.MaxValue, expectedWeak)), $"Power {power}");
+                    Assert.That(weakGuarded, Is.EqualTo((int)System.Math.Min(int.MaxValue, System.Math.Max(1L, expectedWeak / 2))), $"Power {power}");
+                }
+            }
+        }
+
+        [Test]
+        public void VictoryRewardsSaturateInsteadOfOverflowing()
+        {
+            var raw = DefaultGameData.CreateRaw();
+            var slimeIndex = System.Array.FindIndex(raw.Enemies, e => e.Id == "soot_slime");
+            raw.Enemies[slimeIndex].ExpReward = 1_500_000_000;
+            raw.Enemies[slimeIndex].GoldReward = 1_500_000_000;
+            var data = GameData.Validate(raw);
+            var party = new Party(data);
+            var battle = new BattleState(data, data.GetGroup("f1_slimes"));
+            for (var i = 0; i < battle.Enemies.Count; i++)
+            {
+                battle.Enemies[i].SetVitals(1, battle.Enemies[i].Mp);
+            }
+
+            BattleResolver.ResolveTurn(
+                data,
+                battle,
+                party,
+                new Inventory(data),
+                new[] { BattleCommand.Attack(0), BattleCommand.Attack(1), BattleCommand.Attack(0) },
+                new GameRng(7),
+                null);
+
+            Assert.That(battle.Outcome, Is.EqualTo(BattleOutcome.Victory));
+            Assert.That(battle.ExpEarnedEach, Is.EqualTo(int.MaxValue));
+            Assert.That(battle.GoldEarned, Is.EqualTo(int.MaxValue));
+            var maxExp = data.ExpTable.ExpForLevel(data.ExpTable.MaxLevel);
+            for (var i = 0; i < party.Count; i++)
+            {
+                Assert.That(party[i].Exp, Is.EqualTo(maxExp));
+                Assert.That(party[i].Level, Is.EqualTo(data.ExpTable.MaxLevel));
+            }
+
+            var world = World.CreateNew(data, 1);
+            world.AddGold(battle.GoldEarned);
+            Assert.That(world.Gold, Is.EqualTo(data.Rules.MaxGold));
+
+            // 累積経験値の加算も桁あふれしない
+            var member = new Party(data)[0];
+            member.AddExp(0, maxExp - 1);
+            member.AddExp(0, int.MaxValue);
+            Assert.That(member.Exp, Is.EqualTo(maxExp));
+        }
+
+        [Test]
         public void MpShortageIsRejectedAtSelectionAndHandledCleanlyAtResolutionForAllyAndEnemy()
         {
             var data = DefaultGameData.Create();

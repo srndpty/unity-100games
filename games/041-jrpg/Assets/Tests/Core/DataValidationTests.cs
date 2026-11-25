@@ -95,6 +95,46 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void RejectsWeightTotalsBeyondIntAndAcceptsExactlyIntMax()
+        {
+            var overEncounter = DefaultGameData.CreateRaw();
+            overEncounter.EncounterTables[0].Entries = new[]
+            {
+                new EncounterEntry { GroupId = "f1_slimes", Weight = 1_500_000_000 },
+                new EncounterEntry { GroupId = "f1_bats", Weight = 1_500_000_000 },
+            };
+            AssertError(overEncounter, DataErrorKind.OutOfRange, "EncounterTables[0].Entries[1]");
+
+            var overActions = DefaultGameData.CreateRaw();
+            overActions.Enemies[0].Actions = new[]
+            {
+                new EnemyActionEntry { Kind = EnemyActionKind.Attack, Weight = 1_500_000_000 },
+                new EnemyActionEntry { Kind = EnemyActionKind.HeavyAttack, Weight = 1_500_000_000 },
+            };
+            AssertError(overActions, DataErrorKind.OutOfRange, "Enemies[0].Actions[1]");
+
+            var exact = DefaultGameData.CreateRaw();
+            exact.EncounterTables[0].Entries = new[]
+            {
+                new EncounterEntry { GroupId = "f1_slimes", Weight = int.MaxValue - 1 },
+                new EncounterEntry { GroupId = "f1_bats", Weight = 1 },
+            };
+            exact.Enemies[0].Actions = new[]
+            {
+                new EnemyActionEntry { Kind = EnemyActionKind.Attack, Weight = int.MaxValue - 1 },
+                new EnemyActionEntry { Kind = EnemyActionKind.HeavyAttack, Weight = 1 },
+            };
+            var data = GameData.Validate(exact);
+            var table = data.EncounterTables[0];
+            Assert.That(table.TotalWeight, Is.EqualTo(int.MaxValue));
+            var rng = new GameRng(3);
+            for (var i = 0; i < 100; i++)
+            {
+                Assert.That(table.RollGroupId(rng), Is.EqualTo("f1_slimes").Or.EqualTo("f1_bats"));
+            }
+        }
+
+        [Test]
         public void RejectsEquipWithNoAllowedClassEmptyChestAndInvalidPortalTargetTile()
         {
             var orphanEquip = DefaultGameData.CreateRaw();
