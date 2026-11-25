@@ -137,3 +137,15 @@
 - `feature/game038` で `dev new 038 -Template 3d`（Unity 6000.6.9f1）を実行し、int-geometry と tile-motion を `manifest.json`（`testables`）・各 asmdef・Core の csproj から参照した。雛形と slnx 登録を最小コミットした（`df2f795`）。
 - `dev test 038 -Unity` は EditMode 63/63（共通パッケージを含む）、`dev lint/check/test` も通った。
 - 次（セッション1）：ルール表を README に固定し、`Vec3l`・`Quat`・`FlightConfig`・`Aircraft`・`FlightModel` をテストから作る。
+
+## セッション1の結果（2026-11-25）
+
+- ルール表を [README](../../games/038-flight/README.md) の「採用ルール」に固定した（戦闘の部分はセッション2で実装する値まで先に決めた）。
+- Core：`Fixed`（Q30 と整数のテイラー展開の sin/cos）・`Vec3l`・`Quat`（Q30、積・軸・小回転・正規化）・`Controls`・`Runway`・`FlightConfig`（検証で「離陸できる」まで確かめる）・`AirData`（迎角・横滑り角・失速）・`Aircraft`・`FlightModel`。
+- 計画との差：
+  - 長さの単位を 1 mm から 1 µm にした。重力が 1 Tick² あたり 2.7 mm しかなく、mm では加速が粗すぎる。
+  - 揚力は速度に直交させず、機体の上方向に向けた。迎角の分だけ後ろ向きの成分を持つので、引けば減速する（誘導抗力の代わり）。
+  - 失速中の機首下げ（30°/s）をピッチの上限（25°/s）より大きくし、設定の検証で保証した。小さいと低速で引き続けて失速を保てた。
+- Core 33 件（.NET）、共通パッケージを含めて Mono 95 件。離陸から上昇・旋回・横滑り・急降下を混ぜた 3000 Tick の最終ハッシュ `1290656686` が .NET と Mono で一致。
+- 既定値：離陸は約 61 m/s・約 250 m（8 秒）。150 m/s から引き続けると宙返りでき、70 m/s まで落ちる。
+- 次（セッション2）：ロックオン・ミサイル（誘導と運動の分離）・3D の掃引・敵の操縦・ミッション・App（Flow・Intent・Autopilot）。
