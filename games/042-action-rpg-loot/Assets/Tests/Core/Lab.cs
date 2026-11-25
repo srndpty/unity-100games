@@ -9,6 +9,7 @@ namespace Game.Core.Tests
     internal static class Lab
     {
         private static LootData? _loot;
+        private static FloorSet? _floors;
 
         public static string DataText(string name, [CallerFilePath] string source = "")
         {
@@ -24,6 +25,42 @@ namespace Game.Core.Tests
 
         /// <summary>既定の戦利品の表（読み込みは 1 回だけ）。</summary>
         public static LootData Loot() => _loot ??= LootData.Parse(DataText("Loot.txt"));
+
+        public static FloorSet Floors() => _floors ??= FloorSet.Parse(DataText("Floors.txt"));
+
+        public static DelveRun NewRun(int seed = 1, DelveConfig? config = null) => new(config ?? new DelveConfig(), Loot(), Floors(), seed);
+
+        /// <summary>何もしない操作（照準は右）。</summary>
+        public static HeroCommand Idle(DelveRun run) => HeroCommand.Idle(run.Hero.Position + new Vec2i(256, 0));
+
+        public static void Wait(DelveRun run, int ticks)
+        {
+            for (int i = 0; i < ticks; i++) { run.Step(Idle(run)); }
+        }
+
+        /// <summary>自機の右 <paramref name="dx"/> 単位に敵を 1 体だけ残す（他の敵は倒れたことにする。ドロップはしない）。</summary>
+        public static Foe Isolate(DelveRun run, FoeKind kind, int dx, int life = 1)
+        {
+            Foe? chosen = null;
+            foreach (var f in run.Foes)
+            {
+                if (chosen == null && f.Kind == kind)
+                {
+                    chosen = f;
+                    continue;
+                }
+
+                f.Dead = true;
+                f.Dropped = true;
+            }
+
+            chosen!.Position = run.Hero.Position + new Vec2i(dx, 0);
+            chosen.Life = life;
+            return chosen;
+        }
+
+        /// <summary>入口の部屋の中（壁から離れた床）へ自機を置く。</summary>
+        public static void Center(DelveRun run) => run.Hero.Position = FloorMap.TileCenter(3, run.Map.EntranceRow - 3);
 
         /// <summary>多数のシード・全階・全希少度で品を引く。</summary>
         public static IEnumerable<(Item Item, int Floor)> ManyItems(LootData data, int seeds)

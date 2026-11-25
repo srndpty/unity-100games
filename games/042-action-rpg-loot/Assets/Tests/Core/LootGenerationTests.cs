@@ -187,7 +187,7 @@ namespace Game.Core.Tests
             Assert.That(hash.Value, Is.EqualTo(ExpectedHash));
         }
 
-        private const uint ExpectedHash = 0x8E20F8EAu;
+        private const uint ExpectedHash = 0x897152A8u;
 
         private static string DropKey(LootGenerator gen, SeededRandom rng, DropTable table)
         {

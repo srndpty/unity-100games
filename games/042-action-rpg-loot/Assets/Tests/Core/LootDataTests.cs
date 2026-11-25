@@ -128,7 +128,7 @@ namespace Game.Core.Tests
             {
                 text.Replace("tier 3 leech flat 3 5", "tier 3 leech flat 3 6", StringComparison.Ordinal),
                 text.Replace("exclusive ember frost", "exclusive ember stride", StringComparison.Ordinal),
-                text.Replace("drop grunt   chance 35", "drop grunt   chance 36", StringComparison.Ordinal),
+                text.Replace("drop grunt   chance 45", "drop grunt   chance 46", StringComparison.Ordinal),
                 text.Replace("hero life 100", "hero life 101", StringComparison.Ordinal),
                 text.Replace("base spear       weapon 1 8", "base spear       weapon 1 9", StringComparison.Ordinal),
             };
