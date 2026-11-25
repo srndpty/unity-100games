@@ -45,8 +45,8 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - 共通コードは、3題以上で再利用価値が明確になってから `packages/` にローカル UPM パッケージとして抽出する。
   - 作品からは `Packages/manifest.json` に `"file:../../../packages/<名前>"` と `testables` を書き、`dev test NNN -Unity` でパッケージのテストも Mono で流す。dotnet 側は作品の Core の csproj から `ProjectReference` する。
   - パッケージも Core と同じく Unity API に依存しない（`noEngineReferences`）。中身を変えると全作品が検査対象になる（`dev lint/check -Staged`）。
-  - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う（033・034 は `StateHash` だけ、035・036・037 は `StateHash` を使う）。
-  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）。025〜027 の実装から抽出し、028 から使う（032 は `SeededRandom` だけ、033 は `Vec2i`・`IntMath`・`Sweep`、035・036 は `Vec2i`・`IntMath`・`Sweep`・`Trig`・`SeededRandom` を使う、037 は `Vec2i`・`IntMath`・`Sweep`・`Trig` を使う）。
+  - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う（033・034 は `StateHash` だけ、035・036・037・038 は `StateHash` を使う）。
+  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）。025〜027 の実装から抽出し、028 から使う（032 は `SeededRandom` だけ、033 は `Vec2i`・`IntMath`・`Sweep`、035・036 は `Vec2i`・`IntMath`・`Sweep`・`Trig`・`SeededRandom` を使う、037 は `Vec2i`・`IntMath`・`Sweep`・`Trig` を使う、038 は `IntMath`・`Trig`・`SeededRandom` を使う）。
 
 ## 技術スタック
 
@@ -251,6 +251,11 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - **追い越しの筋は、前の車の反対側ではなく自分のいる側に取り、前の車が戻る筋からも離す。** 前の車が中心線へ戻ってくると、反対側を狙った後ろの車と真ん中でぶつかり続けた（037 の `CpuPlan.AvoidLane`）。
 - **ゲートの線の上は、手前・奥のどちらかの側に含める（半開にする）。** 「始点も終点も線の上でない」ことを通過の条件にすると、ちょうど線の上で止まった Tick の次に奥へ出ても数えず、必須のゲートを永久に取り逃す。線の上を手前の側とすれば状態を足さずに「手前 → 線 → 奥」を 1 回だけ数え、「手前 → 線 → 手前」「奥 → 線 → 手前」は数えない（037 の `Track.ForwardCross`）。
 - **煙などの演出の粒も、実時間ではなくゲームの Tick で歳を取らせる。** 撮影の台本が Tick で進めても同じ絵になり、PlayMode で 2 回の通しの粒の位置を比べられる。描画の間に何 Tick も進んだ分は今の位置から出す（間の位置を Core が持たないため）（037 の `ThistleSmoke`）。
+- **3D の姿勢は Q30 の整数クォータニオンにすると、Mono と .NET で一致する。** 成分が 2^30 以下なら積の 4 項の和も 2 乗の和も long に収まる。1 Tick の回転は 1 次の小回転 (1, ω/2) を右から掛けて毎 Tick 正規化すれば、10 万 Tick でノルムがずれない。sin・cos は ±π/2 へ写してから整数のテイラー展開で求める（π の 2 乗は Q60 で long を超える）。式の向きを Unity の `Quaternion` と同じにすれば、描画は成分を渡すだけ（038 の `Quat`）。
+- **敵の強さは、操縦役で多くのシードを通して決める。** 8 G の敵のミサイルでは操縦役が 20 シード全てで落とされた。回避の動きを足すと撃たれる時間が延びて勝率が下がることもあるので、強さの調整と操縦役の戦術は数字で比べる（038）。
+- **「消える」ことのテストは、一度出してから確かめる。** 撃墜した敵の枠が残る不具合を、結果だけを描くテストは見逃した（枠は一度も出ていない）。途中も描いてから確かめ、修正前のコードで失敗することを見る（038）。
+- **`GC Allocated In Frame` は何もしないフレームでも時々数える。** Unity 6000.6 のバッチ実行で、コードを動かさないフレームにも 52〜56 バイトが出た。割り当てなしを確かめるときは、何もしないフレームと並べて計り、0 でないフレームの数と大きさで判定する（038）。
+- **修正前のコードを Windows PowerShell 5.1 のパイプで書き戻さない。** `git show HEAD:path | Set-Content` は日本語を化けさせ、Unity はコンパイルに失敗したまま古いアセンブリでテストを流して「修正前でも通る」ように見えた。bash の `git show HEAD:path > path` でバイトのまま戻す（038）。
 
 ## 注意点
 

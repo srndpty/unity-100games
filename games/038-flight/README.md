@@ -76,11 +76,29 @@ dev capture 038  # 証跡を evidence/ に撮る（画像は captures/<画像世
 
 ## テスト
 
-（セッションの終わりに記入）
+| 種類 | 場所 | 実行 | 件数 |
+|---|---|---|---|
+| Core（.NET） | `Assets/Tests/Core/`（`MathTests`・`FlightModelTests`・`CombatTests`・`GuidanceTests`・`MissionTests`） | `dev test 038` | 65 |
+| App（.NET） | `Assets/Tests/App/`（`SortieFlowTests`・`AutopilotTests`） | `dev test 038` | 13 |
+| EditMode（Mono） | 上の Core・App と共通パッケージ・証跡の公開 | `dev test 038 -Unity` | 140 |
+| PlayMode（実シーン） | `Assets/Tests/Unity/HalcyonSceneTests.cs` と雛形の証跡公開 | `dev test 038 -Unity -Mode PlayMode` | 28 |
+
+- 固定ハッシュ：飛行モデルの 3000 Tick（`1290656686`）と、操縦役のシード 1 の最終状態（`4145725609`）を .NET と Mono の両方で照合する。
+- 性能と割り当ての計測は PlayMode の `AMissionStepAndTheWorldViewAreFastAndRenderingDoesNotAllocate`。結果は [evidence/README.md](evidence/README.md)。
 
 ## 未実装範囲
 
 - 仕様書の Out of scope：高精度航空力学、大規模地形、素材の量産。
 - 着陸はない（離陸後に地面へ触れたら墜落）。機銃・フレア・複数の機種・複数のミッションはない。
+- 機体どうしの衝突はない（すり抜ける）。地形は平らな地面と目印の塔だけで、塔に当たりはない。
+- Core の Step は、ミサイルが飛んでいる間、誘導と近接の BigInteger で 1 Tick 平均 300 バイト程度を割り当てる（描画の更新は割り当てない）。
+
+## 試遊で見てほしい点
+
+- 操作：S で機首上げ・W で機首下げ（操縦桿の向き）で良いか。舵の効き、低速での鈍さ。
+- 離陸：スロットル全開から約 8 秒・約 250 m で浮く速さ。
+- 失速：引きすぎ・遅すぎで STALL になる入りやすさと、機首が下がって回復する感じ。
+- 戦闘：LOCK までの 1 秒、ミサイルの当たりやすさ、敵のミサイル（6 G）の避けやすさ、耐久 3、敵の強さ、制限 5 分。
+- 見た目：追従カメラの位置、HUD の大きさ、音量。
 
 証跡画像はJPEG（`.jpg`）、品質85を標準とし、保存したJPEGのSHA-256をマニフェストに記録する。

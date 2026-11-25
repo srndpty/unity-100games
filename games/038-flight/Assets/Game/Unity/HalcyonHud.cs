@@ -205,7 +205,13 @@ namespace Game.Unity
             {
                 var box = _targets[i];
                 var enemy = mission.Fighters[i];
-                if (enemy.Down || !Place(box, camera, HalcyonSpace.Position(enemy.View.Position))) { continue; }
+                if (enemy.Down)
+                {
+                    Display(box, false);
+                    continue;
+                }
+
+                if (!Place(box, camera, HalcyonSpace.Position(enemy.View.Position))) { continue; }
                 var state = player.LockTarget != i ? 0 : locked ? 2 : 1;
                 if (state != _targetStates[i])
                 {
