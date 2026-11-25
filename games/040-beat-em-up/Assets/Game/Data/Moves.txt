@@ -1,0 +1,255 @@
+# SOOT ALLEY の技表。1 px = 256。Tick は 1/60 秒。
+# body は喰らい箱（足元中央の w h と奥行きの半幅）、push は押し合いの幅と奥行きの半幅。
+# box は攻撃箱（足元中央から前へ x、上へ y、w h、奥行きの半幅 depth、右向き）。
+# 攻撃箱と喰らい箱は横・高さ・奥行きの 3 軸がすべて重なったときだけ当たる（端ちょうどは当たらない）。
+
+actor player ハル
+health 1000
+walk 512
+walkz 320
+jumpx 640
+jumpy 1536
+gravity 96
+body 6144 14336 1536
+push 5120 1536
+poise 1
+downticks 40
+wakeup 18
+
+move jab1 ジャブ
+startup 4
+active 2
+recovery 10
+damage 30
+hitstun 20
+hitstop 5
+knockback 256
+stagger 1
+next jab2
+window 8
+box 1024 7168 5120 3072 2048
+
+move jab2 フック
+startup 5
+active 2
+recovery 12
+damage 35
+hitstun 22
+hitstop 6
+knockback 256
+stagger 2
+next jab3
+window 8
+box 1024 6144 5632 3584 2048
+
+move jab3 アッパー
+startup 7
+active 3
+recovery 18
+damage 60
+hitstun 0
+hitstop 9
+stagger 3
+down 768 1024
+box 1024 5120 6656 5120 2048
+
+move jumpkick 跳び蹴り
+kind air
+startup 3
+active 12
+recovery 6
+damage 50
+hitstun 0
+hitstop 6
+stagger 3
+down 640 768
+box 0 2048 6144 5120 2048
+
+move knee 膝
+kind knee
+startup 4
+active 1
+recovery 10
+damage 30
+hitstun 0
+hitstop 6
+stagger 1
+
+move throw 投げ
+kind throw
+startup 6
+active 1
+recovery 14
+damage 70
+hitstop 4
+stagger 3
+down 1024 1280
+
+move special 旋風
+kind special
+startup 3
+active 6
+recovery 16
+damage 40
+hitstun 0
+hitstop 4
+stagger 3
+down 768 1024
+invuln 12
+cost 80
+box -8192 0 16384 14336 4096
+
+actor grunt チンピラ
+health 120
+walk 384
+walkz 256
+body 6144 14336 1536
+push 5120 1536
+poise 1
+downticks 36
+wakeup 18
+score 100
+reach 4608
+keep 16384
+opener punch1
+
+move punch1 パンチ
+startup 10
+active 2
+recovery 14
+damage 40
+hitstun 18
+hitstop 5
+knockback 256
+stagger 1
+next punch2
+window 6
+box 1024 7168 4608 3072 2048
+
+move punch2 二発目
+startup 8
+active 2
+recovery 20
+damage 50
+hitstun 20
+hitstop 6
+knockback 384
+stagger 2
+box 1024 6144 5120 3584 2048
+
+actor brute 大男
+health 260
+walk 256
+walkz 192
+body 8192 16384 2048
+push 7168 2048
+poise 2
+downticks 44
+wakeup 22
+score 250
+reach 5632
+keep 18432
+opener smash
+
+move smash 振り下ろし
+startup 20
+active 3
+recovery 24
+damage 110
+hitstun 0
+hitstop 9
+stagger 3
+down 768 1024
+box 1024 4096 6656 6144 2560
+
+actor kicker 跳び蹴り屋
+health 100
+walk 448
+walkz 320
+body 6144 14336 1536
+push 5120 1536
+poise 1
+downticks 36
+wakeup 16
+score 150
+reach 16384
+keep 24576
+opener flykick
+
+move flykick 跳び蹴り
+startup 12
+active 14
+recovery 16
+damage 70
+hitstun 0
+hitstop 6
+stagger 3
+advance 768
+down 640 896
+box 0 6144 6144 4096 2048
+
+actor boss ガラン
+health 900
+walk 384
+walkz 256
+body 8192 17408 2048
+push 7168 2048
+poise 2
+downticks 48
+wakeup 24
+score 2000
+reach 5632
+keep 20480
+farrange 24576
+closerange 5632
+rage 140
+opener bjab1
+far rush
+close slam
+
+move bjab1 裏拳
+startup 8
+active 2
+recovery 12
+damage 50
+hitstun 18
+hitstop 6
+knockback 384
+stagger 1
+next bjab2
+window 6
+box 1024 8192 5632 3584 2048
+
+move bjab2 鉄槌
+startup 8
+active 3
+recovery 22
+damage 70
+hitstun 0
+hitstop 8
+stagger 3
+down 768 1024
+box 1024 4096 6144 8192 2048
+
+move rush 突進
+startup 16
+active 20
+recovery 24
+damage 90
+hitstun 0
+hitstop 8
+stagger 3
+advance 1024
+down 1024 1024
+box 0 4096 8192 9216 2560
+
+move slam 掴み投げ
+startup 10
+active 2
+recovery 26
+damage 120
+hitstun 0
+hitstop 6
+stagger 3
+down 512 1536
+box 1024 4096 4096 8192 2048
