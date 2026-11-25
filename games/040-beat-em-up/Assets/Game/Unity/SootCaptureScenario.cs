@@ -38,19 +38,22 @@ namespace Game.Unity
             StepUntil(() => Brawl.Player.State == ActorState.Grab && Brawl.Player.Move == null, "掴み");
             await capture.ShootAsync("05-grab", "掴み  Tick " + Brawl.Tick);
 
+            StepUntil(() => Brawl.ItemsOnGround > 0, "回復アイテム");
+            await capture.ShootAsync("06-item", "倒した敵が落とした回復アイテム  Tick " + Brawl.Tick);
+
             StepUntil(() => Brawl.Player.State == ActorState.Idle && Crowd(48) >= 2 && Brawl.Player.Health > 300, "囲まれた場面");
             Flow.Pilot = null;
             Apply(IntentKind.SpecialDown);
             StepTicks(1);
             Apply(IntentKind.SpecialUp);
             StepUntil(() => Brawl.Player.Move != null && Brawl.Player.Move.Kind == MoveKind.Special && Brawl.Player.Phase == MovePhase.Active, "緊急技");
-            await capture.ShootAsync("06-special", "緊急技  Tick " + Brawl.Tick);
+            await capture.ShootAsync("07-special", "緊急技  Tick " + Brawl.Tick);
 
             Flow.Pilot = new Autopilot(EvidenceCapture.Seed + 1);
             StepUntil(() => !Brawl.Locked, "GO");
             StepTicks(10);
             StepUntil(() => SootGame.GoVisible(Brawl), "GO の表示");
-            await capture.ShootAsync("07-go", "区画を片付けて GO →  Tick " + Brawl.Tick);
+            await capture.ShootAsync("08-go", "区画を片付けて GO →  Tick " + Brawl.Tick);
 
             StepUntil(() => Brawl.Locked && Crowd(200) >= 1, "次の区画");
             Flow.Pilot = null;
@@ -64,24 +67,24 @@ namespace Game.Unity
             StepTicks(1);
             Apply(IntentKind.AttackUp);
             StepUntil(() => p.Phase == MovePhase.Active, "奥行きのずれた空振り");
-            await capture.ShootAsync("08-depth", "判定箱：横と高さは重なるが奥行きがずれて当たらない  Tick " + Brawl.Tick);
+            await capture.ShootAsync("09-depth", "判定箱：横と高さは重なるが奥行きがずれて当たらない  Tick " + Brawl.Tick);
 
             Apply(IntentKind.Overlay);
             Brawl.AiEnabled = true;
             Flow.Pilot = new Autopilot(EvidenceCapture.Seed + 2);
             StepUntil(() => BossOnScreen(), "ボス");
             StepTicks(90);
-            await capture.ShootAsync("09-boss", "ボス戦  Tick " + Brawl.Tick);
+            await capture.ShootAsync("10-boss", "ボス戦  Tick " + Brawl.Tick);
 
             StepUntil(() => Flow.Screen == BrawlScreen.Result, "クリア");
             _game.Render();
-            await capture.ShootAsync("10-clear", "面クリア  " + Brawl.Outcome + "  Tick " + Brawl.Tick);
+            await capture.ShootAsync("11-clear", "面クリア  " + Brawl.Outcome + "  Tick " + Brawl.Tick);
 
             Flow.Pilot = null;
             Apply(IntentKind.Submit);
             StepUntil(() => Flow.Screen == BrawlScreen.Result, "敗北");
             _game.Render();
-            await capture.ShootAsync("11-gameover", "入力なしで敗北  " + Brawl.Outcome + "  Tick " + Brawl.Tick);
+            await capture.ShootAsync("12-gameover", "入力なしで敗北  " + Brawl.Outcome + "  Tick " + Brawl.Tick);
         }
 
         private BrawlFlow Flow => _game.Flow;

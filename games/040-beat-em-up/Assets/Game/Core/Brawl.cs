@@ -133,7 +133,7 @@ namespace Game.Core
         public int EnemyMaxX => CameraX + _config.ViewWidth + _config.SpawnMargin;
 
         /// <summary>敵を空いた置き場に出す。置き場が無ければ例外。</summary>
-        public Actor Spawn(ActorKind kind, int x, int z, int facing)
+        public Actor Spawn(ActorKind kind, int x, int z, int facing, bool food = false)
         {
             if (kind == ActorKind.Player) { throw new ArgumentException("プレイヤーは出せません。", nameof(kind)); }
             if (z < _config.ZMin || z > _config.ZMax) { throw new ArgumentOutOfRangeException(nameof(z), "奥行きの帯の外です。"); }
@@ -148,6 +148,7 @@ namespace Game.Core
                 a.Health = a.Def.Health;
                 a.X = x;
                 a.Z = z;
+                a.Food = food;
                 a.Facing = facing >= 0 ? 1 : -1;
                 a.Rng = NextSeed();
                 a.WaitOffset = RandomRange(a, -_config.GrabDepth * 3, _config.GrabDepth * 3);
@@ -204,6 +205,7 @@ namespace Game.Core
             UpdateTokens();
             for (int slot = 0; slot < _actors.Length; slot++) { StepActor(_actors[slot]); }
             PushAndBound();
+            PickUp();
             TryGrab();
             ResolveHits();
             Settle();
@@ -765,6 +767,7 @@ namespace Game.Core
             {
                 ulong mask = ~Bit(a.Slot);
                 for (int i = 0; i < _actors.Length; i++) { _actors[i].HitMask &= mask; }
+                if (a.Food) { Drop(a.X, a.Z); }
                 a.Clear();
                 return;
             }
@@ -816,6 +819,7 @@ namespace Game.Core
             hash.Mix(Activations);
             hash.Mix(TokensGranted);
             MixStage(ref hash);
+            MixItems(ref hash);
             for (int i = 0; i < _actors.Length; i++)
             {
                 var a = _actors[i];
@@ -849,6 +853,7 @@ namespace Game.Core
                 hash.Mix(a.Tokens);
                 hash.Mix(a.WaitOffset);
                 hash.Mix(a.Rng);
+                hash.Mix(a.Food);
             }
 
             return hash.Value;
@@ -904,6 +909,9 @@ namespace Game.Core
             GrabCount = other.GrabCount;
             SpecialCount = other.SpecialCount;
             Deaths = other.Deaths;
+            HealCount = other.HealCount;
+            Array.Copy(other._items, _items, _items.Length);
+            _itemSerial = other._itemSerial;
             TokensGranted = other.TokensGranted;
             SectionIndex = other.SectionIndex;
             Locked = other.Locked;

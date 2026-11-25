@@ -51,6 +51,7 @@ namespace Game.Unity.Editor
             Save(created, "Flare.png", 40, 40, new Vector2(0.5f, 0.5f), Flare);
             Save(created, "Whirl.png", 96, 64, new Vector2(0.5f, 0.5f), Whirl);
             Save(created, "Lamp.png", 12, 96, new Vector2(0.5f, 0f), Lamp);
+            Save(created, "Food.png", 22, 14, new Vector2(0.5f, 0.2f), Food);
             AssetDatabase.Refresh();
             foreach (var (path, pivot) in created) { Import(path, pivot); }
         }
@@ -391,6 +392,18 @@ namespace Game.Unity.Editor
                     if (alpha > 0.08f) { c.Dot(x, y, new Color32(140, 220, 255, (byte)(220f * alpha))); }
                 }
             }
+        }
+
+        /// <summary>回復アイテム：皿にのった骨付き肉。</summary>
+        private static void Food(Canvas c)
+        {
+            c.Ellipse(11, 3, 10, 2, new Color32(230, 230, 236, 255));
+            c.Ellipse(11, 3, 8, 1, new Color32(196, 200, 210, 255));
+            c.Ellipse(9, 7, 6, 4, new Color32(150, 72, 34, 255));
+            c.Ellipse(8, 8, 4, 2, new Color32(196, 110, 56, 255));
+            c.Rect(14, 7, 5, 2, new Color32(244, 238, 222, 255));
+            c.Ellipse(19, 8, 2, 2, new Color32(244, 238, 222, 255));
+            c.Outline(new Color32(16, 12, 18, 255));
         }
 
         private static void Lamp(Canvas c)

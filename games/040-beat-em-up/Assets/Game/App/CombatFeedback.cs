@@ -16,6 +16,7 @@ namespace Game.App
         Special = 64,
         Death = 128,
         Go = 256,
+        Heal = 512,
     }
 
     /// <summary>前回の描画から起きた出来事を効果音へ変換する。出来事の累計の差で取り出すので、描画の間に何 Tick 進んでも取りこぼさない。</summary>
@@ -30,6 +31,7 @@ namespace Game.App
         private int _grabs;
         private int _specials;
         private int _deaths;
+        private int _heals;
         private bool _locked;
 
         public CombatCue Observe(Brawl? brawl)
@@ -45,6 +47,7 @@ namespace Game.App
                 _grabs = brawl?.GrabCount ?? 0;
                 _specials = brawl?.SpecialCount ?? 0;
                 _deaths = brawl?.Deaths ?? 0;
+                _heals = brawl?.HealCount ?? 0;
                 _locked = brawl?.Locked ?? true;
                 return CombatCue.None;
             }
@@ -60,6 +63,7 @@ namespace Game.App
             if (brawl.SpecialCount > _specials) { cue |= CombatCue.Special; }
             if (brawl.Deaths > _deaths) { cue |= CombatCue.Death; }
             if (_locked && !brawl.Locked) { cue |= CombatCue.Go; }
+            if (brawl.HealCount > _heals) { cue |= CombatCue.Heal; }
             _attacks = brawl.AttacksStarted;
             _hits = brawl.HitCount;
             _hurts = brawl.PlayerHurtCount;
@@ -68,6 +72,7 @@ namespace Game.App
             _grabs = brawl.GrabCount;
             _specials = brawl.SpecialCount;
             _deaths = brawl.Deaths;
+            _heals = brawl.HealCount;
             _locked = brawl.Locked;
             return cue;
         }

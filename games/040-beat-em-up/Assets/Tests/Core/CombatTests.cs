@@ -393,7 +393,7 @@ namespace Game.Core.Tests
             }
 
             Assert.That(brawl.HitCount, Is.GreaterThanOrEqualTo(4), "台本で当てている");
-            Assert.That(brawl.Hash(), Is.EqualTo(835690622u));
+            Assert.That(brawl.Hash(), Is.EqualTo(1647602582u));
         }
 
         [Test]

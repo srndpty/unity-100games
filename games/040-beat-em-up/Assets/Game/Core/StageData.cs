@@ -13,13 +13,17 @@ namespace Game.Core
     /// <summary>波の 1 体。区画に入ってから Delay Tick 以後、空きがあれば出る。</summary>
     public readonly struct WaveEntry : IEquatable<WaveEntry>
     {
-        public WaveEntry(ActorKind kind, SpawnSide side, int z, int delay)
+        public WaveEntry(ActorKind kind, SpawnSide side, int z, int delay, bool food = false)
         {
             Kind = kind;
             Side = side;
             Z = z;
             Delay = delay;
+            Food = food;
         }
+
+        /// <summary>倒れて消えると回復アイテムを落とす。</summary>
+        public bool Food { get; }
 
         public ActorKind Kind { get; }
 
@@ -29,11 +33,11 @@ namespace Game.Core
 
         public int Delay { get; }
 
-        public bool Equals(WaveEntry other) => Kind == other.Kind && Side == other.Side && Z == other.Z && Delay == other.Delay;
+        public bool Equals(WaveEntry other) => Kind == other.Kind && Side == other.Side && Z == other.Z && Delay == other.Delay && Food == other.Food;
 
         public override bool Equals(object? obj) => obj is WaveEntry other && Equals(other);
 
-        public override int GetHashCode() => HashCode.Combine(Kind, Side, Z, Delay);
+        public override int GetHashCode() => HashCode.Combine(Kind, Side, Z, Delay, Food);
 
         public static bool operator ==(WaveEntry left, WaveEntry right) => left.Equals(right);
 
@@ -142,8 +146,9 @@ namespace Game.Core
                         break;
                     case "wave":
                         if (waves == null) { throw new FormatException($"{lineNo} 行目: wave は section の中です。"); }
-                        if (parts.Length != 5) { throw new FormatException($"{lineNo} 行目: wave は 種類 側 z(px) 遅れ(Tick) です。"); }
-                        waves.Add(new WaveEntry(ParseKind(parts[1], lineNo), ParseSide(parts[2], lineNo), Int(parts, 3, lineNo) * Px.One, Int(parts, 4, lineNo)));
+                        if (parts.Length != 5 && parts.Length != 6) { throw new FormatException($"{lineNo} 行目: wave は 種類 側 z(px) 遅れ(Tick) [food] です。"); }
+                        if (parts.Length == 6 && parts[5] != "food") { throw new FormatException($"{lineNo} 行目: wave の最後は food だけ書けます。"); }
+                        waves.Add(new WaveEntry(ParseKind(parts[1], lineNo), ParseSide(parts[2], lineNo), Int(parts, 3, lineNo) * Px.One, Int(parts, 4, lineNo), parts.Length == 6));
                         break;
                     default:
                         throw new FormatException($"{lineNo} 行目: 未知の項目 {parts[0]} です。");
@@ -168,6 +173,7 @@ namespace Game.Core
 
             if (IsArena) { return; }
             int bosses = 0;
+            int foods = 0;
             for (int s = 0; s < _sections.Length; s++)
             {
                 var section = _sections[s];
@@ -182,6 +188,7 @@ namespace Game.Core
                     if (wave.Delay < lastDelay) { throw new FormatException($"区画 {s + 1} の波は遅れの順に並べてください。"); }
                     if (wave.Kind == ActorKind.Player) { throw new FormatException("プレイヤーは波に置けません。"); }
                     if (wave.Kind == ActorKind.Boss) { bosses++; }
+                    if (wave.Food) { foods++; }
                     lastDelay = wave.Delay;
                 }
 
@@ -189,6 +196,7 @@ namespace Game.Core
             }
 
             if (bosses != 1) { throw new FormatException("ボスは 1 体にしてください。"); }
+            if (foods > Brawl.ItemCapacity) { throw new FormatException($"回復アイテムを落とす敵は {Brawl.ItemCapacity} 体までです。"); }
         }
 
         private static int Int(string[] parts, int index, int lineNo)

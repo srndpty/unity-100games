@@ -167,7 +167,7 @@ namespace Game.App.Tests
         {
             var brawl = AppLab.Play(1, new Autopilot(1), 15000);
             Assert.That(brawl.Outcome, Is.EqualTo(Outcome.Cleared));
-            Assert.That((brawl.Tick, brawl.Hash()), Is.EqualTo((5621L, 2026387232u)));
+            Assert.That((brawl.Tick, brawl.Hash()), Is.EqualTo((5631L, 1448739372u)));
         }
 
         [Test]

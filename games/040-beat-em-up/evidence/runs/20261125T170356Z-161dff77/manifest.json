@@ -2,9 +2,9 @@
     "Product": "SOOT ALLEY",
     "Version": "1.0",
     "UnityVersion": "6000.6.9f1",
-    "BuildGuid": "19c9f3c5c232408bbdf9e9dea1097b3d",
+    "BuildGuid": "0290de9f904e41eeaf20bdb1bbd6a494",
     "Seed": 1,
-    "CapturedAtUtc": "2026-11-25T16:49:05.6032613Z",
+    "CapturedAtUtc": "2026-11-25T17:03:55.6441441Z",
     "Info": [
         {
             "Key": "imageEncoding",
@@ -27,7 +27,7 @@
         },
         {
             "File": "02-howto.jpg",
-            "Sha256": "0e864d925e2e6f94aa403f151d7087bcefe9ad99326029527e3d59513dce1c57",
+            "Sha256": "c65a96090f3b5f2686115c1b754c622995d027974023fcae02cd6eadaf9c7cb4",
             "Note": "操作説明"
         },
         {
@@ -46,32 +46,37 @@
             "Note": "掴み  Tick 1171"
         },
         {
-            "File": "06-special.jpg",
-            "Sha256": "f52122d330b2d2d18924c92c683174763e71d0fd237f85d80a42fa854787392b",
+            "File": "06-item.jpg",
+            "Sha256": "06872a32839e78afbf83fc312271bd828c7af92da28018ee43d3931917c91fbd",
+            "Note": "倒した敵が落とした回復アイテム  Tick 2359"
+        },
+        {
+            "File": "07-special.jpg",
+            "Sha256": "16a4f52699f113cab57e9797acd7301aee8dba7dce02663285532960fd4e594b",
             "Note": "緊急技  Tick 3128"
         },
         {
-            "File": "07-go.jpg",
-            "Sha256": "8936d1e5d80a38646307a2c4e39f0b296b985b9b74753b52d5d70ed973e3b893",
+            "File": "08-go.jpg",
+            "Sha256": "2e66ccef886c586afaaae8050bb89ca27d8a3fe086c4fcff5eea47079bb00e04",
             "Note": "区画を片付けて GO →  Tick 3640"
         },
         {
-            "File": "08-depth.jpg",
-            "Sha256": "8ec1a219bd0994257d444d2241453f4fe43f33c0d1bff77d4b4c9dec69f8f8f7",
+            "File": "09-depth.jpg",
+            "Sha256": "a68875220e6befdbc8148a6ca675c145e506e0966b81128c27f416ee9f67cf2d",
             "Note": "判定箱：横と高さは重なるが奥行きがずれて当たらない  Tick 3880"
         },
         {
-            "File": "09-boss.jpg",
-            "Sha256": "ee02c989756062ab6258fb1ef34563dfee5fb4507b763ba96858b913a3678206",
+            "File": "10-boss.jpg",
+            "Sha256": "3df9026a8f70fbc2ca828d027ba5f7e4c2226b2260b61c830726a00efd0c3f3e",
             "Note": "ボス戦  Tick 3970"
         },
         {
-            "File": "10-clear.jpg",
-            "Sha256": "3e926c092e2a4acf50ac8800d170dc3611c56d0b0c9d6aeac12c268141bef649",
-            "Note": "面クリア  Cleared  Tick 5804"
+            "File": "11-clear.jpg",
+            "Sha256": "8998555ecbb45c69883d9471c282834ac821130263250092ea0922d7916a6d0a",
+            "Note": "面クリア  Cleared  Tick 5707"
         },
         {
-            "File": "11-gameover.jpg",
+            "File": "12-gameover.jpg",
             "Sha256": "ccb1597222221857c8e7d68c0fec48df35892b914c0cd972bc7daca5ff62835b",
             "Note": "入力なしで敗北  Lost  Tick 7148"
         }

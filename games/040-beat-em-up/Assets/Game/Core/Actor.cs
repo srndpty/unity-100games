@@ -105,6 +105,9 @@ namespace Game.Core
 
         public uint Rng { get; internal set; }
 
+        /// <summary>倒れて消えるときに回復アイテムを落とすか。</summary>
+        public bool Food { get; internal set; }
+
         public bool Active => State != ActorState.None;
 
         /// <summary>画面に描くか（置き場が使われているか）。</summary>
@@ -168,6 +171,7 @@ namespace Game.Core
             Tokens = other.Tokens;
             WaitOffset = other.WaitOffset;
             Rng = other.Rng;
+            Food = other.Food;
         }
 
         internal void Clear()
@@ -201,6 +205,7 @@ namespace Game.Core
             Tokens = 0;
             WaitOffset = 0;
             Rng = 0;
+            Food = false;
         }
     }
 }

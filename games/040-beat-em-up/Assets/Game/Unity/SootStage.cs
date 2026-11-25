@@ -44,11 +44,13 @@ namespace Game.Unity
         [SerializeField] private Sprite[] _boss = new Sprite[PoseCount];
         [SerializeField] private Sprite _flare;
         [SerializeField] private Sprite _whirl;
+        [SerializeField] private Sprite _food;
         [SerializeField] private MeshFilter _boxes;
         [SerializeField] private MeshRenderer _boxRenderer;
 
         private readonly int[] _order = new int[Pool];
         private readonly SpriteRenderer[] _flares = new SpriteRenderer[Pool];
+        private readonly SpriteRenderer[] _items = new SpriteRenderer[Brawl.ItemCapacity];
         private readonly Vector3[] _vertices = new Vector3[MaxBoxes * 8];
         private readonly Color32[] _colors = new Color32[MaxBoxes * 8];
         private SpriteRenderer _special;
@@ -62,6 +64,8 @@ namespace Game.Unity
         public SpriteRenderer Flare(int slot) => _flares[slot];
 
         public SpriteRenderer SpecialEffect => _special;
+
+        public SpriteRenderer ItemRenderer(int index) => _items[index];
 
         public Mesh BoxMesh => _mesh;
 
@@ -123,6 +127,11 @@ namespace Game.Unity
             }
 
             if (_special != null) { _special.enabled = false; }
+            for (var i = 0; i < _items.Length; i++)
+            {
+                if (_items[i] != null) { _items[i].enabled = false; }
+            }
+
             ShowBoxes(false);
         }
 
@@ -152,6 +161,13 @@ namespace Game.Unity
             }
 
             PlaceSpecial(brawl.Player, config);
+            for (var i = 0; i < _items.Length; i++)
+            {
+                var item = brawl.ItemAt(i);
+                _items[i].enabled = item.Active;
+                if (item.Active) { _items[i].transform.localPosition = WorldOf(item.X, 0, item.Z, config); }
+            }
+
             if (boxes) { DrawBoxes(brawl, config); }
             else { ShowBoxes(false); }
         }
@@ -161,7 +177,7 @@ namespace Game.Unity
         {
             if (config == null) { throw new ArgumentNullException(nameof(config)); }
             if (stage == null) { throw new ArgumentNullException(nameof(stage)); }
-            if (_backdrop == null || _ground == null || _flare == null || _whirl == null || _boxes == null || _boxRenderer == null)
+            if (_backdrop == null || _ground == null || _flare == null || _whirl == null || _food == null || _boxes == null || _boxRenderer == null)
             {
                 return "描画物の参照が欠けています。";
             }
@@ -217,6 +233,18 @@ namespace Game.Unity
                 renderer.sortingOrder = EffectOrder;
                 renderer.enabled = false;
                 _flares[slot] = renderer;
+            }
+
+            for (var i = 0; i < _items.Length; i++)
+            {
+                var item = new GameObject("Item " + i);
+                item.transform.SetParent(transform, false);
+                var renderer = item.AddComponent<SpriteRenderer>();
+                renderer.sharedMaterial = _bodies[0].sharedMaterial;
+                renderer.sprite = _food;
+                renderer.sortingOrder = ShadowOrder + 1;
+                renderer.enabled = false;
+                _items[i] = renderer;
             }
 
             var whirl = new GameObject("Whirl");

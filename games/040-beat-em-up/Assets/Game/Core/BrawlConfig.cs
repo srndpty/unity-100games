@@ -85,6 +85,17 @@ namespace Game.Core
 
         public int FallGravity = 96;
 
+        /// <summary>区画を片付けた後に画面が 1 Tick に進む上限（単位）。プレイヤーの位置へ一気に飛ばない。</summary>
+        public int ScrollSpeed = 3 * Px.One;
+
+        /// <summary>回復アイテムで戻る体力。</summary>
+        public int HealAmount = 200;
+
+        /// <summary>回復アイテムの横幅と奥行きの半幅（プレイヤーの喰らい箱と重なれば拾う）。</summary>
+        public int ItemWidth = 16 * Px.One;
+
+        public int ItemDepth = 6 * Px.One;
+
         public BrawlConfig Validate()
         {
             if (TickRate <= 0) { throw new ArgumentOutOfRangeException(nameof(TickRate)); }
@@ -109,6 +120,8 @@ namespace Game.Core
             }
 
             if (FallLaunchX < 0 || FallLaunchY < 1 || FallGravity < 1) { throw new ArgumentOutOfRangeException(nameof(FallLaunchY)); }
+            if (ScrollSpeed < 1 || ScrollSpeed > ViewWidth) { throw new ArgumentOutOfRangeException(nameof(ScrollSpeed)); }
+            if (HealAmount < 1 || ItemWidth < 1 || ItemDepth < 1 || ItemWidth > ViewWidth) { throw new ArgumentOutOfRangeException(nameof(HealAmount)); }
             return this;
         }
 

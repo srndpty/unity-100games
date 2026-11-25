@@ -69,6 +69,8 @@ namespace Game.App
 
             if (!brawl.Locked)
             {
+                if (WantsItem(brawl, null, out var dropped)) { return new Pad(Step(dropped.X - p.X, Px), Step(dropped.Z - p.Z, Px), false, false, false); }
+
                 int mid = (brawl.Config.ZMin + brawl.Config.ZMax) / 2;
                 return new Pad(1, Step(mid - p.Z, 2 * Px), false, false, false);
             }
@@ -80,6 +82,11 @@ namespace Game.App
             }
 
             var target = Target(brawl);
+            if (WantsItem(brawl, target, out var item))
+            {
+                return new Pad(Step(item.X - p.X, Px), Step(item.Z - p.Z, Px), false, false, false);
+            }
+
             if (target == null)
             {
                 int center = brawl.CameraX + (brawl.Config.ViewWidth / 2);
@@ -133,6 +140,30 @@ namespace Game.App
             }
 
             return (threats >= 1 && close >= 3) || (p.State == ActorState.HitStun && close >= 2 && _random.Next(3) == 0);
+        }
+
+        /// <summary>体力が 7 割を切っていて、近くに敵がいなければ（敵がいなければいつでも）画面の中で一番近い回復アイテムへ向かう（画面が進んで後ろに残ったアイテムは届かないので追わない）。</summary>
+        private static bool WantsItem(Brawl brawl, Actor? target, out Item item)
+        {
+            item = default;
+            var p = brawl.Player;
+            bool hurt = p.Health * 10 < p.Def!.Health * 7;
+            if (!hurt) { return false; }
+            if (target != null && Math.Abs(target.X - p.X) < 48 * Px && Brawl.Hurtable(target)) { return false; }
+            long best = long.MaxValue;
+            for (int i = 0; i < Brawl.ItemCapacity; i++)
+            {
+                var candidate = brawl.ItemAt(i);
+                if (!candidate.Active || candidate.X < brawl.PlayerMinX || candidate.X > brawl.PlayerMaxX) { continue; }
+                long cost = Math.Abs((long)candidate.X - p.X) + Math.Abs((long)candidate.Z - p.Z);
+                if (cost < best)
+                {
+                    best = cost;
+                    item = candidate;
+                }
+            }
+
+            return item.Active;
         }
 
         private static Actor? Target(Brawl brawl)

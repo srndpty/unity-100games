@@ -203,6 +203,7 @@ namespace Game.Unity.Editor
 
             Assign(stage, "_flare", Load<Sprite>(Art + "Flare.png"));
             Assign(stage, "_whirl", Load<Sprite>(Art + "Whirl.png"));
+            Assign(stage, "_food", Load<Sprite>(Art + "Food.png"));
             stage.ApplyModifiedPropertiesWithoutUndo();
         }
 

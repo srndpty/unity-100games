@@ -119,74 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1001 &276564402
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6422983702461942462, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
-      propertyPath: m_Name
-      value: SootStage
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
---- !u!114 &276564403 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6243796441102454872, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
-  m_PrefabInstance: {fileID: 276564402}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 68f23c62d5d58014ca19c83408218249, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game.Unity::Game.Unity.SootStage
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -428,7 +360,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &668019837
+--- !u!1 &668043803
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -436,10 +368,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 668019841}
-  - component: {fileID: 668019840}
-  - component: {fileID: 668019839}
-  - component: {fileID: 668019838}
+  - component: {fileID: 668043807}
+  - component: {fileID: 668043806}
+  - component: {fileID: 668043805}
+  - component: {fileID: 668043804}
   m_Layer: 0
   m_Name: SootAlleyGame
   m_TagString: Untagged
@@ -447,25 +379,25 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &668019838
+--- !u!114 &668043804
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 668019837}
+  m_GameObject: {fileID: 668043803}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cf0a179f46e7f394c98f9650f86e3794, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Unity::Game.Unity.SootCaptureScenario
---- !u!114 &668019839
+--- !u!114 &668043805
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 668019837}
+  m_GameObject: {fileID: 668043803}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: eafab2cedbd355e4a8b54cfcf7e3af7b, type: 3}
@@ -474,16 +406,16 @@ MonoBehaviour:
   _settings: {fileID: 11400000, guid: 58a5e3e507ec64148a29efa6115b56af, type: 2}
   _moves: {fileID: 4900000, guid: 527038cd2e032bb4ebbb912c92c077da, type: 3}
   _stageText: {fileID: 4900000, guid: c712ec9fe4ec14d4cb5029d761218a45, type: 3}
-  _hudRenderer: {fileID: 668019840}
+  _hudRenderer: {fileID: 668043806}
   _camera: {fileID: 519420031}
-  _stage: {fileID: 276564403}
---- !u!1931382934 &668019840
+  _stage: {fileID: 2057133903}
+--- !u!1931382934 &668043806
 PanelRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 668019837}
+  m_GameObject: {fileID: 668043803}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -535,13 +467,13 @@ PanelRenderer:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_Position: 0
---- !u!4 &668019841
+--- !u!4 &668043807
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 668019837}
+  m_GameObject: {fileID: 668043803}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -550,11 +482,79 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &2057133902
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4745080064434592429, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6422983702461942462, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
+      propertyPath: m_Name
+      value: SootStage
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
+--- !u!114 &2057133903 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6243796441102454872, guid: 017429adf924d7747862fb89ebda55d9, type: 3}
+  m_PrefabInstance: {fileID: 2057133902}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68f23c62d5d58014ca19c83408218249, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.SootStage
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 519420032}
   - {fileID: 619394802}
-  - {fileID: 276564402}
-  - {fileID: 668019841}
+  - {fileID: 2057133902}
+  - {fileID: 668043807}

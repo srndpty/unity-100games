@@ -41,4 +41,8 @@ MonoBehaviour:
     FallLaunchX: 384
     FallLaunchY: 768
     FallGravity: 96
+    ScrollSpeed: 768
+    HealAmount: 200
+    ItemWidth: 4096
+    ItemDepth: 1536
   Volume: 0.15

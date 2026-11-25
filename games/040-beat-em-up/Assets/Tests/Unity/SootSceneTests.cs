@@ -226,11 +226,27 @@ namespace Game.Unity.Tests
             var hud = _game.HudRoot;
             var sawGo = false;
             var sawBoss = false;
+            var sawItem = false;
+            var maxStep = 0f;
+            _game.Render();
+            var cameraX = _game.View.transform.position.x;
             for (var i = 0; i < 20000 && _game.Flow.Screen == BrawlScreen.Playing; i++)
             {
                 _game.Flow.StepTick();
-                if (i % 10 != 0) { continue; }
                 _game.Render();
+                var x = _game.View.transform.position.x;
+                maxStep = Mathf.Max(maxStep, x - cameraX);
+                cameraX = x;
+                for (var k = 0; k < Brawl.ItemCapacity; k++)
+                {
+                    var item = Brawl.ItemAt(k);
+                    Assert.That(_game.Stage.ItemRenderer(k).enabled, Is.EqualTo(item.Active), "アイテムの描画は Core と一致");
+                    if (!item.Active) { continue; }
+                    sawItem = true;
+                    Assert.That(_game.Stage.ItemRenderer(k).transform.localPosition, Is.EqualTo(SootStage.WorldOf(item.X, 0, item.Z, _game.Rules)));
+                }
+
+                if (i % 10 != 0) { continue; }
                 sawGo |= hud.Q<Label>("go").style.display.value == DisplayStyle.Flex;
                 sawBoss |= hud.Q("boss").style.display.value == DisplayStyle.Flex;
             }
@@ -239,6 +255,9 @@ namespace Game.Unity.Tests
             Assert.That(Brawl.Outcome, Is.EqualTo(Outcome.Cleared));
             Assert.That(sawGo, Is.True, "区画を片付けると GO →");
             Assert.That(sawBoss, Is.True, "ボスの体力を出す");
+            Assert.That(sawItem, Is.True, "回復アイテムが落ちて描かれた");
+            Assert.That(Brawl.HealCount, Is.GreaterThan(0), "拾って回復した");
+            Assert.That(maxStep, Is.LessThanOrEqualTo((_game.Rules.ScrollSpeed / (float)Px.One) + 0.001f), "画面は 1 Tick に ScrollSpeed までしか進まない");
             Assert.That(hud.Q<Label>("banner").text, Is.EqualTo("STAGE CLEAR"));
 
             yield return _keyboard.Tap(Key.Enter);

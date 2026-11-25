@@ -59,7 +59,7 @@ namespace Game.Core
                 if (ActiveEnemies >= _config.MaxActiveEnemies) { break; }
                 int half = _config.SpawnMargin / 2;
                 int x = wave.Side == SpawnSide.Left ? CameraX - half : CameraX + _config.ViewWidth + half;
-                Spawn(wave.Kind, x, wave.Z, wave.Side == SpawnSide.Left ? 1 : -1);
+                Spawn(wave.Kind, x, wave.Z, wave.Side == SpawnSide.Left ? 1 : -1, wave.Food);
                 if (wave.Kind == ActorKind.Boss) { BossSpawned = true; }
                 _queue[i] = new SpawnSlot(true);
             }
@@ -81,8 +81,8 @@ namespace Game.Core
             }
 
             var next = Stage.Sections[SectionIndex + 1];
-            int target = Player.X - (_config.ViewWidth / 2);
-            if (target > CameraX) { CameraX = Math.Min(target, next.CameraX); }
+            int target = Math.Min(Player.X - (_config.ViewWidth / 2), next.CameraX);
+            if (target > CameraX) { CameraX += Math.Min(target - CameraX, _config.ScrollSpeed); }
             if (CameraX >= next.CameraX) { EnterSection(SectionIndex + 1); }
         }
 

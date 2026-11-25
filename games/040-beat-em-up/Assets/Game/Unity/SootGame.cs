@@ -101,6 +101,7 @@ namespace Game.Unity
                 Tone("Special", 700f, 0.18f, 0.03f),
                 Tone("Death", 50f, 0.35f, 0.05f),
                 Tone("Go", 880f, 0.2f, 0.03f),
+                Tone("Heal", 660f, 0.22f, 0.03f),
             };
             _camera.orthographic = true;
             _camera.backgroundColor = new Color(0.08f, 0.06f, 0.1f);
@@ -381,6 +382,7 @@ namespace Game.Unity
                         "L　緊急技（体力を払って周りを吹き飛ばす）\n" +
                         "敵へ歩いて触れると掴む：J で膝、3 回目か ←→＋J で投げ\n" +
                         "奥行きがずれていると攻撃は当たらない（足元の影をそろえる）\n" +
+                        "敵が落とした肉を拾うと体力が回復\n" +
                         "敵を全滅させると GO →。Esc 一時停止、F1 判定箱";
                     SetButtons("スタート（Enter）", "もどる");
                     break;
