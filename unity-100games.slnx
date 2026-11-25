@@ -233,6 +233,12 @@
     <Project Path="games/039-fighting/dotnet/Core.Tests/G039.Core.Tests.csproj" />
     <Project Path="games/039-fighting/dotnet/Core/G039.Core.csproj" />
   </Folder>
+  <Folder Name="/040-beat-em-up/">
+    <Project Path="games/040-beat-em-up/dotnet/App.Tests/G040.App.Tests.csproj" />
+    <Project Path="games/040-beat-em-up/dotnet/App/G040.App.csproj" />
+    <Project Path="games/040-beat-em-up/dotnet/Core.Tests/G040.Core.Tests.csproj" />
+    <Project Path="games/040-beat-em-up/dotnet/Core/G040.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />

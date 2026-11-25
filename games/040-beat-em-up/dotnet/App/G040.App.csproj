@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <GameLayer>App</GameLayer>
+  </PropertyGroup>
+  <Import Project="../../../../build/Game.Library.props" />
+  <ItemGroup>
+    <ProjectReference Include="../Core/G040.Core.csproj" />
+    <ProjectReference Include="../../../../packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />
+  </ItemGroup>
+</Project>
