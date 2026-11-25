@@ -1,0 +1,96 @@
+# ASHEN RELIQUARY の戦利品の表。Core の LootData.Parse が読み込みと検証を行う。
+# 能力：life dmgmin dmgmax speed（攻撃速度%） move（移動速度%） armor crit（会心率%） critdmg（会心倍率%） leech（吸収%） fireres coldres
+# 種類：flat（足し算）/ inc（％の掛け算。life・dmgmin・dmgmax・armor だけ）
+
+# 装備なしの自機
+hero life 100 dmgmin 2 dmgmax 4 speed 100 move 100 armor 0 crit 5 critdmg 150 leech 0 fireres 0 coldres 0
+
+# base <id> <枠> <出る階の下限> <重み> <名前> (<能力> <種類> <値>)+
+base dagger      weapon 1 10 短剣       dmgmin flat 2  dmgmax flat 5  speed flat 20
+base shortsword  weapon 1 10 片手剣     dmgmin flat 4  dmgmax flat 8
+base spear       weapon 1 8  槍         dmgmin flat 3  dmgmax flat 11
+base handaxe     weapon 2 8  手斧       dmgmin flat 6  dmgmax flat 12 speed flat -5
+base warmaul     weapon 2 6  大槌       dmgmin flat 10 dmgmax flat 20 speed flat -20
+base runeblade   weapon 3 5  紋章剣     dmgmin flat 9  dmgmax flat 16 crit flat 5
+base leather     armor  1 10 革鎧       armor flat 8
+base chainmail   armor  1 8  鎖帷子     armor flat 14 move flat -5
+base plate       armor  2 6  板金鎧     armor flat 26 move flat -10
+base robe        armor  2 6  織り法衣   armor flat 6  fireres flat 10 coldres flat 10
+base hood        helm   1 10 頭巾       armor flat 3  crit flat 2
+base ironhelm    helm   1 8  鉄兜       armor flat 7
+base hornhelm    helm   2 6  角兜       armor flat 10 life flat 15
+base copperring  ring   1 8  銅の指輪   life flat 10
+base silverring  ring   1 8  銀の指輪   crit flat 3
+base emberring   ring   2 6  熾石の指輪 fireres flat 15
+base frostring   ring   2 6  霜石の指輪 coldres flat 15
+base boneamulet  amulet 1 8  骨の首飾り leech flat 2
+base amberamulet amulet 1 8  琥珀の首飾り move flat 8
+base staramulet  amulet 3 5  星の首飾り critdmg flat 25
+
+# affix <id> <prefix|suffix> <群> <重み> <付く枠> <名前>
+# tier <出る階の下限> (<能力> <種類> <最小> <最大>)+   … 深い階ほど下の行（上の段）が出る
+affix sharp prefix damage 10 weapon,ring,amulet 鋭い
+tier 1 dmgmin flat 1 2  dmgmax flat 2 4
+tier 2 dmgmin flat 2 3  dmgmax flat 4 6
+tier 3 dmgmin flat 3 5  dmgmax flat 6 9
+affix cruel prefix damage 8 weapon 残忍な
+tier 1 dmgmin inc 15 25 dmgmax inc 15 25
+tier 2 dmgmin inc 25 40 dmgmax inc 25 40
+tier 3 dmgmin inc 40 60 dmgmax inc 40 60
+affix heavy prefix heavy 5 weapon 重い
+tier 1 dmgmin inc 40 50 dmgmax inc 40 50 speed flat -15 -15
+tier 3 dmgmin inc 60 80 dmgmax inc 60 80 speed flat -15 -15
+affix sturdy prefix defense 10 armor,helm 頑丈な
+tier 1 armor flat 4 8
+tier 2 armor flat 8 15
+tier 3 armor flat 15 25
+affix fortified prefix defense 8 armor,helm 堅牢な
+tier 1 armor inc 15 25
+tier 2 armor inc 25 40
+tier 3 armor inc 40 60
+affix vital prefix life 10 armor,helm,ring,amulet 生命の
+tier 1 life flat 8 15
+tier 2 life flat 15 25
+tier 3 life flat 25 40
+affix hearty prefix life 6 armor,amulet 旺盛な
+tier 1 life inc 6 10
+tier 2 life inc 10 15
+tier 3 life inc 15 20
+affix swift suffix speed 8 weapon,ring,amulet 疾風
+tier 1 speed flat 6 10
+tier 2 speed flat 10 15
+tier 3 speed flat 15 20
+affix keen suffix crit 8 weapon,helm,ring 必中
+tier 1 crit flat 2 4
+tier 2 crit flat 4 6
+tier 3 crit flat 6 9
+affix fury suffix critdmg 6 weapon,amulet 激昂
+tier 1 critdmg flat 10 20
+tier 2 critdmg flat 20 35
+tier 3 critdmg flat 35 50
+affix thirst suffix leech 5 weapon,ring,amulet 吸血
+tier 1 leech flat 1 2
+tier 2 leech flat 2 3
+tier 3 leech flat 3 5
+affix ember suffix fireres 8 armor,helm,ring,amulet 耐火
+tier 1 fireres flat 6 12
+tier 2 fireres flat 12 20
+tier 3 fireres flat 20 30
+affix frost suffix coldres 8 armor,helm,ring,amulet 耐寒
+tier 1 coldres flat 6 12
+tier 2 coldres flat 12 20
+tier 3 coldres flat 20 30
+affix stride suffix move 6 armor,amulet 健脚
+tier 1 move flat 4 6
+tier 2 move flat 6 9
+tier 3 move flat 9 12
+
+# 同じ品に付けない組
+exclusive heavy swift
+exclusive ember frost
+
+# drop <敵> chance <装備を落とす%> count <個数> normal <重み> magic <重み> rare <重み> potion <回復薬%>
+drop grunt   chance 35  count 1 normal 55 magic 35 rare 10 potion 20
+drop archer  chance 40  count 1 normal 50 magic 38 rare 12 potion 15
+drop charger chance 50  count 1 normal 40 magic 42 rare 18 potion 25
+drop boss    chance 100 count 2 normal 0  magic 0  rare 1  potion 0
