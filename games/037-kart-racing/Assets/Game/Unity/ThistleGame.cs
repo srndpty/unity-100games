@@ -3,8 +3,6 @@ using Game.Core;
 using Game.Unity.Evidence;
 using IntGeometry;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
 using UnityEngine.UIElements;
 
 namespace Game.Unity
@@ -33,7 +31,7 @@ namespace Game.Unity
         private ThistleHud _hud;
         private VisualElement _root;
         private int _hudVersion = -1;
-        private int _held;
+        private ThistleInput _input;
         private bool _focused = true;
         private Vector2 _trackMin;
         private Vector2 _trackMax;
@@ -58,16 +56,35 @@ namespace Game.Unity
             ThistleTrackMesh.Bounds(_track, out _trackMin, out _trackMax);
             _audio = gameObject.AddComponent<ThistleAudio>();
             _audio.Bind(_settings.Volume);
+            _input = new ThistleInput();
         }
 
         private void OnEnable()
         {
             _hudRenderer.RegisterUIReloadCallback(OnHudReloaded);
+            _input.Enable();
+        }
+
+        private void OnDisable()
+        {
+            _input.Disable();
+        }
+
+        private void OnDestroy()
+        {
+            _input?.Dispose();
         }
 
         private void Update()
         {
-            if (!EvidenceCapture.IsRunning) { ReadKeys(); }
+            if (!EvidenceCapture.IsRunning)
+            {
+                // コールバックで溜めた意図を起きた順に渡す。Flow は意図の時刻まで Tick を進めてから反映する。
+                if (_focused) { _input.ApplyTo(_flow); }
+                _flow.Advance(ThistleInput.Now);
+            }
+
+            _input.Clear();
             Render();
         }
 
@@ -75,7 +92,7 @@ namespace Game.Unity
         {
             _focused = focus;
             _flow?.SetFocus(focus);
-            if (!focus) { _held = 0; }
+            if (!focus) { _input?.Clear(); }
         }
 
         public void Render()
@@ -122,41 +139,6 @@ namespace Game.Unity
             var shift = ((1f - TitleViewShare) + (TitleViewShare * 0.5f) - 0.5f) * width;
             _camera.transform.position = new Vector3(center.x - shift, center.y, -20f);
         }
-
-        private void ReadKeys()
-        {
-            var keyboard = Keyboard.current;
-            if (keyboard == null || !_focused) { return; }
-            var now = Time.realtimeSinceStartupAsDouble;
-            // 1 つの操作に 2 本のキーがあるので、キーごとに番号を付けて送る。押しているかは Flow がキーごとに持ち、
-            // 一時停止で空にする（押したままのキーは離して押し直すまで効かないが、別のキーを押せばすぐ効く）。
-            Edge(keyboard.aKey, now, IntentKind.SteerLeftDown, IntentKind.SteerLeftUp, 0);
-            Edge(keyboard.leftArrowKey, now, IntentKind.SteerLeftDown, IntentKind.SteerLeftUp, 1);
-            Edge(keyboard.dKey, now, IntentKind.SteerRightDown, IntentKind.SteerRightUp, 2);
-            Edge(keyboard.rightArrowKey, now, IntentKind.SteerRightDown, IntentKind.SteerRightUp, 3);
-            Edge(keyboard.wKey, now, IntentKind.AccelDown, IntentKind.AccelUp, 4);
-            Edge(keyboard.upArrowKey, now, IntentKind.AccelDown, IntentKind.AccelUp, 5);
-            Edge(keyboard.sKey, now, IntentKind.BrakeDown, IntentKind.BrakeUp, 6);
-            Edge(keyboard.downArrowKey, now, IntentKind.BrakeDown, IntentKind.BrakeUp, 7);
-            Edge(keyboard.spaceKey, now, IntentKind.DriftDown, IntentKind.DriftUp, 8);
-            if (Pressed(keyboard.enterKey) || Pressed(keyboard.numpadEnterKey)) { _flow.Apply(new Intent(IntentKind.Submit, now)); }
-            if (Pressed(keyboard.escapeKey)) { _flow.Apply(new Intent(IntentKind.Cancel, now)); }
-            if (Pressed(keyboard.rKey)) { _flow.Apply(new Intent(IntentKind.Retry, now)); }
-            if (Pressed(keyboard.backspaceKey)) { _flow.Apply(new Intent(IntentKind.Back, now)); }
-            _flow.Advance(now);
-        }
-
-        private void Edge(KeyControl key, double now, IntentKind down, IntentKind up, int bit)
-        {
-            var pressed = key != null && key.isPressed;
-            var was = (_held & (1 << bit)) != 0;
-            if (pressed == was) { return; }
-            if (pressed) { _held |= 1 << bit; }
-            else { _held &= ~(1 << bit); }
-            _flow.Apply(new Intent(pressed ? down : up, now, bit));
-        }
-
-        private static bool Pressed(KeyControl key) => key != null && key.wasPressedThisFrame;
 
         private void OnHudReloaded(PanelRenderer renderer, VisualElement root, int version)
         {

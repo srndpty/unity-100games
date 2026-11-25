@@ -240,6 +240,92 @@ namespace Game.Unity.Tests
         }
 
         [UnityTest]
+        public IEnumerator AKeyTappedBetweenFramesArrivesWithItsOwnTimes()
+        {
+            // フレームの間に押して離したキーも、押下と解放の 2 つの意図として、入力が起きた時刻のまま溜まる。
+            using var keyboard = new TestKeyboard();
+            using var input = new ThistleInput();
+            input.Enable();
+            yield return null;
+            var now = ThistleInput.Now;
+            var down = now - 0.2;
+            var up = now - 0.1;
+            keyboard.HoldAt(down, Key.W);
+            keyboard.HoldAt(up);
+            keyboard.HoldAt(up, Key.LeftArrow);
+            yield return null;
+
+            Assert.That(input.Pending, Has.Count.EqualTo(3));
+            AssertIntent(input.Pending[0], IntentKind.AccelDown, 4, down);
+            AssertIntent(input.Pending[1], IntentKind.AccelUp, 4, up);
+            AssertIntent(input.Pending[2], IntentKind.SteerLeftDown, 1, up);
+            keyboard.Hold();
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator TheTappedKeyDrivesTheTicksBetweenItsTimes()
+        {
+            // フレームの間の短い押下（2.5 Tick）を、押下・解放を 1 フレームでまとめて渡しても、別々のフレームで渡しても同じ状態になる。
+            // フレームの時刻で反映していたら、まとめて渡したほうは加速しない。
+            var config = _game.Settings.Validate();
+            var track = Track.Parse(_game.Settings.Track.text, config);
+            using var keyboard = new TestKeyboard();
+            using var input = new ThistleInput();
+            input.Enable();
+            yield return null;
+            const double tick = 1.0 / RaceFlow.TickRate;
+            var start = ThistleInput.Now - 4.0;
+            var down = start + ((config.StartDelayTicks + 5.5) * tick);
+            var up = down + (2.5 * tick);
+            Assert.That(up + (10 * tick), Is.LessThan(ThistleInput.Now), "入力の時刻は今より前に置く");
+            var oneFrame = Started(config, track, start, down - tick);
+            var perKey = Started(config, track, start, down - tick);
+            var none = Started(config, track, start, down - tick);
+
+            keyboard.HoldAt(down, Key.W);
+            keyboard.HoldAt(up);
+            yield return null;
+            Assert.That(input.Pending, Has.Count.EqualTo(2));
+            perKey.Apply(input.Pending[0]);
+            perKey.Advance(down + tick);
+            perKey.Apply(input.Pending[1]);
+            input.ApplyTo(oneFrame);
+
+            var end = up + (10 * tick);
+            AdvanceByTicks(oneFrame, down, end);
+            AdvanceByTicks(perKey, down + tick, end);
+            AdvanceByTicks(none, down - tick, end);
+            Assert.That(oneFrame.Race.KartAt(0).Position, Is.Not.EqualTo(none.Race.KartAt(0).Position), "押していた Tick だけ加速して進んだ");
+            Assert.That(oneFrame.Race.Hash(), Is.EqualTo(perKey.Race.Hash()));
+            Assert.That(oneFrame.Race.Hash(), Is.Not.EqualTo(none.Race.Hash()));
+        }
+
+        /// <summary>Input System は時刻をわずかに丸めて持つので、時刻は 1 µs 以内で比べる。</summary>
+        private static void AssertIntent(Intent intent, IntentKind kind, int key, double time)
+        {
+            Assert.That(intent.Kind, Is.EqualTo(kind));
+            Assert.That(intent.Key, Is.EqualTo(key));
+            Assert.That(intent.Time, Is.EqualTo(time).Within(1e-6));
+        }
+
+        private static RaceFlow Started(KartConfig config, Track track, double start, double until)
+        {
+            var flow = new RaceFlow(config, track);
+            flow.Apply(new Intent(IntentKind.Submit, start));
+            AdvanceByTicks(flow, start, until);
+            return flow;
+        }
+
+        /// <summary>1 フレームの Tick 上限に掛からないよう、1 Tick ずつ時計を進める。</summary>
+        private static void AdvanceByTicks(RaceFlow flow, double from, double until)
+        {
+            const double tick = 1.0 / RaceFlow.TickRate;
+            for (var time = from + tick; time < until; time += tick) { flow.Advance(time); }
+            flow.Advance(until);
+        }
+
+        [UnityTest]
         public IEnumerator SettingsRejectAMissingTrack()
         {
             var settings = Object.Instantiate(_game.Settings);

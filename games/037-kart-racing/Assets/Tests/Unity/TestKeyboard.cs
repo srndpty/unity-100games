@@ -33,6 +33,12 @@ namespace Game.Unity.Tests
             InputSystem.QueueStateEvent(_keyboard, new KeyboardState(keys));
         }
 
+        /// <summary>指定したキーだけが押されている状態を、入力の時刻 <paramref name="time"/>（<c>Time.realtimeSinceStartupAsDouble</c> と同じ時計）で送る。</summary>
+        public void HoldAt(double time, params Key[] keys)
+        {
+            InputSystem.QueueStateEvent(_keyboard, new KeyboardState(keys), time);
+        }
+
         /// <summary>1 フレーム押して離す。<c>yield return keyboard.Tap(Key.Enter);</c> のように使う。</summary>
         public IEnumerator Tap(Key key)
         {
