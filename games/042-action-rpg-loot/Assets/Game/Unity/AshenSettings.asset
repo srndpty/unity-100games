@@ -1,0 +1,109 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d297c3fdbd508c4d92965137d70fa14, type: 3}
+  m_Name: AshenSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.AshenSettings
+  Rules:
+    HeroSpeed: 24
+    HeroRadius: 96
+    HeroBox: 192
+    AttackInterval: 30
+    AttackWindup: 6
+    AttackReach: 224
+    AttackRadius: 192
+    SkillCooldown: 240
+    SkillWindup: 10
+    SkillRadius: 480
+    SkillPercent: 150
+    InvulnTicks: 30
+    DeathTicks: 90
+    PotionHealPercent: 40
+    PotionCooldown: 60
+    MaxPotions: 5
+    StartPotions: 2
+    PickupRange: 384
+    ClickPickupRange: 768
+    PotionTouchRange: 160
+    InventorySize: 20
+    GroundCap: 48
+    ProjectileCap: 64
+    StartWeapon: shortsword
+    FloorLifePercent: 64000000a0000000e6000000i
+    FloorDamagePercent: 6400000087000000aa000000i
+    Foes:
+    - Life: 40
+      Damage: 10
+      Element: 0
+      Speed: 12
+      Radius: 96
+      Aggro: 1536
+      Range: 64
+      Keep: 0
+      Windup: 24
+      Cooldown: 45
+      ProjectileSpeed: 0
+      ProjectileRadius: 0
+      ChargeSpeed: 0
+      ChargeTicks: 0
+    - Life: 28
+      Damage: 9
+      Element: 2
+      Speed: 10
+      Radius: 80
+      Aggro: 1792
+      Range: 1280
+      Keep: 768
+      Windup: 20
+      Cooldown: 80
+      ProjectileSpeed: 40
+      ProjectileRadius: 48
+      ChargeSpeed: 0
+      ChargeTicks: 0
+    - Life: 60
+      Damage: 16
+      Element: 0
+      Speed: 10
+      Radius: 112
+      Aggro: 1792
+      Range: 1280
+      Keep: 0
+      Windup: 36
+      Cooldown: 70
+      ProjectileSpeed: 0
+      ProjectileRadius: 0
+      ChargeSpeed: 56
+      ChargeTicks: 28
+    - Life: 440
+      Damage: 12
+      Element: 0
+      Speed: 12
+      Radius: 192
+      Aggro: 2304
+      Range: 96
+      Keep: 0
+      Windup: 30
+      Cooldown: 70
+      ProjectileSpeed: 36
+      ProjectileRadius: 64
+      ChargeSpeed: 60
+      ChargeTicks: 30
+    BossFanCount: 5
+    BossFanSpread: 2730
+    BossFanInterval: 160
+    BossFanIntervalEnraged: 110
+    BossFanDamage: 8
+    BossChargeInterval: 240
+    VictoryDelay: 120
+  Loot: {fileID: 4900000, guid: a71f19923b07e5c43bac371cfbdfce97, type: 3}
+  Floors: {fileID: 4900000, guid: a30842b0b3c13674c8d14b6034f0f288, type: 3}
+  Volume: 0.1
+  ViewHeightTiles: 13.5
