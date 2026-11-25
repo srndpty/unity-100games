@@ -12,7 +12,7 @@ namespace Game.Core.Tests
             Assert.That(track.StationCount, Is.GreaterThanOrEqualTo(4));
             Assert.That(track.CheckpointCount, Is.GreaterThanOrEqualTo(4));
             Assert.That(track.CheckpointStation(0), Is.EqualTo(0));
-            Assert.That(track.Walls, Has.Length.EqualTo(track.StationCount * 2));
+            Assert.That(track.Walls, Has.Count.EqualTo(track.StationCount * 2));
             Assert.That(track.TotalLength, Is.InRange(400_000, 600_000));
         }
 
@@ -68,7 +68,7 @@ namespace Game.Core.Tests
 
         private static void AssertOutside(Track track, IntGeometry.Vec2i point, int radius)
         {
-            for (var w = 0; w < track.Walls.Length; w++)
+            for (var w = 0; w < track.Walls.Count; w++)
             {
                 Assert.That(
                     WallContact.CloserThan(point, track.Walls[w].A, track.Walls[w].B, radius),

@@ -4,7 +4,7 @@ namespace Game.Core
 {
     /// <summary>
     /// ゲートの横断と周回。車両の速さや壁は見ない。渡された移動（壁で止めた後の経路）だけを見る。
-    /// 次のゲートを、手前から奥へ横切ったときだけ印が進む。線の上、逆向き、次以外のゲートでは変えない。
+    /// 次のゲートを、手前（線の上を含む）から奥へ横切ったときだけ印が進む。線の上で止まる、逆向き、次以外のゲートでは変えない。
     /// </summary>
     public static class Progress
     {
@@ -15,7 +15,7 @@ namespace Game.Core
         public static bool Cross(Track track, ref Kart kart, Vec2i from, Vec2i to, int tick)
         {
             if (kart.Finished) { return false; }
-            if (!Track.ForwardCross(track.Gates[kart.NextGate], from, to)) { return false; }
+            if (!Track.ForwardCross(track.GateAt(kart.NextGate), from, to)) { return false; }
             if (kart.NextGate == 0)
             {
                 kart.Laps++;

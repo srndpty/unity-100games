@@ -5,6 +5,7 @@ using Game.Core;
 using NUnit.Framework;
 using Unity.Profiling;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
@@ -193,6 +194,48 @@ namespace Game.Unity.Tests
             Assert.That(flow.Screen, Is.EqualTo(AppScreen.Paused));
             Assert.That(flow.Race.KartAt(0).BoostLeft, Is.EqualTo(0));
             Assert.That(flow.Race.KartAt(0).DriftTicks, Is.EqualTo(0));
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator AfterResumeTheArrowKeysWorkWhileWAndAAreStillHeld()
+        {
+            using var keyboard = new TestKeyboard();
+            var flow = _game.Flow;
+            _game.enabled = true; // キーを読む Update を動かす（他のテストは Flow を直接進めるので止めている）
+            yield return keyboard.Tap(Key.Enter);
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Playing));
+            keyboard.Hold(Key.W, Key.A);
+            yield return null;
+            yield return null;
+            Assert.That(flow.Held.Accelerate, Is.True);
+            Assert.That(flow.Held.Steer, Is.EqualTo(1));
+
+            keyboard.Hold(Key.W, Key.A, Key.Escape);
+            yield return null;
+            keyboard.Hold(Key.W, Key.A);
+            yield return null;
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Paused));
+            keyboard.Hold(Key.W, Key.A, Key.Enter);
+            yield return null;
+            keyboard.Hold(Key.W, Key.A);
+            yield return null;
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Playing));
+            Assert.That(flow.Held.Accelerate, Is.False, "押したままの W は効かない");
+            Assert.That(flow.Held.Steer, Is.EqualTo(0), "押したままの A は効かない");
+
+            keyboard.Hold(Key.W, Key.A, Key.UpArrow, Key.LeftArrow);
+            yield return null;
+            yield return null;
+            Assert.That(flow.Held.Accelerate, Is.True, "新しく押した ↑ は効く");
+            Assert.That(flow.Held.Steer, Is.EqualTo(1), "新しく押した ← は効く");
+
+            keyboard.Hold(Key.W, Key.A);
+            yield return null;
+            yield return null;
+            Assert.That(flow.Held.Accelerate, Is.False, "↑ を離すと止まる");
+            Assert.That(flow.Held.Steer, Is.EqualTo(0), "← を離すと止まる");
+            keyboard.Hold();
             yield return null;
         }
 

@@ -150,6 +150,34 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void AfterResumeANewlyPressedSecondKeyWorksWhileTheHeldKeyStaysOff()
+        {
+            // W（4）と A（0）を押したまま一時停止 → 再開。押したままのキーは効かず、↑（5）・←（1）を新しく押すとすぐ効く。
+            var config = new KartConfig { StartDelayTicks = 0 };
+            var flow = new RaceFlow(config, Track.Parse(WideText(), config));
+            flow.Apply(new Intent(IntentKind.Submit, 0));
+            flow.Apply(new Intent(IntentKind.AccelDown, 0, 4));
+            flow.Apply(new Intent(IntentKind.SteerLeftDown, 0, 0));
+            Assert.That(flow.Held.Accelerate, Is.True);
+            flow.Apply(new Intent(IntentKind.Cancel, Tick));
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Paused));
+            flow.Apply(new Intent(IntentKind.Submit, 2 * Tick));
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Playing));
+            Assert.That(flow.Held.Accelerate, Is.False, "押したままの W は効かない");
+            Assert.That(flow.Held.Steer, Is.EqualTo(0));
+
+            flow.Apply(new Intent(IntentKind.AccelDown, 3 * Tick, 5));
+            flow.Apply(new Intent(IntentKind.SteerLeftDown, 3 * Tick, 1));
+            Assert.That(flow.Held.Accelerate, Is.True, "新しく押した ↑ は効く");
+            Assert.That(flow.Held.Steer, Is.EqualTo(1));
+
+            flow.Apply(new Intent(IntentKind.AccelUp, 4 * Tick, 5));
+            flow.Apply(new Intent(IntentKind.SteerLeftUp, 4 * Tick, 1));
+            Assert.That(flow.Held.Accelerate, Is.False, "↑ を離すと止まる");
+            Assert.That(flow.Held.Steer, Is.EqualTo(0));
+        }
+
+        [Test]
         public void ACleanReleaseStillGrantsTheBoost()
         {
             var config = new KartConfig { StartDelayTicks = 0, TurnAtLow = 30, TurnAtHigh = 20, DriftTurn = 10 };

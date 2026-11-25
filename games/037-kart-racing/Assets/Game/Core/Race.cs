@@ -224,7 +224,7 @@ namespace Game.Core
             var position = kart.Position;
             for (var pass = 0; pass < 2 && (delta.X != 0 || delta.Y != 0); pass++)
             {
-                var contact = WallContact.First(position, delta, _track.Walls, _config.Radius);
+                var contact = WallContact.First(position, delta, _track.WallArray, _config.Radius);
                 if (!contact.IsHit)
                 {
                     position += delta;
@@ -237,7 +237,7 @@ namespace Game.Core
                     (int)(((long)delta.X * contact.Numerator) / contact.Denominator),
                     (int)(((long)delta.Y * contact.Numerator) / contact.Denominator));
                 position += traveled;
-                var wall = _track.Walls[contact.Index];
+                var wall = _track.WallArray[contact.Index];
                 position = WallContact.PushOut(position, wall, _config.Radius);
                 delta = WallContact.Slide(delta - traveled, wall.Inward);
                 if (count < _path.Length) { _path[count++] = position; }
@@ -271,7 +271,7 @@ namespace Game.Core
         private bool StillInside(ref Vec2i position)
         {
             var stuck = false;
-            var walls = _track.Walls;
+            var walls = _track.WallArray;
             for (var pass = 0; pass < 8; pass++)
             {
                 var moved = false;

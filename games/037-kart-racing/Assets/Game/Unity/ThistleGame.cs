@@ -128,11 +128,17 @@ namespace Game.Unity
             var keyboard = Keyboard.current;
             if (keyboard == null || !_focused) { return; }
             var now = Time.realtimeSinceStartupAsDouble;
-            Edge(keyboard.aKey, keyboard.leftArrowKey, now, IntentKind.SteerLeftDown, IntentKind.SteerLeftUp, 0);
-            Edge(keyboard.dKey, keyboard.rightArrowKey, now, IntentKind.SteerRightDown, IntentKind.SteerRightUp, 2);
-            Edge(keyboard.wKey, keyboard.upArrowKey, now, IntentKind.AccelDown, IntentKind.AccelUp, 4);
-            Edge(keyboard.sKey, keyboard.downArrowKey, now, IntentKind.BrakeDown, IntentKind.BrakeUp, 6);
-            Edge(keyboard.spaceKey, null, now, IntentKind.DriftDown, IntentKind.DriftUp, 8);
+            // 1 つの操作に 2 本のキーがあるので、キーごとに番号を付けて送る。押しているかは Flow がキーごとに持ち、
+            // 一時停止で空にする（押したままのキーは離して押し直すまで効かないが、別のキーを押せばすぐ効く）。
+            Edge(keyboard.aKey, now, IntentKind.SteerLeftDown, IntentKind.SteerLeftUp, 0);
+            Edge(keyboard.leftArrowKey, now, IntentKind.SteerLeftDown, IntentKind.SteerLeftUp, 1);
+            Edge(keyboard.dKey, now, IntentKind.SteerRightDown, IntentKind.SteerRightUp, 2);
+            Edge(keyboard.rightArrowKey, now, IntentKind.SteerRightDown, IntentKind.SteerRightUp, 3);
+            Edge(keyboard.wKey, now, IntentKind.AccelDown, IntentKind.AccelUp, 4);
+            Edge(keyboard.upArrowKey, now, IntentKind.AccelDown, IntentKind.AccelUp, 5);
+            Edge(keyboard.sKey, now, IntentKind.BrakeDown, IntentKind.BrakeUp, 6);
+            Edge(keyboard.downArrowKey, now, IntentKind.BrakeDown, IntentKind.BrakeUp, 7);
+            Edge(keyboard.spaceKey, now, IntentKind.DriftDown, IntentKind.DriftUp, 8);
             if (Pressed(keyboard.enterKey) || Pressed(keyboard.numpadEnterKey)) { _flow.Apply(new Intent(IntentKind.Submit, now)); }
             if (Pressed(keyboard.escapeKey)) { _flow.Apply(new Intent(IntentKind.Cancel, now)); }
             if (Pressed(keyboard.rKey)) { _flow.Apply(new Intent(IntentKind.Retry, now)); }
@@ -140,14 +146,14 @@ namespace Game.Unity
             _flow.Advance(now);
         }
 
-        private void Edge(KeyControl first, KeyControl second, double now, IntentKind down, IntentKind up, int bit)
+        private void Edge(KeyControl key, double now, IntentKind down, IntentKind up, int bit)
         {
-            var pressed = (first != null && first.isPressed) || (second != null && second.isPressed);
+            var pressed = key != null && key.isPressed;
             var was = (_held & (1 << bit)) != 0;
             if (pressed == was) { return; }
             if (pressed) { _held |= 1 << bit; }
             else { _held &= ~(1 << bit); }
-            _flow.Apply(new Intent(pressed ? down : up, now));
+            _flow.Apply(new Intent(pressed ? down : up, now, bit));
         }
 
         private static bool Pressed(KeyControl key) => key != null && key.wasPressedThisFrame;

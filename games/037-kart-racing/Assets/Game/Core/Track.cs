@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using IntGeometry;
 
@@ -82,6 +83,8 @@ namespace Game.Core
         private readonly Vec2i[] _guardRight;
         private readonly int[] _length;
         private readonly int[] _checkpoints;
+        private readonly WallSeg[] _walls;
+        private readonly Gate[] _gates;
 
         private Track(Vec2i[] position, int[] halfWidth, int runoff, Vec2i[] left, Vec2i[] right, Vec2i[] guardLeft, Vec2i[] guardRight, int[] length, int[] checkpoints, WallSeg[] walls, Gate[] gates)
         {
@@ -94,8 +97,10 @@ namespace Game.Core
             _guardRight = guardRight;
             _length = length;
             _checkpoints = checkpoints;
-            Walls = walls;
-            Gates = gates;
+            _walls = walls;
+            _gates = gates;
+            Walls = Array.AsReadOnly(walls);
+            Gates = Array.AsReadOnly(gates);
         }
 
         /// <summary>芝の幅の上限（mm）。</summary>
@@ -108,9 +113,15 @@ namespace Game.Core
         /// <summary>ターマックの端からガード壁までの芝の幅（mm、全周で同じ）。</summary>
         public int Runoff { get; }
 
-        public WallSeg[] Walls { get; }
+        /// <summary>ガード壁。ハッシュはこの線分を作った点から取るので、外からは書き換えられない形で公開する。</summary>
+        public IReadOnlyList<WallSeg> Walls { get; }
 
-        public Gate[] Gates { get; }
+        public IReadOnlyList<Gate> Gates { get; }
+
+        /// <summary>Core の衝突判定用（毎 Tick 回すので配列のまま）。</summary>
+        internal WallSeg[] WallArray => _walls;
+
+        internal Gate GateAt(int index) => _gates[index];
 
         public int TotalLength
         {
@@ -394,12 +405,15 @@ namespace Game.Core
             return length;
         }
 
-        /// <summary>ゲートを、手前から奥へ横切ったか。線の上は横切ったことにしない。</summary>
+        /// <summary>
+        /// ゲートを、手前から奥へ横切ったか。線の上は手前の側として扱う。
+        /// 手前 → 線の上 → 奥の 2 本の移動は、奥へ出た 2 本目で 1 回だけ数える。線の上で止まる・線の上を動く・線から手前へ戻る移動は数えない。
+        /// </summary>
         public static bool ForwardCross(Gate gate, Vec2i from, Vec2i to)
         {
             var startSide = Geom.Sign(Geom.Cross(gate.B - gate.A, from - gate.A));
             var endSide = Geom.Sign(Geom.Cross(gate.B - gate.A, to - gate.A));
-            if (startSide == 0 || endSide == 0 || startSide == endSide || endSide != gate.Ahead)
+            if (startSide == gate.Ahead || endSide != gate.Ahead)
             {
                 return false;
             }

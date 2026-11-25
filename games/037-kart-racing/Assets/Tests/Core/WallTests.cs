@@ -67,7 +67,7 @@ namespace Game.Core.Tests
             {
                 race.Step(race.PlanFor(0, 1000));
                 var kart = race.KartAt(0);
-                for (var w = 0; w < race.Track.Walls.Length; w++)
+                for (var w = 0; w < race.Track.Walls.Count; w++)
                 {
                     Assert.That(
                         WallContact.CloserThan(kart.Position, race.Track.Walls[w].A, race.Track.Walls[w].B, config.Radius),
