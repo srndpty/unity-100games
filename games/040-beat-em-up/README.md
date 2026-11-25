@@ -83,6 +83,10 @@ dev capture 040  # 証跡を evidence/ に撮る（画像は captures/<画像世
 - Core（`Assets/Game/Core`）は技表を読む状態機械で、技ごとのコードを持たない。敵の考えと攻撃権も Core に置く（乱数は出現ごとに試合の系列から分けた敵ごとの xorshift）。物理エンジンは使わない。
 - App（`Assets/Game/App`）は画面の流れ（タイトル → 操作説明 → 試合 → 一時停止 → 結果）と時刻つき入力、操縦役 `Autopilot`、効果音の出来事 `CombatFeedback`。
 - 面は `Assets/Game/Data/Stage.txt`（区画と波）。
+- Unity（`Assets/Game/Unity`）は描画・入力・音・カメラ。登場者は Prefab の 9 組（プレイヤー＋敵の置き場 8）の SpriteRenderer を使い回し、位置は `Depth.ScreenY`、重なり順（sortingOrder）は `Depth.DrawOrder` の順位を写すだけ。影は地面（y = 0）の位置に別の層で描く。姿は Core の状態と技の Tick から決め、実時間を使わない。
+- 描画の置き場は 9 組なので、`SootSettings` の検証で敵の置き場（`Capacity`）を 8 以下に限る（Core は 32 まで受け付ける）。
+- 絵はすべて `SootArtGenerator` で生成したドット絵（登場者 5 種 × 9 姿勢、路地の背景・地面・影・街灯・エフェクト）。シーンと Stage Prefab は `SootSceneBuilder` で作る（`unity run games/040-beat-em-up -- -executeMethod Game.Unity.Editor.SootSceneBuilder.Build`）。Prefab の街灯（区画の右端）とタイトルの配置は Core のデータと同じ関数で照合する（`SootStage.Mismatch`）。
+- F1 の判定箱は、箱の正面（奥行きの中心の高さ）と、地面に落とした奥行きの帯を描く。帯が重ならなければ、正面が重なって見えても当たらない。
 
 ## テスト
 
