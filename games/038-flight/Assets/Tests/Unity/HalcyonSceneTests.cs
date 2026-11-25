@@ -188,6 +188,30 @@ namespace Game.Unity.Tests
         }
 
         [UnityTest]
+        public IEnumerator RetryingResetsTheWarningBeepTimer()
+        {
+            var flow = _game.Flow;
+            var audio = _game.GetComponent<HalcyonAudio>();
+            flow.Pilot = new Autopilot();
+            flow.Apply(new Intent(IntentKind.Submit, 0));
+
+            // ロック中の繰り返し音が鳴るまで、毎 Tick 描いて音を進める（バッチ実行では消音だが、間隔の計算は動く）。
+            for (var i = 0; i < 20000 && audio.LastBeepTick < 0; i++)
+            {
+                flow.StepTick();
+                _game.Render();
+            }
+
+            Assert.That(audio.LastBeepTick, Is.GreaterThan(0), "前の試合で繰り返し音が鳴った");
+            flow.Apply(new Intent(IntentKind.Cancel, 0));
+            flow.Apply(new Intent(IntentKind.Retry, 0));
+            _game.Render();
+            yield return null;
+            Assert.That(flow.Mission.Tick, Is.Zero);
+            Assert.That(audio.LastBeepTick, Is.LessThan(0), "再挑戦で前の試合の最後の音の Tick を捨てる（残すと前の Tick に追いつくまで鳴らない）");
+        }
+
+        [UnityTest]
         public IEnumerator TheDrawingFollowsTheCoreState()
         {
             var flow = _game.Flow;

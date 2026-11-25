@@ -88,7 +88,7 @@ dev capture 038  # 証跡を evidence/ に撮る（画像は captures/<画像世
 | Core（.NET） | `Assets/Tests/Core/`（`MathTests`・`FlightModelTests`・`CombatTests`・`GuidanceTests`・`MissionTests`・`EnemyRoleTests`） | `dev test 038` | 80 |
 | App（.NET） | `Assets/Tests/App/`（`SortieFlowTests`・`AutopilotTests`・`PlayabilityTests`） | `dev test 038` | 18 |
 | EditMode（Mono） | 上の Core・App と共通パッケージ・証跡の公開 | `dev test 038 -Unity` | 160 |
-| PlayMode（実シーン） | `Assets/Tests/Unity/HalcyonSceneTests.cs` と雛形の証跡公開 | `dev test 038 -Unity -Mode PlayMode` | 29 |
+| PlayMode（実シーン） | `Assets/Tests/Unity/HalcyonSceneTests.cs` と雛形の証跡公開 | `dev test 038 -Unity -Mode PlayMode` | 30 |
 
 - 固定ハッシュ：飛行モデルの 3000 Tick（`1290656686`）と、操縦役のシード 1 の最終状態（`925928182`、設定を含む）を .NET と Mono の両方で照合する。
 - 性能と割り当ての計測は PlayMode の `AMissionStepAndTheWorldViewAreFastAndRenderingDoesNotAllocate`。結果は [evidence/README.md](evidence/README.md)。

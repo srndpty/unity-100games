@@ -16,7 +16,13 @@ namespace Game.Unity
         private AudioClip _tone;
         private AudioClip _noise;
         private float _volume = 0.12f;
-        private int _lastBeepTick = -1000;
+        private int _lastBeepTick = NoBeep;
+        private Mission _beepMission;
+
+        private const int NoBeep = -1000;
+
+        /// <summary>直近に繰り返し音を鳴らした Tick（テスト用）。試合が替わると <see cref="NoBeep"/> に戻る。</summary>
+        public int LastBeepTick => _lastBeepTick;
 
         public void Bind(float volume)
         {
@@ -53,6 +59,14 @@ namespace Game.Unity
             ApplyMute();
             if (_engine == null) { return; }
             var mission = flow.Mission;
+
+            // 再挑戦・タイトルで試合が替わると Tick が 0 に戻るので、前の試合の最後の音の Tick を捨てる。
+            if (!ReferenceEquals(mission, _beepMission))
+            {
+                _beepMission = mission;
+                _lastBeepTick = NoBeep;
+            }
+
             var view = mission.Player.View;
             var playing = flow.Screen == AppScreen.Playing && !mission.Player.Down;
             _engine.pitch = 0.4f + (view.Throttle / 1000f * 0.5f) + (view.Air.Speed / (float)(300 * Units.MetersPerSecond));
