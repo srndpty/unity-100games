@@ -53,8 +53,20 @@ namespace Game.Core
         /// <summary>プレイヤーが空中でこの距離（m）より近づくと、その敵は交戦を始める（以後は巡回に戻らない）。</summary>
         public int EngageRange = 5000;
 
-        /// <summary>敵が保とうとする速さ。</summary>
-        public int EnemyCruiseSpeed = 170 * Units.MetersPerSecond;
+        /// <summary>敵が保とうとする速さ（プレイヤーの最高速度より遅く、全開なら振り切れる）。</summary>
+        public int EnemyCruiseSpeed = 150 * Units.MetersPerSecond;
+
+        /// <summary>敵の舵の効き（%）。プレイヤーより小さいので、急旋回を続ければ後ろの敵を前へ回り込ませられる。</summary>
+        public int EnemyAgility = 75;
+
+        /// <summary>攻撃役の敵がこの Tick 追い続けたら離脱する。</summary>
+        public int EnemyPursuitTicks = 600;
+
+        /// <summary>離脱（まっすぐ離れる）の Tick 数。発射した後も離脱する。</summary>
+        public int EnemyBreakTicks = 240;
+
+        /// <summary>攻撃役でない交戦中の敵が、プレイヤーのまわりを回る半径（m）。</summary>
+        public int EnemyWaitRadius = 2500;
 
         /// <summary>敵が引き起こす高度（m）。</summary>
         public int EnemyFloor = 400;
@@ -158,6 +170,10 @@ namespace Game.Core
             Require(PatrolRadius, 200, 4000, nameof(PatrolRadius));
             Require(EngageRange, 0, 20000, nameof(EngageRange));
             Require(EnemyCruiseSpeed, flight.StallSpeed, flight.MaxSpeed, nameof(EnemyCruiseSpeed));
+            Require(EnemyAgility, 10, 100, nameof(EnemyAgility));
+            Require(EnemyPursuitTicks, 1, 36000, nameof(EnemyPursuitTicks));
+            Require(EnemyBreakTicks, 0, 6000, nameof(EnemyBreakTicks));
+            Require(EnemyWaitRadius, 200, 2 * ArenaHalfWidth, nameof(EnemyWaitRadius));
             Require(EnemyFloor, 50, Ceiling / 2, nameof(EnemyFloor));
             Require(EnemyLeadTicks, 0, 600, nameof(EnemyLeadTicks));
             Require(EnemyEvadeRange, 0, 5000, nameof(EnemyEvadeRange));

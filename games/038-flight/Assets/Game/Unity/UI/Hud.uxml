@@ -47,7 +47,7 @@
             <ui:VisualElement class="controls" picking-mode="Ignore">
                 <ui:Label class="control" text="Shift / Ctrl　スロットル（離陸は全開で）" />
                 <ui:Label class="control" text="S・↓ 機首上げ　　W・↑ 機首下げ" />
-                <ui:Label class="control" text="A D・← →　ロール（地上では左右）" />
+                <ui:Label class="control" text="A D・← →　押している間その向きへ旋回（離すと水平。地上では左右）" />
                 <ui:Label class="control" text="Q E　ヨー" />
                 <ui:Label class="control" text="Space　ミサイル（LOCK 中だけ）　Tab　目標切替" />
                 <ui:Label class="control" text="Esc　一時停止" />

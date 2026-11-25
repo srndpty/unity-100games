@@ -71,7 +71,7 @@ namespace Game.App
 
         public bool Won => Screen == AppScreen.Result && Mission.Outcome == Outcome.Won;
 
-        /// <summary>キーから作る今の操縦（押している印だけから決まる）。</summary>
+        /// <summary>キーから作る今の操縦（押している印だけから決まる）。Mission へは <see cref="TurnAssist"/> を通して渡す。</summary>
         public Controls Held => new(
             AxisValue(IsHeld(HeldKey.PitchUp), IsHeld(HeldKey.PitchDown)),
             AxisValue(IsHeld(HeldKey.RollRight), IsHeld(HeldKey.RollLeft)),
@@ -180,7 +180,7 @@ namespace Game.App
 
         private void Step()
         {
-            var command = Pilot != null ? Pilot.CommandFor(Mission) : new PlayerCommand(Held, _fire, _cycle);
+            var command = Pilot != null ? Pilot.CommandFor(Mission) : new PlayerCommand(TurnAssist.Apply(_flight, Mission.Player.View, Held), _fire, _cycle);
             _fire = false;
             _cycle = false;
             var (fire, moments) = Mission.Step(command);

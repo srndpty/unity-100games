@@ -54,6 +54,12 @@ namespace Game.Core
         /// <summary>敵：交戦を始めたか。</summary>
         public bool Engaged { get; internal set; }
 
+        /// <summary>敵：攻撃役として追い続けた Tick 数。</summary>
+        public int PursuitTicks { get; internal set; }
+
+        /// <summary>敵：離脱の残り Tick（0 なら離脱していない）。</summary>
+        public int BreakTicks { get; internal set; }
+
         /// <summary>敵：巡回の円の中心。</summary>
         public Vec3l PatrolCenter { get; internal set; }
 
@@ -81,6 +87,8 @@ namespace Game.Core
             hash.Mix(LockTarget);
             hash.Mix(LockTicks);
             hash.Mix(Engaged);
+            hash.Mix(PursuitTicks);
+            hash.Mix(BreakTicks);
             hash.Mix(PatrolCenter.X);
             hash.Mix(PatrolCenter.Y);
             hash.Mix(PatrolCenter.Z);

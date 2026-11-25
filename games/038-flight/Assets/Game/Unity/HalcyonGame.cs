@@ -95,6 +95,8 @@ namespace Game.Unity
 
         private void OnApplicationFocus(bool focus)
         {
+            // 撮影は台本が Tick を進めるので、ウィンドウのフォーカスで一時停止しない（別のウィンドウを触っても撮影が止まらない）。
+            if (EvidenceCapture.IsRunning) { return; }
             _focused = focus;
             _flow?.SetFocus(focus);
             if (!focus) { _input?.Clear(); }

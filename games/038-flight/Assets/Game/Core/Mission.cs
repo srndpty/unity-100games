@@ -86,6 +86,7 @@ namespace Game.Core
         private List<Missile> _missiles;
         private Vec3l[] _starts;
         private SeededRandom _pilotRandom;
+        private int _lastAttacker;
         private ReadOnlyCollection<Fighter> _fighterView;
         private ReadOnlyCollection<Missile> _missileView;
 
@@ -143,6 +144,9 @@ namespace Game.Core
         /// <summary>終わった Tick（続いていれば -1）。</summary>
         public int FinishedTick { get; private set; } = -1;
 
+        /// <summary>攻撃役の敵の番号（いなければ -1）。ロックと発射をするのは攻撃役だけ。</summary>
+        public int Attacker { get; internal set; } = -1;
+
         /// <summary>区域の外にいる Tick 数（中に戻ると 0）。</summary>
         public int OutOfArea { get; private set; }
 
@@ -179,11 +183,17 @@ namespace Game.Core
             if (command.CycleTarget) { CycleTarget(player); }
             var fire = command.Fire ? TryFire(player) : FireResult.None;
             if (fire == FireResult.Launched) { moments |= MissionMoment.PlayerFired; }
-            for (var i = 1; i < _fighters.Length && EnemyPilots; i++)
+            if (EnemyPilots && Attacker > 0)
             {
-                var enemy = _fighters[i];
-                if (enemy.Engaged && IsLocked(enemy) && TryFire(enemy) == FireResult.Launched) { moments |= MissionMoment.EnemyFired; }
+                var attacker = _fighters[Attacker];
+                if (IsLocked(attacker) && TryFire(attacker) == FireResult.Launched)
+                {
+                    moments |= MissionMoment.EnemyFired;
+                    StartBreak(attacker);
+                }
             }
+
+            if (EnemyPilots) { UpdateRoles(); }
 
             if (Tick % _config.EnemyJitterTicks == 1) { RedrawJitter(); }
             moments |= Fly(command.Controls);
@@ -257,7 +267,9 @@ namespace Game.Core
             hash.Mix((int)Outcome);
             hash.Mix(FinishedTick);
             hash.Mix(OutOfArea);
+            hash.Mix(Attacker);
             hash.Mix(_pilotRandom.State);
+            hash.Mix(_lastAttacker);
             foreach (var fighter in _fighters) { fighter.Mix(ref hash); }
             hash.Mix(_missiles.Count);
             foreach (var missile in _missiles) { missile.Mix(ref hash); }
@@ -391,16 +403,76 @@ namespace Game.Core
             {
                 point = Steering.Evade(view, threat.Value);
             }
-            else if (enemy.Engaged && !player.Down)
+            else if (enemy.BreakTicks > 0)
+            {
+                // 離脱：今の進む向きへ水平にまっすぐ離れる。
+                var v = enemy.Plane.Velocity;
+                point = enemy.Plane.Position + new Vec3l(v.X * 600, 0, v.Z * 600);
+            }
+            else if (enemy.Index == Attacker && !player.Down)
             {
                 point = playerPlane.Position + Vec3l.MulDiv(playerPlane.Velocity, _config.EnemyLeadTicks, 1) + enemy.AimJitter;
             }
+            else if (enemy.Engaged && !player.Down)
+            {
+                // 攻撃役でない交戦中の敵は、プレイヤーのまわりを回って待つ。
+                var center = new Vec3l(playerPlane.Position.X, Math.Max(playerPlane.Position.Y, MissionConfig.Meters(_config.EnemyFloor * 2)), playerPlane.Position.Z);
+                point = OrbitPoint(enemy, center, MissionConfig.Meters(_config.EnemyWaitRadius));
+            }
             else
             {
-                point = PatrolPoint(enemy);
+                point = OrbitPoint(enemy, enemy.PatrolCenter, MissionConfig.Meters(_config.PatrolRadius));
             }
 
-            return Steering.Toward(_flight, view, point, _config.EnemyCruiseSpeed);
+            var controls = Steering.Toward(_flight, view, point, _config.EnemyCruiseSpeed);
+            var agility = _config.EnemyAgility;
+            return new Controls(controls.Pitch * agility / 100, controls.Roll * agility / 100, controls.Yaw * agility / 100, controls.Throttle);
+        }
+
+        /// <summary>
+        /// 攻撃役を決める。離脱の残りを減らし、攻撃役が倒れた・離脱した・いなければ、前の攻撃役の次の番号から順に、
+        /// 交戦中で離脱していない敵を選ぶ。攻撃役は追い続けた Tick を数え、上限で離脱する。
+        /// </summary>
+        private void UpdateRoles()
+        {
+            for (var i = 1; i < _fighters.Length; i++)
+            {
+                var enemy = _fighters[i];
+                if (enemy.BreakTicks > 0)
+                {
+                    enemy.BreakTicks--;
+                    if (enemy.BreakTicks == 0) { enemy.PursuitTicks = 0; }
+                }
+            }
+
+            if (Attacker > 0 && (_fighters[Attacker].Down || _fighters[Attacker].BreakTicks > 0)) { Attacker = -1; }
+            if (Attacker < 0 && !_fighters[0].Down)
+            {
+                for (var step = 1; step <= MissionConfig.EnemyCount; step++)
+                {
+                    var index = ((Math.Max(_lastAttacker, 0) + step - 1) % MissionConfig.EnemyCount) + 1;
+                    var enemy = _fighters[index];
+                    if (enemy.Down || !enemy.Engaged || enemy.BreakTicks > 0) { continue; }
+                    Attacker = index;
+                    _lastAttacker = index;
+                    break;
+                }
+            }
+
+            if (Attacker < 0) { return; }
+            var attacker = _fighters[Attacker];
+            attacker.PursuitTicks++;
+            if (attacker.PursuitTicks >= _config.EnemyPursuitTicks) { StartBreak(attacker); }
+        }
+
+        private void StartBreak(Fighter enemy)
+        {
+            enemy.BreakTicks = _config.EnemyBreakTicks;
+            enemy.PursuitTicks = 0;
+            enemy.LockTicks = 0;
+            enemy.LockTarget = -1;
+            if (enemy.BreakTicks == 0) { return; }
+            if (Attacker == enemy.Index) { Attacker = -1; }
         }
 
         /// <summary>敵を追うプレイヤーのミサイルのうち、避け始める距離より近い最も近いものの位置。</summary>
@@ -422,13 +494,11 @@ namespace Game.Core
             return closest;
         }
 
-        /// <summary>巡回の円の上で、今の位置から 30° 先の点（右回り）。</summary>
-        private Vec3l PatrolPoint(Fighter enemy)
+        /// <summary>中心のまわりの半径 <paramref name="radius"/> の円の上で、今の位置から 30° 先の点（右回り）。</summary>
+        private static Vec3l OrbitPoint(Fighter enemy, Vec3l center, long radius)
         {
-            var center = enemy.PatrolCenter;
             var offset = enemy.Plane.Position - center;
             var angle = Trig.Atan2(offset.X, offset.Z, 0) + Units.Degrees(30);
-            var radius = MissionConfig.Meters(_config.PatrolRadius);
             return new Vec3l(center.X + Fixed.Round(Fixed.Sin(angle) * radius), center.Y, center.Z + Fixed.Round(Fixed.Cos(angle) * radius));
         }
 
@@ -505,7 +575,7 @@ namespace Game.Core
             if (!fighter.IsPlayer)
             {
                 var player = _fighters[0];
-                var inCone = fighter.Engaged && ConeScore(fighter, player) != null;
+                var inCone = fighter.Index == Attacker && fighter.BreakTicks == 0 && ConeScore(fighter, player) != null;
                 fighter.LockTarget = inCone ? 0 : -1;
                 fighter.LockTicks = inCone ? Math.Min(fighter.LockTicks + 1, _config.EnemyLockTicks) : 0;
                 return;

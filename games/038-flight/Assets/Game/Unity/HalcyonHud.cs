@@ -268,13 +268,18 @@ namespace Game.Unity
             var value = 0;
             if (!view.Grounded && !player.Down && view.Position.Y < PullUpAltitude && view.Velocity.Y < 0) { warning = Warning.PullUp; }
             else if (MissileIncoming(mission)) { warning = Warning.Missile; }
+            else if (LockProgress(mission) >= 100) { warning = Warning.Locked; }
             else if (view.Air.Stalled && !player.Down) { warning = Warning.Stall; }
             else if (mission.OutOfArea > 0)
             {
                 warning = Warning.Area;
                 value = (_config.OutOfAreaTicks - mission.OutOfArea + Units.TickRate - 1) / Units.TickRate;
             }
-            else if (BeingLocked(mission)) { warning = Warning.Locked; }
+            else if (LockProgress(mission) > 0)
+            {
+                warning = Warning.Targeted;
+                value = LockProgress(mission);
+            }
 
             if (warning == _shownWarning && value == _shownWarningValue) { return; }
             _shownWarning = warning;
@@ -285,7 +290,8 @@ namespace Game.Unity
                 Warning.Missile => "MISSILE",
                 Warning.Stall => "STALL",
                 Warning.Area => $"区域に戻れ {value}",
-                Warning.Locked => "ロックされている",
+                Warning.Locked => "ロックされた",
+                Warning.Targeted => $"狙われている {value}%",
                 _ => " ",
             };
         }
@@ -301,14 +307,18 @@ namespace Game.Unity
             return false;
         }
 
-        private static bool BeingLocked(Mission mission)
+        /// <summary>敵のロックの進み（%、最も進んだ敵）。円錐に入っていなければ 0、LOCK で 100。</summary>
+        public static int LockProgress(Mission mission)
         {
+            var progress = 0;
             for (var i = 1; i < mission.Fighters.Count; i++)
             {
-                if (mission.Fighters[i].LockTarget == 0 && mission.Fighters[i].LockTicks > 0) { return true; }
+                var enemy = mission.Fighters[i];
+                if (enemy.LockTarget != 0 || enemy.LockTicks <= 0) { continue; }
+                progress = Mathf.Max(progress, enemy.LockTicks * 100 / mission.LockTicksFor(enemy));
             }
 
-            return false;
+            return progress;
         }
 
         /// <summary>LOCK・ロック中の進み・直近の発射の拒否。</summary>
@@ -401,6 +411,7 @@ namespace Game.Unity
             Stall,
             Area,
             Locked,
+            Targeted,
         }
     }
 }

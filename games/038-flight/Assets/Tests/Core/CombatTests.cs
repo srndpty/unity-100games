@@ -156,6 +156,7 @@ namespace Game.Core.Tests
                 mission.Place(0, Aircraft.InFlight(flight, new Vec3l(side, Altitude, 0), 0, Cruise, 600));
                 mission.Place(1, Aircraft.InFlight(flight, new Vec3l(0, Altitude, -600 * Units.PerMeter), 0, Cruise, 600));
                 mission.FighterAt(1).Engaged = true;
+                mission.Attacker = 1;
                 for (var tick = 0; tick < 10; tick++) { mission.Step(Fly()); }
                 Assert.That(mission.Fighters[1].LockTicks > 0, Is.EqualTo(expected), $"{degrees}°");
             }

@@ -6,7 +6,7 @@ namespace Game.App.Tests
     public sealed class AutopilotTests
     {
         /// <summary>シード 1 を操縦役で最後まで進めた最終ハッシュ。整数だけなので .NET と Mono で同じ値になる。</summary>
-        private const uint SeedOneFinalHash = 4145725609u;
+        private const uint SeedOneFinalHash = 2464520460u;
 
         [Test]
         public void AutopilotTakesOffAndWinsEverySeed()

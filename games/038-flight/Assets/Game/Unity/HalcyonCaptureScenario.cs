@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Game.Unity
 {
     /// <summary>
-    /// タイトル、滑走、離陸、ロック中、LOCK、発射、撃墜、ロックされている警告、成功の結果（操縦役）と、
+    /// タイトル、滑走、離陸、ロック中、LOCK、発射、撃墜、狙われている警告、成功の結果（操縦役）と、
     /// 失速、墜落の結果（決まった操縦）を Tick で進めて撮る。
     /// </summary>
     public sealed class HalcyonCaptureScenario : MonoBehaviour, ICaptureScenario
@@ -48,8 +48,8 @@ namespace Game.Unity
             Step(flow, 10);
             await Shoot(game, capture, "07-kill", "撃墜");
 
-            StepUntil(flow, () => Locked(mission), "ロックされている警告");
-            await Shoot(game, capture, "08-warning", "敵にロックされている警告");
+            StepUntil(flow, () => Locked(mission), "狙われている警告");
+            await Shoot(game, capture, "08-warning", "敵に狙われている警告（ロックの進み）");
 
             StepUntil(flow, () => flow.Screen == AppScreen.Result, "成功の結果");
             await Shoot(game, capture, "09-complete", "成功の結果");

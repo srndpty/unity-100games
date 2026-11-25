@@ -2,6 +2,8 @@ using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Game.Core.Tests")]
 [assembly: InternalsVisibleTo("G038.Core.Tests")]
+[assembly: InternalsVisibleTo("Game.App.Tests")]
+[assembly: InternalsVisibleTo("G038.App.Tests")]
 
 namespace Game.Core
 {
