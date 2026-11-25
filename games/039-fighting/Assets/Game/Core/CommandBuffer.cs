@@ -78,6 +78,7 @@ namespace Game.Core
             }
 
             if (pad.Sweep && !_sweepHeld) { Arm(tick, AttackButton.Sweep, config.BufferTicks); }
+            if (ThrowPressed(tick)) { Arm(tick, AttackButton.Throw, config.BufferTicks); }
             _lightHeld = pad.Light;
             _heavyHeld = pad.Heavy;
             _sweepHeld = pad.Sweep;
@@ -89,7 +90,9 @@ namespace Game.Core
             if (!_buffer.IsActive) { _armed = false; }
         }
 
-        public bool ThrowReady(int tick)
+        public bool ThrowReady => AttackReady && _button == AttackButton.Throw;
+
+        private bool ThrowPressed(int tick)
         {
             if (!_lightSeen || !_heavySeen) { return false; }
             int gap = _lightTick > _heavyTick ? _lightTick - _heavyTick : _heavyTick - _lightTick;

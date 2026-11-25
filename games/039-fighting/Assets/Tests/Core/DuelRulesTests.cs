@@ -426,6 +426,63 @@ namespace Game.Core.Tests
             Assert.That(heldCopy.Hash(), Is.EqualTo(held.Hash()));
         }
 
+        [TestCase(1, false)]
+        [TestCase(1, true)]
+        [TestCase(9, false)]
+        [TestCase(10, false)]
+        public void ThrowBuffer_SurvivesStunAndHitStop_AndExpires(int remaining, bool hitStop)
+        {
+            var duel = FightLab.NewDuel();
+            FightLab.Place(duel, hitStop ? 30 : 180);
+            if (hitStop)
+            {
+                FightLab.Tap(duel, 0, "light");
+                for (int i = 0; i < 20 && duel.HitStop == 0; i++) { duel.Step(Pad.Neutral, Pad.Neutral); }
+                Assert.That(duel.HitStop, Is.GreaterThan(0));
+            }
+
+            duel.At(1).State = FighterState.HitStun;
+            duel.At(1).Remaining = remaining;
+            duel.Step(Pad.Neutral, new Pad(5, true, true, false));
+            var clone = duel.Clone();
+            for (int i = 0; i < 30 && !duel.CanAct(1); i++)
+            {
+                duel.Step(Pad.Neutral, Pad.Neutral);
+                clone.Step(Pad.Neutral, Pad.Neutral);
+            }
+
+            duel.Step(Pad.Neutral, Pad.Neutral);
+            clone.Step(Pad.Neutral, Pad.Neutral);
+            Assert.That(duel.At(1).Move?.Id, Is.EqualTo(remaining < duel.Config.BufferTicks ? "throw" : null));
+            Assert.That(clone.Hash(), Is.EqualTo(duel.Hash()));
+        }
+
+        [TestCase(0)]
+        [TestCase(1)]
+        [TestCase(2)]
+        public void ThrowBuffer_ChordWindowConsumptionAndClear(int gap)
+        {
+            var buffer = new CommandBuffer();
+            var config = new DuelConfig { BufferTicks = 3 };
+            buffer.Observe(0, new Pad(5, true, gap == 0, false), config);
+            if (gap > 0) { buffer.Observe(gap, new Pad(5, false, true, false), config); }
+            Assert.That(buffer.ThrowReady, Is.EqualTo(gap <= 1));
+            if (gap > 1) { return; }
+            var clone = buffer.Clone();
+            buffer.TickBuffer();
+            buffer.TickBuffer();
+            Assert.That(buffer.ThrowReady, Is.True, "猶予の最後の Tick");
+            buffer.TickBuffer();
+            Assert.That(buffer.ThrowReady, Is.False);
+            clone.Consume();
+            Assert.That(clone.ThrowReady, Is.False);
+            clone.Observe(9, Pad.Neutral, config);
+            clone.Observe(10, new Pad(5, true, true, false), config);
+            Assert.That(clone.ThrowReady, Is.True);
+            clone.Clear();
+            Assert.That(clone.ThrowReady, Is.False);
+        }
+
         private static int Measure(int character, Move move, bool block)
         {
             var duel = FightLab.NewDuel(character, character);

@@ -208,7 +208,7 @@ namespace Game.Core
             bool ready = CanAct(index);
             bool cancel = f.CancelOpen && f.State == FighterState.Attack;
             if (!ready && !cancel) { return false; }
-            if (ready && cmd.ThrowReady(Tick))
+            if (ready && cmd.ThrowReady)
             {
                 Begin(f, "throw");
                 cmd.Consume();

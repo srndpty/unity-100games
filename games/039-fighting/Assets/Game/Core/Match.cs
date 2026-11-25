@@ -131,7 +131,7 @@ namespace Game.Core
             PhaseLeft = _config.RoundEndTicks;
             bool leftWon = Wins[0] >= 2;
             bool rightWon = Wins[1] >= 2;
-            if (leftWon && rightWon)
+            if (leftWon && rightWon && Wins[0] == Wins[1])
             {
                 if (Round >= _config.MaxRounds)
                 {
@@ -145,7 +145,7 @@ namespace Game.Core
             if (leftWon || rightWon)
             {
                 _decided = true;
-                _pending = leftWon ? MatchResult.Left : MatchResult.Right;
+                _pending = Wins[0] > Wins[1] ? MatchResult.Left : MatchResult.Right;
             }
         }
     }

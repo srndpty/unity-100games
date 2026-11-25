@@ -122,7 +122,7 @@ namespace Game.App
             }
 
             int roll = _random.Next(10);
-            if (gap < (18 * 256) && roll < 2) { return Throw; }
+            if (gap < (30 * 256) && roll < 2) { return Throw; }
             if (roll < 6) { return Light; }
             if (roll < 8) { return Heavy; }
             if (roll == 8) { return Special; }

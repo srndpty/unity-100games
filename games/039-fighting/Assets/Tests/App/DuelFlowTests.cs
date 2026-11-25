@@ -91,7 +91,7 @@ namespace Game.App.Tests
             }
 
             TestContext.WriteLine($"human wins {wins}/20");
-            Assert.That(wins, Is.EqualTo(3), "反応 8 Tick の CPU に、反応 16 Tick でキーを 6 Tick 保持する操縦役は 20 戦中 3 勝");
+            Assert.That(wins, Is.EqualTo(8), "反応 8 Tick の CPU に、反応 16 Tick でキーを 6 Tick 保持する操縦役は 20 戦中 8 勝");
         }
 
         [Test]
@@ -219,6 +219,33 @@ namespace Game.App.Tests
             Assert.That(feedback.Observe(duel.Clone()), Is.EqualTo(CombatCue.Swing | expected));
             Assert.That(feedback.Observe(null), Is.EqualTo(CombatCue.None));
             Assert.That(feedback.Observe(new Duel(Table(), new(), 0, 0)), Is.EqualTo(CombatCue.None));
+        }
+
+        [TestCase(0)]
+        [TestCase(1)]
+        public void CpuChoosesAndConnectsThrowsAfterGroundPush(int actor)
+        {
+            int throws = 0;
+            for (int seed = 1; seed <= 40; seed++)
+            {
+                var duel = new Duel(Table(), new(), 0, 1);
+                duel.At(0).X = 239 * 256;
+                duel.At(1).X = 241 * 256;
+                duel.Step(Pad.Neutral, Pad.Neutral);
+                Assert.That(Math.Abs(duel.At(0).X - duel.At(1).X), Is.GreaterThanOrEqualTo(26 * 256));
+                var pilot = new CpuPilot(actor, seed);
+                var pad = pilot.PadFor(duel);
+                if (!pad.Light || !pad.Heavy) { continue; }
+                throws++;
+                int victim = 1 - actor;
+                int health = duel.At(victim).Health;
+                duel.Step(actor == 0 ? pad : Pad.Neutral, actor == 1 ? pad : Pad.Neutral);
+                Assert.That(duel.At(actor).Move!.Id, Is.EqualTo("throw"));
+                for (int i = 0; i < 8; i++) { duel.Step(Pad.Neutral, Pad.Neutral); }
+                Assert.That(duel.At(victim).Health, Is.LessThan(health));
+            }
+
+            Assert.That(throws, Is.GreaterThan(0), "実際の地上の密着距離で投げを選ぶ");
         }
 
         private static void RunToResult(DuelFlow flow)

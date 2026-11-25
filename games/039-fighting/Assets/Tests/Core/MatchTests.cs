@@ -59,6 +59,33 @@ namespace Game.Core.Tests
             Assert.That(extra.Result, Is.EqualTo(MatchResult.Draw));
         }
 
+        [TestCase(0, false, 3)]
+        [TestCase(1, false, 3)]
+        [TestCase(0, true, 5)]
+        [TestCase(1, true, 5)]
+        public void ExtraRound_DecidesTheWinnerEvenAtTheRoundLimit(int winner, bool ko, int maxRounds)
+        {
+            var match = new Match(FightLab.Table(), new DuelConfig
+            {
+                IntroTicks = 1,
+                RoundEndTicks = 1,
+                RoundTicks = 8,
+                MaxRounds = maxRounds,
+            }, 0, 1);
+            RunDraws(match, maxRounds - 1);
+            Assert.That(match.IsOver, Is.False);
+            SkipIntro(match);
+            match.Duel.At(1 - winner).Health = ko ? 0 : 1;
+            for (int i = 0; i < 12 && !match.IsOver; i++) { match.Step(Pad.Neutral, Pad.Neutral); }
+            Assert.That(match.IsOver, Is.True);
+            Assert.That(match.Result, Is.EqualTo(winner == 0 ? MatchResult.Left : MatchResult.Right));
+            Assert.That(match.Round, Is.EqualTo(maxRounds));
+            Assert.That(match.Wins[winner], Is.EqualTo(maxRounds));
+            Assert.That(match.Wins[1 - winner], Is.EqualTo(maxRounds - 1));
+            match.Step(new Pad(5, true, true, false), Pad.Neutral);
+            Assert.That(match.Result, Is.EqualTo(winner == 0 ? MatchResult.Left : MatchResult.Right));
+        }
+
         private static Match NewMatch()
         {
             var config = new DuelConfig { IntroTicks = 2, RoundEndTicks = 2, RoundTicks = 8, MaxRounds = 3 };

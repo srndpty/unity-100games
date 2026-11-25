@@ -2,9 +2,9 @@
     "Product": "EMBER DUEL",
     "Version": "1.0",
     "UnityVersion": "6000.6.9f1",
-    "BuildGuid": "3ac17069b6014286b4e715d88d9b4a62",
+    "BuildGuid": "e95166e97ee341698314ac64a31cf2ce",
     "Seed": 1,
-    "CapturedAtUtc": "2026-11-25T15:21:35.3345969Z",
+    "CapturedAtUtc": "2026-11-25T15:33:38.1912742Z",
     "Info": [
         {
             "Key": "imageEncoding",
@@ -62,12 +62,12 @@
         },
         {
             "File": "09-ko.jpg",
-            "Sha256": "7b57c35f1cd9dc07db43aa2113245cad037a3a88ae9931bd82bb87bd192948ff",
-            "Note": "KO  Tick 535"
+            "Sha256": "49eef33d470231cebf10afab28ac2b4360504bbcbbe29b56e9b99cf84cdcf11a",
+            "Note": "KO  Tick 508"
         },
         {
             "File": "10-result.jpg",
-            "Sha256": "087009d41b7a6296af417ae28a4844752e26157c0cc3560f4f3a9264506ad9bf",
+            "Sha256": "b1e195c5cac2416b29f11ed8cfc76bd1d5c3d817de237c462311e58a5f6d2e02",
             "Note": "結果 Right"
         }
     ]

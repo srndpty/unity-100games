@@ -51,6 +51,7 @@ namespace Game.Core
         Light,
         Heavy,
         Sweep,
+        Throw,
     }
 
     public enum BodyPose
