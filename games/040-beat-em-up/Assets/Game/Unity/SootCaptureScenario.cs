@@ -38,27 +38,27 @@ namespace Game.Unity
             StepUntil(() => Brawl.Player.State == ActorState.Grab && Brawl.Player.Move == null, "掴み");
             await capture.ShootAsync("05-grab", "掴み  Tick " + Brawl.Tick);
 
-            StepUntil(() => Brawl.ItemsOnGround > 0, "回復アイテム");
-            await capture.ShootAsync("06-item", "倒した敵が落とした回復アイテム  Tick " + Brawl.Tick);
+            StepUntil(() => !Brawl.Locked, "GO");
+            StepTicks(10);
+            StepUntil(() => SootGame.GoVisible(Brawl), "GO の表示");
+            await capture.ShootAsync("06-go", "区画を片付けて GO →  Tick " + Brawl.Tick);
 
-            StepUntil(() => Brawl.Player.State == ActorState.Idle && Crowd(48) >= 2 && Brawl.Player.Health > 300, "囲まれた場面");
+            StepUntil(() => Brawl.ItemsOnGround > 0, "回復アイテム");
+            await capture.ShootAsync("07-item", "倒した敵が落とした回復アイテム  Tick " + Brawl.Tick);
+
+            StepUntil(() => (Brawl.Player.State == ActorState.Idle || Brawl.Player.State == ActorState.Walk) && Brawl.Player.HitStop == 0 && Crowd(60) >= 2 && Brawl.Player.Health > 160, "囲まれた場面");
             Flow.Pilot = null;
             Apply(IntentKind.SpecialDown);
             StepTicks(1);
             Apply(IntentKind.SpecialUp);
             StepUntil(() => Brawl.Player.Move != null && Brawl.Player.Move.Kind == MoveKind.Special && Brawl.Player.Phase == MovePhase.Active, "緊急技");
-            await capture.ShootAsync("07-special", "緊急技  Tick " + Brawl.Tick);
+            await capture.ShootAsync("08-special", "緊急技  Tick " + Brawl.Tick);
 
             Flow.Pilot = new Autopilot(EvidenceCapture.Seed + 1);
-            StepUntil(() => !Brawl.Locked, "GO");
-            StepTicks(10);
-            StepUntil(() => SootGame.GoVisible(Brawl), "GO の表示");
-            await capture.ShootAsync("08-go", "区画を片付けて GO →  Tick " + Brawl.Tick);
-
-            StepUntil(() => Brawl.Locked && Crowd(200) >= 1, "次の区画");
+            StepUntil(() => Brawl.Locked && Brawl.Player.State == ActorState.Idle && Brawl.Player.HitStop == 0 && HurtableFoe() != null, "殴れる敵のいる場面");
             Flow.Pilot = null;
             Brawl.AiEnabled = false;
-            var foe = Nearest();
+            var foe = HurtableFoe();
             var p = Brawl.Player;
             var config = _game.Rules;
             Brawl.Place(foe, p.X + (p.Facing * 18 * Px.One), Math.Min(config.ZMax, p.Z + (18 * Px.One)), -p.Facing);
@@ -66,7 +66,7 @@ namespace Game.Unity
             Apply(IntentKind.AttackDown);
             StepTicks(1);
             Apply(IntentKind.AttackUp);
-            StepUntil(() => p.Phase == MovePhase.Active, "奥行きのずれた空振り");
+            StepUntil(() => p.Move != null && p.Move.Id == "jab1" && p.Phase == MovePhase.Active, "奥行きのずれた空振り");
             await capture.ShootAsync("09-depth", "判定箱：横と高さは重なるが奥行きがずれて当たらない  Tick " + Brawl.Tick);
 
             Apply(IntentKind.Overlay);
@@ -104,17 +104,19 @@ namespace Game.Unity
             return count;
         }
 
-        private Actor Nearest()
+        /// <summary>画面の中で一番近い、立っていて殴れる敵（いなければ null）。</summary>
+        private Actor HurtableFoe()
         {
             Actor best = null;
             for (var i = 1; i < Brawl.SlotCount; i++)
             {
                 var e = Brawl.At(i);
-                if (!e.Active || e.Defeated) { continue; }
+                if (!e.Active || !Brawl.Hurtable(e) || e.State == ActorState.Attack) { continue; }
+                if (e.X < Brawl.CameraX || e.X > Brawl.CameraX + _game.Rules.ViewWidth) { continue; }
                 if (best == null || Math.Abs(e.X - Brawl.Player.X) < Math.Abs(best.X - Brawl.Player.X)) { best = e; }
             }
 
-            return best ?? throw new InvalidOperationException("敵がいません。");
+            return best;
         }
 
         private bool BossOnScreen()

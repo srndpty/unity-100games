@@ -139,7 +139,7 @@ namespace Game.Core
                     targetX = a.X;
                     targetZ = p.Z;
                 }
-                else if (adx <= def.Reach && aligned)
+                else if (adx <= AttackRange(def, p) && aligned)
                 {
                     var move = def.Close.Length > 0 && adx <= def.CloseRange && RandomRange(a, 0, 2) == 0 ? def.Find(def.Close) : opener;
                     StartMove(a, move);
@@ -147,7 +147,7 @@ namespace Game.Core
                 }
                 else
                 {
-                    targetX = p.X + (side * (def.Reach * 3 / 4));
+                    targetX = p.X + (side * Math.Max(def.Reach * 3 / 4, Contact(def, p)));
                     targetZ = p.Z;
                 }
             }
@@ -189,6 +189,15 @@ namespace Game.Core
             if (other >= min && other <= max) { return other; }
             return Math.Clamp(spot, min, max);
         }
+
+        /// <summary>押し合いで止まる横の距離（奥行きがそろっていればこれより近づけない）。</summary>
+        private static int Contact(ActorDef def, Actor player) => (def.PushWidth + player.Def!.PushWidth) / 2;
+
+        /// <summary>
+        /// 攻撃を始める横の距離。Reach が押し合いで止まる距離より短いと、動かないプレイヤーには永久に届かないので、
+        /// 押し合いの距離 ＋ 2 px までは始める（技の攻撃箱はそこまで届く長さにしてある）。
+        /// </summary>
+        private static int AttackRange(ActorDef def, Actor player) => Math.Max(def.Reach, Contact(def, player) + (2 * Px.One));
 
         private void FinishEnemyAttack(Actor a) => ReleaseToken(a, true);
 

@@ -736,7 +736,6 @@ namespace Game.Core
 
             attacker.HitStop = Math.Max(attacker.HitStop, move.HitStop);
             target.HitStop = move.HitStop;
-            ReleaseToken(target, true);
             if (move.Kind == MoveKind.Knee && target.State == ActorState.Grabbed && target.Health > 0) { return; }
             if (target.Partner >= 0)
             {
@@ -753,11 +752,14 @@ namespace Game.Core
             {
                 int lx = move.Down ? move.LaunchX : _config.FallLaunchX;
                 int ly = move.Down ? move.LaunchY : _config.FallLaunchY;
+                ReleaseToken(target, true);
                 KnockDown(target, dir, lx, ly);
                 return;
             }
 
+            // 怯まない打撃（Stagger < Poise）では攻撃を続けるので、攻撃権も持ったまま（返すと上限を超えて別の敵が攻める）。
             if (move.Stagger < target.Def!.Poise) { return; }
+            ReleaseToken(target, true);
             SetState(target, ActorState.HitStun);
             target.Move = null;
             target.Timer = move.HitStun;
