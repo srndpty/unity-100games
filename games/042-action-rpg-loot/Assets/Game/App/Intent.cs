@@ -75,7 +75,7 @@ namespace Game.App
 
         public Control Control { get; }
 
-        /// <summary>持ち物の番号・枠・地面の品の番号。</summary>
+        /// <summary>持ち物の番号・枠・地面の品の番号。キーの押下・解放では物理キーの番号（0〜<see cref="MaxKey"/>）。</summary>
         public long Argument { get; }
 
         public double Time { get; }
@@ -96,11 +96,24 @@ namespace Game.App
             return new(kind, default, argument, time);
         }
 
-        public static Intent Down(Control control, double time) => new(IntentKind.ControlDown, Require(control), 0, time);
+        /// <summary>1 つの操作に割り当てられる物理キーの番号の上限。</summary>
+        public const int MaxKey = 7;
 
-        public static Intent Up(Control control, double time) => new(IntentKind.ControlUp, Require(control), 0, time);
+        /// <summary>操作 <paramref name="control"/> の物理キー <paramref name="key"/> 番を押した（1 つの操作に複数のキーを割り当てるとき、キーごとに番号を分ける。035・037）。</summary>
+        public static Intent Down(Control control, double time, int key = 0) => new(IntentKind.ControlDown, Require(control), RequireKey(key), time);
+
+        public static Intent Up(Control control, double time, int key = 0) => new(IntentKind.ControlUp, Require(control), RequireKey(key), time);
+
+        /// <summary>キーの押下・解放の物理キーの番号。</summary>
+        public int Key => (int)Argument;
 
         public override string ToString() => $"{Kind}({Control},{Argument})@{Time}";
+
+        private static int RequireKey(int key)
+        {
+            if (key < 0 || key > MaxKey) { throw new ArgumentOutOfRangeException(nameof(key), key, "物理キーの番号は 0〜7 です。"); }
+            return key;
+        }
 
         private static Control Require(Control control)
         {

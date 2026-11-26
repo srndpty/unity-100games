@@ -86,6 +86,11 @@ namespace Game.Core
         private RunEvents _events;
         private long _nextGroundId = 1;
 
+        // この Tick の自機の移動経路（横 → 縦の折れ線）。Step の始めに消し、MoveHero が置く。動く相手との掃引に使う（025）。
+        private bool _heroMoved;
+        private Vec2i _heroPathStart;
+        private Vec2i _heroPathCorner;
+
         /// <param name="config">検証済みの設定（複製して使う）。</param>
         public DelveRun(DelveConfig config, LootData loot, FloorSet floors, int seed)
         {
@@ -208,6 +213,7 @@ namespace Game.Core
             if (IsOver) { return; }
             Tick++;
             if (Status == RunStatus.Won && VictoryTimer > 0) { VictoryTimer--; }
+            _heroMoved = false;
             StepHero(command);
             ResolveHeroHits();
             StepFoes();
@@ -275,10 +281,35 @@ namespace Game.Core
             }
 
             var box = HeroBox();
+            _heroPathStart = _hero.Position;
             BodyMotion.MoveX(Map, ref box, dx);
+            _heroPathCorner = new Vec2i(box.X + (box.Width / 2), _hero.Position.Y);
             BodyMotion.MoveY(Map, ref box, dy);
             _hero.Position = new Vec2i(box.X + (box.Width / 2), box.Y + (box.Height / 2));
+            _heroMoved = true;
         }
+
+        /// <summary>
+        /// 直線に動く相手（<paramref name="start"/> → <paramref name="end"/>）が、この Tick の自機の経路に触れたか。
+        /// 自機は横 → 縦に動くので、時刻を移動量の割合で 2 つの区間に分け、相手はその分け目の位置へ補間して区間ごとに掃引する。
+        /// 座標を移動量の和倍すると整数のまま計算できる（025 の <c>Sweep.Along</c>）。
+        /// </summary>
+        internal bool TouchesHeroPath(Vec2i start, Vec2i end, int radiusSum)
+        {
+            var e = _hero.Position;
+            if (!_heroMoved) { return Sweep.Touches(start, end, e, e, radiusSum); }
+            var a = _heroPathStart;
+            var c = _heroPathCorner;
+            int first = Math.Abs(c.X - a.X) + Math.Abs(c.Y - a.Y);
+            int total = first + Math.Abs(e.X - c.X) + Math.Abs(e.Y - c.Y);
+            if (total == 0) { return Sweep.Touches(start, end, e, e, radiusSum); }
+            var v = end - start;
+            var mid = new Vec2i((start.X * total) + (v.X * first), (start.Y * total) + (v.Y * first));
+            return Sweep.Touches(Scale(start, total), mid, Scale(a, total), Scale(c, total), radiusSum * total)
+                || Sweep.Touches(mid, Scale(end, total), Scale(c, total), Scale(e, total), radiusSum * total);
+        }
+
+        private static Vec2i Scale(Vec2i v, int k) => new(v.X * k, v.Y * k);
 
         /// <summary>自機の壁との当たりの箱。</summary>
         public Box HeroBox()
@@ -420,6 +451,7 @@ namespace Game.Core
             FloorNumber = number;
             Map = _floors[number];
             _hero.Position = Map.Entrance;
+            _heroMoved = false;
             _hero.SwingHitTick = -1;
             _hero.SpinHitTick = -1;
             _projectiles.Clear();

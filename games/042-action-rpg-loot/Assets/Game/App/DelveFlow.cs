@@ -98,10 +98,10 @@ namespace Game.App
                     break;
                 case IntentKind.ControlDown:
                     // 押しっぱなしのキーを画面の切り替えの後へ持ち越さない（プレイ中に押したものだけ）。
-                    if (Screen == AppScreen.Playing) { _held.Press(intent.Control); }
+                    if (Screen == AppScreen.Playing) { _held.Press(intent.Control, intent.Key); }
                     break;
                 case IntentKind.ControlUp:
-                    _held.Release(intent.Control);
+                    _held.Release(intent.Control, intent.Key);
                     break;
                 case IntentKind.Equip:
                     if (Screen == AppScreen.Inventory) { LastItemResult = Run!.Equip(ToIndex(intent.Argument)); }

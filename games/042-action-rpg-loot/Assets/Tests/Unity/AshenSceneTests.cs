@@ -178,6 +178,36 @@ namespace Game.Unity.Tests
         }
 
         [UnityTest]
+        public IEnumerator HeldKey_AcrossPause_OtherKeyForTheSameDirectionStillMoves()
+        {
+            // D を押したまま一時停止して再開し、右矢印も押すと右へ動く（キーごとのアクションなので右矢印の押下が届く。035・037）。
+            yield return StartGame();
+            Arena(FoeKind.Grunt, 20 * Units.Tile, 100);
+            _keyboard.Hold(Key.D);
+            yield return null;
+            _keyboard.Hold(Key.D, Key.Escape);
+            yield return null;
+            _keyboard.Hold(Key.D);
+            yield return null;
+            Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Paused));
+            _keyboard.Hold(Key.D, Key.Escape);
+            yield return null;
+            _keyboard.Hold(Key.D);
+            yield return null;
+            Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Playing));
+            var start = R.Hero.Position;
+            long tick = R.Tick;
+            yield return WaitUntil(() => R.Tick > tick + 10);
+            Assert.That(R.Hero.Position, Is.EqualTo(start), "一時停止の前から押していた D は持ち越さない");
+            _keyboard.Hold(Key.D, Key.RightArrow);
+            yield return WaitUntil(() => R.Hero.Position.X > start.X + Units.Tile);
+            _keyboard.Hold(Key.RightArrow);
+            var mid = R.Hero.Position;
+            yield return WaitUntil(() => R.Hero.Position.X > mid.X + Units.Tile);
+            _keyboard.Hold();
+        }
+
+        [UnityTest]
         public IEnumerator LeftClick_SwingsTowardThePointer_AndHitsTheFoe()
         {
             yield return StartGame();

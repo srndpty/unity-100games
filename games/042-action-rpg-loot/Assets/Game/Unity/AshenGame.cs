@@ -128,11 +128,19 @@ namespace Game.Unity
         private void Bind(IntentKind kind, params string[] bindings) =>
             NewAction(kind.ToString(), bindings).performed += context => Queue(Intent.Of(kind, EventTime(context)), false);
 
+        /// <summary>
+        /// 押したままの操作。物理キーごとに別のアクションにし、キーの番号を付けて送る。1 つのアクションに束ねると、
+        /// A を押したまま一時停止して再開した後に左矢印を押しても started が来ず、移動が再開しない（035・037）。
+        /// </summary>
         private void Hold(Control control, params string[] bindings)
         {
-            var action = NewAction(control.ToString(), bindings);
-            action.started += context => Queue(Intent.Down(control, EventTime(context)), false);
-            action.canceled += context => Queue(Intent.Up(control, EventTime(context)), false);
+            for (int i = 0; i < bindings.Length; i++)
+            {
+                int key = i;
+                var action = NewAction($"{control}{key}", bindings[i]);
+                action.started += context => Queue(Intent.Down(control, EventTime(context), key), false);
+                action.canceled += context => Queue(Intent.Up(control, EventTime(context), key), false);
+            }
         }
 
         private static double EventTime(InputAction.CallbackContext context) => Math.Min(context.time, Now);

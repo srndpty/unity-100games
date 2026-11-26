@@ -153,6 +153,30 @@ namespace Game.Core.Tests
     public sealed class CombatTests
     {
         [Test]
+        public void ProjectileHitsAlongTheHeroMovementPath()
+        {
+            // 自機が (0, 0) → (24, 0)、弾が (-118, -83) → (-118, -43)。半径の和 144 に対し、相対軌跡の最短距離は約 143.89 で触れる。
+            // 移動後の位置だけで掃引すると最短距離は約 148.37 で外れる（レビューの再現例）。
+            var run = Lab.NewRun();
+            Lab.Center(run);
+            Lab.Isolate(run, FoeKind.Grunt, 20 * 256);
+            var origin = run.Hero.Position;
+            int radiusSum = 48 + run.Config.HeroRadius;
+            Assert.That(radiusSum, Is.EqualTo(144));
+            Assert.That(run.StepLength, Is.EqualTo(24));
+            var from = origin + new Vec2i(-118, -83);
+            var to = origin + new Vec2i(-118, -43);
+            var after = origin + new Vec2i(24, 0);
+            Assert.That(Sweep.Touches(from, to, after, after, radiusSum), Is.False, "移動後の位置だけでは外れる場面");
+            run.AddProjectileForTest(new Projectile(from, to - from, 48, 9, Element.Cold, FoeKind.Archer));
+            int life = run.Hero.Life;
+            run.Step(new HeroCommand(1, 0, after + new Vec2i(256, 0), false));
+            Assert.That(run.Hero.Position, Is.EqualTo(after));
+            Assert.That(run.Hero.Life, Is.LessThan(life), "移動の経路でかすめた弾が当たる");
+            Assert.That(run.Projectiles, Is.Empty);
+        }
+
+        [Test]
         public void PhysicalDamageIsReducedByArmorWithMinimumOne()
         {
             var run = Lab.NewRun();

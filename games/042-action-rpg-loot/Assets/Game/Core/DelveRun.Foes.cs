@@ -164,7 +164,7 @@ namespace Game.Core
                         var start = foe.Position;
                         bool blocked = Walk(foe, stats, foe.Direction, stats.ChargeSpeed);
                         if (!foe.ChargeHit && !_hero.Dead
-                            && Sweep.Touches(start, foe.Position, _hero.Position, _hero.Position, stats.Radius + _config.HeroRadius))
+                            && TouchesHeroPath(start, foe.Position, stats.Radius + _config.HeroRadius))
                         {
                             foe.ChargeHit = true;
                             HurtHero(foe.Damage, stats.Element);
@@ -235,7 +235,7 @@ namespace Game.Core
                 var end = start + p.Velocity;
                 bool alive = true;
                 if (!_hero.Dead && _hero.Invuln == 0
-                    && Sweep.Touches(start, end, _hero.Position, _hero.Position, p.Radius + _config.HeroRadius))
+                    && TouchesHeroPath(start, end, p.Radius + _config.HeroRadius))
                 {
                     HurtHero(p.Damage, p.Element);
                     alive = false;
