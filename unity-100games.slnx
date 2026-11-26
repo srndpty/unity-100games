@@ -269,6 +269,12 @@
     <Project Path="games/045-monster-collector/dotnet/Core.Tests/G045.Core.Tests.csproj" />
     <Project Path="games/045-monster-collector/dotnet/Core/G045.Core.csproj" />
   </Folder>
+  <Folder Name="/046-visual-novel/">
+    <Project Path="games/046-visual-novel/dotnet/App.Tests/G046.App.Tests.csproj" />
+    <Project Path="games/046-visual-novel/dotnet/App/G046.App.csproj" />
+    <Project Path="games/046-visual-novel/dotnet/Core.Tests/G046.Core.Tests.csproj" />
+    <Project Path="games/046-visual-novel/dotnet/Core/G046.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />

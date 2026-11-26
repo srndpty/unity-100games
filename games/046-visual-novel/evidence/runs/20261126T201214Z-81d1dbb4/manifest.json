@@ -1,0 +1,114 @@
+{
+    "Product": "LANTERN WAKE",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "d0caa39abf7741c6bf82bd13f4593ab6",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-26T20:12:12.7230607Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "fingerprint",
+            "Value": "FE5A8E61"
+        },
+        {
+            "Key": "ticksPerChar",
+            "Value": "2"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01_title.jpg",
+            "Sha256": "8a6d56d2128d297e8979f60ecede9d7d03c1ba55cfa99610a1f664b08fb887ec",
+            "Note": "タイトル (tick=0, hash=0x00000000, read=0/250)"
+        },
+        {
+            "File": "02_howto.jpg",
+            "Sha256": "0f34681f1c86b778f01a560d471651f2ca7773ee1aa7773f3d737345645bcca6",
+            "Note": "操作説明 (tick=3, hash=0x00000000, read=0/250)"
+        },
+        {
+            "File": "03_narration.jpg",
+            "Sha256": "281360a18152789baeca6388f809927966dfb7502e0999b1e5f9602482dd0154",
+            "Note": "地の文の文字送り（表示の途中） (tick=23, hash=0x685C46B7, read=0/250)"
+        },
+        {
+            "File": "04_speech.jpg",
+            "Sha256": "6620fad1a6e808ed1276f597d4c9f5a4f10bb3abdadcb89a87a167bef2b557c0",
+            "Note": "台詞と立ち絵 (tick=42, hash=0x99AF18D6, read=9/250)"
+        },
+        {
+            "File": "05_two_portraits.jpg",
+            "Sha256": "e53b886ecec0384d4fa4475a208123564ddefd0cfa35e81d262f17c8d5dafcae",
+            "Note": "宿の広間（二人の立ち絵） (tick=104, hash=0x13D1E50B, read=40/250)"
+        },
+        {
+            "File": "06_choice.jpg",
+            "Sha256": "c76fdbbb393682bad1c99e1c47299c4d53cf150f111c22ff0399eb275c7f7146",
+            "Note": "選択肢 (tick=163, hash=0x983A27E6, read=70/250)"
+        },
+        {
+            "File": "07_quicksave.jpg",
+            "Sha256": "03cd86ee6792305b67a3084b1123d7d99a27d5a8310675a7a6b14cc5f2950b3d",
+            "Note": "選択肢でクイックセーブ (tick=164, hash=0x983A27E6, read=70/250)"
+        },
+        {
+            "File": "08_quickload.jpg",
+            "Sha256": "5403d6345b21e5b2db8f53098c0717a2c7378b1869c69b837cf8387e9cfb3f06",
+            "Note": "クイックロードで選ぶ前に戻った (tick=170, hash=0x983A27E6, read=72/250)"
+        },
+        {
+            "File": "09_bad_dawn.jpg",
+            "Sha256": "5adfa76d456543daa617d299ba451864cb76d1f7b7a9e8e548c7f1ca74fd7a8e",
+            "Note": "消えた灯の夜明け (tick=300, hash=0x0E441669, read=135/250)"
+        },
+        {
+            "File": "10_result_bad.jpg",
+            "Sha256": "31b7669f7fd0974846712ec926086869156b6a061d0b090cb338e2a8c1f4ba47",
+            "Note": "結果（消えた灯） (tick=321, hash=0xBED96A3E, read=146/250)"
+        },
+        {
+            "File": "11_read_color.jpg",
+            "Sha256": "823a99320418d2ad33c2d374db493646cb8f9ad3fb77826707d2bfefbe5ed79e",
+            "Note": "既読の文（青く表示） (tick=403, hash=0x685C46B7, read=146/250)"
+        },
+        {
+            "File": "12_skipping.jpg",
+            "Sha256": "d681880f7618971c13fb323e9cbf2a6f63791d33e58f870439485a426d91b7cd",
+            "Note": "既読のスキップ中 (tick=413, hash=0xD644B529, read=146/250)"
+        },
+        {
+            "File": "13_skip_stopped.jpg",
+            "Sha256": "8d0edbe950f6b5933cfa8280634588076bea25576c0fbcac35dbcde7ab137d88",
+            "Note": "未読の文でスキップが止まった (tick=8438, hash=0x1046BC95, read=146/250)"
+        },
+        {
+            "File": "14_truth_storeroom.jpg",
+            "Sha256": "ab407634eff174fc7ef6eae63eb5d050ac9723537d18a9470189ac765ffccd0a",
+            "Note": "倉庫で宗助を見つける (tick=8524, hash=0x7E641A03, read=168/250)"
+        },
+        {
+            "File": "15_result_truth.jpg",
+            "Sha256": "a3dd75e37b0790ca41231828b72b056ad989e5440de10a7ca7280bbc40c6cc60",
+            "Note": "結果（灯は戻る） (tick=8551, hash=0x41310A48, read=182/250)"
+        },
+        {
+            "File": "16_last_choice.jpg",
+            "Sha256": "2957b2f7f4e5df84022a0ae40d7fb7adcbd68ad46939970878fecf427dac299a",
+            "Note": "午前三時の広間の選択肢 (tick=8803, hash=0x6C5D51E1, read=182/250)"
+        },
+        {
+            "File": "17_result_normal.jpg",
+            "Sha256": "e3d16598db4f042422e7589276d4f6c8b7efb78fb6b7753aace5ee990e632df4",
+            "Note": "結果（夜明けの船、3 つの結末に到達） (tick=8852, hash=0x82B1D343, read=200/250)"
+        },
+        {
+            "File": "18_title_broken_save.jpg",
+            "Sha256": "57e83a9b78aaa00c0cd74e822cb24a03f858723d0234de60a902091caf474c72",
+            "Note": "壊れたクイックセーブの案内（つづきからを選べない） (tick=0, hash=0x00000000, read=200/250)"
+        }
+    ]
+}
