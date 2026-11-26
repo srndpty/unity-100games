@@ -1,0 +1,57 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:VisualElement name="tags" class="tags" picking-mode="Ignore" />
+        <ui:VisualElement name="stats" class="stats" picking-mode="Ignore">
+            <ui:VisualElement class="life-bar" picking-mode="Ignore">
+                <ui:VisualElement name="life-fill" class="life-fill" picking-mode="Ignore" />
+                <ui:Label name="life" text=" " class="life-text" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label name="potions" text=" " class="stat potions" picking-mode="Ignore" />
+            <ui:Label name="skill" text=" " class="stat skill" picking-mode="Ignore" />
+            <ui:Label name="floor" text=" " class="stat floor" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:VisualElement name="boss" class="boss" picking-mode="Ignore">
+            <ui:Label name="boss-name" text=" " class="boss-name" picking-mode="Ignore" />
+            <ui:VisualElement class="boss-bar" picking-mode="Ignore">
+                <ui:VisualElement name="boss-fill" class="boss-fill" picking-mode="Ignore" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:Label name="toast" text=" " class="toast" picking-mode="Ignore" />
+        <ui:Label name="hint" text="WASD 移動　左クリック 攻撃　右クリック 薙ぎ払い　Q 回復薬　E 拾う　I 持ち物　Esc 一時停止" class="hint" picking-mode="Ignore" />
+        <ui:VisualElement name="panel" class="panel">
+            <ui:Label name="headline" text="ASHEN RELIQUARY" class="headline" />
+            <ui:Label name="message" class="message" />
+            <ui:VisualElement class="buttons">
+                <ui:Button name="submit" text="はじめる / Enter" />
+                <ui:Button name="back" text="戻る / Esc" />
+                <ui:Button name="title" text="タイトルへ / T" />
+                <ui:Button name="quit" text="終了" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="inventory" class="inventory">
+            <ui:VisualElement class="inv-column inv-left">
+                <ui:Label text="装備" class="inv-title" />
+                <ui:VisualElement name="equip" class="equip" />
+                <ui:Label text="能力値" class="inv-title" />
+                <ui:Label name="sheet" text=" " class="sheet" />
+            </ui:VisualElement>
+            <ui:VisualElement class="inv-column inv-middle">
+                <ui:Label name="bag-title" text="持ち物" class="inv-title" />
+                <ui:VisualElement name="bag" class="bag" />
+            </ui:VisualElement>
+            <ui:VisualElement class="inv-column inv-right">
+                <ui:Label name="detail-name" text=" " class="detail-name" />
+                <ui:Label name="detail" text=" " class="detail" />
+                <ui:Label name="compare" text=" " class="compare" />
+                <ui:VisualElement class="inv-actions">
+                    <ui:Button name="act-equip" text="装備する" />
+                    <ui:Button name="act-unequip" text="外す" />
+                    <ui:Button name="act-discard" text="捨てる" />
+                    <ui:Button name="act-close" text="閉じる / I" />
+                </ui:VisualElement>
+                <ui:Label name="inv-note" text=" " class="inv-note" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
