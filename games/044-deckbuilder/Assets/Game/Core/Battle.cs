@@ -153,6 +153,7 @@ namespace Game.Core
         public PlayResult EndTurn()
         {
             if (IsOver) { return PlayResult.Reject(RejectReason.BattleOver); }
+            Emit(EventKind.TurnEnded, -1, -1, Turn, 0);
             while (_hand.Count > 0)
             {
                 var card = _hand[0];
@@ -306,12 +307,6 @@ namespace Game.Core
             Turn++;
             Emit(EventKind.TurnStarted, -1, -1, Turn, 0);
             ResetBlock(_player);
-            if (Energy != _config.Energy)
-            {
-                Emit(EventKind.EnergyGained, Combatant.PlayerId, -1, _config.Energy - Energy, 0);
-                Energy = _config.Energy;
-            }
-
             PoisonTick(_player);
             if (CheckEnd()) { return; }
             var bulwark = _player.Status(StatusKind.Bulwark);
@@ -320,6 +315,14 @@ namespace Game.Core
             if (miasma > 0)
             {
                 Enqueue(new Command(new EffectDef(EffectKind.Status, miasma, TargetMode.AllEnemies, StatusKind.Poison), Combatant.PlayerId, -1));
+            }
+
+            RunQueue();
+            if (IsOver) { return; }
+            if (Energy != _config.Energy)
+            {
+                Emit(EventKind.EnergyGained, Combatant.PlayerId, -1, _config.Energy - Energy, 0);
+                Energy = _config.Energy;
             }
 
             Enqueue(new Command(new EffectDef(EffectKind.Draw, _config.DrawPerTurn, TargetMode.None), Combatant.PlayerId, -1));

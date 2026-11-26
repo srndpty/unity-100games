@@ -72,6 +72,27 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void StarterDeckSizeIsCheckedBeforeExpanding()
+        {
+            static string Deck(string lines) => Cards.Replace("deck strike 5\ndeck guard 4\ndeck crush 1", lines, StringComparison.Ordinal);
+            Assume.That(Deck("x"), Is.Not.EqualTo(Cards));
+            Assert.That(GameData.Parse(Deck("deck strike 40"), Enemies, Encounters).StarterDeck.Count, Is.EqualTo(40));
+            Assert.That(Errors(cards: Deck("deck strike 40")), Is.Empty);
+            Assert.That(GameData.Parse(Deck("deck strike 20\ndeck guard 20"), Enemies, Encounters).StarterDeck.Count, Is.EqualTo(40));
+            Assert.Throws<FormatException>(() => GameData.Parse(Deck("deck strike 41"), Enemies, Encounters));
+            Assert.Throws<FormatException>(() => GameData.Parse(Deck("deck strike 20\ndeck guard 20\ndeck crush 1"), Enemies, Encounters));
+            Assert.Throws<FormatException>(() => GameData.Parse(Deck("deck strike 0"), Enemies, Encounters));
+            Assert.Throws<FormatException>(() => GameData.Parse(Deck("deck strike -1\ndeck guard 5"), Enemies, Encounters));
+
+            // 巨大な枚数・合計が int を超える組も、展開せずにすぐ拒否する。
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            var huge = Assert.Throws<FormatException>(() => GameData.Parse(Deck("deck strike 2147483647"), Enemies, Encounters))!;
+            Assert.That(huge.Message.Contains("行目", StringComparison.Ordinal), Is.True, huge.Message);
+            Assert.Throws<FormatException>(() => GameData.Parse(Deck("deck strike 2147483647\ndeck guard 2147483647"), Enemies, Encounters));
+            Assert.That(watch.ElapsedMilliseconds, Is.LessThan(2000));
+        }
+
+        [Test]
         public void RuleErrorsAreReportedWithReasons()
         {
             AssertHas(Errors(cards: Cards.Replace("card glance 一瞥", "card guard 一瞥", StringComparison.Ordinal)), "重複");

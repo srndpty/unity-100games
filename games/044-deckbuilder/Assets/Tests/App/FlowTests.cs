@@ -172,6 +172,35 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void NoticeDoesNotExpireWhilePaused()
+        {
+            var flow = AppLab.NewFlow();
+            flow.Apply(I(IntentKind.Confirm));
+            flow.Apply(I(IntentKind.Option, 0));
+            flow.FinishPlayback();
+            var battle = flow.Run!.Battle!;
+            foreach (var c in battle.Hand.Where(c => c.Def.Cost > 0).ToList())
+            {
+                if (!battle.Affordable(c)) { break; }
+                flow.Apply(I(IntentKind.SelectCard, c.Id));
+                if (flow.Targeting.HasCard) { flow.Apply(I(IntentKind.Confirm)); }
+                flow.FinishPlayback();
+            }
+
+            var expensive = battle.Hand.FirstOrDefault(c => !battle.Affordable(c));
+            Assume.That(expensive, Is.Not.Null);
+            flow.Apply(I(IntentKind.SelectCard, expensive!.Id));
+            Assert.That(flow.Notice, Is.Not.Empty);
+            flow.Apply(I(IntentKind.Cancel));
+            Assert.That(flow.Paused, Is.True);
+            for (int i = 0; i < DeckFlow.NoticeTicks * 5; i++) { flow.Step(); }
+            Assert.That(flow.Notice, Is.Not.Empty, "一時停止の間に通知の期限が過ぎない");
+            flow.Apply(I(IntentKind.Cancel));
+            for (int i = 0; i < DeckFlow.NoticeTicks; i++) { flow.Step(); }
+            Assert.That(flow.Notice, Is.Empty);
+        }
+
+        [Test]
         public void PauseStopsThePlaybackAndResumes()
         {
             var flow = AppLab.NewFlow();
@@ -180,8 +209,13 @@ namespace Game.App.Tests
             flow.Apply(I(IntentKind.Cancel));
             Assert.That(flow.Paused, Is.True);
             var cursor = flow.Playback!.Cursor;
-            for (int i = 0; i < 100; i++) { flow.Step(); }
+            var age = flow.Playback.Age;
+            var tick = flow.Tick;
+            for (int i = 0; i < 500; i++) { flow.Step(); }
+            flow.Advance(3);
             Assert.That(flow.Playback.Cursor, Is.EqualTo(cursor));
+            Assert.That(flow.Playback.Age, Is.EqualTo(age));
+            Assert.That(flow.Tick, Is.EqualTo(tick), "一時停止の間は時計も止まる");
             flow.Apply(I(IntentKind.EndTurn));
             Assert.That(flow.Paused, Is.True, "一時停止中の操作は効かない");
             flow.Apply(I(IntentKind.Cancel));
@@ -203,8 +237,17 @@ namespace Game.App.Tests
             Assert.That(battle.Hand, Has.No.Member(strike));
 
             var tick = flow.Tick;
+            flow.Advance(1.0);
+            Assert.That(flow.Tick - tick, Is.EqualTo(DeckFlow.MaxTicksPerFrame), "1 秒（60 Tick ぶん）でも 1 フレームは上限まで");
+            tick = flow.Tick;
             flow.Advance(10);
-            Assert.That(flow.Tick - tick, Is.LessThanOrEqualTo(DeckFlow.MaxTicksPerFrame + 1));
+            Assert.That(flow.Tick - tick, Is.EqualTo(DeckFlow.MaxTicksPerFrame), "超えた遅れは持ち越さない");
+            tick = flow.Tick;
+            flow.Advance(0);
+            Assert.That(flow.Tick, Is.EqualTo(tick), "捨てた遅れは次のフレームで追いつかない");
+            for (int i = 0; i < 5; i++) { flow.Advance(7.9 / DeckFlow.TickRate); }
+            Assert.That(flow.Tick - tick, Is.LessThanOrEqualTo(5 * DeckFlow.MaxTicksPerFrame));
+            tick = flow.Tick;
             tick = flow.Tick;
             flow.Advance(double.NaN);
             Assert.That(flow.Tick, Is.EqualTo(tick));

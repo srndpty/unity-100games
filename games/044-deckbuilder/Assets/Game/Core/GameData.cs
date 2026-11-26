@@ -64,8 +64,16 @@ namespace Game.Core
             var byId = new Dictionary<string, CardDef>(StringComparer.Ordinal);
             foreach (var c in cardDefs) { byId.TryAdd(c.Id, c); }
             var starter = new List<CardDef>();
+            long total = 0;
             foreach (var (id, count, line) in deckIds)
             {
+                // 展開の前に枚数を確かめる（巨大な枚数で検証の前に資源を使い切らない）。
+                total += count;
+                if (count < 1 || total > DeckConfig.MaxStarterDeck)
+                {
+                    throw new FormatException($"Cards.txt {line} 行目: deck の枚数は 1 以上、初期デッキは合計 {DeckConfig.MaxStarterDeck} 枚以下です（{count} 枚、ここまでの合計 {total} 枚）。");
+                }
+
                 if (!byId.TryGetValue(id, out var def)) { throw new FormatException($"Cards.txt {line} 行目: deck のカード {id} がありません。"); }
                 for (int i = 0; i < count; i++) { starter.Add(def); }
             }

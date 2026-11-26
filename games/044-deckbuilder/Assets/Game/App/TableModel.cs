@@ -102,6 +102,9 @@ namespace Game.App
 
         public BattlePhase Phase { get; private set; }
 
+        /// <summary>プレイヤーの番の途中か（ターン終了の前）。敵の意図の見積もりで、ターン終了で減る脱力・弱体を差し引くのに使う。</summary>
+        public bool PlayerTurnOpen { get; private set; }
+
         public Seat? SeatById(int id)
         {
             foreach (var s in _seats)
@@ -118,6 +121,10 @@ namespace Game.App
             {
                 case EventKind.TurnStarted:
                     Turn = e.Amount;
+                    PlayerTurnOpen = true;
+                    break;
+                case EventKind.TurnEnded:
+                    PlayerTurnOpen = false;
                     break;
                 case EventKind.CardPlayed:
                     Resolving = Take(_hand, e.Detail);

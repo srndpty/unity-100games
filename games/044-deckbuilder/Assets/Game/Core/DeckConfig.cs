@@ -10,6 +10,9 @@ namespace Game.Core
         /// <summary>データのカードの数（仕様：20 カード）。</summary>
         public const int CardCount = 20;
 
+        /// <summary>初期デッキの上限（データの読み込みで展開する前に確かめる）。</summary>
+        public const int MaxStarterDeck = 40;
+
         public int PlayerMaxHp = 70;
 
         /// <summary>毎ターンのエネルギー（持ち越さない）。</summary>

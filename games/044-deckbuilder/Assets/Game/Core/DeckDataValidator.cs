@@ -31,9 +31,9 @@ namespace Game.Core
             foreach (var enemy in data.Enemies) { CheckEnemy(enemy, data, config, errors); }
             CheckEncounters(data, config, errors);
 
-            if (data.StarterDeck.Count < config.MinDeckSize || data.StarterDeck.Count > 40)
+            if (data.StarterDeck.Count < config.MinDeckSize || data.StarterDeck.Count > DeckConfig.MaxStarterDeck)
             {
-                errors.Add($"初期デッキは {config.MinDeckSize}〜40 枚（{data.StarterDeck.Count}）");
+                errors.Add($"初期デッキは {config.MinDeckSize}〜{DeckConfig.MaxStarterDeck} 枚（{data.StarterDeck.Count}）");
             }
 
             Pool("NormalRarityWeights", data, config.NormalRarityWeights, config.RewardChoices, errors);

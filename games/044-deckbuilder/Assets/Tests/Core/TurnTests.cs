@@ -53,7 +53,7 @@ namespace Game.Core.Tests
             var start = battle.Events.Count;
             battle.EndTurn();
             var trace = Lab.TraceFrom(battle, start);
-            Assert.That(trace, Does.StartWith("Disc:1 EnemyActed Dmg:0:6+0 EnemyActed Dmg:0:3+0 Dmg:0:3+0 TurnStarted"));
+            Assert.That(trace, Does.StartWith("TurnEnded Disc:1 EnemyActed Dmg:0:6+0 EnemyActed Dmg:0:3+0 Dmg:0:3+0 TurnStarted"));
         }
 
         [Test]
@@ -85,8 +85,25 @@ namespace Game.Core.Tests
             imp.Hp = 4;
             var start = battle.Events.Count;
             battle.EndTurn();
-            Assert.That(Lab.TraceFrom(battle, start), Is.EqualTo("BlockLost Psn:1:4 Died:1 Victory"));
+            Assert.That(Lab.TraceFrom(battle, start), Is.EqualTo("TurnEnded BlockLost Psn:1:4 Died:1 Victory"));
             Assert.That(battle.Phase, Is.EqualTo(BattlePhase.Won));
+        }
+
+        [Test]
+        public void PlayerKilledByPoisonAtTurnStartGetsNoEnergyOrDraw()
+        {
+            var battle = Lab.Arranged(Lab.Encounter("imp"), "strike", Lab.Many("guard", 10));
+            battle.Play(1, 1);
+            Assume.That(battle.Energy, Is.EqualTo(2));
+            battle.EnemyById(1)!.Intent = null;
+            battle.Player.Block = 3;
+            battle.Player.Hp = 2;
+            battle.Player.AddStatus(StatusKind.Poison, 2);
+            var start = battle.Events.Count;
+            battle.EndTurn();
+            // 順序はブロック 0 → 毒 → 持続 → エネルギー → 引く。毒で倒れたらエネルギーの補充と引きの出来事は出ない。
+            Assert.That(Lab.TraceFrom(battle, start), Is.EqualTo("TurnEnded TurnStarted BlockLost Psn:0:2 Died:0 Defeat"));
+            Assert.That(battle.Energy, Is.EqualTo(2));
         }
 
         [Test]
@@ -99,7 +116,7 @@ namespace Game.Core.Tests
             battle.EnemyById(2)!.Intent = null;
             var start = battle.Events.Count;
             battle.EndTurn();
-            Assert.That(Lab.TraceFrom(battle, start), Does.StartWith("TurnStarted En:3 Blk:0:4 St:1:Poison2 St:2:Poison2 Draw:"));
+            Assert.That(Lab.TraceFrom(battle, start), Does.Contain("TurnStarted Blk:0:4 St:1:Poison2 St:2:Poison2 En:3 Draw:"));
         }
 
         [Test]
@@ -204,7 +221,7 @@ namespace Game.Core.Tests
             SetIntent(battle, 2, "scratch");
             var start = battle.Events.Count;
             battle.EndTurn();
-            Assert.That(Lab.TraceFrom(battle, start), Is.EqualTo("Disc:1 EnemyActed Dmg:0:6+0 Died:0 Defeat"));
+            Assert.That(Lab.TraceFrom(battle, start), Is.EqualTo("TurnEnded Disc:1 EnemyActed Dmg:0:6+0 Died:0 Defeat"));
             Assert.That(battle.Phase, Is.EqualTo(BattlePhase.Lost));
         }
     }

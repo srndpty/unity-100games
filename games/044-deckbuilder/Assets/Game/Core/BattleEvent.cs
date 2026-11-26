@@ -5,6 +5,9 @@ namespace Game.Core
         /// <summary>プレイヤーの番が始まった。Amount = ターン数。</summary>
         TurnStarted,
 
+        /// <summary>プレイヤーがターンを終えた（手札を捨てる前）。Amount = ターン数。</summary>
+        TurnEnded,
+
         /// <summary>カードを使った（手札 → 解決中）。Detail = カードの実体 ID、Target = 選んだ敵（なければ -1）、Amount = 払ったエネルギー。</summary>
         CardPlayed,
 

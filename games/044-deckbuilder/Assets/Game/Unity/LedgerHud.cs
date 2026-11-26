@@ -162,12 +162,12 @@ namespace Game.Unity
             _banner.text = BannerText(playback);
             LedgerStage.Assign(table, _slotSeats);
             var target = flow.Targeting.HasCard ? flow.Targeting.Cursor : null;
-            _playerView.Render(table.Player, stage.Player, camera, playback, config, table.Player, false);
+            _playerView.Render(table.Player, stage.Player, camera, playback, config, table, false);
             for (int i = 0; i < _slotViews.Length; i++)
             {
                 var seat = _slotSeats[i];
                 var renderer = stage.Slot(i);
-                _slotViews[i].Render(renderer.enabled ? seat : null, renderer, camera, playback, config, table.Player, seat != null && target == seat.Id);
+                _slotViews[i].Render(renderer.enabled ? seat : null, renderer, camera, playback, config, table, seat != null && target == seat.Id);
             }
 
             RenderArrow(flow, selected);
@@ -567,7 +567,7 @@ namespace Game.Unity
 
             public string Describe() => Shown ? $"{_name.text} {_hpText.text} {_block.text} {_status.text} {_intentText.text}" : string.Empty;
 
-            public void Render(Seat seat, SpriteRenderer renderer, Camera camera, EventPlayback playback, DeckConfig config, Seat player, bool targeted)
+            public void Render(Seat seat, SpriteRenderer renderer, Camera camera, EventPlayback playback, DeckConfig config, TableModel table, bool targeted)
             {
                 Shown = seat != null && renderer != null && renderer.enabled && Hit.panel != null;
                 var display = Shown ? DisplayStyle.Flex : DisplayStyle.None;
@@ -601,7 +601,7 @@ namespace Game.Unity
 
                 if (seat.Def != null && seat.Intent != null && seat.Alive)
                 {
-                    var summary = IntentSummary.Of(seat, player, config);
+                    var summary = IntentSummary.Of(seat, table, config);
                     _intentIcon.style.backgroundImage = new StyleBackground(_hud.IntentSprite(summary.Icon));
                     _intentText.text = summary.Text;
                     _intentName.text = seat.Intent.Name;

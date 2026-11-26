@@ -102,22 +102,25 @@ namespace Game.App
         /// <summary>意図を列に積む（届いた順に <see cref="Advance"/> で処理する）。</summary>
         public void Submit(Intent intent) => _pending.Enqueue(intent);
 
-        /// <summary>積んだ意図を順に処理し、経過時間ぶん Tick を進める（上限 <see cref="MaxTicksPerFrame"/>）。</summary>
+        /// <summary>
+        /// 積んだ意図を順に処理し、経過時間ぶん Tick を進める（1 回の呼び出しで最大 <see cref="MaxTicksPerFrame"/>）。
+        /// 上限を超えた遅れは追いつかずに捨てる（処理落ちの後は演出の時間を飛ばす）。
+        /// </summary>
         public void Advance(double seconds)
         {
             while (_pending.Count > 0) { Apply(_pending.Dequeue()); }
             if (!double.IsFinite(seconds) || seconds < 0) { seconds = 0; }
-            _tickDebt = Math.Min(_tickDebt + (seconds * TickRate), MaxTicksPerFrame + 1);
+            _tickDebt = Math.Min(_tickDebt + (seconds * TickRate), MaxTicksPerFrame);
             var ticks = (int)Math.Floor(_tickDebt);
             _tickDebt -= ticks;
             for (int i = 0; i < ticks; i++) { Step(); }
         }
 
-        /// <summary>1 Tick 進める（撮影・テストは直接呼ぶ）。</summary>
+        /// <summary>1 Tick 進める（撮影・テストは直接呼ぶ）。一時停止の間は時計（Tick・通知の期限・演出）を止める。</summary>
         public void Step()
         {
-            Tick++;
             if (Paused) { return; }
+            Tick++;
             Playback?.Step();
             SyncAfterBattle();
         }
