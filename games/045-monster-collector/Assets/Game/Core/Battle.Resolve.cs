@@ -125,12 +125,28 @@ namespace Game.Core
                 return;
             }
 
-            foreach (var effect in move.Effects)
+            // 効果の列は最後まで解決してから戦闘の終わりを確定する（最後の相手を倒しても ねっこすい の回復は起きる）。
+            // 倒れた相手への効果は各効果の中で飛ばす。
+            _resolvingMove = true;
+            try
             {
-                if (IsOver) { return; }
-                ApplyEffect(player, move, effect);
+                foreach (var effect in move.Effects) { ApplyEffect(player, move, effect); }
+            }
+            finally
+            {
+                _resolvingMove = false;
+            }
+
+            if (_deferredOutcome != BattleOutcome.None)
+            {
+                var outcome = _deferredOutcome;
+                _deferredOutcome = BattleOutcome.None;
+                End(outcome);
             }
         }
+
+        private bool _resolvingMove;
+        private BattleOutcome _deferredOutcome;
 
         private void ApplyEffect(bool player, MoveDef move, EffectDef effect)
         {
@@ -352,13 +368,17 @@ namespace Game.Core
             if (!player) { AwardExp(_foes[slot]); }
 
             // 自分の残りがいなければ敗北（相手も全滅していても）。
-            if (!_party.Exists(m => !m.IsFainted))
+            var outcome = !_party.Exists(m => !m.IsFainted) ? BattleOutcome.Lost
+                : !_foes.Exists(m => !m.IsFainted) ? BattleOutcome.Won
+                : BattleOutcome.None;
+            if (outcome == BattleOutcome.None) { return; }
+            if (_resolvingMove)
             {
-                End(BattleOutcome.Lost);
+                if (_deferredOutcome == BattleOutcome.None || outcome == BattleOutcome.Lost) { _deferredOutcome = outcome; }
                 return;
             }
 
-            if (!_foes.Exists(m => !m.IsFainted)) { End(BattleOutcome.Won); }
+            End(outcome);
         }
 
         /// <summary>倒した相手の経験値を、その相手と戦った（場に出た）生存者で等分する（端数は切り捨て、最低 1）。</summary>

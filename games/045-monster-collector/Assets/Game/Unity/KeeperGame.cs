@@ -80,6 +80,9 @@ namespace Game.Unity
 
             // フォーカスを失って止まっていたら、自動プレイを始めた時点で再開する。
             if (on) { Flow.Resume(); }
+
+            // 自動プレイの間はフォーカスの通知を無視していたので、止めたら今のフォーカスに合わせる。
+            if (!on && !EvidenceCapture.IsRunning && !Application.isBatchMode) { Flow.OnFocusChanged(Application.isFocused); }
             Render();
         }
 

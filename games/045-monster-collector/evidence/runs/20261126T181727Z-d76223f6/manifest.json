@@ -2,9 +2,9 @@
     "Product": "THORNWILD KEEPERS",
     "Version": "1.0",
     "UnityVersion": "6000.6.9f1",
-    "BuildGuid": "709d7883eef94f39aedddc5c3e07cc6e",
+    "BuildGuid": "eec2dbeb38844b9086190ccaa8e9ca24",
     "Seed": 1,
-    "CapturedAtUtc": "2026-11-26T17:50:29.6045062Z",
+    "CapturedAtUtc": "2026-11-26T18:17:26.4982623Z",
     "Info": [
         {
             "Key": "imageEncoding",
@@ -116,17 +116,17 @@
         },
         {
             "File": "19_result.jpg",
-            "Sha256": "d51b1014b3fd1cf25f815a93c4d170f9fe2a65840ef49583fff41942c44b94c9",
-            "Note": "結果（hash=0xDF30E676） (seed=524866043, playTick=22423, battles=82)"
+            "Sha256": "cd544ca7f99a8ac5625b2943a3cd514fdd36ddcb2661dd7938b6666a83d48991",
+            "Note": "結果（hash=0xCCFBCD8F） (seed=524866043, playTick=37866, battles=146)"
         },
         {
             "File": "20_title_records.jpg",
-            "Sha256": "90d19d6cf97724da9a50eeb016b227d028e32527f6ef80c92ca06462f4ce9750",
+            "Sha256": "28a1ca7502041dea7574e7b6da72c3c5914dfd427c9babf90ca5819cb45c0bd1",
             "Note": "クリアの記録を出したタイトル"
         },
         {
             "File": "21_title_broken_save.jpg",
-            "Sha256": "0cf978c886d920e2038e41f884335fd412855fbd967f2496a0fa75eef5b9e9f1",
+            "Sha256": "e5aa07f7127d20b3de747f7e7122f6e36e3b755c586eb3ec1b6a9c509fb9b0a2",
             "Note": "壊れたセーブの案内（つづきからを出さない）"
         }
     ]

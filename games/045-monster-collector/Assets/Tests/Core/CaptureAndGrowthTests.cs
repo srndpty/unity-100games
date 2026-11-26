@@ -79,6 +79,29 @@ namespace Game.Core.Tests
             Assert.That(gains.All(g => g.Amount == total / 2), Is.True);
         }
 
+        /// <summary>PR レビュー：最後の相手を倒しても、技の効果の列（ねっこすい の自己回復）は最後まで解決してから勝ちが決まる。</summary>
+        [Test]
+        public void DrainHealsEvenWhenItKnocksOutTheLastFoe()
+        {
+            var battle = Lab.Wild(Lab.Mon("mossling", 20, "rootdrain"), Lab.Mon("brinecrab", 2, "harden"));
+            battle.Party[0].Hp = 10;
+            var state = Lab.StateWhere(r =>
+            {
+                r.Next(1);
+                return r.Next(100) < 95;
+            });
+            battle.SetRngStateForTest(state);
+            var events = new List<BattleEvent>(battle.Submit(BattleCommand.Fight(0)).Events);
+            Assert.That(battle.Outcome, Is.EqualTo(BattleOutcome.Won));
+            var fainted = events.FindIndex(e => e.Kind == BattleEventKind.Fainted);
+            var healed = events.FindIndex(e => e.Kind == BattleEventKind.Healed);
+            var won = events.FindIndex(e => e.Kind == BattleEventKind.Won);
+            Assert.That(fainted, Is.GreaterThanOrEqualTo(0));
+            Assert.That(healed, Is.GreaterThan(fainted), "倒した後に回復する");
+            Assert.That(won, Is.GreaterThan(healed), "回復してから勝ちが決まる");
+            Assert.That(battle.Party[0].Hp, Is.EqualTo(10 + battle.Party[0].MaxHp * 25 / 100));
+        }
+
         [Test]
         public void TrainerBattlesGiveMoreExp()
         {

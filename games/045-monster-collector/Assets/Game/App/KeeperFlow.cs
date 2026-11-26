@@ -90,6 +90,7 @@ namespace Game.App
         private int _swapFrom = -1;
         private Direction? _tapStep;
         private int _bumpCooldown;
+        private double _playAccumulator;
 
         public KeeperFlow(MonsterData data, ISaveStore save, ISaveStore records, int initialSeed, FlowSettings? settings = null)
         {
@@ -180,7 +181,11 @@ namespace Game.App
         public void UpdateFrame(double deltaSeconds)
         {
             FlushIntents();
-            _accumulator += Math.Max(0, deltaSeconds) * _settings.TickRate;
+            var dt = Math.Max(0, deltaSeconds);
+
+            // 遊んだ時間は実時間で数え、ロジックの 1 フレームの Tick 上限から切り離す（017）。一時停止の間は数えない。
+            CountPlayTime(dt);
+            _accumulator += dt * _settings.TickRate;
             var ticks = (int)Math.Floor(_accumulator);
             _accumulator -= ticks;
             if (ticks > _settings.MaxTicksPerFrame)
@@ -189,7 +194,18 @@ namespace Game.App
                 _accumulator = 0;
             }
 
-            StepTicks(ticks);
+            for (int i = 0; i < ticks; i++) { TickOnce(countPlay: false); }
+        }
+
+        /// <summary>1 フレームで遊んだ時間に足す実時間の上限（秒）。止まっていた後の巨大なフレームで飽和させる。</summary>
+        public const double MaxPlaySecondsPerFrame = 60.0;
+
+        private void CountPlayTime(double seconds)
+        {
+            _playAccumulator += Math.Min(seconds, MaxPlaySecondsPerFrame) * _settings.TickRate;
+            var whole = (long)Math.Floor(_playAccumulator);
+            _playAccumulator -= whole;
+            if (World != null && InGame && !IsPaused) { World.AddPlayTicks(whole); }
         }
 
         /// <summary>
@@ -221,10 +237,11 @@ namespace Game.App
             while (_intents.Count > 0) { Apply(_intents.Dequeue()); }
         }
 
+        /// <summary>Tick を進める（テスト・撮影・自動プレイ）。進めた Tick をそのまま遊んだ時間に数える。</summary>
         public void StepTicks(int ticks)
         {
             FlushIntents();
-            for (int i = 0; i < ticks; i++) { TickOnce(); }
+            for (int i = 0; i < ticks; i++) { TickOnce(countPlay: true); }
         }
 
         /// <summary>フォーカスを失ったら一時停止し、押されているキーと保留の入力を捨てる。復帰しても手で再開する。</summary>
@@ -249,6 +266,9 @@ namespace Game.App
 
         private void Apply(Intent intent)
         {
+            // フォーカスを失っている間は、入力による遷移（再開を含む）をしない。押しているキーも登録しない。
+            if (!HasFocus) { return; }
+
             if (intent.Button <= InputButton.Left)
             {
                 var d = (int)intent.Button;
@@ -306,11 +326,11 @@ namespace Game.App
 
         // --- Tick ---
 
-        private void TickOnce()
+        private void TickOnce(bool countPlay)
         {
             TotalTicks++;
             if (IsPaused) { return; }
-            if (World != null && InGame) { World.AddPlayTicks(1); }
+            if (countPlay && World != null && InGame) { World.AddPlayTicks(1); }
             if (AutoplayActive && World != null) { WorldTouchedByAutoplay = true; }
             switch (Screen)
             {

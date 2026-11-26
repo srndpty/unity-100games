@@ -7,7 +7,7 @@ namespace Game.App.Tests
     public sealed class FlowTests
     {
         /// <summary>シード 1 の操縦役の通しで、結果画面に着いたときの世界のハッシュ（Mono と .NET で同じ）。</summary>
-        public const uint SeedOneClearHash = 4002173971u;
+        public const uint SeedOneClearHash = 980083300u;
 
         private static void Confirm(KeeperFlow flow)
         {
@@ -82,6 +82,57 @@ namespace Game.App.Tests
         }
 
         private const int Lab8 = 8;
+
+        /// <summary>PR レビュー：遊んだ時間は 1 フレームの Tick 上限で捨てた分も数える。一時停止の間は数えない。</summary>
+        [Test]
+        public void PlayTimeCountsRealTime_NotTheTickCap()
+        {
+            var flow = AppLab.FieldReady();
+            var w = flow.World!;
+            var play = w.PlayTicks;
+            var total = flow.TotalTicks;
+            flow.UpdateFrame(1.0);
+            Assert.That(w.PlayTicks - play, Is.EqualTo(60), "1 秒の処理落ちのフレームも 60 Tick ぶん数える");
+            Assert.That(flow.TotalTicks - total, Is.EqualTo(new FlowSettings().MaxTicksPerFrame), "ロジックは上限まで");
+            flow.UpdateFrame(3600.0);
+            Assert.That(w.PlayTicks - play, Is.EqualTo(60 + (long)(KeeperFlow.MaxPlaySecondsPerFrame * 60)), "巨大なフレームは上限で飽和");
+            var paused = w.PlayTicks;
+            flow.Tap(InputButton.Pause);
+            flow.UpdateFrame(0.0);
+            flow.UpdateFrame(2.0);
+            Assert.That(w.PlayTicks, Is.EqualTo(paused), "一時停止の間は数えない");
+        }
+
+        /// <summary>PR レビュー：フォーカスを失っている間は P・決定で再開しない（通知と押下のどちらが先でも）。</summary>
+        [Test]
+        public void FocusLossRejectsResumeInput_InEitherOrder()
+        {
+            foreach (var key in new[] { InputButton.Pause, InputButton.Confirm })
+            {
+                // 通知 → 押下
+                var a = AppLab.FieldReady();
+                a.OnFocusChanged(false);
+                a.Tap(key);
+                a.UpdateFrame(0.5);
+                Assert.That(a.IsPaused, Is.True, $"喪失の後の {key} で再開しない");
+
+                // 押下 → 通知（同じフレームの保留入力は捨てる）
+                var b = AppLab.FieldReady();
+                b.Tap(InputButton.Pause);
+                b.OnFocusChanged(false);
+                b.UpdateFrame(0.5);
+                Assert.That(b.IsPaused, Is.True);
+                b.Tap(key);
+                b.UpdateFrame(0.5);
+                Assert.That(b.IsPaused, Is.True, $"喪失中の {key} で再開しない");
+
+                // 復帰した後は手で再開できる。
+                b.OnFocusChanged(true);
+                b.Tap(key);
+                b.UpdateFrame(0.1);
+                Assert.That(b.IsPaused, Is.False, $"復帰後は {key} で再開する");
+            }
+        }
 
         /// <summary>レビュー P2-1：自動プレイが進めた冒険のクリアは記録ファイルを変えない。次の手で遊ぶ冒険は記録する。</summary>
         [Test]
