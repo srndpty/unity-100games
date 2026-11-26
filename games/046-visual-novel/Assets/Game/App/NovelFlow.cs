@@ -86,7 +86,8 @@ namespace Game.App
             _script = script ?? throw new ArgumentNullException(nameof(script));
             _quickStore = quickStore ?? throw new ArgumentNullException(nameof(quickStore));
             _readStore = readStore ?? throw new ArgumentNullException(nameof(readStore));
-            _settings = settings ?? new FlowSettings();
+            // 検証した値を外から書き換えられないよう、複製を持つ。
+            _settings = settings?.Copy() ?? new FlowSettings();
             var errors = _settings.Validate();
             if (errors.Count > 0) { throw new ArgumentException(string.Join("\n", errors), nameof(settings)); }
             _pauseItems = Array.AsReadOnly(new[] { new MenuItem("つづける", true), new MenuItem("タイトルへ", true) });
@@ -332,7 +333,7 @@ namespace Game.App
                     ToTitle();
                     break;
                 case FlowScreen.Reading:
-                    if (WindowHidden) { WindowHidden = false; return; }
+                    if (WindowHidden) { SetWindowHidden(false); return; }
                     if (IsChoice)
                     {
                         if (index >= 0 && index < _runner!.Current.Options.Count) { Choose(index); }
@@ -411,13 +412,13 @@ namespace Game.App
         {
             if (button == InputButton.HideWindow)
             {
-                WindowHidden = !WindowHidden;
+                SetWindowHidden(!WindowHidden);
                 return;
             }
 
             if (WindowHidden)
             {
-                if (button is InputButton.Confirm or InputButton.Cancel) { WindowHidden = false; }
+                if (button is InputButton.Confirm or InputButton.Cancel) { SetWindowHidden(false); }
                 return;
             }
 
@@ -472,7 +473,9 @@ namespace Game.App
         {
             if (!IsRevealed)
             {
+                // 全文を出したら受付の版を進め、同じフレームの 2 回目のクリックで送らない。
                 _revealedAll = true;
+                Version++;
                 return;
             }
 
@@ -532,6 +535,8 @@ namespace Game.App
 
         private void TickOnce()
         {
+            // 一時停止の間は時計も止める（案内の期限も減らさない、044）。
+            if (Screen == FlowScreen.Paused) { return; }
             Ticks++;
             if (Notice.Length > 0 && Ticks >= _noticeUntil) { Notice = ""; }
             if (Screen != FlowScreen.Reading || _runner == null || _runner.Phase != RunnerPhase.Text) { return; }
@@ -664,6 +669,13 @@ namespace Game.App
             RefreshTitle();
             MenuCursor = TitleNew;
             SetScreen(FlowScreen.Title);
+        }
+
+        /// <summary>枠の表示を切り替える。戻したクリックと同じフレームの次のクリックで送らないよう、版も進める。</summary>
+        private void SetWindowHidden(bool hidden)
+        {
+            WindowHidden = hidden;
+            Version++;
         }
 
         private void SetScreen(FlowScreen screen)

@@ -178,6 +178,19 @@ namespace Game.Core.Tests
             Lab.AssertError(Lab.Replace(_optionLine, "- 鍵を調べる -> look_key { clue += 99999999999 }"), _optionLine, "整数か true/false");
         }
 
+        [TestCase("9999", true)]
+        [TestCase("-9999", true)]
+        [TestCase("10000", false)]
+        [TestCase("-10000", false)]
+        [TestCase("2147483647", false)]
+        public void ConditionLiteralRangeMatchesAssignments(string value, bool ok)
+        {
+            // 条件の数値も代入と同じ ±9999（レビュー P3-1）。
+            var src = Lab.Replace(_ifLine, "$if clue >= 1 -> good\n$if clue == " + value + " -> good");
+            if (ok) { Assert.That(Lab.Compile(src).Ok, Is.True, Lab.Compile(src).Report()); }
+            else { Lab.AssertError(src, _ifLine + 1, "値は ±9999 まで"); }
+        }
+
         // ---- 到達性と終了性 ----
 
         [Test]

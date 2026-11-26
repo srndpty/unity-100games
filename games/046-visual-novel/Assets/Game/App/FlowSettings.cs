@@ -19,6 +19,8 @@ namespace Game.App
         /// <summary>案内（保存しました など）を出しておく Tick。</summary>
         public int NoticeTicks { get; set; } = 150;
 
+        public FlowSettings Copy() => (FlowSettings)MemberwiseClone();
+
         public IReadOnlyList<string> Validate()
         {
             var e = new List<string>();

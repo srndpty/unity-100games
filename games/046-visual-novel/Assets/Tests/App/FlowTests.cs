@@ -73,6 +73,38 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void DoubleClickDuringRevealOnlyCompletesText()
+        {
+            // 表示途中のクリック 2 回（同じフレーム）は、全文を出すだけで送らない（レビュー P2-1）。
+            var f = AppLab.Started(settings: new FlowSettings { TicksPerChar = 2 });
+            var before = f.StoryHash;
+            var v = f.Version;
+            f.Enqueue(Intent.Click(-1, v));
+            f.Enqueue(Intent.Click(-1, v));
+            f.FlushIntents();
+            Assert.That(f.IsRevealed, Is.True);
+            Assert.That(f.StoryHash, Is.EqualTo(before));
+            Assert.That(f.ReadCount, Is.EqualTo(0));
+            f.Click(-1);
+            f.FlushIntents();
+            Assert.That(f.ReadCount, Is.EqualTo(1), "次のクリックで送る");
+        }
+
+        [Test]
+        public void DoubleClickOnHiddenWindowOnlyShowsIt()
+        {
+            var f = AppLab.Started(settings: new FlowSettings { TicksPerChar = 0 });
+            f.Tap(InputButton.HideWindow);
+            f.FlushIntents();
+            var v = f.Version;
+            f.Enqueue(Intent.Click(-1, v));
+            f.Enqueue(Intent.Click(-1, v));
+            f.FlushIntents();
+            Assert.That(f.WindowHidden, Is.False);
+            Assert.That(f.ReadCount, Is.EqualTo(0), "枠を戻すクリックの 2 回目でも送らない");
+        }
+
+        [Test]
         public void DoubleClickOnOptionChoosesOnce()
         {
             var f = AppLab.Started();
@@ -112,6 +144,36 @@ namespace Game.App.Tests
             f.FlushIntents();
             Assert.That(f.Screen, Is.EqualTo(FlowScreen.Reading));
             Assert.That(f.StoryHash, Is.EqualTo(hash));
+        }
+
+        [Test]
+        public void PauseStopsTheClockAndKeepsNotice()
+        {
+            // 一時停止の間は Tick（時計）も止め、案内の期限も減らさない（044・レビュー P3-2）。
+            var f = AppLab.Started();
+            f.Tap(InputButton.QuickSave);
+            f.Tap(InputButton.Cancel);
+            f.FlushIntents();
+            var ticks = f.Ticks;
+            f.StepTicks(300);
+            Assert.That(f.Ticks, Is.EqualTo(ticks));
+            Assert.That(f.Notice, Is.EqualTo("クイックセーブしました"));
+            f.Tap(InputButton.Cancel);
+            f.StepTicks(150);
+            Assert.That(f.Notice, Is.Empty, "再開すると期限が進む");
+        }
+
+        [Test]
+        public void SettingsAreCopiedAtConstruction()
+        {
+            // 検証した後の設定を外から書き換えても、作った Flow は変わらない（レビュー P3-3）。
+            var settings = new FlowSettings { TicksPerChar = 2, MaxTicksPerFrame = 8 };
+            var f = AppLab.Started(settings: settings);
+            settings.TicksPerChar = 0;
+            settings.MaxTicksPerFrame = 0;
+            Assert.That(f.IsRevealed, Is.False, "文字送りは途中のまま");
+            f.UpdateFrame(1.0 / 60);
+            Assert.That(f.Ticks, Is.EqualTo(1), "フレームの Tick は止まらない");
         }
 
         [Test]

@@ -418,6 +418,7 @@ namespace Game.Core.Script
                     }
 
                     if (type == VariableType.Number && st.CondValue.IsBool) { Error(st.Line, $"int の変数 {st.CondVariable} と true/false は比べられません"); }
+                    if (!st.CondValue.IsBool && Math.Abs((long)st.CondValue.Value) > _rules.ValueLimit) { Error(st.Line, $"値は ±{_rules.ValueLimit} まで（{st.CondValue.Value}）"); }
                 }
 
                 return new Condition(Math.Max(v, 0), op, st.CondValue.Value);
