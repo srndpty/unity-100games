@@ -11,6 +11,12 @@ namespace Game.Core.Rules
         /// <summary>部屋の高さ（全部屋で共通、画面の縦 1080 に合わせた整数の単位）。</summary>
         public const int RoomHeight = 1080;
 
+        /// <summary>
+        /// 会話で同時に並べられる話題の数（これに「さようなら」を足した数が HUD の選択肢の枠の数）。
+        /// 話題の総数ではなく、どの到達状態でも同時に選べる話題がこの数以下であることを探索で検証する。
+        /// </summary>
+        public const int MaxTopicChoices = 6;
+
         public int MaxLines = 2000;
         public int MaxRooms = 8;
         public int MaxRoomWidth = 4096;

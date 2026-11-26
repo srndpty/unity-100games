@@ -40,6 +40,9 @@ namespace Game.Core.Play
         private readonly bool[] _solved;
         private readonly bool[] _visible;
         private readonly bool[] _unlocked;
+
+        /// <summary>クリックできるかの覚え（0 未計算・1 できる・2 できない）。部屋と物の表示が変わったら消す。</summary>
+        private readonly byte[] _interactable;
         private readonly List<AdventureEvent> _events = new();
         private readonly ReadOnlyCollection<AdventureEvent> _eventsView;
 
@@ -62,6 +65,7 @@ namespace Game.Core.Play
             _solved = new bool[book.Puzzles.Count];
             _visible = new bool[book.Hotspots.Count];
             _unlocked = new bool[book.Hotspots.Count];
+            _interactable = new byte[book.Hotspots.Count];
             foreach (var h in book.Hotspots)
             {
                 _visible[h.Index] = h.InitiallyVisible;
@@ -86,6 +90,7 @@ namespace Game.Core.Play
             _solved = (bool[])other._solved.Clone();
             _visible = (bool[])other._visible.Clone();
             _unlocked = (bool[])other._unlocked.Clone();
+            _interactable = (byte[])other._interactable.Clone();
             _eventsView = _events.AsReadOnly();
             _hasPending = other._hasPending;
             _pendingVerb = other._pendingVerb;
@@ -173,6 +178,61 @@ namespace Game.Core.Play
             }
 
             return -1;
+        }
+
+        /// <summary>
+        /// 物を今クリックできるか：今の部屋にあって見えていて、手前（後に書いた）の見えている物の矩形の和に全体を覆われていない。
+        /// 命令の受け付け（<see cref="Check"/>）と状態空間の探索はこれで判定し、遊ぶときのクリックの当たり（<see cref="HotspotAt"/>）と一致させる。
+        /// </summary>
+        public bool IsInteractable(int hotspot)
+        {
+            if (hotspot < 0 || hotspot >= _book.Hotspots.Count) { return false; }
+            if (_interactable[hotspot] == 0) { _interactable[hotspot] = ClickablePoint(hotspot) != null ? (byte)1 : (byte)2; }
+            return _interactable[hotspot] == 1;
+        }
+
+        /// <summary>クリックするとこの物に当たる点（<see cref="HotspotAt"/> がこの物を返す点）。なければ null。</summary>
+        public Vec2i? ClickablePoint(int hotspot)
+        {
+            if (hotspot < 0 || hotspot >= _book.Hotspots.Count) { return null; }
+            var h = _book.Hotspots[hotspot];
+            if (h.Room != Room || !_visible[hotspot]) { return null; }
+
+            // 矩形は両端を含む整数の点の集まり。座標を半開区間 [min, max + 1) の境界で区切り、手前の物に覆われない区画を探す。
+            var covers = new List<Rect>();
+            for (int i = hotspot + 1; i < _book.Hotspots.Count; i++)
+            {
+                var c = _book.Hotspots[i];
+                if (c.Room == Room && _visible[i]) { covers.Add(c.Area); }
+            }
+
+            var a = h.Area;
+            var xs = Cuts(a.MinX, a.MaxX, covers, true);
+            var ys = Cuts(a.MinY, a.MaxY, covers, false);
+            for (int yi = 0; yi + 1 < ys.Count; yi++)
+            {
+                for (int xi = 0; xi + 1 < xs.Count; xi++)
+                {
+                    var p = new Vec2i(xs[xi], ys[yi]);
+                    if (!covers.Exists(c => c.Contains(p))) { return p; }
+                }
+            }
+
+            return null;
+        }
+
+        private static List<int> Cuts(int min, int max, List<Rect> covers, bool horizontal)
+        {
+            var cuts = new SortedSet<int> { min, max + 1 };
+            foreach (var c in covers)
+            {
+                var lo = horizontal ? c.MinX : c.MinY;
+                var hi = (horizontal ? c.MaxX : c.MaxY) + 1;
+                if (lo > min && lo <= max) { cuts.Add(lo); }
+                if (hi > min && hi <= max) { cuts.Add(hi); }
+            }
+
+            return new List<int>(cuts);
         }
 
         /// <summary>今選べる話題（会話中でなければ空）。書いた順。</summary>
@@ -352,7 +412,7 @@ namespace Game.Core.Play
             {
                 case TargetKind.Hotspot:
                     if (target.Index < 0 || target.Index >= _book.Hotspots.Count) { return Outcome.Refuse(Refusal.OutOfRange); }
-                    if (_book.Hotspots[target.Index].Room != Room || !_visible[target.Index]) { return Outcome.Refuse(Refusal.NotHere); }
+                    if (!IsInteractable(target.Index)) { return Outcome.Refuse(Refusal.NotHere); }
                     return Outcome.Ok;
                 case TargetKind.Item:
                     if (target.Index < 0 || target.Index >= _book.Items.Count) { return Outcome.Refuse(Refusal.OutOfRange); }
@@ -452,6 +512,7 @@ namespace Game.Core.Play
             }
 
             Room = exit.Destination;
+            Array.Clear(_interactable, 0, _interactable.Length);
             X = exit.Arrival;
             _events.Add(new AdventureEvent(EventKind.RoomChanged, Room));
         }
@@ -486,10 +547,12 @@ namespace Game.Core.Play
                         break;
                     case EffectKind.Show:
                         _visible[e.Index] = true;
+                        Array.Clear(_interactable, 0, _interactable.Length);
                         _events.Add(new AdventureEvent(EventKind.HotspotShown, e.Index));
                         break;
                     case EffectKind.Hide:
                         _visible[e.Index] = false;
+                        Array.Clear(_interactable, 0, _interactable.Length);
                         _events.Add(new AdventureEvent(EventKind.HotspotHidden, e.Index));
                         break;
                     case EffectKind.Unlock:

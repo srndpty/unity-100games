@@ -46,7 +46,7 @@ namespace Game.App
             Next++;
         }
 
-        /// <summary>Tick を 1 つずつ進めながら、脱出して結果画面になるまで動かす。上限を超えたら例外。</summary>
+        /// <summary>Tick を 1 つずつ進めながら、脱出して結果画面になるまで動かす。<paramref name="maxTicks"/> 回の反復で届かなければ例外。</summary>
         public void RunToResult(AdventureFlow flow, int maxTicks = 100000)
         {
             if (flow == null) { throw new ArgumentNullException(nameof(flow)); }
@@ -57,6 +57,8 @@ namespace Game.App
                 flow.StepTicks(1);
             }
 
+            // 最後の反復で結果画面になった場合も成功（ループの先頭だけで調べると、上限ちょうどで届いたのに失敗になる）。
+            if (flow.Screen == FlowScreen.Result) { return; }
             throw new InvalidOperationException($"{maxTicks} Tick で結果画面に届きません");
         }
     }

@@ -15,7 +15,8 @@ namespace Game.Unity
     public sealed class AdventureHud
     {
         public const int Slots = 8;
-        public const int MaxTopics = 7;
+        /// <summary>話題の枠の数：同時に並ぶ話題の上限（Core の検証と同じ定数）と「さようなら」。</summary>
+        public const int MaxTopics = BookLimits.MaxTopicChoices + 1;
 
         /// <summary>下の帯の高さ（パネルの座標、部屋の座標でも同じ 200）。</summary>
         public const int BarHeight = 200;

@@ -106,6 +106,8 @@ namespace Game.Core.Analysis
     /// </summary>
     public static class StateSpace
     {
+        private static readonly Verb[] _allVerbs = { Verb.Walk, Verb.Look, Verb.Take, Verb.Use, Verb.Talk };
+
         public static StateSpaceReport Explore(RuleBook book, int maxStates)
         {
             if (book == null) { throw new ArgumentNullException(nameof(book)); }
@@ -120,6 +122,7 @@ namespace Game.Core.Analysis
             var usedTopics = new bool[book.Topics.Count];
             var reportedAmbiguity = new HashSet<long>();
             var reportedViolation = new HashSet<string>(StringComparer.Ordinal);
+            var reportedTopics = new HashSet<int>();
             int transitions = 0;
             bool aborted = false;
 
@@ -127,6 +130,12 @@ namespace Game.Core.Analysis
             {
                 var w = worlds[s];
                 if (w.Escaped) { continue; }
+                if (w.TalkingTo >= 0 && w.AvailableTopics().Count > BookLimits.MaxTopicChoices && reportedTopics.Add(w.TalkingTo))
+                {
+                    var npc = book.Hotspots[w.TalkingTo];
+                    errors.Add(new RuleError(npc.Line, $"{npc.Id} との会話で話題が {w.AvailableTopics().Count} 個同時に並びます（{BookLimits.MaxTopicChoices} 個まで。到達の手順：{PathText(book, parent, via, s)}）。条件で出る時期を分けてください"));
+                }
+
                 foreach (var move in Moves(w))
                 {
                     if (move.Kind == MoveKind.Act)
@@ -200,32 +209,35 @@ namespace Game.Core.Analysis
                 yield break;
             }
 
-            var held = world.Inventory.ToArray();
+            // 命令の候補（全ての物・持ち物 × 全ての動詞 × 道具なしと持っている持ち物）を、遊ぶときと同じ World.Check で絞る。
+            // 探索が独自に操作の集合を組み立てないので、受け付ける命令と探索の手が食い違わない（出口の取る・話す、覆われた物も同じ規則）。
+            var tools = new List<int> { -1 };
+            tools.AddRange(world.Inventory);
             foreach (var h in book.Hotspots)
             {
-                if (h.Room != world.Room || !world.Visible(h.Index)) { continue; }
+                // クリックできない物は World.Check がどの動詞でも拒否するので、候補を作る前に飛ばす（結果は同じで速い）。
+                if (!world.IsInteractable(h.Index)) { continue; }
                 var target = Target.Hotspot(h.Index);
-                yield return Move.Act(Verb.Look, target);
-                if (h.Kind == HotspotKind.Exit)
+                foreach (var verb in _allVerbs)
                 {
-                    yield return Move.Act(Verb.Walk, target);
+                    foreach (var tool in tools)
+                    {
+                        if (world.Check(verb, target, tool).Accepted) { yield return Move.Act(verb, target, tool); }
+                    }
                 }
-                else
-                {
-                    yield return Move.Act(Verb.Take, target);
-                    yield return Move.Act(Verb.Use, target);
-                    yield return Move.Act(Verb.Talk, target);
-                }
-
-                foreach (var item in held) { yield return Move.Act(Verb.Use, target, item); }
             }
 
-            foreach (var item in held)
+            foreach (var item in world.Inventory.ToArray())
             {
-                yield return Move.Act(Verb.Look, Target.Item(item));
-                foreach (var other in held)
+                var target = Target.Item(item);
+                foreach (var verb in _allVerbs)
                 {
-                    if (other > item) { yield return Move.Act(Verb.Use, Target.Item(other), item); }
+                    foreach (var tool in tools)
+                    {
+                        // 持ち物どうしは「小さい番号が道具」の 1 通りだけにする（逆の順序は同じルールに正規化される）。
+                        if (tool > item) { continue; }
+                        if (world.Check(verb, target, tool).Accepted) { yield return Move.Act(verb, target, tool); }
+                    }
                 }
             }
         }

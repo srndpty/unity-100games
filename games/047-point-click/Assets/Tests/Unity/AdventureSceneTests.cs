@@ -348,6 +348,148 @@ namespace Game.Unity.Tests
             Assert.That(Snapshot(), Is.EqualTo(startup), "タイトルへ戻った表示が起動直後と同じ（021）");
         }
 
+        // ---- 完了判定：全 5 謎を解ける（実際の入力だけで、レビュー P2-3） ----
+
+        /// <summary>
+        /// 本番の解答手順を、仮想マウスと仮想キーボードの入力だけで最後まで遊ぶ（Flow.TryIssue と操縦役を使わない）。
+        /// 動詞・持ち物の枠・部屋の物・話題をクリックし、命令の組み立て・座標の変換・当たり判定を通す。最後の台詞は時間で送られて結果画面になる。
+        /// </summary>
+        [UnityTest]
+        public IEnumerator WalkthroughByMouseAndKeyboardOnly_ReachesResult()
+        {
+            var text = System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "Game", "Data", "Walkthrough.txt"));
+            var moves = Adventure.ParseWalkthrough(Book, text);
+            yield return Start();
+            for (int k = 0; k < moves.Count; k++)
+            {
+                var m = moves[k];
+                var what = $"手 {k + 1}（{m.Describe(Book)}）";
+                yield return AdvanceLinesByClick();
+                var actions = Flow.ActionCount;
+                switch (m.Kind)
+                {
+                    case Game.Core.Analysis.MoveKind.Ask:
+                        {
+                            var index = Flow.TopicOptions.ToList().IndexOf(Book.Topics[m.Topic].Question);
+                            Assert.That(index, Is.GreaterThanOrEqualTo(0), what);
+                            yield return Click(ScreenPointIn(_game.Hud!.Topic(index)));
+                            break;
+                        }
+
+                    case Game.Core.Analysis.MoveKind.EndTalk:
+                        Assert.That(Flow.IsTalking, Is.True, what);
+                        yield return Click(ScreenPointIn(_game.Hud!.Topic(Flow.TopicOptions.Count - 1)));
+                        Assert.That(Flow.IsTalking, Is.False, what);
+                        break;
+                    default:
+                        yield return ActByInput(m, what);
+                        break;
+                }
+
+                yield return Settle();
+                if (m.Kind != Game.Core.Analysis.MoveKind.EndTalk) { Assert.That(Flow.ActionCount, Is.EqualTo(actions + 1), what + " が実際に行われた"); }
+                Check(m);
+            }
+
+            // 最後の台詞は入力せずに時間で送る。
+            for (int i = 0; i < 5000 && Flow.Screen == FlowScreen.Playing; i++) { Flow.StepTicks(1); }
+            _game.Render();
+            yield return null;
+            Assert.That(Flow.Screen, Is.EqualTo(FlowScreen.Result));
+            Assert.That(Flow.SolvedCount, Is.EqualTo(5));
+            Assert.That(Visible("result"), Is.True);
+        }
+
+        /// <summary>台詞が出ていれば、台詞の枠をクリックして全て送る。</summary>
+        private IEnumerator AdvanceLinesByClick()
+        {
+            for (int i = 0; i < 20 && Flow.CurrentLine != null; i++) { yield return Click(ScreenPointIn(Hud.Q("line"))); }
+            Assert.That(Flow.CurrentLine, Is.Null);
+        }
+
+        /// <summary>部屋の物か持ち物への命令を、動詞のボタン・持ち物の枠・部屋のクリックで組み立てる。</summary>
+        private IEnumerator ActByInput(Game.Core.Analysis.Move m, string what)
+        {
+            if (m.Target.Kind == TargetKind.Item)
+            {
+                if (m.Verb == Verb.Look) { yield return Click(ScreenPointIn(_game.Hud!.Verb(0))); }
+                else { yield return Click(ScreenPointIn(_game.Hud!.Slot(Slot(m.Tool)))); }
+                yield return Click(ScreenPointIn(_game.Hud!.Slot(Slot(m.Target.Index))));
+                yield break;
+            }
+
+            if (m.Tool >= 0)
+            {
+                yield return Click(ScreenPointIn(_game.Hud!.Slot(Slot(m.Tool))));
+                Assert.That(Flow.SelectedTool, Is.EqualTo(m.Tool), what);
+            }
+            else if (m.Verb != Verb.Walk)
+            {
+                yield return Click(ScreenPointIn(_game.Hud!.Verb(AdventureFlow.Verbs.IndexOf(m.Verb))));
+                Assert.That(Flow.SelectedVerb, Is.EqualTo(m.Verb), what);
+            }
+
+            yield return Click(_game.ScreenPoint(PointOn(m.Target.Index, what)));
+            Assert.That(Flow.IsWalking || Flow.CurrentLine != null || Flow.Room != Book.Hotspots[m.Target.Index].Room, Is.True, what + " のクリックが届いた");
+        }
+
+        private int Slot(int item)
+        {
+            var slot = Flow.Inventory.ToList().IndexOf(item);
+            Assert.That(slot, Is.GreaterThanOrEqualTo(0), Book.Items[item].Id);
+            return slot;
+        }
+
+        /// <summary>クリックするとその物に当たる部屋の座標（矩形の中心から探す）。</summary>
+        private Vector2Int PointOn(int hotspot, string what)
+        {
+            var a = Book.Hotspots[hotspot].Area;
+            var center = new Vector2Int((a.MinX + a.MaxX) / 2, (a.MinY + a.MaxY) / 2);
+            if (Flow.HotspotAt(center.x, center.y) == hotspot) { return center; }
+            for (int y = a.MinY; y <= a.MaxY; y += 5)
+            {
+                for (int x = a.MinX; x <= a.MaxX; x += 5)
+                {
+                    if (Flow.HotspotAt(x, y) == hotspot) { return new Vector2Int(x, y); }
+                }
+            }
+
+            Assert.Fail(what + "：クリックできる点がない");
+            return default;
+        }
+
+        /// <summary>手ごとの見た目の確かめ（拾った物が消える・組み合わせ・会話・扉と部屋）。</summary>
+        private void Check(Game.Core.Analysis.Move m)
+        {
+            _game.Render();
+            var d = m.Describe(Book);
+            switch (d)
+            {
+                case "take cottage.knife":
+                    Assert.That(_game.Stage.Hotspots[Book.HotspotIndex("cottage.knife")].enabled, Is.False);
+                    break;
+                case "use cup on cottage.stove":
+                    Assert.That(Flow.Inventory, Has.Member(Book.ItemIndex("hot_water")));
+                    break;
+                case "use hot_water on tea_leaves":
+                    Assert.That(Flow.Inventory, Has.Member(Book.ItemIndex("tea")));
+                    Assert.That(Flow.Inventory, Has.No.Member(Book.ItemIndex("tea_leaves")));
+                    break;
+                case "talk dock.captain":
+                    Assert.That(Flow.IsTalking, Is.True);
+                    break;
+                case "use rusty_key on cottage.tower_door":
+                    Assert.That(Flow.Inventory, Has.No.Member(Book.ItemIndex("rusty_key")));
+                    break;
+                case "go cottage.tower_door":
+                    Assert.That(Flow.Room, Is.EqualTo(Book.RoomIndex("lighthouse")));
+                    Assert.That(_game.Stage.RoomRoots[Book.RoomIndex("lighthouse")].gameObject.activeSelf, Is.True);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         [UnityTest]
         public IEnumerator QuitFromTitleByClick()
         {

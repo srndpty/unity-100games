@@ -86,6 +86,30 @@ namespace Game.Core.Tests
             Assert.That(Lab.Compile(src).Ok, Is.True, Lab.Dump(Lab.Compile(src)));
         }
 
+        // ---- 会話の話題の数（レビュー P2-2） ----
+
+        private static string Topics(int count, string condition) =>
+            string.Concat(Enumerable.Range(0, count).Select(i => $"topic dock.man extra{i} 「話題 {i}」{condition} : 「返事 {i}」" + "\n"));
+
+        [Test]
+        public void TooManyTopicsAtOnce_AreRejected()
+        {
+            // 最初から並ぶのは oil・weather の 2 つ。無条件の話題を足して 7 つにすると、「さようなら」を足した 8 つが HUD に収まらない。
+            var src = Lab.Small + Topics(5, "");
+            var r = Lab.Compile(src);
+            Assert.That(Lab.HasError(r, $"dock.man との会話で話題が 7 個同時に並びます（{BookLimits.MaxTopicChoices} 個まで", Lab.LineOf(src, "@npc dock.man")), Is.True, Lab.Dump(r));
+            Assert.That(Lab.Compile(Lab.Small + Topics(4, "")).Ok, Is.True, "ちょうど 6 つなら通る");
+        }
+
+        [Test]
+        public void ManyTopicsThatAppearAtDifferentTimes_AreAllowed()
+        {
+            // 話題の総数は 9 でも、同時に並ぶのは最大 6（聞いた後に 5 つ増え、oil は消える）。
+            var r = Lab.Compile(Lab.Small + Topics(5, " when asked"));
+            Assert.That(r.Ok, Is.True, Lab.Dump(r));
+            Assert.That(r.Book!.Topics.Count, Is.EqualTo(7));
+        }
+
         // ---- 持ち物の違反 ----
 
         [Test]

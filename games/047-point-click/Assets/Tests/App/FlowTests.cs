@@ -433,6 +433,23 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void RunToResult_SucceedsAtExactLimit_AndFailsOneShort()
+        {
+            // 必要な回数を数える：Tick を 1 つずつ進める反復で、最後の反復は台詞を送って結果画面になる（その Tick は数えない）。
+            var probe = AppLab.Playing();
+            new Autopilot(AppLab.Walkthrough).RunToResult(probe);
+            var needed = (int)probe.Ticks + 1;
+
+            var exact = AppLab.Playing();
+            Assert.DoesNotThrow(() => new Autopilot(AppLab.Walkthrough).RunToResult(exact, needed), "上限ちょうどの反復で結果画面になれば成功");
+            Assert.That(exact.Screen, Is.EqualTo(FlowScreen.Result));
+
+            var shortOne = AppLab.Playing();
+            Assert.Throws<InvalidOperationException>(() => new Autopilot(AppLab.Walkthrough).RunToResult(shortOne, needed - 1));
+            Assert.That(shortOne.Screen, Is.EqualTo(FlowScreen.Playing));
+        }
+
+        [Test]
         public void Autopilot_RejectsWalkthroughThatDoesNotFit()
         {
             var f = AppLab.Playing();
