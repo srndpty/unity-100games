@@ -366,6 +366,9 @@ namespace Game.Unity.Tests
             var startupTiles = Snapshot();
             var startupPlayer = PlayerLocal;
             yield return StartGame();
+
+            // シードは実行ごとに変わるので、近くの敵に倒されて結果の画面へ移らないよう敵を除く。
+            QuietRoom();
             for (int i = 0; i < 10; i++) { yield return _keyboard.Tap(Key.Space); }
             yield return _keyboard.Tap(Key.Escape);
             Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Paused));

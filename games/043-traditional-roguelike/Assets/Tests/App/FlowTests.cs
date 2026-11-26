@@ -237,6 +237,18 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void ChangingThePublishedConfigDoesNotChangeTheFlow()
+        {
+            var flow = new CrawlFlow(new CrawlConfig(), 3);
+            flow.Config.HitPercent = 1;
+            flow.Config.Monsters[0].ActionCost = 0;
+            Assert.That(flow.Config.HitPercent, Is.EqualTo(new CrawlConfig().HitPercent), "公開するのは複製");
+            flow.Apply(Intent.Of(IntentKind.Submit, 0));
+            flow.Apply(Intent.Of(IntentKind.Submit, 0));
+            Assert.That(flow.Run!.Hash(), Is.EqualTo(new CrawlRun(new CrawlConfig(), 3).Hash()), "試合は元の設定で始まる");
+        }
+
+        [Test]
         public void InventorySelectionMovesOnTwoColumnGrid()
         {
             // 5 品：a b / c d / e

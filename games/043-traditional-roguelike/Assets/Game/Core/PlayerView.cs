@@ -74,7 +74,7 @@ namespace Game.Core
         public int Exp => _run.Player.Exp;
 
         /// <summary>次のレベルに要る経験値の累計。最高レベルなら -1。</summary>
-        public int NextExp => _run.Player.Level < _run.Config.MaxLevel ? _run.Config.LevelExp[_run.Player.Level - 1] : -1;
+        public int NextExp => _run.Player.Level < _run.Rules.MaxLevel ? _run.Rules.LevelExp[_run.Player.Level - 1] : -1;
 
         public int Attack => _run.Player.Attack;
 
@@ -82,7 +82,7 @@ namespace Game.Core
 
         public int Satiety => _run.Player.Satiety;
 
-        public int MaxSatiety => _run.Config.MaxSatiety;
+        public int MaxSatiety => _run.Rules.MaxSatiety;
 
         public bool Asleep => _run.Player.SleepTurns > 0;
 
@@ -95,7 +95,7 @@ namespace Game.Core
 
         public MonsterKind Killer => _run.Killer;
 
-        public int InventoryCapacity => _run.Config.InventoryCapacity;
+        public int InventoryCapacity => _run.Rules.InventoryCapacity;
 
         public ReadOnlyCollection<ItemKind> Inventory { get; }
 

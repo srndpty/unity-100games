@@ -26,16 +26,16 @@ namespace Game.Core
         {
             if (config == null) { throw new ArgumentNullException(nameof(config)); }
             config.Validate();
-            Config = config.Copy();
+            Rules = config.Copy();
             Seed = seed;
-            Fingerprint = Game.Core.Fingerprint.Of(Config);
+            Fingerprint = Game.Core.Fingerprint.Of(Rules);
             Player = new Player
             {
-                Hp = Config.PlayerHp,
-                MaxHp = Config.PlayerHp,
-                Attack = Config.PlayerAttack,
-                Defense = Config.PlayerDefense,
-                Satiety = Config.MaxSatiety,
+                Hp = Rules.PlayerHp,
+                MaxHp = Rules.PlayerHp,
+                Attack = Rules.PlayerAttack,
+                Defense = Rules.PlayerDefense,
+                Satiety = Rules.MaxSatiety,
             };
             Scheduler = new TurnScheduler();
             View = new PlayerView(this);
@@ -50,7 +50,11 @@ namespace Game.Core
             View.Refresh();
         }
 
-        public CrawlConfig Config { get; }
+        /// <summary>この試合の設定の複製。書き換えても試合には効かない（試合が使う設定と指紋は作ったときのまま）。</summary>
+        public CrawlConfig Config => Rules.Copy();
+
+        /// <summary>試合が使う設定（検証済み・以後変えない）。Core の中だけで読む。</summary>
+        internal CrawlConfig Rules { get; }
 
         public int Seed { get; }
 
@@ -198,7 +202,7 @@ namespace Game.Core
         /// <summary>テスト用：敵を足す（スケジューラにも今の時刻で入れる）。</summary>
         internal Monster AddMonster(MonsterKind kind, Vec2i position)
         {
-            var m = new Monster(_nextMonsterId++, kind, position, Config.StatsOf(kind).Hp);
+            var m = new Monster(_nextMonsterId++, kind, position, Rules.StatsOf(kind).Hp);
             _monsters.Add(m);
             Scheduler.Add(m.Id, Scheduler.TimeOf(TurnScheduler.PlayerId));
             return m;
@@ -229,7 +233,7 @@ namespace Game.Core
         private void EnterFloor(int floor, long time)
         {
             Floor = floor;
-            var layout = FloorGenerator.Generate(Seed, floor, Config);
+            var layout = FloorGenerator.Generate(Seed, floor, Rules);
             Grid = layout.Grid;
             Known = new KnownMap(Grid.Width, Grid.Height);
             _visible = new bool[Grid.Width * Grid.Height];
@@ -252,20 +256,20 @@ namespace Game.Core
             var rng = GameRng.For(Seed, Floor, RngPurpose.Placement);
             var startRoom = Grid.RoomAt(layout.Start);
             var monsterWeights = new int[CrawlConfig.MonsterKindCount];
-            for (int k = 0; k < monsterWeights.Length; k++) { monsterWeights[k] = Config.Monsters[k].FloorWeights[Floor - 1]; }
-            var count = Config.MonstersBase + (Config.MonstersPerFloor * Floor);
+            for (int k = 0; k < monsterWeights.Length; k++) { monsterWeights[k] = Rules.Monsters[k].FloorWeights[Floor - 1]; }
+            var count = Rules.MonstersBase + (Rules.MonstersPerFloor * Floor);
             for (int i = 0; i < count; i++)
             {
                 if (!TryRoomTile(rng, startRoom, p => MonsterAt(p) == null && p != layout.Start, out var p)) { break; }
                 var kind = (MonsterKind)rng.Weighted(monsterWeights);
-                var m = new Monster(_nextMonsterId++, kind, p, Config.StatsOf(kind).Hp) { Asleep = kind == MonsterKind.Serpent };
+                var m = new Monster(_nextMonsterId++, kind, p, Rules.StatsOf(kind).Hp) { Asleep = kind == MonsterKind.Serpent };
                 _monsters.Add(m);
                 Scheduler.Add(m.Id, time);
             }
 
             var itemWeights = new int[CrawlConfig.ItemKindCount];
-            for (int k = 0; k < itemWeights.Length; k++) { itemWeights[k] = Config.Items[k].FloorWeights[Floor - 1]; }
-            var items = Config.ItemsBase + (Config.ItemsPerFloor * Floor);
+            for (int k = 0; k < itemWeights.Length; k++) { itemWeights[k] = Rules.Items[k].FloorWeights[Floor - 1]; }
+            var items = Rules.ItemsBase + (Rules.ItemsPerFloor * Floor);
             for (int i = 0; i < items; i++)
             {
                 if (!TryRoomTile(rng, -1, p => ItemAt(p) == null && Grid[p] == Tile.Room, out var p)) { break; }
@@ -304,7 +308,7 @@ namespace Game.Core
         /// <summary>視界を計算し直し、見えているマスを既知マップに覚える。</summary>
         private void Look()
         {
-            Fov.Compute(Grid, Player.Position, Config.ViewRadius, _visible);
+            Fov.Compute(Grid, Player.Position, Rules.ViewRadius, _visible);
             Known.Observe(_visible, ItemAt);
         }
 
@@ -323,7 +327,7 @@ namespace Game.Core
                     return Outcome.Ok;
                 case CommandKind.Pickup:
                     if (ItemAt(p.Position) == null) { return Outcome.Reject(RejectReason.NothingToPickUp); }
-                    return p.Inventory.Count < Config.InventoryCapacity ? Outcome.Ok : Outcome.Reject(RejectReason.InventoryFull);
+                    return p.Inventory.Count < Rules.InventoryCapacity ? Outcome.Ok : Outcome.Reject(RejectReason.InventoryFull);
                 case CommandKind.Use:
                     if (command.Slot < 0 || command.Slot >= p.Inventory.Count) { return Outcome.Reject(RejectReason.EmptySlot); }
                     return p.Inventory[command.Slot] == ItemKind.Stone ? Outcome.Reject(RejectReason.CannotUse) : Outcome.Ok;
@@ -331,7 +335,7 @@ namespace Game.Core
                     return command.Slot >= 0 && command.Slot < p.Inventory.Count ? Outcome.Ok : Outcome.Reject(RejectReason.EmptySlot);
                 case CommandKind.Drop:
                     if (command.Slot < 0 || command.Slot >= p.Inventory.Count) { return Outcome.Reject(RejectReason.EmptySlot); }
-                    return ItemAt(p.Position) == null && _itemCount < Config.FloorItemCap ? Outcome.Ok : Outcome.Reject(RejectReason.CannotDrop);
+                    return ItemAt(p.Position) == null && _itemCount < Rules.FloorItemCap ? Outcome.Ok : Outcome.Reject(RejectReason.CannotDrop);
                 case CommandKind.Descend:
                     return Grid[p.Position] == Tile.Stairs ? Outcome.Ok : Outcome.Reject(RejectReason.NotOnStairs);
                 default:
@@ -407,24 +411,24 @@ namespace Game.Core
         {
             var p = Player;
             p.Actions++;
-            if (p.Actions % Config.HungerEvery == 0 && p.Satiety > 0)
+            if (p.Actions % Rules.HungerEvery == 0 && p.Satiety > 0)
             {
                 p.Satiety--;
-                if (p.Satiety == Config.HungryWarning) { Emit(EventKind.Hungry, 0, -1, default, default, p.Position, p.Satiety); }
+                if (p.Satiety == Rules.HungryWarning) { Emit(EventKind.Hungry, 0, -1, default, default, p.Position, p.Satiety); }
                 if (p.Satiety == 0) { Emit(EventKind.Starving, 0, -1, default, default, p.Position, 0); }
             }
 
             if (p.Satiety == 0)
             {
-                p.Hp -= Config.StarveDamage;
-                Emit(EventKind.Starve, 0, -1, default, default, p.Position, Config.StarveDamage);
+                p.Hp -= Rules.StarveDamage;
+                Emit(EventKind.Starve, 0, -1, default, default, p.Position, Rules.StarveDamage);
                 if (p.Hp <= 0)
                 {
                     Die(DeathCause.Starvation, default);
                     return;
                 }
             }
-            else if (p.Actions % Config.RegenEvery == 0 && p.Hp < p.MaxHp)
+            else if (p.Actions % Rules.RegenEvery == 0 && p.Hp < p.MaxHp)
             {
                 p.Hp++;
             }
@@ -453,7 +457,7 @@ namespace Game.Core
                 }
 
                 MonsterAct(monster);
-                if (Scheduler.Contains(id)) { Scheduler.Spend(id, Config.StatsOf(monster.Kind).ActionCost); }
+                if (Scheduler.Contains(id)) { Scheduler.Spend(id, Rules.StatsOf(monster.Kind).ActionCost); }
             }
         }
 
@@ -486,7 +490,7 @@ namespace Game.Core
         /// <summary>ダメージ：攻撃 × (87〜112)% − 防御、最低 1。</summary>
         private int RollDamage(int attack, int defense)
         {
-            var percent = _actionRng.Range(Config.DamageMinPercent, Config.DamageMaxPercent);
+            var percent = _actionRng.Range(Rules.DamageMinPercent, Rules.DamageMaxPercent);
             var raw = (int)((long)attack * percent / 100) - defense;
             return Math.Max(1, raw);
         }

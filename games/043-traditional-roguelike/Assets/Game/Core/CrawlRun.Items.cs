@@ -11,7 +11,7 @@ namespace Game.Core
         {
             var item = ItemAt(Player.Position);
             if (!item.HasValue) { return; }
-            if (Player.Inventory.Count >= Config.InventoryCapacity)
+            if (Player.Inventory.Count >= Rules.InventoryCapacity)
             {
                 Emit(EventKind.FullCannotPickUp, 0, -1, default, item.Value, Player.Position, 0);
                 return;
@@ -37,24 +37,24 @@ namespace Game.Core
             switch (item)
             {
                 case ItemKind.HealPotion:
-                    var healed = System.Math.Min(p.MaxHp - p.Hp, Config.HealAmount);
+                    var healed = System.Math.Min(p.MaxHp - p.Hp, Rules.HealAmount);
                     p.Hp += healed;
                     Emit(EventKind.Healed, 0, -1, default, item, p.Position, healed);
                     break;
                 case ItemKind.PoisonPotion:
                     // 自分で飲んでも死なない（HP は 1 まで）。
-                    var lost = System.Math.Min(p.Hp - 1, Config.PoisonSelfDamage);
+                    var lost = System.Math.Min(p.Hp - 1, Rules.PoisonSelfDamage);
                     p.Hp -= lost;
                     Emit(EventKind.Poisoned, 0, -1, default, item, p.Position, lost);
                     break;
                 case ItemKind.SleepPotion:
-                    p.SleepTurns = Config.SleepTurns;
-                    Emit(EventKind.FellAsleep, 0, -1, default, item, p.Position, Config.SleepTurns);
+                    p.SleepTurns = Rules.SleepTurns;
+                    Emit(EventKind.FellAsleep, 0, -1, default, item, p.Position, Rules.SleepTurns);
                     break;
                 case ItemKind.Bread:
                 case ItemKind.BigBread:
-                    var amount = item == ItemKind.Bread ? Config.BreadSatiety : Config.BigBreadSatiety;
-                    var gained = System.Math.Min(Config.MaxSatiety - p.Satiety, amount);
+                    var amount = item == ItemKind.Bread ? Rules.BreadSatiety : Rules.BigBreadSatiety;
+                    var gained = System.Math.Min(Rules.MaxSatiety - p.Satiety, amount);
                     p.Satiety += gained;
                     Emit(EventKind.Ate, 0, -1, default, item, p.Position, gained);
                     break;
@@ -85,7 +85,7 @@ namespace Game.Core
             p.Inventory.RemoveAt(slot);
             Emit(EventKind.Thrown, 0, -1, default, item, p.Position, (int)p.Facing);
             var at = p.Position;
-            for (int i = 0; i < Config.ThrowRange; i++)
+            for (int i = 0; i < Rules.ThrowRange; i++)
             {
                 if (!Grid.CanStep(at, p.Facing)) { break; }
                 at += p.Facing.Offset();
@@ -105,21 +105,21 @@ namespace Game.Core
             switch (item)
             {
                 case ItemKind.HealPotion:
-                    target.Hp = System.Math.Min(target.MaxHp, target.Hp + Config.HealAmount);
+                    target.Hp = System.Math.Min(target.MaxHp, target.Hp + Rules.HealAmount);
                     Emit(EventKind.ThrowHit, 0, target.Id, target.Kind, item, target.Position, 0);
                     return;
                 case ItemKind.SleepPotion:
-                    target.SleepTurns = Config.SleepTurns;
+                    target.SleepTurns = Rules.SleepTurns;
                     Emit(EventKind.ThrowHit, 0, target.Id, target.Kind, item, target.Position, 0);
-                    Emit(EventKind.MonsterSlept, target.Id, -1, target.Kind, item, target.Position, Config.SleepTurns);
+                    Emit(EventKind.MonsterSlept, target.Id, -1, target.Kind, item, target.Position, Rules.SleepTurns);
                     return;
             }
 
             var damage = item switch
             {
-                ItemKind.Stone => Config.StoneDamage,
-                ItemKind.PoisonPotion => Config.PoisonThrowDamage,
-                _ => Config.ThrowBumpDamage,
+                ItemKind.Stone => Rules.StoneDamage,
+                ItemKind.PoisonPotion => Rules.PoisonThrowDamage,
+                _ => Rules.ThrowBumpDamage,
             };
             if (target.Asleep)
             {
@@ -137,7 +137,7 @@ namespace Game.Core
         /// </summary>
         private void PlaceItem(ItemKind item, Vec2i at, EventKind landed, int actor)
         {
-            if (_itemCount < Config.FloorItemCap && TryFreeItemTile(at, out var spot))
+            if (_itemCount < Rules.FloorItemCap && TryFreeItemTile(at, out var spot))
             {
                 SetItem(spot, item);
                 Emit(landed, actor, -1, default, item, spot, 0);

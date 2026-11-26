@@ -232,9 +232,12 @@ namespace Game.Core
             Need(InventoryCapacity >= 1 && InventoryCapacity <= 26, "InventoryCapacity は 1〜26");
             Need(FloorItemCap >= 1 && FloorItemCap <= 500, "FloorItemCap は 1〜500");
             Need(ThrowRange >= 1 && ThrowRange <= 30, "ThrowRange は 1〜30");
-            Need(MonstersBase >= 0 && MonstersPerFloor >= 0 && MonstersBase + (MonstersPerFloor * FloorCount) <= 40, "敵の数は 0〜40");
-            Need(ItemsBase >= 0 && ItemsPerFloor >= 0 && ItemsBase + (ItemsPerFloor * FloorCount) <= 40, "品の数は 0〜40");
-            Need(ItemsBase + (ItemsPerFloor * FloorCount) <= FloorItemCap, "置く品の数は FloorItemCap 以下");
+            // 階ごとの数は実行時に「基本 + 1 階あたり × 階」で求めるので、桁あふれしない long で最も深い階の数を検証する（041）。
+            long maxMonsters = MonstersBase + ((long)MonstersPerFloor * FloorCount);
+            long maxItems = ItemsBase + ((long)ItemsPerFloor * FloorCount);
+            Need(MonstersBase >= 0 && MonstersPerFloor >= 0 && maxMonsters <= 40, "敵の数は 0〜40");
+            Need(ItemsBase >= 0 && ItemsPerFloor >= 0 && maxItems <= 40, "品の数は 0〜40");
+            Need(maxItems <= FloorItemCap, "置く品の数は FloorItemCap 以下");
             Need(HealAmount >= 1 && HealAmount <= 999, "HealAmount は 1〜999");
             Need(PoisonSelfDamage >= 0 && PoisonSelfDamage <= 999, "PoisonSelfDamage は 0〜999");
             Need(PoisonThrowDamage >= 1 && PoisonThrowDamage <= 999, "PoisonThrowDamage は 1〜999");

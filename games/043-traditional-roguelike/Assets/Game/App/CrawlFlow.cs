@@ -64,7 +64,8 @@ namespace Game.App
 
         public double RepeatInterval { get; }
 
-        public CrawlConfig Config => _config;
+        /// <summary>試合に渡す設定の複製（書き換えても Flow と試合には効かない）。</summary>
+        public CrawlConfig Config => _config.Copy();
 
         public AppScreen Screen { get; private set; }
 
