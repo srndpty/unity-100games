@@ -1,0 +1,48 @@
+# 種族（6 種、属性ごとに 2 種）。進化はしない。
+# species <id> <名前> <属性> <HP> <攻撃> <防御> <素早さ> <捕獲率 1〜255> <経験値の量>
+# 続く learn 行が覚える技：learn <レベル> <技>（レベルの昇順）
+
+species cinderpup ホムラコ ember 45 55 43 62 45 64
+learn 1 tackle
+learn 1 growl
+learn 5 spark
+learn 9 smolder
+learn 13 cinderfang
+learn 18 blaze
+
+species wickmoth トモシガ ember 40 48 40 70 190 50
+learn 1 spark
+learn 1 quickjab
+learn 6 smolder
+learn 11 cinderfang
+learn 16 blaze
+
+species ripplet ミナモン tide 52 50 56 45 45 64
+learn 1 tackle
+learn 1 harden
+learn 5 splash
+learn 9 lull
+learn 13 tidecrash
+learn 18 torrent
+
+species brinecrab シオガニ tide 45 60 62 35 190 54
+learn 1 splash
+learn 1 harden
+learn 7 tidecrash
+learn 12 lull
+learn 17 torrent
+
+species mossling コケボウ moss 50 50 50 48 45 64
+learn 1 tackle
+learn 1 growl
+learn 5 vinewhip
+learn 9 sleepspore
+learn 13 sporeburst
+learn 16 rootdrain
+
+species burrowroot ネモグラ moss 56 56 46 40 190 54
+learn 1 vinewhip
+learn 1 tackle
+learn 6 sporeburst
+learn 11 rootdrain
+learn 15 sleepspore

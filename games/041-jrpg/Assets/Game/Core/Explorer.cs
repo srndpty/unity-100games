@@ -1,4 +1,5 @@
 using System;
+using IntGeometry;
 using TileMotion;
 
 namespace Game.Core
@@ -42,6 +43,9 @@ namespace Game.Core
     /// <summary>フィールド上のパーティ位置・向き・1 マス歩行補間・先行入力・遭遇歩数を管理する。</summary>
     public sealed class Explorer
     {
+        /// <summary>遭遇の系列を戦闘の系列と分ける塩（旧 GameRng.ForEncounter の値。固定ハッシュを保つため変えない）。</summary>
+        private const uint EncounterSalt = 0xA5A5F00Du;
+
         public Explorer(GameData data, int matchSeed)
         {
             if (data == null)
@@ -59,7 +63,7 @@ namespace Game.Core
             BufferedDirection = -1;
             StepsSinceEncounter = 0;
             TotalSteps = 0;
-            EncounterRng = GameRng.ForEncounter(matchSeed);
+            EncounterRng = new RandomSeries(unchecked((int)((uint)matchSeed ^ EncounterSalt)));
         }
 
         private Explorer(
@@ -73,7 +77,7 @@ namespace Game.Core
             int bufferedDirection,
             int stepsSinceEncounter,
             int totalSteps,
-            GameRng encounterRng)
+            RandomSeries encounterRng)
         {
             MapId = mapId;
             X = x;
@@ -98,7 +102,7 @@ namespace Game.Core
         public int BufferedDirection { get; private set; }
         public int StepsSinceEncounter { get; private set; }
         public int TotalSteps { get; private set; }
-        public GameRng EncounterRng { get; }
+        public RandomSeries EncounterRng { get; }
         public bool IsMoving => MoveRemaining > 0;
 
         public void FrontTile(out int fx, out int fy)
@@ -262,7 +266,7 @@ namespace Game.Core
                 bufferedDirection: -1,
                 stepsSinceEncounter,
                 totalSteps,
-                GameRng.FromState(encounterRngState));
+                RandomSeries.FromState(encounterRngState));
         }
 
         public Explorer Clone() => new(

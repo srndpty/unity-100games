@@ -20,7 +20,7 @@ namespace Game.Core
         private int[] _items;
         private int _itemCount;
         private int _nextMonsterId = 1;
-        private GameRng _actionRng;
+        private RandomSeries _actionRng;
 
         public CrawlRun(CrawlConfig config, int seed)
         {
@@ -43,7 +43,7 @@ namespace Game.Core
             // EnterFloor で作り直す。
             _visible = Array.Empty<bool>();
             _items = Array.Empty<int>();
-            _actionRng = new GameRng(seed);
+            _actionRng = new RandomSeries(seed);
             Grid = null!;
             Known = null!;
             EnterFloor(1, 0);
@@ -90,7 +90,7 @@ namespace Game.Core
 
         internal bool[] Visible => _visible;
 
-        internal GameRng ActionRng => _actionRng;
+        internal RandomSeries ActionRng => _actionRng;
 
         internal int FloorItemCount => _itemCount;
 
@@ -246,14 +246,14 @@ namespace Game.Core
             Player.Position = layout.Start;
             Scheduler.Add(TurnScheduler.PlayerId, time);
             Populate(layout, time);
-            _actionRng = GameRng.For(Seed, floor, RngPurpose.Action);
+            _actionRng = RandomSeries.Derive(Seed, floor, (int)RngPurpose.Action);
             Look();
         }
 
         /// <summary>階の敵と品を置く。配置専用の系列を使うので、自機の行動に依らず同じ階は同じ配置になる。</summary>
         private void Populate(FloorLayout layout, long time)
         {
-            var rng = GameRng.For(Seed, Floor, RngPurpose.Placement);
+            var rng = RandomSeries.Derive(Seed, Floor, (int)RngPurpose.Placement);
             var startRoom = Grid.RoomAt(layout.Start);
             var monsterWeights = new int[CrawlConfig.MonsterKindCount];
             for (int k = 0; k < monsterWeights.Length; k++) { monsterWeights[k] = Rules.Monsters[k].FloorWeights[Floor - 1]; }
@@ -278,7 +278,7 @@ namespace Game.Core
         }
 
         /// <summary>部屋の床から条件に合うマスを引く（<paramref name="excludedRoom"/> の部屋は除く）。</summary>
-        private bool TryRoomTile(GameRng rng, int excludedRoom, Func<Vec2i, bool> ok, out Vec2i result)
+        private bool TryRoomTile(RandomSeries rng, int excludedRoom, Func<Vec2i, bool> ok, out Vec2i result)
         {
             var candidates = new List<Vec2i>();
             for (int r = 0; r < Grid.Rooms.Count; r++)

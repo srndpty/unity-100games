@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using IntGeometry;
 using TileMotion;
 
 namespace Game.Core
@@ -339,7 +340,7 @@ namespace Game.Core
         public int TotalWeight { get; }
         public IReadOnlyList<EncounterEntryInfo> Entries => _entries;
 
-        public string RollGroupId(GameRng rng)
+        public string RollGroupId(RandomSeries rng)
         {
             if (rng == null)
             {

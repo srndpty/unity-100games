@@ -103,7 +103,7 @@ namespace Game.Core.Tests
         [Test]
         public void VisibilityBetweenFloorTilesIsSymmetricOnRandomMaps()
         {
-            var rng = new GameRng(9);
+            var rng = new RandomSeries(9);
             for (int map = 0; map < 25; map++)
             {
                 const int size = 16;

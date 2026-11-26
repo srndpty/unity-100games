@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Game.Core;
+using IntGeometry;
 
 namespace Game.App
 {
@@ -42,7 +43,7 @@ namespace Game.App
             ["glance"] = 2,
         };
 
-        private readonly GameRng _rng;
+        private readonly RandomSeries _rng;
         private readonly Dictionary<uint, double> _memo = new();
         private int _budget;
 
@@ -54,7 +55,7 @@ namespace Game.App
             if (mistakePercent < 0 || mistakePercent > 100) { throw new ArgumentOutOfRangeException(nameof(mistakePercent)); }
             Depth = depth;
             MistakePercent = mistakePercent;
-            _rng = new GameRng(seed);
+            _rng = new RandomSeries(seed);
         }
 
         public int Depth { get; }

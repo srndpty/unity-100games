@@ -1,0 +1,104 @@
+# 規則・地図・草むら・トレーナー。行頭が # の行は注釈（地図の行は row で始める）。
+
+# rule <名前> <値…>
+rule step_ticks 8
+rule grace_steps 3
+rule party_max 6
+rule box_max 30
+rule level_cap 20
+rule starter_level 5
+rule balls 5
+rule potions 3
+rule potion_heal 20
+rule exp_curve 1 2
+rule exp_yield_divisor 5
+rule trainer_exp_percent 150
+rule start town 10 5
+rule center town 10 4
+rule struggle struggle
+
+# 最初に選べる 3 匹（属性ごとに 1 匹）
+starter cinderpup
+starter ripplet
+starter mossling
+
+# 地図。# 壁、. 地面、= 道、* 花（歩ける）、~ 水、H 家、C 回復所のカウンター。
+# 草むら（" ; :）は文字ごとに遭遇表を持つ。
+map town 灯ノ村
+row ####################
+row #..HHHH......HHHH..#
+row #..HHHH......HHHH..#
+row #..HHHH...C..HHHH..#
+row #*........=.......*#
+row #*.......===.......#
+row #....=====.=====...=
+row #*...=.........=...#
+row #....=..~~~~...=...#
+row #....=..~~~~...=..*#
+row #*...=.........=...#
+row ####################
+end
+
+map route 茨野ノ道
+row ############################################
+row #.""""""""".#.;;;;;;;;;;;.#.:::::::::::.#**#
+row #.""""""""".#.;;;;;;;;;;;.#.:::::::::::.#**#
+row #.""""""""".#.;;;;;;;;;;;.#.:::::::::::.#**#
+row #...........#.;;;;;;;;;;;.#.............#**#
+row #...........#...~~~~......#....~~~~~....#**#
+row #...........#...~~~~......#.............#**#
+row =========================================**#
+row #...........#.............#.............#**#
+row #.."""""""..#.............#.............#**#
+row #.."""""""..#..;;;;;;;;;..#.:::::::::::.#**#
+row #.."""""""..#..;;;;;;;;;..#.:::::::::::.#**#
+row #...........#..;;;;;;;;;..#.:::::::::::.#**#
+row ############################################
+end
+
+# portal <地図> <x> <y> <行き先の地図> <x> <y> <向き>
+portal town 19 6 route 1 7 right
+portal route 0 7 town 18 6 left
+
+# grass <地図> <文字> <遭遇率 %>、wild <地図> <文字> <種族> <最低 Lv> <最高 Lv> <重み>
+grass route " 15
+wild route " wickmoth 2 4 35
+wild route " burrowroot 2 4 35
+wild route " brinecrab 2 4 30
+
+grass route ; 15
+wild route ; wickmoth 5 7 25
+wild route ; burrowroot 5 7 25
+wild route ; brinecrab 5 7 25
+wild route ; cinderpup 5 6 8
+wild route ; ripplet 5 6 8
+wild route ; mossling 5 6 9
+
+grass route : 15
+wild route : wickmoth 11 13 20
+wild route : burrowroot 11 13 20
+wild route : brinecrab 11 13 20
+wild route : cinderpup 10 12 13
+wild route : ripplet 10 12 13
+wild route : mossling 10 12 14
+
+# trainer <id> <名前> <地図> <x> <y> <向き>、intro/defeat <id> <台詞>、tmon <id> <種族> <Lv>（出す順）
+trainer saki 見習いのサキ route 12 7 left
+intro saki ここを通りたいなら、わたしに勝ってからね！
+defeat saki まいった……。この先はもっと手強いよ。
+tmon saki wickmoth 5
+tmon saki brinecrab 6
+
+trainer oboro 釣り人のオボロ route 26 7 left
+intro oboro 水辺で鍛えた相棒たちの力、見せてやろう。
+defeat oboro ふむ、見事な采配だ。通るがいい。
+tmon oboro burrowroot 8
+tmon oboro brinecrab 9
+tmon oboro wickmoth 9
+
+trainer touma 茨守りのトウマ route 40 7 left
+intro touma 茨野の奥へ進む者よ。その絆、試させてもらう。
+defeat touma 見事だ。きみこそ新しい茨守りにふさわしい。
+tmon touma mossling 11
+tmon touma cinderpup 12
+tmon touma ripplet 12

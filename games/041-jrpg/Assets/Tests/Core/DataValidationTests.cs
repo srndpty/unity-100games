@@ -1,4 +1,5 @@
 using System;
+using IntGeometry;
 using NUnit.Framework;
 
 namespace Game.Core.Tests
@@ -127,7 +128,7 @@ namespace Game.Core.Tests
             var data = GameData.Validate(exact);
             var table = data.EncounterTables[0];
             Assert.That(table.TotalWeight, Is.EqualTo(int.MaxValue));
-            var rng = new GameRng(3);
+            var rng = new RandomSeries(3);
             for (var i = 0; i < 100; i++)
             {
                 Assert.That(table.RollGroupId(rng), Is.EqualTo("f1_slimes").Or.EqualTo("f1_bats"));

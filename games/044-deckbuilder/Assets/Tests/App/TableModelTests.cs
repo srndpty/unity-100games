@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Game.Core;
+using IntGeometry;
 using NUnit.Framework;
 
 namespace Game.App.Tests
@@ -54,7 +55,7 @@ namespace Game.App.Tests
             var deck = ids.Select((id, i) => new CardRef(i + 1, data.Card(id))).ToArray();
             var battle = new Battle(data, new DeckConfig(), deck, 70, 70, data.Encounters[seed % data.Encounters.Count], seed, 0);
             var playback = new EventPlayback(battle, data, new PlaybackTiming());
-            var rng = new GameRng(seed * 7);
+            var rng = new RandomSeries(seed * 7);
             for (int step = 0; step < 200 && !battle.IsOver; step++)
             {
                 var playable = battle.Hand.Where(battle.Affordable).ToList();

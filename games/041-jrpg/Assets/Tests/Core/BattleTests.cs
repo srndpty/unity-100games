@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using IntGeometry;
 using NUnit.Framework;
 
 namespace Game.Core.Tests
@@ -23,8 +24,8 @@ namespace Game.Core.Tests
             var partyGuard = party.Clone();
             // 全員 Agi < 4 にしない場合でも、同一乱数で ComputePhysicalDamage の半減と ResolveTurn の wasGuarded を両方検証する
             var heavyAtk = (bossGroup.EnemyIds.Count > 0 ? (data.GetEnemy("boss_valug").Atk * 3) / 2 : 0);
-            var directGuarded = BattleResolver.ComputePhysicalDamage(heavyAtk, partyGuard[0].Def, isTargetDefending: true, new GameRng(42));
-            var directOpen = BattleResolver.ComputePhysicalDamage(heavyAtk, partyGuard[0].Def, isTargetDefending: false, new GameRng(42));
+            var directGuarded = BattleResolver.ComputePhysicalDamage(heavyAtk, partyGuard[0].Def, isTargetDefending: true, new RandomSeries(42));
+            var directOpen = BattleResolver.ComputePhysicalDamage(heavyAtk, partyGuard[0].Def, isTargetDefending: false, new RandomSeries(42));
             Assert.That(directGuarded, Is.EqualTo(directOpen / 2));
 
             var heavyOverride = new EnemyDecision?[] { new EnemyDecision(EnemyActionKind.HeavyAttack, string.Empty, 0) };
@@ -44,7 +45,7 @@ namespace Game.Core.Tests
                 slowPartyGuard,
                 new Inventory(slowData),
                 new[] { BattleCommand.Defend(), BattleCommand.Defend(), BattleCommand.Defend() },
-                new GameRng(42),
+                new RandomSeries(42),
                 heavyOverride);
 
             BattleResolver.ResolveTurn(
@@ -53,7 +54,7 @@ namespace Game.Core.Tests
                 slowPartyOpen,
                 new Inventory(slowData),
                 new[] { BattleCommand.Attack(0), BattleCommand.Defend(), BattleCommand.Defend() },
-                new GameRng(42),
+                new RandomSeries(42),
                 heavyOverride);
 
             var sawGuardedHit = false;
@@ -72,8 +73,8 @@ namespace Game.Core.Tests
 
             // 氷弱点（frost_lance: Power 30, Frost）が 1.5 倍になること
             var frostSpell = data.GetSpell("frost_lance");
-            var rngA = new GameRng(100);
-            var rngB = new GameRng(100);
+            var rngA = new RandomSeries(100);
+            var rngB = new RandomSeries(100);
             var weakDmg = BattleResolver.ComputeSpellDamage(frostSpell, SpellElement.Frost, false, rngA, out var hitWeak);
             var normalDmg = BattleResolver.ComputeSpellDamage(frostSpell, SpellElement.Fire, false, rngB, out var hitNormal);
             Assert.That(hitWeak, Is.True);
@@ -94,8 +95,8 @@ namespace Game.Core.Tests
                 var seen = new HashSet<int>();
                 for (var seed = 1; seed <= 400; seed++)
                 {
-                    var open = BattleResolver.ComputePhysicalDamage(atk, def, isTargetDefending: false, new GameRng(seed));
-                    var guarded = BattleResolver.ComputePhysicalDamage(atk, def, isTargetDefending: true, new GameRng(seed));
+                    var open = BattleResolver.ComputePhysicalDamage(atk, def, isTargetDefending: false, new RandomSeries(seed));
+                    var guarded = BattleResolver.ComputePhysicalDamage(atk, def, isTargetDefending: true, new RandomSeries(seed));
                     Assert.That(open, Is.InRange(lo, hi), $"ATK {atk} DEF {def}");
                     Assert.That(guarded, Is.EqualTo(System.Math.Max(1, open / 2)), $"ATK {atk} DEF {def}");
                     seen.Add(open);
@@ -108,7 +109,7 @@ namespace Game.Core.Tests
             var percents = new HashSet<int>();
             for (var seed = 1; seed <= 2000; seed++)
             {
-                percents.Add(BattleResolver.ComputePhysicalDamage(200, 0, isTargetDefending: false, new GameRng(seed)));
+                percents.Add(BattleResolver.ComputePhysicalDamage(200, 0, isTargetDefending: false, new RandomSeries(seed)));
             }
 
             Assert.That(percents.Count, Is.EqualTo(BattleResolver.PhysicalPercentMax - BattleResolver.PhysicalPercentMin + 1));
@@ -125,12 +126,12 @@ namespace Game.Core.Tests
                 var spell = GameData.Validate(raw).GetSpell("frost_lance");
                 for (var seed = 1; seed <= 200; seed++)
                 {
-                    var percent = new GameRng(seed).Range(BattleResolver.SpellPercentMin, BattleResolver.SpellPercentMax);
+                    var percent = new RandomSeries(seed).Range(BattleResolver.SpellPercentMin, BattleResolver.SpellPercentMax);
                     var expectedNormal = System.Math.Max(1L, (long)power * percent / 100);
                     var expectedWeak = expectedNormal * 3 / 2;
-                    var normal = BattleResolver.ComputeSpellDamage(spell, SpellElement.Fire, false, new GameRng(seed), out _);
-                    var weak = BattleResolver.ComputeSpellDamage(spell, SpellElement.Frost, false, new GameRng(seed), out var hitWeak);
-                    var weakGuarded = BattleResolver.ComputeSpellDamage(spell, SpellElement.Frost, true, new GameRng(seed), out _);
+                    var normal = BattleResolver.ComputeSpellDamage(spell, SpellElement.Fire, false, new RandomSeries(seed), out _);
+                    var weak = BattleResolver.ComputeSpellDamage(spell, SpellElement.Frost, false, new RandomSeries(seed), out var hitWeak);
+                    var weakGuarded = BattleResolver.ComputeSpellDamage(spell, SpellElement.Frost, true, new RandomSeries(seed), out _);
                     Assert.That(hitWeak, Is.True);
                     Assert.That(normal, Is.EqualTo((int)System.Math.Min(int.MaxValue, expectedNormal)), $"Power {power}");
                     Assert.That(weak, Is.EqualTo((int)System.Math.Min(int.MaxValue, expectedWeak)), $"Power {power}");
@@ -160,7 +161,7 @@ namespace Game.Core.Tests
                 party,
                 new Inventory(data),
                 new[] { BattleCommand.Attack(0), BattleCommand.Attack(1), BattleCommand.Attack(0) },
-                new GameRng(7),
+                new RandomSeries(7),
                 null);
 
             Assert.That(battle.Outcome, Is.EqualTo(BattleOutcome.Victory));
@@ -213,7 +214,7 @@ namespace Game.Core.Tests
             acolyteBattle.Enemies[0].SetVitals(acolyteBattle.Enemies[0].Hp, 0);
 
             // 敵 AI は MP 0 のとき呪文を選ばず通常攻撃へ落ちる
-            var aiChoice = EnemyAi.ChooseAction(data, acolyteBattle, party, 0, new GameRng(7));
+            var aiChoice = EnemyAi.ChooseAction(data, acolyteBattle, party, 0, new RandomSeries(7));
             Assert.That(aiChoice.Kind, Is.EqualTo(EnemyActionKind.Attack));
 
             // 解決時点で敵呪文が選ばれていた場合も MP 不足で不発になる
@@ -223,7 +224,7 @@ namespace Game.Core.Tests
                 party,
                 inv,
                 new[] { BattleCommand.Defend(), BattleCommand.Defend(), BattleCommand.CastSpell("ember", 0) },
-                new GameRng(7),
+                new RandomSeries(7),
                 new EnemyDecision?[] { new EnemyDecision(EnemyActionKind.Spell, "ember", 0), null, null });
 
             var allyNoMp = false;
@@ -289,7 +290,7 @@ namespace Game.Core.Tests
                 customParty,
                 new Inventory(customData),
                 new[] { BattleCommand.Attack(0), BattleCommand.Defend(), BattleCommand.CastSpell("ember", 0) },
-                new GameRng(11));
+                new RandomSeries(11));
 
             Assert.That(battle.Enemies[0].IsAlive, Is.False);
             Assert.That(battle.Enemies[2].IsAlive, Is.False);
@@ -303,7 +304,7 @@ namespace Game.Core.Tests
                 customParty,
                 new Inventory(customData),
                 new[] { BattleCommand.Defend(), BattleCommand.Defend(), BattleCommand.CastSpell("ember", 0) },
-                new GameRng(12));
+                new RandomSeries(12));
 
             Assert.That(customParty[2].Mp, Is.EqualTo(mpBefore));
             var sawNoEffect = false;
@@ -334,7 +335,7 @@ namespace Game.Core.Tests
                 wipeParty,
                 bag,
                 new[] { BattleCommand.Defend(), BattleCommand.CastSpell("heal", 0), BattleCommand.UseItem("herb", 0) },
-                new GameRng(3),
+                new RandomSeries(3),
                 new EnemyDecision?[] { new EnemyDecision(EnemyActionKind.HeavyAttack, string.Empty, 0) });
 
             Assert.That(wipeParty[0].IsAlive, Is.False);
@@ -370,7 +371,7 @@ namespace Game.Core.Tests
                 party,
                 inv,
                 new[] { BattleCommand.Defend(), BattleCommand.Defend(), BattleCommand.Defend() },
-                new GameRng(99),
+                new RandomSeries(99),
                 new EnemyDecision?[]
                 {
                     new EnemyDecision(EnemyActionKind.Spell, "flame_wave", -1),
@@ -387,7 +388,7 @@ namespace Game.Core.Tests
             var data = DefaultGameData.Create();
             for (var seed = 1; seed <= 50; seed++)
             {
-                var rng = new GameRng(seed * 7919);
+                var rng = new RandomSeries(seed * 7919);
                 var party = new Party(data);
                 var levelBoost = rng.Range(0, 6);
                 if (levelBoost > 0)
@@ -426,7 +427,7 @@ namespace Game.Core.Tests
             }
         }
 
-        private static BattleCommand[] BuildRandomValidCommands(GameData data, BattleState battle, Party party, Inventory inv, GameRng rng)
+        private static BattleCommand[] BuildRandomValidCommands(GameData data, BattleState battle, Party party, Inventory inv, RandomSeries rng)
         {
             var cmds = new BattleCommand[party.Count];
             if (!battle.IsBossBattle && rng.Next(12) == 0)

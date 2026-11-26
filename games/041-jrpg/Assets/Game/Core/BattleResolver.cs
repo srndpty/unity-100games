@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using IntGeometry;
 
 namespace Game.Core
 {
@@ -86,7 +87,7 @@ namespace Game.Core
 
     public static class EnemyAi
     {
-        public static EnemyDecision ChooseAction(GameData data, BattleState battle, Party party, int enemyIndex, GameRng rng)
+        public static EnemyDecision ChooseAction(GameData data, BattleState battle, Party party, int enemyIndex, RandomSeries rng)
         {
             if (data == null)
             {
@@ -162,7 +163,7 @@ namespace Game.Core
             return new EnemyDecision(chosenKind, chosenSpellId, targetAlly);
         }
 
-        private static int PickLivingAlly(Party party, GameRng rng)
+        private static int PickLivingAlly(Party party, RandomSeries rng)
         {
             var living = new List<int>(party.Count);
             for (var i = 0; i < party.Count; i++)
@@ -215,7 +216,7 @@ namespace Game.Core
         public const int SpellPercentMin = 90;
         public const int SpellPercentMax = 110;
 
-        public static int ComputePhysicalDamage(int atk, int def, bool isTargetDefending, GameRng rng)
+        public static int ComputePhysicalDamage(int atk, int def, bool isTargetDefending, RandomSeries rng)
         {
             if (rng == null)
             {
@@ -227,7 +228,7 @@ namespace Game.Core
             return FinishDamage(damage, isTargetDefending);
         }
 
-        public static int ComputeSpellDamage(SpellInfo spell, SpellElement targetWeakness, bool isTargetDefending, GameRng rng, out bool hitWeakness)
+        public static int ComputeSpellDamage(SpellInfo spell, SpellElement targetWeakness, bool isTargetDefending, RandomSeries rng, out bool hitWeakness)
         {
             if (spell == null)
             {
@@ -311,7 +312,7 @@ namespace Game.Core
             Party party,
             Inventory inventory,
             IReadOnlyList<BattleCommand> commands,
-            GameRng rng,
+            RandomSeries rng,
             IReadOnlyList<EnemyDecision?>? enemyOverrides = null)
         {
             if (data == null)
@@ -429,7 +430,7 @@ namespace Game.Core
             BattleState battle,
             IReadOnlyList<BattleCommand> commands,
             bool includeAllies,
-            GameRng rng)
+            RandomSeries rng)
         {
             var list = new List<(BattleSide Side, int Index, int Score)>(party.Count + battle.Enemies.Count);
             if (includeAllies)
@@ -484,7 +485,7 @@ namespace Game.Core
             Inventory inventory,
             IReadOnlyList<BattleCommand> commands,
             List<(BattleSide Side, int Index, int Score)> schedule,
-            GameRng rng,
+            RandomSeries rng,
             IReadOnlyList<EnemyDecision?>? enemyOverrides,
             List<BattleEvent> events)
         {
@@ -527,7 +528,7 @@ namespace Game.Core
             Inventory inventory,
             int actorIndex,
             BattleCommand cmd,
-            GameRng rng,
+            RandomSeries rng,
             List<BattleEvent> events)
         {
             var actor = party[actorIndex];
@@ -904,7 +905,7 @@ namespace Game.Core
             Party party,
             int enemyIndex,
             EnemyDecision decision,
-            GameRng rng,
+            RandomSeries rng,
             List<BattleEvent> events)
         {
             var enemy = battle.Enemies[enemyIndex];
@@ -1108,7 +1109,7 @@ namespace Game.Core
             }
         }
 
-        private static int ResolveLivingAllyTarget(Party party, int preferred, GameRng rng)
+        private static int ResolveLivingAllyTarget(Party party, int preferred, RandomSeries rng)
         {
             if (preferred >= 0 && preferred < party.Count && party[preferred].IsAlive)
             {
