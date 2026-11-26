@@ -8,8 +8,8 @@
 |---|---|
 | dev lint | 成功 |
 | dev check | 成功（警告 0） |
-| dev test | 成功。Core 73/73、App 26/26 |
-| Unity EditMode | 161/161（パッケージ 62・Core 73・App 26。Mono） |
+| dev test | 成功。Core 73/73、App 27/27 |
+| Unity EditMode | 162/162（パッケージ 62・Core 73・App 27。Mono） |
 | Unity PlayMode | 29/29（実シーン 13、共通の証跡公開 16） |
 | Windows ビルド | 成功、StandaloneWindows64（ビルドログにライセンスクライアントの署名検証の警告が残るが、結果は Success・終了コード 0） |
 | ビルド起動 | dev capture で起動・全場面撮影・正常終了 |

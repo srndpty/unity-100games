@@ -138,6 +138,30 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void FirstWaitAlsoHaltsTheRepeatWhenAMonsterComesIntoView()
+        {
+            var flow = Quiet(3);
+            var run = flow.Run!;
+            var spot = run.Player.Position;
+            foreach (var room in run.Grid.Rooms)
+            {
+                if (room.Contains(spot)) { spot = new Vec2i(room.X1, room.Y0); }
+            }
+
+            // 押す前に置いた敵は、押した最初の足踏みの後の視界で初めて見える。
+            var m = run.AddMonster(MonsterKind.Golem, spot);
+            m.SleepTurns = 1000;
+            flow.Apply(Intent.Down(Control.Wait, 0));
+            Assert.That(run.Player.Actions, Is.EqualTo(1));
+            Assert.That(flow.RepeatHalted, Is.True, "最初の足踏みでも止める出来事を確かめる");
+            flow.Advance(flow.RepeatDelay + 5);
+            Assert.That(run.Player.Actions, Is.EqualTo(1), "押したままでも続けて足踏みしない");
+            flow.Apply(Intent.Up(Control.Wait, 6));
+            flow.Apply(Intent.Down(Control.Wait, 6));
+            Assert.That(run.Player.Actions, Is.EqualTo(2), "押し直せば 1 回足踏みする");
+        }
+
+        [Test]
         public void WalkingIntoAWallHaltsTheRepeatWithoutUsingTime()
         {
             var flow = Quiet(4);

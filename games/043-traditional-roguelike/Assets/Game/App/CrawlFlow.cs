@@ -204,7 +204,7 @@ namespace Game.App
             {
                 case Control.Wait:
                     _halted = false;
-                    Execute(Command.Wait());
+                    Repeat(Command.Wait());
                     StartRepeat(true, intent.Time);
                     return;
                 case Control.Pickup:

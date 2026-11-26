@@ -205,8 +205,11 @@ namespace Game.Unity.Tests
                 var c = room.Center;
                 var seen = new bool[R.Grid.Width * R.Grid.Height];
                 Fov.Compute(R.Grid, c, R.Config.ViewRadius, seen);
-                if (!seen[R.Grid.Index(home)] && !R.IsVisible(c)) { far = c; }
+                // 開始位置から見た部屋は既知なので、一度も見ていない部屋を選ぶ（シードによっては開始時に見えている）。
+                if (!seen[R.Grid.Index(home)] && !R.IsVisible(c) && !R.Known.IsSeen(c)) { far = c; }
             }
+
+            Assert.That(far, Is.Not.EqualTo(default(Vec2i)), "一度も見ていない部屋がある");
 
             var golem = R.AddMonster(MonsterKind.Golem, far);
             golem.SleepTurns = 1000;

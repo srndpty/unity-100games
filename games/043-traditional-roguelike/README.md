@@ -87,8 +87,8 @@ dev capture 043  # 証跡を evidence/ に撮る（画像は captures/<画像世
 | 種類 | 場所 | 件数 | 実行 |
 |---|---|---|---|
 | Core（EditMode・dotnet） | `Assets/Tests/Core/` | 73 | `dev test 043` |
-| App（EditMode・dotnet） | `Assets/Tests/App/` | 26 | `dev test 043` |
-| Unity EditMode（Mono） | 共通パッケージ＋Core＋App | 161 | `dev test 043 -Unity` |
+| App（EditMode・dotnet） | `Assets/Tests/App/` | 27 | `dev test 043` |
+| Unity EditMode（Mono） | 共通パッケージ＋Core＋App | 162 | `dev test 043 -Unity` |
 | PlayMode（実シーン） | `Assets/Tests/Unity/LanternSceneTests.cs` | 13（共通の証跡公開 16 を含め 29） | `dev test 043 -Unity -Mode PlayMode` |
 
 題材固有テスト：
