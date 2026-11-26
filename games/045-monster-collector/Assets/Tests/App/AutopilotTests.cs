@@ -20,6 +20,22 @@ namespace Game.App.Tests
             Assert.That(w.CaughtCount, Is.GreaterThanOrEqualTo(2), "捕獲して仲間を増やしている");
         }
 
+        /// <summary>
+        /// 人の間合いの操縦役（眺める自動プレイ）もクリアまで進む。会話は読む時間をとり、戦闘の文は送らない。
+        /// 遊んだ時間が最速の操縦役より長い（＝人の速さに近い）ことも確かめる。
+        /// </summary>
+        [Test]
+        public void HumanPacedPilotAlsoClears_AndTakesLonger()
+        {
+            var fast = AppLab.Flow(1);
+            AppLab.RunUntil(fast, new Autopilot(), f => f.Screen == FlowScreen.Result, MaxTicks);
+            var slow = AppLab.Flow(1);
+            var pilot = new Autopilot { HumanPace = true };
+            var ticks = AppLab.RunUntil(slow, pilot, f => f.Screen == FlowScreen.Result, 2_000_000);
+            TestContext.WriteLine($"人の間合い：{ticks} Tick（{ticks / 60 / 60} 分、4.5 倍で {ticks / 60 / 60 / 4.5:0.0} 分）、最速：{fast.World!.PlayTicks} Tick");
+            Assert.That(slow.World!.PlayTicks, Is.GreaterThan(fast.World.PlayTicks));
+        }
+
         [Test]
         public void TwentySeedsClear()
         {

@@ -27,6 +27,22 @@ namespace Game.App
         /// <summary>トレーナーに挑む前の余裕（レベル）。</summary>
         public int LevelMargin { get; set; } = 1;
 
+        /// <summary>
+        /// 人の間合いで操作する（眺める自動プレイ用）：会話は <see cref="DialogueTicks"/> 読んでから送り、戦闘の文は送らずに流し、
+        /// メニューの操作の間に <see cref="ActionTicks"/> 待つ。歩くのは普通の速さ。既定（false）は最速で、テストと撮影に使う。
+        /// </summary>
+        public bool HumanPace { get; set; }
+
+        /// <summary>人の間合いで、会話を読む Tick。</summary>
+        public int DialogueTicks { get; set; } = 60;
+
+        /// <summary>人の間合いで、メニューの操作の間の Tick。</summary>
+        public int ActionTicks { get; set; } = 16;
+
+        private int _wait;
+        private string _lastDialogue = string.Empty;
+        private int _dialogueAge;
+
         public void Step(KeeperFlow flow)
         {
             if (flow == null) { throw new ArgumentNullException(nameof(flow)); }
@@ -38,12 +54,52 @@ namespace Game.App
                 _lastSwitchTurn = -1;
             }
 
+            if (HumanPace && Waiting(flow)) { return; }
             if (flow.IsPaused || flow.InDialogue)
             {
                 flow.Tap(InputButton.Confirm);
                 return;
             }
 
+            var screen = flow.Screen;
+            Act(flow);
+
+            // フィールドを歩くとき以外は、次の操作まで少し待つ。
+            if (HumanPace && screen != FlowScreen.Field) { _wait = ActionTicks; }
+        }
+
+        /// <summary>人の間合いで、まだ操作しないか（会話を読んでいる・戦闘の文が流れている・前の操作の直後）。</summary>
+        private bool Waiting(KeeperFlow flow)
+        {
+            if (flow.InDialogue)
+            {
+                if (!string.Equals(flow.Dialogue, _lastDialogue, StringComparison.Ordinal))
+                {
+                    _lastDialogue = flow.Dialogue;
+                    _dialogueAge = 0;
+                }
+
+                return ++_dialogueAge < DialogueTicks;
+            }
+
+            _lastDialogue = string.Empty;
+            if (flow.Screen == FlowScreen.Battle && flow.BattleMenu == BattleMenu.Playing)
+            {
+                // 解決を見せている間に次の手を捨てる（前のターン・前の戦闘の手を使い回さない）。
+                _plan = null;
+                return true;
+            }
+            if (_wait > 0)
+            {
+                _wait--;
+                return true;
+            }
+
+            return false;
+        }
+
+        private void Act(KeeperFlow flow)
+        {
             switch (flow.Screen)
             {
                 case FlowScreen.Title:

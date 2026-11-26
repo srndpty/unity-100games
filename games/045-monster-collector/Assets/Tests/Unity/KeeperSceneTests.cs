@@ -330,6 +330,38 @@ namespace Game.Unity.Tests
             Assert.That(Hud.Q<Label>("title-records").text.Contains("クリア 1 回", StringComparison.Ordinal), Is.True);
         }
 
+        /// <summary>F9 で眺める自動プレイが始まり、人のキーは混ざらず、もう一度 F9 で止まる。</summary>
+        [UnityTest]
+        public IEnumerator F9StartsAndStopsTheWatchableAutoplay()
+        {
+            yield return null;
+            var label = Hud.Q<Label>("autoplay");
+            Assert.That(label.text.Contains("F9", StringComparison.Ordinal), Is.True, "タイトルに切り替えの案内");
+            yield return _keyboard.Tap(Key.F9);
+            Assert.That(_game.IsAutoplaying, Is.True);
+            _game.Render();
+            Assert.That(label.text.Contains("自動プレイ中", StringComparison.Ordinal), Is.True);
+
+            // 人のキーは捨てる（タイトルで下を押してもカーソルは動かない）。
+            _keyboard.Hold(Key.DownArrow);
+            yield return null;
+            _keyboard.Hold();
+            yield return null;
+
+            // 実時間 30 秒ぶん（4.5 倍）進めると、タイトル → 相棒選び → フィールドを歩くところまで進む。
+            for (int i = 0; i < 30 * 60; i++) { _game.StepAutoplay(1.0 / 60.0); }
+            Assert.That(Flow.World, Is.Not.Null);
+            Assert.That(Flow.World!.Roster.Party.Count, Is.GreaterThanOrEqualTo(1));
+            Assert.That(Flow.World.Explorer.TotalSteps, Is.GreaterThan(0), "自動で歩いている");
+            Assert.That(Flow.World.PlayTicks, Is.InRange(30 * 60 * 4, 30 * 60 * 5), "人の 4〜5 倍の速さ");
+
+            yield return _keyboard.Tap(Key.F9);
+            Assert.That(_game.IsAutoplaying, Is.False);
+            var ticks = Flow.World.PlayTicks;
+            _game.StepAutoplay(1.0);
+            Assert.That(Flow.World.PlayTicks, Is.EqualTo(ticks), "止めたら自動では進まない");
+        }
+
         /// <summary>性能の記録：描画の更新と戦闘の 1 ターンの解決（この PC の CPU 時間）。</summary>
         [UnityTest]
         public IEnumerator RenderAndBattleResolveStayCheap()

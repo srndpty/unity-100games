@@ -40,6 +40,12 @@ namespace Game.Unity
         private KeeperHud? _hud;
         private Font? _font;
         private int _hudVersion = -1;
+        private Autopilot? _autoplay;
+        private double _autoplayTicks;
+        private InputAction? _autoplayToggle;
+
+        /// <summary>1 フレームに進める自動プレイの Tick の上限（処理落ちで一度に進めすぎない）。</summary>
+        public const int MaxAutoplayTicksPerFrame = 40;
 
         public KeeperFlow Flow { get; private set; } = null!;
 
@@ -58,6 +64,18 @@ namespace Game.Unity
         public ISaveStore SaveStore { get; private set; } = null!;
 
         public ISaveStore RecordStore { get; private set; } = null!;
+
+        /// <summary>眺める自動プレイの最中（操縦役が人の間合いで操作し、<see cref="KeeperSettings.AutoplaySpeed"/> 倍で進む）。</summary>
+        public bool IsAutoplaying => _autoplay != null;
+
+        /// <summary>眺める自動プレイを始める・止める（F9）。止めたらキー操作に戻る。</summary>
+        public void SetAutoplay(bool on)
+        {
+            if (on == IsAutoplaying) { return; }
+            _autoplay = on ? new Autopilot { HumanPace = true, SaveAtCenter = false } : null;
+            _autoplayTicks = 0;
+            Render();
+        }
 
         /// <summary>PlayMode テスト用：シーンを読み直しても同じ保存領域を使う。</summary>
         public static void SetStoresForTests(ISaveStore? save, ISaveStore? records) =>
@@ -118,6 +136,13 @@ namespace Game.Unity
             Bind(InputButton.Cancel, 2, "<Keyboard>/backspace");
             Bind(InputButton.Pause, 0, "<Keyboard>/p");
             foreach (var a in _actions) { a.Enable(); }
+            _autoplayToggle = new InputAction("Autoplay", InputActionType.Button, "<Keyboard>/f9");
+            _autoplayToggle.performed += _ =>
+            {
+                if (!EvidenceCapture.IsRunning) { SetAutoplay(!IsAutoplaying); }
+            };
+            _autoplayToggle.Enable();
+            if (!EvidenceCapture.IsRunning && Array.IndexOf(Environment.GetCommandLineArgs(), "-autoplay") >= 0) { SetAutoplay(true); }
 
             _font = Font.CreateDynamicFontFromOSFont(new[] { "Yu Gothic UI", "Yu Gothic", "Meiryo", "MS Gothic", "Arial" }, 28);
             _hudRenderer.RegisterUIReloadCallback(OnHudReloaded);
@@ -128,6 +153,7 @@ namespace Game.Unity
         {
             foreach (var a in _actions) { a.Dispose(); }
             _actions.Clear();
+            _autoplayToggle?.Dispose();
             _audio?.Dispose();
             if (_font != null)
             {
@@ -145,13 +171,34 @@ namespace Game.Unity
 
         private void Update()
         {
-            if (!EvidenceCapture.IsRunning)
+            if (_autoplay != null && !EvidenceCapture.IsRunning)
+            {
+                StepAutoplay(Time.timeScale > 0f ? Time.unscaledDeltaTime : 0);
+            }
+            else if (!EvidenceCapture.IsRunning)
             {
                 // 遊んだ時間の計測は maximumDeltaTime で切られない実時間で（017）。
                 Flow.UpdateFrame(Time.timeScale > 0f ? Time.unscaledDeltaTime : 0);
             }
 
             Render();
+        }
+
+        /// <summary>
+        /// 自動プレイを実時間 × 速さぶん進める。1 Tick ごとに操縦役が 1 回まで操作する。キー操作は捨てる（F9 だけ効く）。
+        /// </summary>
+        public void StepAutoplay(double deltaSeconds)
+        {
+            if (_autoplay == null) { return; }
+            Flow.ClearPendingInput();
+            _autoplayTicks += Math.Max(0, deltaSeconds) * 60.0 * _settings!.AutoplaySpeed;
+            var ticks = Math.Min(MaxAutoplayTicksPerFrame, (int)Math.Floor(_autoplayTicks));
+            _autoplayTicks = Math.Min(_autoplayTicks - ticks, 1.0);
+            for (int i = 0; i < ticks; i++)
+            {
+                _autoplay.Step(Flow);
+                Flow.StepTicks(1);
+            }
         }
 
         /// <summary>今の Flow の状態を Stage・HUD・音へ反映する。</summary>
@@ -206,7 +253,7 @@ namespace Game.Unity
                 }
             }
 
-            _hud?.Render(Flow, Data);
+            _hud?.Render(Flow, Data, IsAutoplaying ? _settings!.AutoplaySpeed : 0f);
             _audio?.PlayNew(Flow.Cues, _settings!.Volume);
         }
 
@@ -217,7 +264,7 @@ namespace Game.Unity
             _hud = new KeeperHud(root, _font);
 
             // 作った直後に一度描き、UXML の初期状態を見せない。
-            _hud.Render(Flow, Data);
+            _hud.Render(Flow, Data, IsAutoplaying ? _settings!.AutoplaySpeed : 0f);
         }
 
         private void Bind(InputButton button, int slot, string path)

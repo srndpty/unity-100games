@@ -181,6 +181,13 @@ namespace Game.App
             StepTicks(ticks);
         }
 
+        /// <summary>たまった入力と押しているキーを捨てる（自動プレイの間、人のキーを混ぜない）。</summary>
+        public void ClearPendingInput()
+        {
+            _intents.Clear();
+            ClearHeld();
+        }
+
         public void FlushIntents()
         {
             while (_intents.Count > 0) { Apply(_intents.Dequeue()); }

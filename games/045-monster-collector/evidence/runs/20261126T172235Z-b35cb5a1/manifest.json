@@ -2,9 +2,9 @@
     "Product": "THORNWILD KEEPERS",
     "Version": "1.0",
     "UnityVersion": "6000.6.9f1",
-    "BuildGuid": "196cb9623e5b4b72a8ba6f3012c2b0ee",
+    "BuildGuid": "bc28e2974d444fd38325cd459601f814",
     "Seed": 1,
-    "CapturedAtUtc": "2026-11-26T17:10:31.0636486Z",
+    "CapturedAtUtc": "2026-11-26T17:22:33.4751637Z",
     "Info": [
         {
             "Key": "imageEncoding",
@@ -26,12 +26,12 @@
     "Shots": [
         {
             "File": "01_title.jpg",
-            "Sha256": "dfdffeb46023d4ced29bb5b556a3d5817035b00f17c1b13dadfa257604df7f77",
+            "Sha256": "d6a96e5147137e3c80f40279b689a10d0933f18e9b4c4f2abe4d1c5bc4a6291b",
             "Note": "タイトル"
         },
         {
             "File": "02_howto.jpg",
-            "Sha256": "5677587348cfa5e9140ee3a09d60c8cdd7555b35585daedcc839f8c388dfd105",
+            "Sha256": "ed1134296902a92f6b7ab7eeaf9338aec43d70ed195df3644300c94d467d5a56",
             "Note": "あそびかた"
         },
         {
@@ -41,7 +41,7 @@
         },
         {
             "File": "04_town.jpg",
-            "Sha256": "a668e8160c05e5634524a703bcceed084a26d4c15b4ab3439dd2913f6d086a36",
+            "Sha256": "635700f56b56971edf493d5c511f41e44ea795af39d2824a4cca31e62f4f6dda",
             "Note": "灯ノ村 (seed=524866043, playTick=5, battles=0)"
         },
         {
@@ -66,7 +66,7 @@
         },
         {
             "File": "16_center_save.jpg",
-            "Sha256": "110e8dcaa1d5e88c9b37984b16583eebbf11f546e8a904d316182615450b1636",
+            "Sha256": "99dc1f111c4317f1dd39dc94ae2d14b04cdba12fe3e19bef17215abd014fc9b8",
             "Note": "回復所で記録した (seed=524866043, playTick=644, battles=1)"
         },
         {
@@ -76,12 +76,12 @@
         },
         {
             "File": "10_party.jpg",
-            "Sha256": "e90ffbce890202e16da025a288791b0c5938cc237980cd379466cc1e2eb98e8d",
+            "Sha256": "3de4bd0a5c56a41af914ecb5abc187bffcc90002e46e80d8af6c41f04f4ce65f",
             "Note": "てもち (seed=524866043, playTick=1676, battles=4)"
         },
         {
             "File": "11_dex.jpg",
-            "Sha256": "fec5db23329e658ab21a263c6ad51f319ce233faaf68cdd9b589cb3aaaa89724",
+            "Sha256": "238e1c1dbd38fb9a0bb33b6e544c40d675687e8c247131fd81d9814594929b2c",
             "Note": "ずかん (seed=524866043, playTick=1677, battles=4)"
         },
         {
@@ -91,7 +91,7 @@
         },
         {
             "File": "17_trainer_intro.jpg",
-            "Sha256": "747f1e15ec5946cfe6f2736eb65732b18d742d9ab91dc6d6b4f4fa38f953274a",
+            "Sha256": "93318647bc91a3e31e90e7893025ac8df069dc212a48292f4b02e483f4ffc3f2",
             "Note": "トレーナーが道を塞ぐ (seed=524866043, playTick=3348, battles=13)"
         },
         {
@@ -101,7 +101,7 @@
         },
         {
             "File": "13_storage.jpg",
-            "Sha256": "52f126842819e2f261b1b18b16812cf242eb7d42be263349c3986355868a37b2",
+            "Sha256": "6897c846c09372e1f2ba040abc2f68e1d4a644e76dce956dbd6e230410ba8691",
             "Note": "回復所のボックス (seed=524866043, playTick=3890, battles=13)"
         },
         {
@@ -111,22 +111,22 @@
         },
         {
             "File": "15_learn_move.jpg",
-            "Sha256": "da1a176a3e92f1fc597ae43deb5f70aefee237634963991c88d8ac9b0b51dc57",
+            "Sha256": "8a84ae3c65ace64e1a12ab9cd9eab13ca9062500ef97690684daee7098a866f0",
             "Note": "4 つ埋まっていて技を入れ替える (seed=524866043, playTick=7175, battles=28)"
         },
         {
             "File": "19_result.jpg",
-            "Sha256": "72115c84f1982238332c080f71f3020ba415ff05a4313aec1e0afbc656aaf934",
+            "Sha256": "a570ba81ce5af1ec3f48b9029f345d9578a0af9cf8120f01510900cafbf876e9",
             "Note": "結果（hash=0x8B98D59F） (seed=524866043, playTick=53423, battles=245)"
         },
         {
             "File": "20_title_records.jpg",
-            "Sha256": "eafe9a2a64d6b719b739bc145f82c9a17628a2c9565140c579e4c66e58abd6f4",
+            "Sha256": "eb3d8e349ae21cf7015588dfae9d7f2a6b4bf3195cd745518bb1ab2cc95779c9",
             "Note": "クリアの記録を出したタイトル"
         },
         {
             "File": "21_title_broken_save.jpg",
-            "Sha256": "85d402c683a64f880370beb871592c4d953372daa8c93fa9702c099c2045aeb6",
+            "Sha256": "50e0c05e2c0dd730007588dbd6ba13b176cc924e2b68dc79d62a2bd7a45830c9",
             "Note": "壊れたセーブの案内（つづきからを出さない）"
         }
     ]

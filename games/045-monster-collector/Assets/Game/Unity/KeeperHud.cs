@@ -58,6 +58,7 @@ namespace Game.Unity
         private readonly VisualElement _result;
         private readonly Label _resultBody;
         private readonly VisualElement _pause;
+        private readonly Label _autoplay;
 
         public KeeperHud(VisualElement root, Font? font)
         {
@@ -251,13 +252,27 @@ namespace Game.Unity
             var pauseHint = Text("pause-hint", 22, Light);
             pauseHint.text = "P か 決定キーで つづける";
             _pause.Add(pauseHint);
+
+            // 眺める自動プレイの表示（タイトルでは切り替えの案内）。
+            _autoplay = Text("autoplay", 22, Accent);
+            _autoplay.style.position = Position.Absolute;
+            _autoplay.style.right = 28;
+            _autoplay.style.bottom = 18;
+            _autoplay.style.backgroundColor = WindowBg;
+            _autoplay.style.paddingLeft = 12;
+            _autoplay.style.paddingRight = 12;
+            _autoplay.style.paddingTop = 4;
+            _autoplay.style.paddingBottom = 4;
+            root.Add(_autoplay);
         }
 
         public VisualElement Root { get; }
 
         /// <summary>今の Flow の状態を描く。</summary>
-        public void Render(KeeperFlow flow, MonsterData data)
+        public void Render(KeeperFlow flow, MonsterData data, float autoplaySpeed = 0f)
         {
+            _autoplay.text = autoplaySpeed > 0f ? $"自動プレイ中 ×{autoplaySpeed:0.#}（F9 で止める）" : "F9：自動プレイを眺める";
+            Show(_autoplay, autoplaySpeed > 0f || flow.Screen == FlowScreen.Title);
             var screen = flow.Screen;
             var world = flow.World;
             Show(_title, screen == FlowScreen.Title);
