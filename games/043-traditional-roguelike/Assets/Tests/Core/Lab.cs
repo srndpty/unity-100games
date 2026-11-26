@@ -77,6 +77,73 @@ namespace Game.Core.Tests
             throw new System.InvalidOperationException("3×3 以上の部屋がありません。");
         }
 
+        /// <summary>自機の隣で、そちらへ歩けて敵も品もないマスの方向。</summary>
+        public static Direction OpenDirection(CrawlRun run, int skip = 0)
+        {
+            for (int d = 0; d < Directions.Count; d++)
+            {
+                var dir = (Direction)d;
+                var q = run.Player.Position + dir.Offset();
+                if (run.Grid.CanStep(run.Player.Position, dir) && run.MonsterAt(q) == null && run.ItemAt(q) == null)
+                {
+                    if (skip-- == 0) { return dir; }
+                }
+            }
+
+            throw new System.InvalidOperationException("空いた隣がありません。");
+        }
+
+        /// <summary><paramref name="p"/> の隣の、空いていて <paramref name="p"/> へ歩ける（殴れる）マス。</summary>
+        public static Vec2i NeighborOf(CrawlRun run, Vec2i p)
+        {
+            for (int d = 0; d < Directions.Count; d++)
+            {
+                var dir = (Direction)d;
+                var q = p + dir.Offset();
+                var back = (Direction)((d + 4) % Directions.Count);
+                if (run.Grid.IsWalkable(q) && run.MonsterAt(q) == null && run.Grid.CanStep(q, back)) { return q; }
+            }
+
+            throw new System.InvalidOperationException("隣が空いていません。");
+        }
+
+        /// <summary>自機を部屋の中央（四方が床）に置き、敵と品を除いた場面。</summary>
+        public static CrawlRun Center(int seed = 1)
+        {
+            var run = Quiet(seed);
+            run.Teleport(RoomInterior(run));
+            for (int d = 0; d < Directions.Count; d++) { run.SetItem(run.Player.Position + ((Direction)d).Offset(), null); }
+            run.SetItem(run.Player.Position, null);
+            run.Refresh();
+            return run;
+        }
+
+        /// <summary>自機の隣（方向）に敵を置く。</summary>
+        public static Monster Beside(CrawlRun run, MonsterKind kind, Direction direction, int hp = -1)
+        {
+            var m = run.AddMonster(kind, run.Player.Position + direction.Offset());
+            if (hp > 0)
+            {
+                m.Hp = hp;
+                m.MaxHp = hp;
+            }
+
+            run.Refresh();
+            return m;
+        }
+
+        /// <summary>直前の操作の出来事のうち指定の種類。</summary>
+        public static List<RunEvent> EventsOf(CrawlRun run, EventKind kind)
+        {
+            var list = new List<RunEvent>();
+            foreach (var e in run.Events)
+            {
+                if (e.Kind == kind) { list.Add(e); }
+            }
+
+            return list;
+        }
+
         /// <summary>状態の要約（無効操作で何も変わらないことの比較用）。</summary>
         public static string Snapshot(CrawlRun run)
         {
