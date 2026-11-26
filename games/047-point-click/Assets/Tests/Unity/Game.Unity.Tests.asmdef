@@ -4,6 +4,7 @@
   "references": [
     "Game.Core",
     "Game.App",
+    "IntGeometry",
     "Game.Unity",
     "Unity.InputSystem",
     "UnityEngine.TestRunner",

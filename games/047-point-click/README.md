@@ -129,12 +129,40 @@ graph LR
 
 ## 設計上の選択
 
-- **Core**（`Game.Core`）：ルール表の構文解析（`RuleParser`）・名前の解決と検証（`RuleCompiler`）・コンパイル結果（`RuleBook`）・世界の状態とルールの解決（`World`）・状態空間の探索（`StateSpace`）・依存グラフ（`PuzzleGraph`）。世界は `RuleBook` だけを読み、構文解析の型を使わない。
-- 当たりの矩形は int-geometry の `Rect`、状態のハッシュは tile-motion の `StateHash` を使う。
+- **Core**（`Game.Core`）：ルール表の構文解析（`RuleParser`）・名前の解決と検証（`RuleCompiler`）・コンパイル結果（`RuleBook`）・世界の状態とルールの解決（`World`）・状態空間の探索（`StateSpace`）・依存グラフ（`PuzzleGraph`）・本番の上限と解答手順の読み込み（`Adventure`）。世界は `RuleBook` だけを読み、構文解析の型を使わない。
+- **App**（`Game.App`）：`AdventureFlow` が画面の流れ（タイトル／操作説明／遊ぶ／一時停止／結果）と命令の組み立て（動詞・持ち物・対象、命令文）、台詞の列、会話の選択肢を持つ。世界を動かすのはここだけで、Unity 層には表示用の値だけを見せる。`Autopilot` は解答手順を 1 手ずつ命じる操縦役（撮影・App テスト・PlayMode テストで共有）。
+- **Unity**（`Game.Unity`）：`AdventureGame`（入力 → 意図、描画の駆動）、`RoomStage`（Prefab：部屋の背景・物・主人公・灯ったランプ）、`AdventureHud`（UI Toolkit）、`AdventureAudio`、撮影台本。`RoomStage.Mismatch` が物の位置・大きさ・描画順をルール表の矩形と照合し、ずれていれば起動時に止める（シーン生成と照合は同じ `StageLayout` を使う）。
+- **探索と試合で同じ規則**：探索は `World.Perform` を歩かずに呼び、試合は立ち位置に着いた Tick に同じ `Perform` を呼ぶ。解答手順を両方で再生して同じ抽象状態になることをテストする。
+- **台詞の間のクリック**は台詞を送るだけで世界に届けない（015）。台詞が変わるたびに画面の版を進め、同じフレームの 2 回目のクリックを捨てる（046）。
+- **ビルド前の検証**：`RulesBuildCheck`（`IPreprocessBuildWithReport`）が本番のルール表を遊ぶときと同じ規則でコンパイルし、誤り・詰みがあれば行番号付きの `BuildFailedException` でビルドを止める。
+- 起動時にルール表をコンパイルする（状態空間の探索を含め、Mono で約 0.34 秒、.NET で約 0.05 秒）。
+- 当たりの矩形は int-geometry の `Rect`、状態のハッシュは tile-motion の `StateHash` を使う。座標は 1920 × 1080 の画面そのまま（1 単位 = 100）。生成ドット絵は 1 ドット = 5 px（PPU 20）。
 
 ## テスト
 
-（セッション 4 で記入）
+| 種類 | 場所 | 件数 | 内容 |
+|---|---|---|---|
+| Core（.NET / Mono） | `Assets/Tests/Core` | 105 | 構文・名前・形・上限の負例（行番号つき）、題材固有 3 件（所持しないアイテム・解決済みの謎・詰み）、探索（詰み・使われないルール・曖昧さ・持ち物の違反・状態数の上限）、依存グラフ、世界（歩く・当たり・会話・移動後の保持・拒否で状態不変・脱出後の拒否）、本番のルール表と解答手順 |
+| App（.NET / Mono） | `Assets/Tests/App` | 25 | 状態遷移と再プレイ、命令の組み立て（動詞・持ち物・組み合わせ・命令文）、台詞のクリック、会話、一時停止、フォーカス、設定の検証と複製、操縦役 |
+| Editor（Mono） | `Assets/Tests/Editor` | 6 | ビルド前の検証（綴り違いと詰みで止まる）、設定アセット、Stage の Prefab とルール表の照合（物を動かす・大きさを変える・描画順・ルール表の側を動かす） |
+| PlayMode（実シーン） | `Assets/Tests/Unity` | 11 | 仮想キーボードとマウスで：動詞キー → 包丁をクリック → 歩いて拾う、マウスの下の命令文、動詞のボタンと持ち物の枠と右クリック、空の枠、部屋を往復しても拾った物が戻らない、船頭との会話、Esc の一時停止、フォーカス復帰のクリック、解答手順で結果画面まで → タイトルが起動直後と同じ、終了 |
+
+共通パッケージ（int-geometry 60・tile-motion 10）を含め、Unity の EditMode は 206 件、PlayMode は共通の証跡公開 16 件を含め 27 件。
+
+```
+dev test 047                      # Core・App（.NET）
+dev test 047 -Unity               # EditMode（Mono、パッケージと Editor を含む）
+dev test 047 -Unity -Mode PlayMode
+```
+
+固定ハッシュ（.NET と Mono で一致）：テスト用の表の通し `0xEF08657D`、本番の解答手順（Core、歩く）`0x1AB9ED74`、本番の解答手順（Flow を通す）`0xCDF6223E`。本番のルール表の状態空間は 1,615 状態・56,627 遷移。
+
+## 未解決事項・試遊で見てほしい点
+
+- 謎の難しさと手がかりの文（灯台日誌・船頭の返事）で、解答手順を知らずに 5 つ解けるか。
+- クリックの感触：命じたら動詞を外す（`ResetVerbAfterCommand`）、持ち物のクリックで「使う」になる、右クリックで外す。
+- 歩く速さ（`WalkSpeed` 10 px/Tick）と台詞を出しておく時間（90 Tick + 1 文字 6 Tick）。
+- 1 周の長さ（解答手順どおりで行動 22 回）、音量。
 
 ## 未実装範囲
 

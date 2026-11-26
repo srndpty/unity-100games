@@ -27,7 +27,17 @@ namespace Game.Core.Tests
             Assert.That(Book.Hotspots.Count(h => h.Kind == HotspotKind.Npc), Is.GreaterThanOrEqualTo(1));
             Assert.That(Book.Topics.Count, Is.GreaterThanOrEqualTo(3));
             Assert.That(Book.Rules.Any(r => r.Verb == Verb.Use && r.Target.Kind == TargetKind.Item), Is.True, "持ち物どうしの組み合わせがある");
-            TestContext.WriteLine($"状態 {Compiled.Report!.States}・遷移 {Compiled.Report.Transitions}");
+            var times = new double[5];
+            var source = Lab.DataText("Rules.txt");
+            for (int i = 0; i < times.Length; i++)
+            {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                Adventure.Compile(source);
+                times[i] = sw.Elapsed.TotalMilliseconds;
+            }
+
+            Array.Sort(times);
+            TestContext.WriteLine($"状態 {Compiled.Report!.States}・遷移 {Compiled.Report.Transitions}・コンパイル（探索を含む）中央値 {times[2]:F1} ms・最大 {times[4]:F1} ms");
         }
 
         // ---- 完了判定：全 5 謎を解ける ----
