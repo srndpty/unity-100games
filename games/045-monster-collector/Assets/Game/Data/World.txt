@@ -62,43 +62,43 @@ portal route 0 7 town 18 6 left
 
 # grass <地図> <文字> <遭遇率 %>、wild <地図> <文字> <種族> <最低 Lv> <最高 Lv> <重み>
 grass route " 15
-wild route " wickmoth 3 5 35
-wild route " burrowroot 3 5 35
-wild route " brinecrab 3 5 30
+wild route " wickmoth 2 4 35
+wild route " burrowroot 2 4 35
+wild route " brinecrab 2 4 30
 
 grass route ; 15
-wild route ; wickmoth 7 9 25
-wild route ; burrowroot 7 9 25
-wild route ; brinecrab 7 9 25
-wild route ; cinderpup 7 8 8
-wild route ; ripplet 7 8 8
-wild route ; mossling 7 8 9
+wild route ; wickmoth 5 7 25
+wild route ; burrowroot 5 7 25
+wild route ; brinecrab 5 7 25
+wild route ; cinderpup 5 6 8
+wild route ; ripplet 5 6 8
+wild route ; mossling 5 6 9
 
 grass route : 15
-wild route : wickmoth 10 12 20
-wild route : burrowroot 10 12 20
-wild route : brinecrab 10 12 20
-wild route : cinderpup 10 11 13
-wild route : ripplet 10 11 13
-wild route : mossling 10 11 14
+wild route : wickmoth 8 10 20
+wild route : burrowroot 8 10 20
+wild route : brinecrab 8 10 20
+wild route : cinderpup 8 9 13
+wild route : ripplet 8 9 13
+wild route : mossling 8 9 14
 
 # trainer <id> <名前> <地図> <x> <y> <向き>、intro/defeat <id> <台詞>、tmon <id> <種族> <Lv>（出す順）
 trainer saki 見習いのサキ route 12 7 left
 intro saki ここを通りたいなら、わたしに勝ってからね！
 defeat saki まいった……。この先はもっと手強いよ。
-tmon saki wickmoth 7
-tmon saki brinecrab 8
+tmon saki wickmoth 5
+tmon saki brinecrab 6
 
 trainer oboro 釣り人のオボロ route 26 7 left
 intro oboro 水辺で鍛えた相棒たちの力、見せてやろう。
 defeat oboro ふむ、見事な采配だ。通るがいい。
-tmon oboro burrowroot 10
-tmon oboro brinecrab 11
-tmon oboro wickmoth 11
+tmon oboro burrowroot 8
+tmon oboro brinecrab 9
+tmon oboro wickmoth 9
 
 trainer touma 茨守りのトウマ route 40 7 left
 intro touma 茨野の奥へ進む者よ。その絆、試させてもらう。
 defeat touma 見事だ。きみこそ新しい茨守りにふさわしい。
-tmon touma mossling 13
-tmon touma cinderpup 14
-tmon touma ripplet 14
+tmon touma mossling 11
+tmon touma cinderpup 12
+tmon touma ripplet 12

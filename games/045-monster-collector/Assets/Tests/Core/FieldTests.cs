@@ -86,7 +86,7 @@ namespace Game.Core.Tests
                 Assert.That(g.Mode, Is.EqualTo(WorldMode.Battle), $"シード {seed}：草むらではいつか遭遇する");
                 Assert.That(steps, Is.GreaterThan(Lab.Data.Rules.GraceSteps), "猶予の歩数の間は遭遇しない");
                 var foe = g.Battle!.FoeMonster;
-                Assert.That(foe.Level, Is.InRange(3, 5));
+                Assert.That(foe.Level, Is.InRange(2, 4));
                 Assert.That(new List<string> { "wickmoth", "burrowroot", "brinecrab" }, Has.Member(foe.Species.Id));
                 Assert.That(g.Seen & (1 << foe.Species.Index), Is.Not.Zero, "出会った種族は図鑑に見た印");
             }

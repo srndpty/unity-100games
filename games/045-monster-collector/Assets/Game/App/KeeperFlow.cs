@@ -73,6 +73,9 @@ namespace Game.App
     /// </summary>
     public sealed class KeeperFlow
     {
+        /// <summary>ぶつかる音の最短の間隔（Tick）。</summary>
+        public const int BumpCooldownTicks = 20;
+
         private readonly ISaveStore _save;
         private readonly ISaveStore _records;
         private readonly FlowSettings _settings;
@@ -86,6 +89,7 @@ namespace Game.App
         private double _accumulator;
         private int _swapFrom = -1;
         private Direction? _tapStep;
+        private int _bumpCooldown;
 
         public KeeperFlow(MonsterData data, ISaveStore save, ISaveStore records, int initialSeed, FlowSettings? settings = null)
         {
@@ -281,7 +285,13 @@ namespace Game.App
             var w = World!;
             var step = w.FieldTick(HeldDirection ?? _tapStep);
             _tapStep = null;
-            if (step == FieldStep.Blocked && !w.Explorer.IsMoving) { Cues.Bump++; }
+            // 壁に向かって押し続けても、ぶつかる音は一定の Tick に 1 回だけ鳴らす。
+            if (_bumpCooldown > 0) { _bumpCooldown--; }
+            if (step == FieldStep.Blocked && !w.Explorer.IsMoving && _bumpCooldown == 0)
+            {
+                Cues.Bump++;
+                _bumpCooldown = BumpCooldownTicks;
+            }
             if (step == FieldStep.Encounter) { EnterBattle(); }
         }
 

@@ -7,7 +7,7 @@ namespace Game.Core.Tests
     public sealed class BattleReplayTests
     {
         /// <summary>シード 1 のトレーナー戦（トウマ）を決まった手で最後まで進めたときの状態のハッシュ。</summary>
-        public const uint TrainerBattleSeed1Hash = 399851652u;
+        public const uint TrainerBattleSeed1Hash = 443020148u;
 
         private static Battle Play(int seed)
         {

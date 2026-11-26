@@ -36,14 +36,14 @@ namespace Game.Core.Tests
         [TestCase("World.txt", "rule level_cap 20", "rule level_cap 4", "starter_level")]
         [TestCase("World.txt", "rule center town 10 4", "rule center town 10 5", "カウンター")]
         [TestCase("World.txt", "starter mossling", "starter cinderpup", "属性がすべて違う")]
-        [TestCase("World.txt", "wild route \" wickmoth 3 5 35", "wild route \" wickmoth 6 5 35", "レベルは")]
-        [TestCase("World.txt", "wild route \" wickmoth 3 5 35", "wild route \" wickmoth 3 5 0", "重み")]
-        [TestCase("World.txt", "wild route \" wickmoth 3 5 35", "wild route \" wickmoth 3 5 2147483647", "重みの合計")]
+        [TestCase("World.txt", "wild route \" wickmoth 2 4 35", "wild route \" wickmoth 6 4 35", "レベルは")]
+        [TestCase("World.txt", "wild route \" wickmoth 2 4 35", "wild route \" wickmoth 2 4 0", "重み")]
+        [TestCase("World.txt", "wild route \" wickmoth 2 4 35", "wild route \" wickmoth 2 4 2147483647", "重みの合計")]
         [TestCase("World.txt", "grass route : 15", "grass route : 0", "遭遇率")]
         [TestCase("World.txt", "trainer touma 茨守りのトウマ route 40 7 left", "trainer touma 茨守りのトウマ route 26 7 left", "同じマス")]
         [TestCase("World.txt", "trainer touma 茨守りのトウマ route 40 7 left", "trainer touma 茨守りのトウマ route 40 0 left", "歩けるマス")]
         [TestCase("World.txt", "portal route 0 7 town 18 6 left", "portal route 0 7 town 19 6 left", "出入口の上")]
-        [TestCase("World.txt", "tmon touma ripplet 14", "tmon touma ripplet 21", "レベルは 1〜20")]
+        [TestCase("World.txt", "tmon touma ripplet 12", "tmon touma ripplet 21", "レベルは 1〜20")]
         public void BrokenDataIsRejectedWithAReason(string file, string from, string to, string reason)
         {
             var data = Lab.ParseWith(file, from, to);
@@ -65,7 +65,7 @@ namespace Game.Core.Tests
         [TestCase("Moves.txt", "move spark ひのこ ember", "move spark ひのこ fire")]
         [TestCase("Species.txt", "learn 5 spark", "learn 5 sparkle")]
         [TestCase("Species.txt", "learn 5 spark", "learn five spark")]
-        [TestCase("World.txt", "tmon saki wickmoth 7", "tmon saki dragon 7")]
+        [TestCase("World.txt", "tmon saki wickmoth 5", "tmon saki dragon 5")]
         [TestCase("World.txt", "row #..HHHH......HHHH..#", "row #..HHHH......HHHH.#")]
         [TestCase("World.txt", "rule step_ticks 8", "rule step_speed 8")]
         [TestCase("World.txt", "portal town 19 6 route 1 7 right", "portal town 19 6 route 1 7 north")]

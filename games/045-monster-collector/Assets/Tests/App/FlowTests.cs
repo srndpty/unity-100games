@@ -7,7 +7,7 @@ namespace Game.App.Tests
     public sealed class FlowTests
     {
         /// <summary>シード 1 の操縦役の通しで、結果画面に着いたときの世界のハッシュ（Mono と .NET で同じ）。</summary>
-        public const uint SeedOneClearHash = 1241441768u;
+        public const uint SeedOneClearHash = 1785632772u;
 
         private static void Confirm(KeeperFlow flow)
         {
@@ -82,6 +82,20 @@ namespace Game.App.Tests
         }
 
         private const int Lab8 = 8;
+
+        /// <summary>壁に向かって押し続けても、ぶつかる音は一定の間隔でしか鳴らない（試遊で連続して鳴るとされた）。</summary>
+        [Test]
+        public void HoldingIntoAWallBumpsOnlyOncePerCooldown()
+        {
+            var flow = AppLab.FieldReady();
+            flow.World!.WarpForTest("town", 1, 1, Direction.Up);
+            var before = flow.Cues.Bump;
+            flow.Press(InputButton.Up, 1);
+            flow.StepTicks(KeeperFlow.BumpCooldownTicks * 3);
+            var bumps = flow.Cues.Bump - before;
+            Assert.That(bumps, Is.InRange(3, 4), "押し続けた 60 Tick で 3 回前後");
+            Assert.That(flow.World.Explorer.Y, Is.EqualTo(1));
+        }
 
         [Test]
         public void DoubleConfirmOnTheBallUsesOnlyOne()

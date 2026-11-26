@@ -216,17 +216,31 @@ namespace Game.Unity.Editor
 
         private static void Backdrop(Texture2D t)
         {
+            // 地面は画面の下 2/3 ほどまで続け、遠くの木立の帯を挟んで空につなぐ（急に空の色にしない）。
+            const int horizon = 124;
             for (int y = 0; y < t.height; y++)
             {
-                var c = y < 80
-                    ? Color32.Lerp(new Color32(110, 158, 92, 255), new Color32(146, 186, 112, 255), y / 80f)
-                    : Color32.Lerp(new Color32(170, 210, 236, 255), new Color32(110, 168, 220, 255), (y - 80) / 100f);
+                var c = y < horizon
+                    ? Color32.Lerp(new Color32(112, 160, 92, 255), new Color32(160, 196, 124, 255), y / (float)horizon)
+                    : Color32.Lerp(new Color32(186, 220, 240, 255), new Color32(110, 168, 220, 255), (y - horizon) / (float)(t.height - horizon));
                 for (int x = 0; x < t.width; x++) { t.SetPixel(x, y, c); }
             }
 
-            Ellipse(t, 70f, 46f, 56f, 12f, new Color32(96, 140, 78, 255));
-            Ellipse(t, 248f, 104f, 52f, 11f, new Color32(96, 140, 78, 255));
+            for (int x = 0; x < t.width; x++)
+            {
+                var h = 4 + (int)(3f * Mathf.Sin(x * 0.21f) + 2f * Mathf.Sin(x * 0.53f + 1f));
+                for (int y = horizon; y < horizon + h; y++) { t.SetPixel(x, y, new Color32(88, 134, 86, 255)); }
+            }
+
+            // 足場は戦闘の Stage の立ち位置（KeeperBattleStage.PlayerPosition・FoePosition の足もと）に合わせる。
+            Ellipse(t, PlatformPx(KeeperBattleStage.PlayerPosition.x), PlatformPy(KeeperBattleStage.PlayerPosition.y - 2.6f), 56f, 12f, new Color32(96, 140, 78, 255));
+            Ellipse(t, PlatformPx(KeeperBattleStage.FoePosition.x), PlatformPy(KeeperBattleStage.FoePosition.y - 2.1f), 50f, 10f, new Color32(96, 140, 78, 255));
         }
+
+        /// <summary>背景（320×180、16 ピクセル = 1、中心が原点）のピクセル座標へ。</summary>
+        private static float PlatformPx(float x) => x * 16f + 160f;
+
+        private static float PlatformPy(float y) => y * 16f + 90f;
 
         private static void Monster(Texture2D t, string id, bool back)
         {
@@ -254,10 +268,21 @@ namespace Game.Unity.Editor
                         Ellipse(t, 29f, 22f, 9f, 11f, new Color32(250, 210, 110, 255));
                         Ellipse(t, 11f, 22f, 4f, 5f, new Color32(246, 120, 70, 255));
                         Ellipse(t, 29f, 22f, 4f, 5f, new Color32(246, 120, 70, 255));
-                        Ellipse(t, 20f, 19f, 4f, 12f, new Color32(120, 84, 60, 255));
-                        Rect(t, 17, 31, 1, 5, new Color32(120, 84, 60, 255));
-                        Rect(t, 22, 31, 1, 5, new Color32(120, 84, 60, 255));
-                        if (!back) { Eyes(t, 18, 26, eye, white); }
+                        var moth = new Color32(120, 84, 60, 255);
+                        Ellipse(t, 20f, 17f, 4f, 11f, moth);
+
+                        // 頭は胴の上に乗せ、目は頭の中に収める（羽に目がはみ出さない）。
+                        Ellipse(t, 20f, 29f, 5f, 4f, moth);
+                        Rect(t, 17, 32, 1, 6, moth);
+                        Rect(t, 22, 32, 1, 6, moth);
+                        if (!back)
+                        {
+                            Rect(t, 17, 28, 2, 3, white);
+                            Rect(t, 21, 28, 2, 3, white);
+                            Rect(t, 17, 28, 2, 2, eye);
+                            Rect(t, 21, 28, 2, 2, eye);
+                        }
+
                         break;
                     }
 
