@@ -14,16 +14,23 @@ namespace Game.Core
         /// <summary>攻撃を受けた。Amount = 失った HP、Detail = ブロックで防いだ量。</summary>
         Damaged,
 
-        /// <summary>毒で HP を失った。Amount = 失った HP。</summary>
+        /// <summary>毒で HP を失った。Amount = 失った HP。毒は 1 減る。</summary>
         PoisonTick,
 
         /// <summary>ブロックを得た。Amount = 増えた量。</summary>
         BlockGained,
 
-        /// <summary>状態異常を得た。Detail = 種類、Amount = 足した量。</summary>
+        /// <summary>ターンの初めにブロックが 0 に戻った。Amount = 失った量。</summary>
+        BlockLost,
+
+        /// <summary>状態異常が変わった。Detail = 種類、Amount = 足した量（ターンの終わりの減少は負）。毒の減少は <see cref="PoisonTick"/> に含む。</summary>
         StatusApplied,
 
+        /// <summary>エネルギーが変わった（カードの効果、ターンの初めの補充）。Amount = 増えた量（補充で減るときは負）。</summary>
         EnergyGained,
+
+        /// <summary>敵が次の行動を決めて公開した。Source = 敵、Detail = 行動の番号。</summary>
+        IntentSet,
 
         /// <summary>カードを引いた（山札 → 手札）。Detail = 実体 ID。</summary>
         Drawn,

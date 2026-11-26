@@ -51,17 +51,17 @@ move lash 鞭打ち
 do damage 6 player
 
 enemy kiln 灰炉の主
-hp 120
+hp 96
 order cycle
 move slam 炉の拳
-do damage 15 player
+do damage 12 player
 move stoke 火をくべる
-do block 12 self
-do status strength 2 self
+do block 10 self
+do status strength 1 self
 move erupt 噴火
-do damage 5 player
-do damage 5 player
-do damage 5 player
+do damage 4 player
+do damage 4 player
+do damage 4 player
 move call 呼び声
 do summon imp
 do block 10 self

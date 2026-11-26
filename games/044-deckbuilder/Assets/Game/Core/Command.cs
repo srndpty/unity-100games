@@ -43,6 +43,18 @@ namespace Game.Core
 
         /// <summary>対象が存在しないか倒れている。</summary>
         TargetInvalid,
+
+        /// <summary>今の段階ではできない操作（報酬の画面で戦うなど）。</summary>
+        WrongStage,
+
+        /// <summary>選択肢の番号・カードが範囲外か存在しない。</summary>
+        InvalidChoice,
+
+        /// <summary>一度だけの操作（報酬のカード・除去）を済ませている。</summary>
+        AlreadyDone,
+
+        /// <summary>除去するとデッキが下限より少なくなる。</summary>
+        DeckTooSmall,
     }
 
     /// <summary>操作の結果。拒否したときは状態を何も変えていない。</summary>

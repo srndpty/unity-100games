@@ -20,6 +20,7 @@ namespace Game.Core
     /// </summary>
     public sealed partial class Battle
     {
+        private static readonly StatusKind[] _decaying = { StatusKind.Weak, StatusKind.Vulnerable };
         private readonly GameData _data;
         private readonly DeckConfig _config;
         private readonly uint _fingerprint;
@@ -56,6 +57,8 @@ namespace Game.Core
             _nextEnemyId = 1;
             foreach (var foe in encounter.Foes) { _enemies.Add(new Enemy(_nextEnemyId++, foe)); }
             _draw = new List<CardRef>(deck);
+            Deck = Array.AsReadOnly(_draw.ToArray());
+            StartHp = hp;
             var ids = new HashSet<int>();
             foreach (var c in _draw)
             {
@@ -76,6 +79,12 @@ namespace Game.Core
         }
 
         public EncounterDef Encounter { get; }
+
+        /// <summary>戦闘に持ち込んだデッキ（渡された順）。表示の初期状態に使う。</summary>
+        public IReadOnlyList<CardRef> Deck { get; }
+
+        /// <summary>戦闘の始めの HP。</summary>
+        public int StartHp { get; }
 
         public BattlePhase Phase { get; private set; }
 
@@ -152,12 +161,12 @@ namespace Game.Core
                 Emit(EventKind.Discarded, -1, -1, 0, card.Id);
             }
 
-            _player.DecayDebuffs();
+            Decay(_player);
             var acting = _enemies.ToArray();
             foreach (var enemy in acting)
             {
                 if (!enemy.Alive) { continue; }
-                enemy.Block = 0;
+                ResetBlock(enemy);
                 PoisonTick(enemy);
                 if (CheckEnd()) { return PlayResult.Ok; }
                 if (!enemy.Alive) { continue; }
@@ -171,7 +180,7 @@ namespace Game.Core
                     if (IsOver) { return PlayResult.Ok; }
                 }
 
-                enemy.DecayDebuffs();
+                Decay(enemy);
             }
 
             StartPlayerTurn();
@@ -296,7 +305,13 @@ namespace Game.Core
         {
             Turn++;
             Emit(EventKind.TurnStarted, -1, -1, Turn, 0);
-            _player.Block = 0;
+            ResetBlock(_player);
+            if (Energy != _config.Energy)
+            {
+                Emit(EventKind.EnergyGained, Combatant.PlayerId, -1, _config.Energy - Energy, 0);
+                Energy = _config.Energy;
+            }
+
             PoisonTick(_player);
             if (CheckEnd()) { return; }
             var bulwark = _player.Status(StatusKind.Bulwark);
@@ -307,13 +322,32 @@ namespace Game.Core
                 Enqueue(new Command(new EffectDef(EffectKind.Status, miasma, TargetMode.AllEnemies, StatusKind.Poison), Combatant.PlayerId, -1));
             }
 
-            Energy = _config.Energy;
             Enqueue(new Command(new EffectDef(EffectKind.Draw, _config.DrawPerTurn, TargetMode.None), Combatant.PlayerId, -1));
             RunQueue();
             if (IsOver) { return; }
             foreach (var enemy in _enemies)
             {
-                if (enemy.Alive) { enemy.Intent = ChooseMove(enemy); }
+                if (!enemy.Alive) { continue; }
+                enemy.Intent = ChooseMove(enemy);
+                Emit(EventKind.IntentSet, enemy.Id, -1, 0, enemy.Intent.Index);
+            }
+        }
+
+        private void ResetBlock(Combatant who)
+        {
+            if (who.Block == 0) { return; }
+            Emit(EventKind.BlockLost, who.Id, who.Id, who.Block, 0);
+            who.Block = 0;
+        }
+
+        /// <summary>持ち主のターンの終わり：脱力・弱体を 1 減らす。</summary>
+        private void Decay(Combatant who)
+        {
+            foreach (var kind in _decaying)
+            {
+                if (who.Status(kind) <= 0) { continue; }
+                who.SetStatus(kind, who.Status(kind) - 1);
+                Emit(EventKind.StatusApplied, who.Id, who.Id, -1, (int)kind);
             }
         }
 

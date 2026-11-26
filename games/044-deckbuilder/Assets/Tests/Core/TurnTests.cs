@@ -85,7 +85,7 @@ namespace Game.Core.Tests
             imp.Hp = 4;
             var start = battle.Events.Count;
             battle.EndTurn();
-            Assert.That(Lab.TraceFrom(battle, start), Is.EqualTo("Psn:1:4 Died:1 Victory"));
+            Assert.That(Lab.TraceFrom(battle, start), Is.EqualTo("BlockLost Psn:1:4 Died:1 Victory"));
             Assert.That(battle.Phase, Is.EqualTo(BattlePhase.Won));
         }
 
@@ -99,7 +99,7 @@ namespace Game.Core.Tests
             battle.EnemyById(2)!.Intent = null;
             var start = battle.Events.Count;
             battle.EndTurn();
-            Assert.That(Lab.TraceFrom(battle, start), Does.StartWith("TurnStarted Blk:0:4 St:1:Poison2 St:2:Poison2 Draw:"));
+            Assert.That(Lab.TraceFrom(battle, start), Does.StartWith("TurnStarted En:3 Blk:0:4 St:1:Poison2 St:2:Poison2 Draw:"));
         }
 
         [Test]
@@ -172,7 +172,7 @@ namespace Game.Core.Tests
             var battle = Lab.Arranged(Lab.Encounter("kiln"), "guard", Lab.Many("guard", 40));
             var kiln = battle.EnemyById(1)!;
             Assert.That(kiln.Intent!.Id, Is.EqualTo("slam"));
-            kiln.Hp = 60;
+            kiln.Hp = 48;
             battle.Player.Hp = 70;
             battle.EndTurn();
             Assert.That(kiln.Intent!.Id, Is.EqualTo("call"));

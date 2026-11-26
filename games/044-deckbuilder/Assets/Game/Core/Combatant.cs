@@ -37,13 +37,6 @@ namespace Game.Core
 
         internal void AddStatus(StatusKind kind, int amount) => _status[(int)kind] = (int)Math.Min(int.MaxValue / 2, (long)_status[(int)kind] + amount);
 
-        /// <summary>ターンの終わり：脱力・弱体を 1 減らす。</summary>
-        internal void DecayDebuffs()
-        {
-            if (_status[(int)StatusKind.Weak] > 0) { _status[(int)StatusKind.Weak]--; }
-            if (_status[(int)StatusKind.Vulnerable] > 0) { _status[(int)StatusKind.Vulnerable]--; }
-        }
-
         internal virtual Combatant Clone()
         {
             var copy = (Combatant)MemberwiseClone();
