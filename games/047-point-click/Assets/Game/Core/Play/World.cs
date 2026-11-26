@@ -254,11 +254,14 @@ namespace Game.Core.Play
             return Outcome.Ok;
         }
 
-        /// <summary>1 Tick 進める。歩いていれば進み、着いた Tick に命令を解決する。脱出の後は何もしない。</summary>
+        /// <summary>
+        /// 1 Tick 進める。歩いていれば進み、着いた Tick に命令を解決する。脱出の後は出来事を空にするだけで何も進めない
+        /// （<see cref="Events"/> は「この Step で起きた出来事」なので、前の Tick の出来事を残さない）。
+        /// </summary>
         public void Step()
         {
-            if (Escaped) { return; }
             _events.Clear();
+            if (Escaped) { return; }
             Tick++;
             if (!_hasPending) { return; }
             var d = _pendingStand - X;

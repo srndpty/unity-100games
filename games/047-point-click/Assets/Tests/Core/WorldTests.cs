@@ -400,6 +400,7 @@ namespace Game.Core.Tests
             w.Step();
             Assert.That(w.Tick, Is.EqualTo(tick));
             Assert.That(w.Hash(), Is.EqualTo(hash));
+            Assert.That(w.Events, Is.Empty, "脱出の後の Step は、脱出した Tick の出来事を残さない（読み直すと台詞と音が増え続ける）");
         }
     }
 }

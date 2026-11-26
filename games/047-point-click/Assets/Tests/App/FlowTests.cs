@@ -44,6 +44,38 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void AfterEscape_LinesAndCuesDoNotRepeatWhileWaiting()
+        {
+            // 人が遊ぶときのように、最後の灯をともした後は入力せずに時間だけ進める。
+            var f = AppLab.After(AppLab.Walkthrough.Length - 1);
+            var pilot = new Autopilot(AppLab.Walkthrough.Skip(AppLab.Walkthrough.Length - 1).ToArray());
+            pilot.Drive(f);
+            for (int i = 0; i < 3000 && f.CurrentLine == null; i++) { f.StepTicks(1); }
+            Assert.That(f.Escaped, Is.True);
+            Assert.That(f.CurrentLine!.Text, Is.EqualTo("灯がともった！ 光が嵐の海を照らす。"));
+            var solve = f.Cues.Solve;
+            var escape = f.Cues.Escape;
+            f.StepTicks(100);
+            Assert.That(f.Cues.Solve, Is.EqualTo(solve), "謎を解いた音を鳴らし直さない");
+            Assert.That(f.Cues.Escape, Is.EqualTo(escape));
+            Assert.That(escape, Is.EqualTo(1));
+            f.StepTicks(2000);
+            Assert.That(f.Screen, Is.EqualTo(FlowScreen.Result), "台詞は時間で送られて結果画面になる");
+        }
+
+        [Test]
+        public void AfterEscape_OneClickPerLineReachesResult()
+        {
+            var f = AppLab.After(AppLab.Walkthrough.Length - 1);
+            new Autopilot(AppLab.Walkthrough.Skip(AppLab.Walkthrough.Length - 1).ToArray()).Drive(f);
+            for (int i = 0; i < 3000 && f.CurrentLine == null; i++) { f.StepTicks(1); }
+            f.StepTicks(30);
+            f.Click(ClickTarget.Background, -1);
+            f.StepTicks(1);
+            Assert.That(f.Screen, Is.EqualTo(FlowScreen.Result), "最後の台詞を 1 回のクリックで送ると結果画面");
+        }
+
+        [Test]
         public void ResultScreen_IgnoresGameInput()
         {
             var f = AppLab.Playing();
