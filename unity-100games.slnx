@@ -257,6 +257,12 @@
     <Project Path="games/043-traditional-roguelike/dotnet/Core.Tests/G043.Core.Tests.csproj" />
     <Project Path="games/043-traditional-roguelike/dotnet/Core/G043.Core.csproj" />
   </Folder>
+  <Folder Name="/044-deckbuilder/">
+    <Project Path="games/044-deckbuilder/dotnet/App.Tests/G044.App.Tests.csproj" />
+    <Project Path="games/044-deckbuilder/dotnet/App/G044.App.csproj" />
+    <Project Path="games/044-deckbuilder/dotnet/Core.Tests/G044.Core.Tests.csproj" />
+    <Project Path="games/044-deckbuilder/dotnet/Core/G044.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />
