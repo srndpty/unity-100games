@@ -51,6 +51,22 @@ namespace Game.Core.Tests
             Assert.That(errors.Exists(e => e.Contains(reason, StringComparison.Ordinal)), Is.True, $"「{reason}」を含む理由がない：{string.Join(" / ", errors)}");
         }
 
+        [TestCase("World.txt", "row =========================================**#", "row ===========#=============================**#", "トレーナー saki の前へ開始地点から行けません")]
+        [TestCase("World.txt", "row #...........#.............#.............#**#\nrow #..\"\"\"\"\"\"\"..#.............#.............#**#", "row #...........#.............#.............#**#\nrow #..\"\"\"\"\"\"\"..#.............#.............#**#", "")]
+        public void UnreachableTrainersAreRejected(string file, string from, string to, string reason)
+        {
+            // レビュー P2-4：通路をふさいでトレーナーに行けない地図は、各マスが正しくても拒否する。
+            var errors = MonsterDataValidator.Validate(Lab.ParseWith(file, from, to));
+            if (reason.Length == 0)
+            {
+                Assert.That(errors, Is.Empty, "既定の地図は全員に届く");
+                return;
+            }
+
+            Assert.That(errors.Exists(e => e.Contains(reason, StringComparison.Ordinal)), Is.True, string.Join(" / ", errors));
+            Assert.That(errors.Exists(e => e.Contains("トレーナー touma", StringComparison.Ordinal)), Is.True, "その先のトレーナーも行けない");
+        }
+
         [Test]
         public void ASeventhSpeciesIsRejected()
         {

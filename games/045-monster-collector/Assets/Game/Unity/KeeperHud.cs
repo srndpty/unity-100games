@@ -48,6 +48,7 @@ namespace Game.Unity
         private readonly Label _playerName;
         private readonly VisualElement _playerBar;
         private readonly Label _playerHp;
+        private readonly VisualElement _playerExp;
         private readonly Label _playerStatus;
         private readonly VisualElement _battleMessage;
         private readonly Label _battleText;
@@ -194,13 +195,14 @@ namespace Game.Unity
 
             _playerBox = Panel("player-box", root);
             _playerBox.style.right = 80;
-            _playerBox.style.bottom = 400;
+            _playerBox.style.bottom = 390;
             _playerBox.style.width = 560;
             _playerName = Text("player-name", 28, Light);
             _playerBox.Add(_playerName);
             _playerBar = HpBar(_playerBox, "player-bar");
             _playerHp = Text("player-hp", 24, Light);
             _playerBox.Add(_playerHp);
+            _playerExp = ExpBar(_playerBox, "player-exp");
             _playerStatus = Text("player-status", 22, Accent);
             _playerBox.Add(_playerStatus);
 
@@ -306,7 +308,8 @@ namespace Game.Unity
                     var w = world!;
                     _resultBody.text =
                         $"遊んだ時間　{flow.FormatTime(flow.ResultTicks)}\n捕まえた種類　{w.CaughtCount} / {data.Species.Count}\n戦闘　{w.BattleCount} 回（負け {w.Losses} 回）\n手持ち　{PartyLine(w)}\n\n" +
-                        $"最短記録 {flow.FormatTime(flow.Records.BestTicks)}　最多 {flow.Records.BestCaught} 種　クリア {flow.Records.Clears} 回\n\n決定キーで タイトルへ";
+                        $"最短記録 {flow.FormatTime(flow.Records.BestTicks)}　最多 {flow.Records.BestCaught} 種　クリア {flow.Records.Clears} 回\n" +
+                        (flow.ResultNotice.Length > 0 ? flow.ResultNotice + "\n" : string.Empty) + "\n決定キーで タイトルへ";
                     break;
             }
 
@@ -343,6 +346,7 @@ namespace Game.Unity
                 _playerName.text = $"{p.Player.Name}　Lv{p.Player.Level}";
                 SetBar(_playerBar, p.Player.ShownHp, p.Player.MaxHp);
                 _playerHp.text = $"HP {p.Player.ShownHp} / {p.Player.MaxHp}";
+                _playerExp.style.width = Length.Percent(p.Player.ExpPermille / 10f);
                 _playerStatus.text = p.Player.Status;
                 _battleText.text = flow.InDialogue ? flow.Dialogue : p.Text;
                 if (flow.BattleMenu != BattleMenu.Playing)
@@ -395,6 +399,29 @@ namespace Game.Unity
         }
 
         private static void Show(VisualElement e, bool visible) => e.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+
+        /// <summary>次のレベルまでの経験値の細いメーター（青）。</summary>
+        private static VisualElement ExpBar(VisualElement parent, string name)
+        {
+            var row = new VisualElement { name = name + "-row" };
+            row.style.flexDirection = FlexDirection.Row;
+            row.style.alignItems = Align.Center;
+            var label = Text(name + "-label", 18, Muted);
+            label.text = "EXP";
+            label.style.width = 48;
+            row.Add(label);
+            var back = new VisualElement { name = name + "-back" };
+            back.style.flexGrow = 1;
+            back.style.height = 8;
+            back.style.backgroundColor = new Color(0.16f, 0.18f, 0.16f, 1f);
+            var fill = new VisualElement { name = name };
+            fill.style.height = 8;
+            fill.style.backgroundColor = new Color(0.36f, 0.62f, 0.98f, 1f);
+            back.Add(fill);
+            row.Add(back);
+            parent.Add(row);
+            return fill;
+        }
 
         private static VisualElement HpBar(VisualElement parent, string name)
         {

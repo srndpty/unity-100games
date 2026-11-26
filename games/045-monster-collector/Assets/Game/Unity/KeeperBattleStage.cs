@@ -9,7 +9,7 @@ namespace Game.Unity
     public sealed class KeeperBattleStage : MonoBehaviour
     {
         public static readonly Vector3 PlayerPosition = new(-3.8f, -0.5f, 0f);
-        public static readonly Vector3 FoePosition = new(3.4f, 1.6f, 0f);
+        public static readonly Vector3 FoePosition = new(4.4f, 2.6f, 0f);
 
         [SerializeField] private SpriteRenderer? _backdrop;
         [SerializeField] private SpriteRenderer? _player;

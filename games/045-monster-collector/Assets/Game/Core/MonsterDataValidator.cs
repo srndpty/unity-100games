@@ -26,6 +26,9 @@ namespace Game.Core
             ValidateRules(data, e);
             ValidateMaps(data, e);
             ValidateTrainers(data, e);
+
+            // 形の誤りがあると歩けるかの判定ができないので、ここまでが正しいときだけ到達できるかを見る。
+            if (e.Count == 0) { ValidateReachability(data, e); }
             return e;
         }
 
@@ -240,6 +243,79 @@ namespace Game.Core
                 if (t.Intro.Length == 0 || t.Defeat.Length == 0) { e.Add($"{where} の台詞（intro・defeat）がありません"); }
             }
         }
+
+        /// <summary>
+        /// 開始地点から回復所と、トレーナー全員の前（隣のマス）へ行けるか。倒していないトレーナーは通れないので、
+        /// 届くトレーナーから順に倒したことにし、そのマスが通れるようになってから次を探す。
+        /// </summary>
+        private static void ValidateReachability(MonsterData data, List<string> e)
+        {
+            var r = data.Rules;
+            var defeated = 0;
+            var reach = Reachable(data, defeated);
+            if (!reach.Contains(Key(data.Map(r.CenterMapId), r.CenterX, r.CenterY))) { e.Add("開始地点から回復所の前へ行けません"); }
+            var left = new List<TrainerDef>(data.Trainers);
+            while (left.Count > 0)
+            {
+                var next = left.Find(t => InFront(data, reach, t));
+                if (next == null)
+                {
+                    foreach (var t in left) { e.Add($"トレーナー {t.Id} の前へ開始地点から行けません（届くトレーナーを全員倒した後も）"); }
+                    return;
+                }
+
+                defeated |= 1 << next.Index;
+                left.Remove(next);
+                reach = Reachable(data, defeated);
+            }
+        }
+
+        private static bool InFront(MonsterData data, HashSet<long> reach, TrainerDef t)
+        {
+            var map = data.Map(t.MapId);
+            for (int d = 0; d < 4; d++)
+            {
+                DirectionMath.Delta((Direction)d, out var dx, out var dy);
+                if (reach.Contains(Key(map, t.X + dx, t.Y + dy))) { return true; }
+            }
+
+            return false;
+        }
+
+        /// <summary>開始地点から歩いて立てるマスの集合（出入口を踏むと行き先へ移る）。</summary>
+        private static HashSet<long> Reachable(MonsterData data, int defeated)
+        {
+            var r = data.Rules;
+            var seen = new HashSet<long>();
+            var queue = new Queue<(MapDef Map, int X, int Y)>();
+            var start = data.Map(r.StartMapId);
+            seen.Add(Key(start, r.StartX, r.StartY));
+            queue.Enqueue((start, r.StartX, r.StartY));
+            while (queue.Count > 0)
+            {
+                var (map, x, y) = queue.Dequeue();
+                for (int d = 0; d < 4; d++)
+                {
+                    DirectionMath.Delta((Direction)d, out var dx, out var dy);
+                    int nx = x + dx, ny = y + dy;
+                    if (!Explorer.CanEnter(data, defeated, map.Id, nx, ny)) { continue; }
+                    var target = map;
+                    var portal = map.PortalAt(nx, ny);
+                    if (portal != null)
+                    {
+                        target = data.Map(portal.TargetMapId);
+                        nx = portal.TargetX;
+                        ny = portal.TargetY;
+                    }
+
+                    if (seen.Add(Key(target, nx, ny))) { queue.Enqueue((target, nx, ny)); }
+                }
+            }
+
+            return seen;
+        }
+
+        private static long Key(MapDef map, int x, int y) => ((long)map.Index << 40) | ((long)(y & 0xFFFFF) << 20) | (uint)(x & 0xFFFFF);
 
         private static void Range(List<string> e, string name, int value, int min, int max)
         {

@@ -70,11 +70,16 @@ namespace IntGeometry
             return (int)(NextUInt() % (uint)count);
         }
 
-        /// <summary>[min, max] の整数。</summary>
+        /// <summary>
+        /// [min, max] の整数。幅は long で数えるので int の全域（幅 2^32）も扱える。
+        /// 幅が 2^32 未満なら <c>min + NextUInt() % 幅</c>（抽出前の GameRng と同じ値）。
+        /// </summary>
         public int Range(int min, int max)
         {
             if (max < min) { throw new ArgumentOutOfRangeException(nameof(max)); }
-            return min + (int)(NextUInt() % (uint)(max - min + 1));
+            var span = (long)max - min + 1;
+            if (span > uint.MaxValue) { return unchecked((int)NextUInt()); }
+            return (int)(min + NextUInt() % (uint)span);
         }
 
         /// <summary>percent % の確率で true。</summary>

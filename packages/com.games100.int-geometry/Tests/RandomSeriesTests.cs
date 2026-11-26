@@ -88,6 +88,38 @@ namespace IntGeometry.Tests
         }
 
         [Test]
+        public void Range_HandlesTheWholeIntRange_AndTheEdges()
+        {
+            var rng = new RandomSeries(3);
+            var sawNegative = false;
+            var sawPositive = false;
+            for (var i = 0; i < 200; i++)
+            {
+                var v = rng.Range(int.MinValue, int.MaxValue);
+                sawNegative |= v < 0;
+                sawPositive |= v > 0;
+            }
+
+            Assert.That(sawNegative && sawPositive, Is.True, "int の全域から引く");
+            for (var i = 0; i < 200; i++)
+            {
+                Assert.That(rng.Range(int.MaxValue - 2, int.MaxValue), Is.InRange(int.MaxValue - 2, int.MaxValue));
+                Assert.That(rng.Range(int.MinValue, int.MinValue + 2), Is.InRange(int.MinValue, int.MinValue + 2));
+                Assert.That(rng.Range(int.MinValue, int.MaxValue - 1), Is.LessThan(int.MaxValue));
+                Assert.That(rng.Range(5, 5), Is.EqualTo(5));
+            }
+
+            // 幅が 2^32 未満では抽出前と同じ式（固定ハッシュを保つ）。
+            var a = new RandomSeries(11);
+            var b = new RandomSeries(11);
+            for (var i = 0; i < 50; i++) { Assert.That(a.Range(-7, 30), Is.EqualTo(-7 + (int)(b.NextUInt() % 38u))); }
+
+            var state = rng.State;
+            Assert.Throws<ArgumentOutOfRangeException>(() => rng.Range(1, 0));
+            Assert.That(rng.State, Is.EqualTo(state), "拒否では乱数を引かない");
+        }
+
+        [Test]
         public void Weighted_SkipsZero_AndRejectsInvalidTables()
         {
             var rng = new RandomSeries(11);

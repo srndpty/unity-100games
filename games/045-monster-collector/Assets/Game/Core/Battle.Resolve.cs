@@ -376,14 +376,18 @@ namespace Game.Core
             foreach (var i in receivers)
             {
                 var m = _party[i];
+                var oldLevel = m.Level;
+                var levels = m.GainExp(_data.Rules, share);
                 var gained = Emit(BattleEventKind.ExpGained, true, i, m.Name);
                 gained.Amount = share;
-                foreach (var level in m.GainExp(_data.Rules, share))
+                SetExpMeter(gained, oldLevel, m.Exp);
+                foreach (var level in levels)
                 {
                     var up = Emit(BattleEventKind.LeveledUp, true, i, m.Name);
                     up.Level = level;
                     up.HpAfter = m.Hp;
                     up.MaxHp = m.MaxHp;
+                    SetExpMeter(up, level, m.Exp);
                     LearnAt(i, m, level);
                 }
             }
@@ -426,6 +430,19 @@ namespace Game.Core
             ev.Level = m.Level;
             ev.HpAfter = m.Hp;
             ev.MaxHp = m.MaxHp;
+
+            // 交代で控えから戻った個体の状態異常も見せる（控えでも状態異常は残る）。
+            ev.Status = m.Status;
+            if (player) { SetExpMeter(ev, m.Level, m.Exp); }
+        }
+
+        /// <summary>そのレベルでの経験値のメーター（上限レベルでは満タン）。</summary>
+        private void SetExpMeter(BattleEvent ev, int level, int exp)
+        {
+            var rules = _data.Rules;
+            ev.ExpFloor = Formula.ExpForLevel(rules, level);
+            ev.ExpNext = level >= rules.LevelCap ? ev.ExpFloor : Formula.ExpForLevel(rules, level + 1);
+            ev.Exp = level >= rules.LevelCap ? ev.ExpNext : Math.Min(exp, ev.ExpNext);
         }
 
         private BattleEvent Emit(BattleEventKind kind, bool player, int slot, string name)

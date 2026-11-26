@@ -75,12 +75,12 @@ wild route ; ripplet 5 6 8
 wild route ; mossling 5 6 9
 
 grass route : 15
-wild route : wickmoth 8 10 20
-wild route : burrowroot 8 10 20
-wild route : brinecrab 8 10 20
-wild route : cinderpup 8 9 13
-wild route : ripplet 8 9 13
-wild route : mossling 8 9 14
+wild route : wickmoth 11 13 20
+wild route : burrowroot 11 13 20
+wild route : brinecrab 11 13 20
+wild route : cinderpup 10 12 13
+wild route : ripplet 10 12 13
+wild route : mossling 10 12 14
 
 # trainer <id> <名前> <地図> <x> <y> <向き>、intro/defeat <id> <台詞>、tmon <id> <種族> <Lv>（出す順）
 trainer saki 見習いのサキ route 12 7 left

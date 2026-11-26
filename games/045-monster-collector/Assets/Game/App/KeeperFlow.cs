@@ -145,6 +145,17 @@ namespace Game.App
 
         public AudioCues Cues { get; } = new();
 
+        /// <summary>
+        /// 眺める自動プレイが動いている。自動プレイが一度でも進めた冒険のクリアは、記録ファイルに残さない（人の成績に混ぜない）。
+        /// </summary>
+        public bool AutoplayActive { get; set; }
+
+        /// <summary>今の冒険を自動プレイが進めたことがあるか（はじめから・つづきからで消える）。</summary>
+        public bool WorldTouchedByAutoplay { get; private set; }
+
+        /// <summary>結果画面の記録についての案内（記録しなかった・保存に失敗した）。</summary>
+        public string ResultNotice { get; private set; } = string.Empty;
+
         public long TotalTicks { get; private set; }
 
         /// <summary>押されている方向（最後に押した方向が優先）。</summary>
@@ -192,13 +203,18 @@ namespace Game.App
                 if (!intent.Pressed || !InGame) { continue; }
                 if (intent.Button == InputButton.Pause) { IsPaused = !IsPaused; }
                 else if (intent.Button == InputButton.Confirm && IsPaused) { IsPaused = false; }
+                ClearHeld();
             }
 
             ClearHeld();
         }
 
         /// <summary>一時停止を解く（眺める自動プレイを始めたとき）。</summary>
-        public void Resume() => IsPaused = false;
+        public void Resume()
+        {
+            IsPaused = false;
+            ClearHeld();
+        }
 
         public void FlushIntents()
         {
@@ -240,6 +256,8 @@ namespace Game.App
                 var dir = (Direction)d;
                 if (intent.Pressed)
                 {
+                    // 一時停止中に押した方向は登録しない（再開後に歩き出さない。離して押し直せば歩く）。
+                    if (IsPaused) { return; }
                     var was = _heldSlots[d] != 0;
                     _heldSlots[d] |= bit;
                     if (!was)
@@ -273,7 +291,12 @@ namespace Game.App
             if (IsPaused)
             {
                 // 一時停止は決定キーでも戻せる（手で再開する）。
-                if (intent.Button == InputButton.Confirm) { IsPaused = false; }
+                if (intent.Button == InputButton.Confirm)
+                {
+                    IsPaused = false;
+                    ClearHeld();
+                }
+
                 return;
             }
 
@@ -288,6 +311,7 @@ namespace Game.App
             TotalTicks++;
             if (IsPaused) { return; }
             if (World != null && InGame) { World.AddPlayTicks(1); }
+            if (AutoplayActive && World != null) { WorldTouchedByAutoplay = true; }
             switch (Screen)
             {
                 case FlowScreen.Field:
@@ -546,6 +570,7 @@ namespace Game.App
         public void StartNewGame(int seed)
         {
             World = World.New(Data, seed);
+            WorldTouchedByAutoplay = AutoplayActive;
             Presenter = null;
             Screen = FlowScreen.StarterPick;
             _items = new List<MenuItem>();
@@ -564,6 +589,7 @@ namespace Game.App
             }
 
             World = world!;
+            WorldTouchedByAutoplay = AutoplayActive;
             Presenter = null;
             CloseToField();
             Say("回復所の前から 冒険を つづける。", null);
@@ -995,8 +1021,18 @@ namespace Game.App
         {
             var w = World!;
             ResultTicks = w.PlayTicks;
-            Records = Records.WithClear(w.PlayTicks, w.CaughtCount);
-            _records.TryWrite(Records.Encode(), out _);
+            ResultNotice = string.Empty;
+            if (WorldTouchedByAutoplay)
+            {
+                ResultNotice = "自動プレイの クリアは 記録しない";
+            }
+            else
+            {
+                // 書き込めてから記録を更新する（失敗したら前の記録のまま、理由を出す）。
+                var updated = Records.WithClear(w.PlayTicks, w.CaughtCount);
+                if (_records.TryWrite(updated.Encode(), out var failure)) { Records = updated; }
+                else { ResultNotice = $"クリアしたが 記録の保存に 失敗した（{failure}）"; }
+            }
             Screen = FlowScreen.Result;
             _items = new List<MenuItem> { new("タイトルへ", true) };
             Cursor = 0;

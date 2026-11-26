@@ -31,6 +31,9 @@ namespace Game.App
         /// <summary>状態異常の名前（なければ空）。</summary>
         public string Status { get; internal set; } = string.Empty;
 
+        /// <summary>次のレベルまでの経験値のメーター（0〜1000 の千分率、味方のみ）。</summary>
+        public int ExpPermille { get; internal set; }
+
         /// <summary>技を受けて点滅している残り Tick。</summary>
         public int FlashTicks { get; internal set; }
 
@@ -177,8 +180,9 @@ namespace Game.App
                     side.Hp = e.HpAfter;
                     side.ShownHp = e.HpAfter;
                     side.MaxHp = e.MaxHp;
-                    side.Status = string.Empty;
+                    side.Status = e.Status?.Name ?? string.Empty;
                     side.FlashTicks = 0;
+                    if (e.Player) { side.ExpPermille = ExpMeter(e); }
                     if (!e.Player)
                     {
                         FoeCaught = false;
@@ -223,6 +227,9 @@ namespace Game.App
                     side.Hp = 0;
                     _cues.Faint++;
                     break;
+                case BattleEventKind.ExpGained:
+                    if (side.Visible && side.Slot == e.Slot) { side.ExpPermille = ExpMeter(e); }
+                    break;
                 case BattleEventKind.LeveledUp:
                     if (side.Visible && side.Slot == e.Slot)
                     {
@@ -230,6 +237,7 @@ namespace Game.App
                         side.Hp = e.HpAfter;
                         side.ShownHp = e.HpAfter;
                         side.MaxHp = e.MaxHp;
+                        side.ExpPermille = ExpMeter(e);
                     }
 
                     _cues.LevelUp++;
@@ -256,6 +264,13 @@ namespace Game.App
                     _cues.Defeat++;
                     break;
             }
+        }
+
+        private static int ExpMeter(BattleEvent e)
+        {
+            var span = e.ExpNext - e.ExpFloor;
+            if (span <= 0) { return 1000; }
+            return (int)Math.Max(0, Math.Min(1000, (long)(e.Exp - e.ExpFloor) * 1000 / span));
         }
 
         private string Subject(BattleEvent e) => e.Player ? e.Name : (Kind == BattleKind.Wild ? "野生の" : "相手の") + e.Name;

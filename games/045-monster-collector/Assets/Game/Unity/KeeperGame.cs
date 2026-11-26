@@ -75,6 +75,9 @@ namespace Game.Unity
             _autoplay = on ? new Autopilot { HumanPace = true, SaveAtCenter = false } : null;
             _autoplayTicks = 0;
 
+            // 自動プレイのクリアは人の記録に混ぜない（Flow が冒険ごとに覚える）。
+            Flow.AutoplayActive = on;
+
             // フォーカスを失って止まっていたら、自動プレイを始めた時点で再開する。
             if (on) { Flow.Resume(); }
             Render();
@@ -207,6 +210,13 @@ namespace Game.Unity
             _autoplayTicks = Math.Min(_autoplayTicks - ticks, 1.0);
             for (int i = 0; i < ticks; i++)
             {
+                // クリアしたら結果画面で止めて、人の操作に戻す（2 周目に入らない）。
+                if (Flow.Screen == FlowScreen.Result)
+                {
+                    SetAutoplay(false);
+                    return;
+                }
+
                 _autoplay.Step(Flow);
                 Flow.StepTicks(1);
             }

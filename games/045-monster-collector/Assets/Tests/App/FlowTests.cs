@@ -7,7 +7,7 @@ namespace Game.App.Tests
     public sealed class FlowTests
     {
         /// <summary>シード 1 の操縦役の通しで、結果画面に着いたときの世界のハッシュ（Mono と .NET で同じ）。</summary>
-        public const uint SeedOneClearHash = 1785632772u;
+        public const uint SeedOneClearHash = 4002173971u;
 
         private static void Confirm(KeeperFlow flow)
         {
@@ -82,6 +82,132 @@ namespace Game.App.Tests
         }
 
         private const int Lab8 = 8;
+
+        /// <summary>レビュー P2-1：自動プレイが進めた冒険のクリアは記録ファイルを変えない。次の手で遊ぶ冒険は記録する。</summary>
+        [Test]
+        public void AutoplayClearsDoNotTouchTheRecords()
+        {
+            var records = new MemorySaveStore();
+            records.TryWrite(Records.Empty.WithClear(9999, 3).Encode(), out _);
+            var before = records.Content;
+            var flow = AppLab.Flow(1, records: records);
+            flow.AutoplayActive = true;
+            AppLab.RunUntil(flow, new Autopilot(), f => f.Screen == FlowScreen.Result, AutopilotTests.MaxTicks);
+            Assert.That(records.Content, Is.EqualTo(before), "記録ファイルは変わらない");
+            Assert.That(flow.Records.Clears, Is.EqualTo(1));
+            Assert.That(flow.ResultNotice.Contains("記録しない", System.StringComparison.Ordinal), Is.True);
+
+            // 自動プレイを止めて手で始めた冒険は記録の対象。
+            flow.AutoplayActive = false;
+            Confirm(flow);
+            Confirm(flow);
+            Assert.That(flow.WorldTouchedByAutoplay, Is.False);
+
+            // 途中で自動プレイを動かした冒険は、止めてから手でクリアしても記録しない。
+            flow.AutoplayActive = true;
+            flow.StepTicks(1);
+            flow.AutoplayActive = false;
+            Assert.That(flow.WorldTouchedByAutoplay, Is.True);
+        }
+
+        /// <summary>レビュー P3-2：記録の書き込みに失敗したら、前の記録のまま理由を出す。</summary>
+        [Test]
+        public void RecordWriteFailureIsShownAndKeepsTheOldRecords()
+        {
+            var records = new MemorySaveStore { WriteFailure = "ディスクがいっぱいです" };
+            var flow = AppLab.Flow(1, records: records);
+            AppLab.RunUntil(flow, new Autopilot(), f => f.Screen == FlowScreen.Result, AutopilotTests.MaxTicks);
+            Assert.That(flow.Records.Clears, Is.Zero);
+            Assert.That(flow.ResultNotice.Contains("ディスクがいっぱいです", System.StringComparison.Ordinal), Is.True);
+        }
+
+        /// <summary>レビュー P2-2：一時停止中に押した方向キーは、再開しても歩かない。離して押し直すと歩く。</summary>
+        [Test]
+        public void DirectionPressedWhilePausedDoesNotWalkAfterResume()
+        {
+            var flow = AppLab.FieldReady();
+            var w = flow.World!;
+            var x = w.Explorer.X;
+            flow.Tap(InputButton.Pause);
+            flow.Press(InputButton.Left, 1);
+            flow.StepTicks(5);
+            flow.Tap(InputButton.Confirm);
+            flow.StepTicks(30);
+            Assert.That(flow.IsPaused, Is.False);
+            Assert.That(w.Explorer.X, Is.EqualTo(x), "一時停止中に押したキーでは歩かない");
+            flow.Release(InputButton.Left, 1);
+            flow.Press(InputButton.Left, 1);
+            flow.StepTicks(Lab8 + 1);
+            Assert.That(w.Explorer.X, Is.LessThan(x), "押し直すと歩く");
+
+            // P で再開した場合も同じ。
+            flow.Release(InputButton.Left, 1);
+            flow.StepTicks(30);
+            var x2 = w.Explorer.X;
+            flow.Tap(InputButton.Pause);
+            flow.Press(InputButton.Left, 1);
+            flow.Tap(InputButton.Pause);
+            flow.StepTicks(30);
+            Assert.That(w.Explorer.X, Is.EqualTo(x2));
+        }
+
+        /// <summary>レビュー P2-3：毒のまま控えに戻した個体を再び出すと、画面にも毒が出て、予定のターンに消える。</summary>
+        [Test]
+        public void StatusIsShownAgainWhenTheMonsterReturns_AndClearsOnSchedule()
+        {
+            var data = AppLab.Data;
+            var a = Monster.Create(data.SpeciesOf("mossling"), 20, data.Rules);
+            var b = Monster.Create(data.SpeciesOf("ripplet"), 20, data.Rules);
+            var battle = Battle.Wild(data, new[] { a, b }, Monster.Create(data.SpeciesOf("brinecrab"), 20, data.Rules), 0, 0, true, new IntGeometry.RandomSeries(3));
+            battle.Party[0].SetStatus(data.Status("poison"), 5);
+            var p = new BattlePresenter(battle.Kind, 1, 1, 0, new AudioCues());
+            p.Enqueue(battle.Log);
+            for (int i = 0; i < 50; i++) { p.Tick(); }
+            p.Enqueue(battle.Submit(BattleCommand.Switch(1)).Events);
+            for (int i = 0; i < 50; i++) { p.Tick(); }
+            Assert.That(p.Player.Status, Is.Empty);
+            p.Enqueue(battle.Submit(BattleCommand.Switch(0)).Events);
+            for (int i = 0; i < 50; i++) { p.Tick(); }
+            Assert.That(battle.PlayerMonster.Status, Is.Not.Null);
+            Assert.That(p.Player.Status, Is.EqualTo("毒"), "控えから戻しても毒が見える");
+            while (battle.PlayerMonster.Status != null)
+            {
+                p.Enqueue(battle.Submit(BattleCommand.Switch(battle.Active == 0 ? 1 : 0)).Events);
+                p.Enqueue(battle.Submit(BattleCommand.Switch(battle.Active == 0 ? 1 : 0)).Events);
+            }
+
+            for (int i = 0; i < 500; i++) { p.Tick(); }
+            Assert.That(p.Player.Status, Is.Empty, "予定のターンで治ったら表示も消える");
+            Assert.That(battle.PlayerMonster.Status, Is.Null);
+        }
+
+        /// <summary>試遊の調整：経験値のメーター（次のレベルまで）を味方に出す。もらうと増え、レベルが上がると新しいレベルの割合になる。</summary>
+        [Test]
+        public void ExpMeterFillsAndResetsOnLevelUp()
+        {
+            var data = AppLab.Data;
+            var me = Monster.Create(data.SpeciesOf("cinderpup"), 5, data.Rules);
+            var battle = Battle.Wild(data, new[] { me }, Monster.Create(data.SpeciesOf("burrowroot"), 9, data.Rules), 0, 0, true, new IntGeometry.RandomSeries(2));
+            battle.FoeMonster.Hp = 1;
+            var p = new BattlePresenter(battle.Kind, 1, 1, 0, new AudioCues());
+            p.Enqueue(battle.Log);
+            for (int i = 0; i < 20; i++) { p.Tick(); }
+            Assert.That(p.Player.ExpPermille, Is.Zero, "Lv5 になったばかり");
+            while (!battle.IsOver) { p.Enqueue(battle.Submit(BattleCommand.Fight(2)).Events); }
+            var sawFill = false;
+            for (int i = 0; i < 500; i++)
+            {
+                p.Tick();
+                if (p.Current?.Source.Kind == BattleEventKind.ExpGained) { sawFill |= p.Player.ExpPermille > 0; }
+            }
+
+            Assert.That(sawFill, Is.True);
+            var m = battle.Party[0];
+            var floor = Formula.ExpForLevel(data.Rules, m.Level);
+            var next = Formula.ExpForLevel(data.Rules, m.Level + 1);
+            Assert.That(p.Player.Level, Is.EqualTo(m.Level));
+            Assert.That(p.Player.ExpPermille, Is.EqualTo((m.Exp - floor) * 1000 / (next - floor)), "最後の値は今のレベルでの割合");
+        }
 
         /// <summary>自動プレイの間の人の入力は、一時停止（P）と再開（P・決定）だけが効き、他のキーは捨てる。</summary>
         [Test]

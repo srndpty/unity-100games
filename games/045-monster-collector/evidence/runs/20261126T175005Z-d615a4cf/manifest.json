@@ -1,0 +1,133 @@
+{
+    "Product": "THORNWILD KEEPERS",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "709d7883eef94f39aedddc5c3e07cc6e",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-26T17:50:03.6191776Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "textTicks",
+            "Value": "54"
+        },
+        {
+            "Key": "quietTicks",
+            "Value": "16"
+        },
+        {
+            "Key": "fingerprint",
+            "Value": "FEE09F9B"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01_title.jpg",
+            "Sha256": "d6a96e5147137e3c80f40279b689a10d0933f18e9b4c4f2abe4d1c5bc4a6291b",
+            "Note": "タイトル"
+        },
+        {
+            "File": "02_howto.jpg",
+            "Sha256": "ed1134296902a92f6b7ab7eeaf9338aec43d70ed195df3644300c94d467d5a56",
+            "Note": "あそびかた"
+        },
+        {
+            "File": "03_starter.jpg",
+            "Sha256": "d43a50383f5de8932035a8a62627a2f80a136f244d1dc27a5653c67e88c9420c",
+            "Note": "最初の 1 匹を選ぶ (seed=524866043, playTick=1, battles=0)"
+        },
+        {
+            "File": "04_town.jpg",
+            "Sha256": "635700f56b56971edf493d5c511f41e44ea795af39d2824a4cca31e62f4f6dda",
+            "Note": "灯ノ村 (seed=524866043, playTick=5, battles=0)"
+        },
+        {
+            "File": "05_wild_appears.jpg",
+            "Sha256": "c4aa7602072e7290ed203fae4267a97bb5c8a3f6c9cb5e46514f5020677c1fb0",
+            "Note": "野生のモンスターが現れた (seed=524866043, playTick=180, battles=1)"
+        },
+        {
+            "File": "06_command.jpg",
+            "Sha256": "33ec44670fa3c094ddd3d5523ba0117630b121e2e9b15734377f22332851b610",
+            "Note": "戦闘のコマンド (seed=524866043, playTick=195, battles=1)"
+        },
+        {
+            "File": "08_super_effective.jpg",
+            "Sha256": "53d90e2aa3e9dc1e20bd8fc9e1d57b9ef1dd6f74b3ae91296beae5ba44eaea2c",
+            "Note": "効果は ばつぐん (seed=524866043, playTick=221, battles=1)"
+        },
+        {
+            "File": "07_moves.jpg",
+            "Sha256": "221524fd10b34abf9ad5c4ab6783e6f2a888b4f8bf1de739d480f58d440bef9f",
+            "Note": "技を選ぶ（属性と PP） (seed=524866043, playTick=364, battles=1)"
+        },
+        {
+            "File": "16_center_save.jpg",
+            "Sha256": "99dc1f111c4317f1dd39dc94ae2d14b04cdba12fe3e19bef17215abd014fc9b8",
+            "Note": "回復所で記録した (seed=524866043, playTick=644, battles=1)"
+        },
+        {
+            "File": "12_capture.jpg",
+            "Sha256": "982fb21d62f32e4177065dc8dec83bd1ce04a6413e7c06a99564f156561e2791",
+            "Note": "捕獲玉で捕まえた (seed=524866043, playTick=1008, battles=2)"
+        },
+        {
+            "File": "10_party.jpg",
+            "Sha256": "3de4bd0a5c56a41af914ecb5abc187bffcc90002e46e80d8af6c41f04f4ce65f",
+            "Note": "てもち (seed=524866043, playTick=1676, battles=4)"
+        },
+        {
+            "File": "11_dex.jpg",
+            "Sha256": "238e1c1dbd38fb9a0bb33b6e544c40d675687e8c247131fd81d9814594929b2c",
+            "Note": "ずかん (seed=524866043, playTick=1677, battles=4)"
+        },
+        {
+            "File": "14_level_up.jpg",
+            "Sha256": "038365cb983e479dc46b09fc227e151dacaa41f2555544c75eb2e58274841500",
+            "Note": "レベルアップ (seed=524866043, playTick=1860, battles=5)"
+        },
+        {
+            "File": "17_trainer_intro.jpg",
+            "Sha256": "93318647bc91a3e31e90e7893025ac8df069dc212a48292f4b02e483f4ffc3f2",
+            "Note": "トレーナーが道を塞ぐ (seed=524866043, playTick=3348, battles=13)"
+        },
+        {
+            "File": "18_trainer_battle.jpg",
+            "Sha256": "d12da5f6a3935cbdc2a711a7b23681eb4b339ffefeb482ea228ed49d843dfb20",
+            "Note": "トレーナー戦 (seed=524866043, playTick=3358, battles=13)"
+        },
+        {
+            "File": "13_storage.jpg",
+            "Sha256": "6897c846c09372e1f2ba040abc2f68e1d4a644e76dce956dbd6e230410ba8691",
+            "Note": "回復所のボックス (seed=524866043, playTick=3890, battles=13)"
+        },
+        {
+            "File": "09_status.jpg",
+            "Sha256": "65d9bb0d0c922b9d6742a81ca99f4c7c8d24ac9df148a48e2125fd80035fd1c9",
+            "Note": "状態異常になった (seed=524866043, playTick=4528, battles=15)"
+        },
+        {
+            "File": "15_learn_move.jpg",
+            "Sha256": "8a84ae3c65ace64e1a12ab9cd9eab13ca9062500ef97690684daee7098a866f0",
+            "Note": "4 つ埋まっていて技を入れ替える (seed=524866043, playTick=7175, battles=28)"
+        },
+        {
+            "File": "19_result.jpg",
+            "Sha256": "d51b1014b3fd1cf25f815a93c4d170f9fe2a65840ef49583fff41942c44b94c9",
+            "Note": "結果（hash=0xDF30E676） (seed=524866043, playTick=22423, battles=82)"
+        },
+        {
+            "File": "20_title_records.jpg",
+            "Sha256": "90d19d6cf97724da9a50eeb016b227d028e32527f6ef80c92ca06462f4ce9750",
+            "Note": "クリアの記録を出したタイトル"
+        },
+        {
+            "File": "21_title_broken_save.jpg",
+            "Sha256": "0cf978c886d920e2038e41f884335fd412855fbd967f2496a0fa75eef5b9e9f1",
+            "Note": "壊れたセーブの案内（つづきからを出さない）"
+        }
+    ]
+}

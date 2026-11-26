@@ -402,6 +402,41 @@ namespace Game.Unity.Tests
             yield return _keyboard.Tap(Key.F9);
         }
 
+        /// <summary>
+        /// 自動プレイはクリアの結果画面で止まって人の操作に戻り（2 周目に入らない）、記録ファイルを変えない（レビュー P2-1）。
+        /// 経験値のメーターも戦闘中に出ている。
+        /// </summary>
+        [UnityTest]
+        public IEnumerator AutoplayStopsAtTheResult_AndLeavesTheRecordsAlone()
+        {
+            Assert.That(_records.TryWrite(Records.Empty.WithClear(123456, 2).Encode(), out _), Is.True);
+            yield return LoadScene();
+            var path = Path.Combine(_dir, "records.txt");
+            var before = File.ReadAllText(path);
+            yield return _keyboard.Tap(Key.F9);
+            var sawExp = false;
+            for (int i = 0; i < 40_000 && _game.IsAutoplaying; i++)
+            {
+                _game.StepAutoplay(1.0);
+                if (!sawExp && Flow.Screen == FlowScreen.Battle && Flow.Presenter != null && Flow.Presenter.Player.Visible)
+                {
+                    _game.Render();
+                    sawExp = Hud.Q("player-exp-row").resolvedStyle.display == DisplayStyle.Flex;
+                }
+
+                if (i % 500 == 0) { yield return null; }
+            }
+
+            Assert.That(_game.IsAutoplaying, Is.False, "クリアで自動プレイが止まる");
+            Assert.That(Flow.Screen, Is.EqualTo(FlowScreen.Result), "結果画面で止まる（2 周目に入らない）");
+            Flow.StepTicks(600);
+            Assert.That(Flow.Screen, Is.EqualTo(FlowScreen.Result), "人が決定するまで結果のまま");
+            Assert.That(File.ReadAllText(path), Is.EqualTo(before), "記録ファイルは変わらない");
+            Assert.That(sawExp, Is.True, "戦闘で経験値のメーターが出ていた");
+            _game.Render();
+            Assert.That(Hud.Q<Label>("result-body").text.Contains("記録しない", StringComparison.Ordinal), Is.True);
+        }
+
         /// <summary>性能の記録：描画の更新と戦闘の 1 ターンの解決（この PC の CPU 時間）。</summary>
         [UnityTest]
         public IEnumerator RenderAndBattleResolveStayCheap()

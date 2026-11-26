@@ -102,6 +102,13 @@ namespace Game.Core
 
         public int Level { get; internal set; }
 
+        /// <summary>経験値のメーター（味方の SentOut・ExpGained・LeveledUp）：今のレベルの下限・次のレベルの必要量・今の経験値（次の必要量で頭打ち）。</summary>
+        public int ExpFloor { get; internal set; }
+
+        public int ExpNext { get; internal set; }
+
+        public int Exp { get; internal set; }
+
         /// <summary>このターンの番号（TurnStarted・StatusCured など）。</summary>
         public int Turn { get; internal set; }
 
