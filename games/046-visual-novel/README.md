@@ -19,7 +19,16 @@ dev capture 046  # 証跡を evidence/ に撮る（画像は captures/<画像世
 
 ## 操作
 
-（セッション 3 で記入）
+| 操作 | キー・マウス |
+|---|---|
+| 文を送る（表示の途中なら全文を出す） | クリック・Enter・Space・↓・Z |
+| 選択肢を選ぶ | ↑↓ と Enter、または項目をクリック |
+| 既読のスキップ | Ctrl を押している間／S で切り替え（未読の文・選択肢・結末で止まる） |
+| クイックセーブ／クイックロード | F5／F9（タイトルの「つづきから」も同じ枠） |
+| テキスト枠を隠す | H（もう一度 H か決定で戻す） |
+| 一時停止（つづける・タイトルへ） | Esc |
+
+クリックはボタンを押した瞬間に効く（離したときではない）。ウィンドウを選び直したクリックは捨てる。
 
 ## 採用ルール
 
@@ -108,6 +117,9 @@ dev capture 046  # 証跡を evidence/ に撮る（画像は captures/<画像世
 ## 設計上の選択
 
 - App の `NovelFlow` が実行器を動かす唯一の場所。Unity 層には表示用の値（話者・見えている文字・選択肢・背景・立ち絵・既読か）だけを見せる。文字送り・スキップ・クイックセーブ・既読の記録は App にあり、Core の実行器は時間を知らない。
+- Unity 層（`NovelGame`）は、物理キーごとの入力アクションとマウスの押下を `Intent` にして Flow に渡し、Stage（`NovelStage`：背景と立ち絵 3 枠の Prefab）・HUD（`NovelHud`：PanelRenderer）・効果音（`NovelAudio`）に Flow の状態を写すだけ。クリックは UI Toolkit のイベントを使わず、押した位置をパネルの座標で HUD の項目の矩形と照合する（バッチ実行の PlayMode テストでも同じ経路を通る）。
+- 素材（背景 5・立ち絵 7）はエディタスクリプト（`NovelArtGenerator`）で生成する。Stage Prefab の素材の並びと名前は `Scenario` の素材の表と照合する（`NovelStage.Mismatch`）。シーンは `NovelSceneBuilder` が組む。
+- ビルドの直前に `ScenarioBuildCheck`（`IPreprocessBuildWithReport`）が本番シナリオを遊ぶときと同じ規則（設定アセットの上限字数）でコンパイルし、誤りがあれば行番号と理由を付けて `BuildFailedException` でビルドを止める。
 - **DSL と実行器の分離**：`Game.Core.Script`（構文解析 `ScriptParser`・名前の解決と検証とコンパイル `ScriptCompiler`・規則 `ScriptRules`・素材の表 `ScriptCatalog`）が `Game.Core.Runtime` の命令列（`CompiledScript`・`Instruction`）を作り、実行器（`ScriptRunner`）は命令列だけを読む。`Runtime` の型が `Script` の型を使っていないことをテストで確かめる。
 - 網羅探索（`PathExplorer`）は実行器そのものを複製して進めるので、検証と遊ぶときの分岐が食い違わない。テストと撮影の選択の列もここから取る。
 - 表示状態（背景・立ち絵）は実行器の状態として持つ。読み込みは命令を再生せず、写し（`RunnerSnapshot`）から戻すだけで画面も戻る。
@@ -119,16 +131,17 @@ dev capture 046  # 証跡を evidence/ に撮る（画像は captures/<画像世
 |---|---|---|---|
 | Core | `Assets/Tests/Core/` | `dev test 046`（.NET）／`dev test 046 -Unity`（Mono） | 76 |
 | App | `Assets/Tests/App/` | 同上 | 35 |
+| Editor | `Assets/Tests/Editor/` | `dev test 046 -Unity` | 4 |
 
 題材固有テストの場所：
 
 | テスト | 場所 |
 |---|---|
-| 存在しないラベル参照をビルド時検出 | `CompilerTests.MissingLabel*`・`ScenarioTests.BrokenScenarioIsRejectedWithLine`（ビルドの前の検証はセッション 3） |
+| 存在しないラベル参照をビルド時検出 | `CompilerTests.MissingLabel*`・`ScenarioTests.BrokenScenarioIsRejectedWithLine`・`ScenarioBuildCheckTests.MissingLabelStopsTheBuildWithLineNumber`（ビルドの前の検証フックが `BuildFailedException` を投げる） |
 | 未読を既読スキップしない | `SkipTests`（未読で即停止・既読 2 → 未読 → 既読で未読の直前に止まる・2 周目は最初の選択肢まで・結末で止まる・押し続けの解放・フォーカス喪失） |
 | ロードで選択前状態復帰 | `RunnerTests.RestoringChoiceSnapshot*`・`SaveTests.QuickSaveAtChoiceRestoresBeforeTheChoice`・`FlowTests.QuickLoadReturnsToBeforeTheChoice` |
 
-固定値（.NET と Mono で一致）：スクリプトの指紋 `4CC11A97`、各結末の代表の選び方の最終ハッシュ 真相 `47266706`・通常 `EF5C26E9`・バッド `953FB488`。
+固定値（.NET と Mono で一致）：スクリプトの指紋 `FE5A8E61`、各結末の代表の選び方の最終ハッシュ 真相 `41310A48`・通常 `82B1D343`・バッド `BED96A3E`。
 
 ## 未実装範囲
 

@@ -143,10 +143,10 @@ namespace Game.Core.Tests
 
         private static class Expected
         {
-            public const string Fingerprint = "4CC11A97";
-            public const string Truth = "47266706";
-            public const string Normal = "EF5C26E9";
-            public const string Bad = "953FB488";
+            public const string Fingerprint = "FE5A8E61";
+            public const string Truth = "41310A48";
+            public const string Normal = "82B1D343";
+            public const string Bad = "BED96A3E";
         }
     }
 }

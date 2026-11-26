@@ -34,7 +34,7 @@ namespace Game.App.Tests
         public void SpeakerAndStageAreExposed()
         {
             var f = AppLab.Started();
-            Assert.That(f.Background, Is.EqualTo("dawn_sea"));
+            Assert.That(f.Background, Is.EqualTo("lighthouse"));
             Assert.That(f.SpeakerName, Is.EqualTo(""));
             for (int i = 0; i < 50 && f.SpeakerName.Length == 0; i++) { AppLab.Next(f); }
             Assert.That(f.SpeakerName, Is.EqualTo("宗助"));
