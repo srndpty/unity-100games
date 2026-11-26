@@ -38,7 +38,7 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - 雛形には共通部品が入っている：証跡撮影（`Game.Unity.Evidence`）、音の方針（`AudioPolicy`）、PlayMode 用の仮想キーボード（`TestKeyboard`）。
 
 - `Game.Core`・`Game.App` とそれぞれのテストは `dotnet/` 配下の csproj からも同じソースを参照しており、Unity なしでビルド・テスト・静的解析できる。CI はこの経路のみを検証する。
-- CI は PR だけで走る（main への push では走らない）。PR の変更が影響する作品だけを `dev lint/check/test -Since HEAD^1` で検証し、共通ファイル（`build/`・`packages/`・`.github/`・`dev.ps1`・slnx など）の変更なら全作品を検証する。`plan/`・`*.md`・`evidence/` だけの変更では走らない。
+- CI は PR だけで走る（main への push では走らない）。PR の変更が影響する作品だけを `dev lint/check/test -Since HEAD^1` で検証し、共通ファイル（`build/`・`packages/`・`.github/`・`dev.ps1` など）の変更なら全作品を検証する。slnx は共通ファイルに含めず、変わった行に出てくる作品だけを検証する（構文・重複・存在しないパス・登録漏れは `dev lint` が毎回検査する）。作品が増えて全作品の検証は 10 分を超えたので、CI の上限は 20 分にしている。`plan/`・`*.md`・`evidence/` だけの変更では走らない。
 - そのため Core・App とそのテストでは、Unity と .NET の両方で動く書き方をする（NUnit 3.5 にある API、C# 9.0 まで）。
 - Core・App は Nullable 有効・警告はエラー扱い。
 - 物理エンジンに密接な題材は完全分離を強制せず、何を物理エンジンに委譲したかを作品の README に書く。
@@ -80,7 +80,7 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - 自動検証（lint・check・test・Unity テスト・ビルド・`dev capture`）まで通したら状態を「検証待ち」にして人間に渡す。人間が `dev run NNN` で遊んで調整点を返し、OK が出てから「完了」にする。
 - 難易度・速度・音量など遊んで決める値は、最初から設定アセット（ScriptableObject）に出しておく。
 - 完了時に振り返りを書き、他の作品にも効く知見は下の「Unity 実装の知見」へ移す。
-- `dev new` の直後に、雛形と `unity-100games.slnx` への登録だけを最小コミットする（`feature/gameNNN` 上、人間の指示を待たずに行ってよい）。slnx は共通ファイルで、ステージに含まれると pre-commit が全作品を検査するため、最初に済ませておけば以降のコミットはその作品だけの検査になる。
+- `dev new` の直後に、雛形と `unity-100games.slnx` への登録だけを最小コミットする（`feature/gameNNN` 上、人間の指示を待たずに行ってよい）。slnx の変更は、変わった行に出てくる作品だけの検査になる（044 までは共通ファイル扱いで、新作品の PR が全作品の検証になり CI の 10 分を超えた）。
 
 ## Unity 実装の知見
 
@@ -289,5 +289,5 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - `Library/` などの生成物はコミットしない。
 - **2,000 KB を超えるファイルは pre-commit（`check-added-large-files --maxkb=2000`）でコミットを拒否される。** 素材・生成物を足すときは先にサイズを確かめる。自前で生成する音源・画像は形式で収める（031 の音源は 32 kHz・16 ビット・モノラルの PCM にして、30 秒で約 1.9 MB に収めた）。生成物のサイズに上限があるなら、テストでも確かめる（031 の `CalibrationTests`）。形式で収まらない素材は下の Git LFS で持つ。上限を緩めたり `--no-verify` で回避したりしない。
 - 外部の素材（ユニティちゃんなど）の大きいバイナリは Git LFS で持つ（`.gitattributes` に `games/*/Assets/<素材のフォルダ>/**/*.<拡張子>` を足す。`.meta` は対象にしない）。LFS のフックは pre-commit と共存させる：`git lfs install --local --force` の後に `pre-commit install` をやり直すと、LFS の pre-push が `pre-push.legacy` に退避されて pre-commit から呼ばれる。Windows の pre-commit は退避したフックの `#!/bin/sh` を見つけられず push が止まるので、`.git/hooks/pre-push.legacy` の 1 行目を `#!/usr/bin/env sh` に直す（029）。
-- pre-commit で lint と check が `-Staged`（ステージした変更が影響する作品だけ。slnx を含む共通設定の変更なら全作品で、そのときはソリューションを1回でビルドする）で、pre-push で Core / App テストが走る。`--no-verify` で回避しない。
+- pre-commit で lint と check が `-Staged`（ステージした変更が影響する作品だけ。共通設定の変更なら全作品で、そのときはソリューションを1回でビルドする。slnx の変更は変わった行の作品だけ）で、pre-push で Core / App テストが走る。`--no-verify` で回避しない。
 - コードスタイルの規則を `.editorconfig` に足すときは、ビルドで検査されることを確かめる。命名規則（IDE1006）のように `dotnet_diagnostic.<ID>.severity` を別に書かないとビルドで検査されないものがある。
