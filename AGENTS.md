@@ -38,15 +38,15 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - 雛形には共通部品が入っている：証跡撮影（`Game.Unity.Evidence`）、音の方針（`AudioPolicy`）、PlayMode 用の仮想キーボード（`TestKeyboard`）。
 
 - `Game.Core`・`Game.App` とそれぞれのテストは `dotnet/` 配下の csproj からも同じソースを参照しており、Unity なしでビルド・テスト・静的解析できる。CI はこの経路のみを検証する。
-- CI は PR だけで走る（main への push では走らない）。PR の変更が影響する作品だけを `dev lint/check/test -Since HEAD^1` で検証し、共通ファイル（`build/`・`packages/`・`.github/`・`dev.ps1`・slnx など）の変更なら全作品を検証する。`plan/`・`*.md`・`evidence/` だけの変更では走らない。
+- CI は PR だけで走る（main への push では走らない）。PR の変更が影響する作品だけを `dev lint/check/test -Since HEAD^1` で検証し、共通ファイル（`build/`・`packages/`・`.github/`・`dev.ps1` など）の変更なら全作品を検証する。slnx は共通ファイルに含めず、変わった行に出てくる作品だけを検証する（構文・重複・存在しないパス・登録漏れは `dev lint` が毎回検査する）。作品が増えて全作品の検証は 10 分を超えたので、CI の上限は 20 分にしている。`plan/`・`*.md`・`evidence/` だけの変更では走らない。
 - そのため Core・App とそのテストでは、Unity と .NET の両方で動く書き方をする（NUnit 3.5 にある API、C# 9.0 まで）。
 - Core・App は Nullable 有効・警告はエラー扱い。
 - 物理エンジンに密接な題材は完全分離を強制せず、何を物理エンジンに委譲したかを作品の README に書く。
 - 共通コードは、3題以上で再利用価値が明確になってから `packages/` にローカル UPM パッケージとして抽出する。
   - 作品からは `Packages/manifest.json` に `"file:../../../packages/<名前>"` と `testables` を書き、`dev test NNN -Unity` でパッケージのテストも Mono で流す。dotnet 側は作品の Core の csproj から `ProjectReference` する。
   - パッケージも Core と同じく Unity API に依存しない（`noEngineReferences`）。中身を変えると全作品が検査対象になる（`dev lint/check -Staged`）。
-  - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う（033・034 は `StateHash` だけ、035・036・037・038 は `StateHash` を使う、042 は `Box`・`BodyMotion`・`StateHash` を使う、043 は `StateHash` だけ）。
-  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）。025〜027 の実装から抽出し、028 から使う（032 は `SeededRandom` だけ、033 は `Vec2i`・`IntMath`・`Sweep`、035・036 は `Vec2i`・`IntMath`・`Sweep`・`Trig`・`SeededRandom` を使う、037 は `Vec2i`・`IntMath`・`Sweep`・`Trig` を使う、038 は `IntMath`・`Trig`・`SeededRandom` を使う、042 は `Vec2i`・`IntMath`・`Sweep`・`SeededRandom` を使う、043 は `Vec2i`・`SeededRandom` を使う）。
+  - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う（033・034 は `StateHash` だけ、035・036・037・038 は `StateHash` を使う、042 は `Box`・`BodyMotion`・`StateHash` を使う、043・044 は `StateHash` だけ）。
+  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）。025〜027 の実装から抽出し、028 から使う（032 は `SeededRandom` だけ、033 は `Vec2i`・`IntMath`・`Sweep`、035・036 は `Vec2i`・`IntMath`・`Sweep`・`Trig`・`SeededRandom` を使う、037 は `Vec2i`・`IntMath`・`Sweep`・`Trig` を使う、038 は `IntMath`・`Trig`・`SeededRandom` を使う、042 は `Vec2i`・`IntMath`・`Sweep`・`SeededRandom` を使う、043 は `Vec2i`・`SeededRandom` を使う、044 は `SeededRandom` だけ）。
 
 ## 技術スタック
 
@@ -80,7 +80,7 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - 自動検証（lint・check・test・Unity テスト・ビルド・`dev capture`）まで通したら状態を「検証待ち」にして人間に渡す。人間が `dev run NNN` で遊んで調整点を返し、OK が出てから「完了」にする。
 - 難易度・速度・音量など遊んで決める値は、最初から設定アセット（ScriptableObject）に出しておく。
 - 完了時に振り返りを書き、他の作品にも効く知見は下の「Unity 実装の知見」へ移す。
-- `dev new` の直後に、雛形と `unity-100games.slnx` への登録だけを最小コミットする（`feature/gameNNN` 上、人間の指示を待たずに行ってよい）。slnx は共通ファイルで、ステージに含まれると pre-commit が全作品を検査するため、最初に済ませておけば以降のコミットはその作品だけの検査になる。
+- `dev new` の直後に、雛形と `unity-100games.slnx` への登録だけを最小コミットする（`feature/gameNNN` 上、人間の指示を待たずに行ってよい）。slnx の変更は、変わった行に出てくる作品だけの検査になる（044 までは共通ファイル扱いで、新作品の PR が全作品の検証になり CI の 10 分を超えた）。
 
 ## Unity 実装の知見
 
@@ -277,6 +277,11 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - **検証済みの設定を持つクラスは、内部で使う参照と公開する複製を分ける。** `Config` で中の設定をそのまま返すと、試合の途中で命中率や行動の重さを書き換えられ、作ったときに計算した指紋（ハッシュ）とも食い違う。内部は `internal` の参照を読み、公開の口は深い複製を返す。042 の可変の部品と同じ問題が設定オブジェクトにも出た（043）。
 - **設定から実行時に求める数は、積も含めて long で検証する。** 「基本 + 1 階あたり × 階数 ≤ 40」を int で計算すると、正の値でも 0 に折り返して検証を通った（041 は和、043 は積）。上限ちょうど・1 超え・折り返す値・負の値をテストする（043 の `ConfigTests`）。
 - **UI Toolkit の半透明の重ねは、線形の色空間で合成されるので暗い画面の上では濃く見える。** 不透明度 150/255 の地図がほぼ不透明に見えた。撮影の画素の値で確かめて決める（043）。
+- **カードの効果は書いた順に `Command` へ展開して FIFO で解決し、変化を全て出来事として記録する。** App が出来事だけから卓（`TableModel`）を作って Core と毎手照合でき、Core が先に最後まで解決していても、画面は卓を Tick で再生して当たった時点で HP を減らせる（044）。
+- **敵の意図などの予告は、Core の解決と同じ順序で見積もり、実際の結果と照合する。** 「攻撃は `Damage` だけ」「量は最後の値 × 回数」のような集計は、ブロックぶんの攻撃・量の違う攻撃・同じ行動の中の弱体の付与・先に行動する敵の付与・ターン終了で減る状態を取りこぼす。効果列を書いた順にたどり、出荷データの乱択対戦で、プレイヤーの番の途中と行動の直前の両方の見積もりを実際の攻撃と照合する（044 の `IntentSummary`）。
+- **データの個数は、展開・確保の前に上限を検証する。** `deck strike 2147483647` を展開してから検証すると、拒否する前に資源を使い切る。行ごとの値と累計を long で数え、行番号付きで拒否する（044）。
+- **押した画面の照合は、意図を当てはめる直前に行う。** 入力層で全ての意図を積む前に照合すると、同じフレームの Enter で画面が移った後に、前の画面で押したクリックが次の画面の選択として効く。Flow がクリックの意図に押した画面と一時停止を持たせ、先の意図を当てはめた後の状態と比べて捨てる（044 の `SubmitPointer`）。
+- **一時停止の間は Tick（時計）も止める。** 演出だけを止めて Tick を進めると、Tick で期限を持つ通知などが一時停止の間に消える（044）。
 
 ## 注意点
 
@@ -284,5 +289,5 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - `Library/` などの生成物はコミットしない。
 - **2,000 KB を超えるファイルは pre-commit（`check-added-large-files --maxkb=2000`）でコミットを拒否される。** 素材・生成物を足すときは先にサイズを確かめる。自前で生成する音源・画像は形式で収める（031 の音源は 32 kHz・16 ビット・モノラルの PCM にして、30 秒で約 1.9 MB に収めた）。生成物のサイズに上限があるなら、テストでも確かめる（031 の `CalibrationTests`）。形式で収まらない素材は下の Git LFS で持つ。上限を緩めたり `--no-verify` で回避したりしない。
 - 外部の素材（ユニティちゃんなど）の大きいバイナリは Git LFS で持つ（`.gitattributes` に `games/*/Assets/<素材のフォルダ>/**/*.<拡張子>` を足す。`.meta` は対象にしない）。LFS のフックは pre-commit と共存させる：`git lfs install --local --force` の後に `pre-commit install` をやり直すと、LFS の pre-push が `pre-push.legacy` に退避されて pre-commit から呼ばれる。Windows の pre-commit は退避したフックの `#!/bin/sh` を見つけられず push が止まるので、`.git/hooks/pre-push.legacy` の 1 行目を `#!/usr/bin/env sh` に直す（029）。
-- pre-commit で lint と check が `-Staged`（ステージした変更が影響する作品だけ。slnx を含む共通設定の変更なら全作品で、そのときはソリューションを1回でビルドする）で、pre-push で Core / App テストが走る。`--no-verify` で回避しない。
+- pre-commit で lint と check が `-Staged`（ステージした変更が影響する作品だけ。共通設定の変更なら全作品で、そのときはソリューションを1回でビルドする。slnx の変更は変わった行の作品だけ）で、pre-push で Core / App テストが走る。`--no-verify` で回避しない。
 - コードスタイルの規則を `.editorconfig` に足すときは、ビルドで検査されることを確かめる。命名規則（IDE1006）のように `dotnet_diagnostic.<ID>.severity` を別に書かないとビルドで検査されないものがある。

@@ -19,7 +19,7 @@ jobs:
     # PR の変更が影響する作品だけを検証する（共通ファイル（build/・packages/・.github/・dev.ps1 など）の変更なら全作品）。
     # PR のチェックアウトは base と PR をマージしたコミットなので、その 1 つ目の親（base）からの差分が PR の変更になる。
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:

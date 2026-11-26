@@ -1,0 +1,148 @@
+# CINDER LEDGER のカード（20 種）。
+# card <id> <名前> の後に type（attack/skill/power）・rarity（starter/common/uncommon/rare）・cost・exhaust（任意）・do（効果、書いた順に解決）。
+# do の書式：
+#   damage <量> <対象>        対象は chosen（選んだ敵）・all（全ての敵）・random（無作為の敵）
+#   damage_block <対象>        今のブロックを量にした攻撃
+#   block <量> self / double_block self
+#   draw <枚数> / energy <量> / exhaust_random <枚数>（手札から無作為に廃棄）
+#   status <種類> <量> <対象>  種類は strength・weak・vulnerable・poison・bulwark・miasma、対象は chosen・all・random・self
+# 持続（power）は使うと廃棄の山へ移り、効果は状態として残る。
+
+card strike 打ち込み
+type attack
+rarity starter
+cost 1
+do damage 6 chosen
+
+card guard 構え
+type skill
+rarity starter
+cost 1
+do block 5 self
+
+card crush 砕き
+type attack
+rarity common
+cost 2
+do damage 9 chosen
+do status vulnerable 2 chosen
+
+card twin 二段斬り
+type attack
+rarity common
+cost 1
+do damage 4 chosen
+do damage 4 chosen
+
+card sweep 薙ぎ払い
+type attack
+rarity common
+cost 1
+do damage 7 all
+
+card sparks 火の粉
+type attack
+rarity common
+cost 1
+do damage 3 random
+do damage 3 random
+do damage 3 random
+
+card quickcut 抜き打ち
+type attack
+rarity common
+cost 1
+do damage 7 chosen
+do draw 1
+
+card shieldbash 盾打ち
+type attack
+rarity uncommon
+cost 1
+do damage_block chosen
+
+card venom 毒刃
+type attack
+rarity uncommon
+cost 1
+do damage 4 chosen
+do status poison 4 chosen
+
+card finisher 焼却の一撃
+type attack
+rarity rare
+cost 2
+exhaust
+do damage 24 chosen
+
+card brace 身構え
+type skill
+rarity common
+cost 1
+do block 7 self
+do draw 1
+
+card glance 一瞥
+type skill
+rarity common
+cost 0
+do draw 1
+
+card sap 削ぐ視線
+type skill
+rarity common
+cost 1
+do status weak 2 chosen
+do status vulnerable 1 chosen
+
+card kindle 焚きつけ
+type skill
+rarity uncommon
+cost 0
+exhaust
+do energy 1
+do draw 1
+
+card purge 投げ捨て
+type skill
+rarity uncommon
+cost 1
+do exhaust_random 1
+do draw 2
+
+card smog 瘴気
+type skill
+rarity uncommon
+cost 2
+do status poison 5 all
+
+card fortress 城壁
+type skill
+rarity rare
+cost 1
+exhaust
+do block 4 self
+do double_block self
+
+card temper 鍛錬
+type power
+rarity uncommon
+cost 1
+do status strength 2 self
+
+card bulwark 守りの火
+type power
+rarity rare
+cost 2
+do status bulwark 4 self
+
+card fumes 煤煙
+type power
+rarity rare
+cost 1
+do status miasma 2 self
+
+# 初期デッキ（10 枚）
+deck strike 5
+deck guard 4
+deck crush 1

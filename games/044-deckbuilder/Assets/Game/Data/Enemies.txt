@@ -1,0 +1,68 @@
+# CINDER LEDGER の敵（5 種＋ボス）。
+# enemy <id> <名前> の後に hp・order（cycle＝書いた順に繰り返す／random＝重みで抽選、直前と同じ行動は選ばない）・move <id> <名前> [重み]・do（効果）。
+# 敵の do の対象は player（プレイヤー）・self（自分）。summon <敵 id> は敵を呼ぶ。
+# onhalf <行動 id> は HP が半分以下になって最初に選ぶ行動（一度だけ、普段の順番には入らない）。
+
+enemy imp 焚き小鬼
+hp 16
+order random
+move scratch 引っかき 2
+do damage 6 player
+move jab 二度突き 1
+do damage 3 player
+do damage 3 player
+
+enemy warden 鉄の番兵
+hp 38
+order cycle
+move raise 盾構え
+do block 8 self
+do damage 5 player
+move slam 叩きつけ
+do damage 11 player
+
+enemy moth 呪い蛾
+hp 22
+order cycle
+move dust 鱗粉
+do status weak 2 player
+do damage 4 player
+move gaze 凝視
+do status vulnerable 2 player
+move bite 噛みつき
+do damage 8 player
+
+enemy spitter 沼吐き
+hp 26
+order random
+move spit 毒液 1
+do damage 3 player
+do status poison 3 player
+move lunge 飛びかかり 1
+do damage 9 player
+
+enemy sprout 灰の芽
+hp 30
+order cycle
+move grow 芽吹き
+do status strength 2 self
+do block 4 self
+move lash 鞭打ち
+do damage 6 player
+
+enemy kiln 灰炉の主
+hp 96
+order cycle
+move slam 炉の拳
+do damage 12 player
+move stoke 火をくべる
+do block 10 self
+do status strength 1 self
+move erupt 噴火
+do damage 4 player
+do damage 4 player
+do damage 4 player
+move call 呼び声
+do summon imp
+do block 10 self
+onhalf call

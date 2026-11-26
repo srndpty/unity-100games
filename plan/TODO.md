@@ -16,6 +16,12 @@
 - **状況：** 027 は 026 から写して使っている（2 作品目）。026 の `Sweep.First` は座標が大きいと 2 次式が long を超えうる（026 の座標の範囲では超えない）。
 - **対応：** 3 作品目で円どうしの掃引を使うときに、`VeilRun.Touches` の厳密な判定を含めて `packages/` へ抽出し、026・027 をパッケージの参照に置き換える。完走ハッシュなどの固定値が変わらないことを .NET と Mono の両方で確かめる。
 
+### 041・043・044：シード付きの系列の派生（GameRng）を共通パッケージへ抽出する候補
+
+- **対象：** `games/041-jrpg`・`games/043-traditional-roguelike`・`games/044-deckbuilder` の `Assets/Game/Core/GameRng.cs`（状態を持つ xorshift32、試合シード・節・用途からの系列の派生、`Weighted`）
+- **状況：** 044 で 3 作品目になった。044 は写して使い（用途の enum だけ違う）、抽出はしていない。
+- **対応：** 用途を int で受ける形にして `com.games100.int-geometry` の `SeededRandom` の隣へ抽出し、3 作品を参照に置き換える。固定ハッシュが変わらないことを .NET と Mono の両方で確かめる。
+
 ### 010 SAFE DIG：フォーカス復帰のクリックでゲームが終了する
 
 - **対象：** `games/010-minesweeper/Assets/Game/Unity/SafeDigGame.cs` の終了ボタン

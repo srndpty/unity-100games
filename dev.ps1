@@ -42,10 +42,11 @@ $BuildTarget = 'StandaloneWindows64'
 $GeneratedDirs = 'Library', 'Temp', 'Logs', 'obj', 'Builds'
 $CaptureTimeoutSeconds = 120
 # 変更されると全作品の検証結果が変わりうる共通ファイル (-Staged でもこれらが含まれれば全作品を対象にする)
-# ソリューションは壊れていないか・参照先が正しいかをソリューション全体のビルドでしか確かめられないので、ここに含める。
-# slnx が変わるのは実質 `dev new` だけなので、作品の作成直後に最小コミットしておけば、以降のコミットはその作品だけの検査になる。
 # packages/ はどの作品が使っているかを辿らず、変わったら全作品を対象にする。
-$SharedPathPattern = '^(build/|packages/|\.github/|\.editorconfig$|global\.json$|unity-100games\.slnx$|dev\.ps1$)'
+# slnx は共通ファイルに含めない。変わった行に出てくる作品だけを対象にし（新作品の PR が全作品の検証にならない）、
+# 構文・重複・存在しないパス・登録漏れは lint の Test-SolutionProjects が毎回検査する。
+$SharedPathPattern = '^(build/|packages/|\.github/|\.editorconfig$|global\.json$|dev\.ps1$)'
+$SolutionFile = 'unity-100games.slnx'
 
 # 外部コマンドを実行し、失敗したらその終了コードで即終了する。
 # `--option` 形式の引数をそのまま渡すため、param ブロックを使わず $args で受ける。
@@ -97,10 +98,18 @@ function Get-BuildExe($GameDir) {
 # (共通ファイルの変更なら全作品)、番号指定ならその作品、どれもなければ全作品。
 function Get-TargetGameDirs {
     if ($Staged -or $Since) {
-        $files = if ($Staged) { @(git -C $RepoRoot diff --cached --name-only) } else { @(git -C $RepoRoot diff --name-only "$Since...HEAD") }
+        [string[]]$range = if ($Staged) { @('--cached') } else { @("$Since...HEAD") }
+        $files = @(git -C $RepoRoot diff --name-only @range)
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         if ($files -match $SharedPathPattern) { return Get-GameDirs }
-        $names = @($files | ForEach-Object { if ($_ -match '^games/(\d{3}-[^/]+)/') { $Matches[1] } } | Sort-Object -Unique)
+        $names = @($files | ForEach-Object { if ($_ -match '^games/(\d{3}-[^/]+)/') { $Matches[1] } })
+        if ($files -contains $SolutionFile) {
+            # slnx で足した・消した・書き換えた行の作品も対象にする。
+            $lines = @(git -C $RepoRoot diff -U0 @range -- $SolutionFile)
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            $names += @($lines | Where-Object { $_ -match '^[+-][^+-]' } | ForEach-Object { if ($_ -match 'games.(\d{3}-[a-z0-9-]+)') { $Matches[1] } })
+        }
+        $names = @($names | Sort-Object -Unique)
         return @(Get-GameDirs | Where-Object Name -In $names)
     }
     if ($Game) { return @(Find-GameDir) }
