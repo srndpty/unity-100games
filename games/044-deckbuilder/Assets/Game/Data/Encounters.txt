@@ -1,0 +1,43 @@
+# CINDER LEDGER の遭遇。tier は easy・normal・hard・boss。
+# ルート：戦 1 は easy と normal の 2 択、戦 2 は normal（戦 1 と別）と hard の 2 択、戦 3 は boss。
+
+encounter imps 小鬼の群れ
+tier easy
+foe imp
+foe imp
+
+encounter lone_moth 迷い蛾
+tier easy
+foe moth
+
+encounter bog 沼地
+tier easy
+foe spitter
+
+encounter garden 灰の庭
+tier normal
+foe sprout
+foe imp
+
+encounter gate 番兵の門
+tier normal
+foe warden
+
+encounter swarm 蛾と小鬼
+tier normal
+foe moth
+foe imp
+
+encounter fortress 鉄の砦
+tier hard
+foe warden
+foe imp
+
+encounter blight 枯れ野
+tier hard
+foe sprout
+foe spitter
+
+encounter kiln 灰炉
+tier boss
+foe kiln
