@@ -45,8 +45,8 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - 共通コードは、3題以上で再利用価値が明確になってから `packages/` にローカル UPM パッケージとして抽出する。
   - 作品からは `Packages/manifest.json` に `"file:../../../packages/<名前>"` と `testables` を書き、`dev test NNN -Unity` でパッケージのテストも Mono で流す。dotnet 側は作品の Core の csproj から `ProjectReference` する。
   - パッケージも Core と同じく Unity API に依存しない（`noEngineReferences`）。中身を変えると全作品が検査対象になる（`dev lint/check -Staged`）。
-  - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う（033・034 は `StateHash` だけ、035・036・037・038 は `StateHash` を使う、042 は `Box`・`BodyMotion`・`StateHash` を使う、043 は `StateHash` だけ）。
-  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）。025〜027 の実装から抽出し、028 から使う（032 は `SeededRandom` だけ、033 は `Vec2i`・`IntMath`・`Sweep`、035・036 は `Vec2i`・`IntMath`・`Sweep`・`Trig`・`SeededRandom` を使う、037 は `Vec2i`・`IntMath`・`Sweep`・`Trig` を使う、038 は `IntMath`・`Trig`・`SeededRandom` を使う、042 は `Vec2i`・`IntMath`・`Sweep`・`SeededRandom` を使う、043 は `Vec2i`・`SeededRandom` を使う）。
+  - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う（033・034 は `StateHash` だけ、035・036・037・038 は `StateHash` を使う、042 は `Box`・`BodyMotion`・`StateHash` を使う、043・044 は `StateHash` だけ）。
+  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）。025〜027 の実装から抽出し、028 から使う（032 は `SeededRandom` だけ、033 は `Vec2i`・`IntMath`・`Sweep`、035・036 は `Vec2i`・`IntMath`・`Sweep`・`Trig`・`SeededRandom` を使う、037 は `Vec2i`・`IntMath`・`Sweep`・`Trig` を使う、038 は `IntMath`・`Trig`・`SeededRandom` を使う、042 は `Vec2i`・`IntMath`・`Sweep`・`SeededRandom` を使う、043 は `Vec2i`・`SeededRandom` を使う、044 は `SeededRandom` だけ）。
 
 ## 技術スタック
 
@@ -277,6 +277,11 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - **検証済みの設定を持つクラスは、内部で使う参照と公開する複製を分ける。** `Config` で中の設定をそのまま返すと、試合の途中で命中率や行動の重さを書き換えられ、作ったときに計算した指紋（ハッシュ）とも食い違う。内部は `internal` の参照を読み、公開の口は深い複製を返す。042 の可変の部品と同じ問題が設定オブジェクトにも出た（043）。
 - **設定から実行時に求める数は、積も含めて long で検証する。** 「基本 + 1 階あたり × 階数 ≤ 40」を int で計算すると、正の値でも 0 に折り返して検証を通った（041 は和、043 は積）。上限ちょうど・1 超え・折り返す値・負の値をテストする（043 の `ConfigTests`）。
 - **UI Toolkit の半透明の重ねは、線形の色空間で合成されるので暗い画面の上では濃く見える。** 不透明度 150/255 の地図がほぼ不透明に見えた。撮影の画素の値で確かめて決める（043）。
+- **カードの効果は書いた順に `Command` へ展開して FIFO で解決し、変化を全て出来事として記録する。** App が出来事だけから卓（`TableModel`）を作って Core と毎手照合でき、Core が先に最後まで解決していても、画面は卓を Tick で再生して当たった時点で HP を減らせる（044）。
+- **敵の意図などの予告は、Core の解決と同じ順序で見積もり、実際の結果と照合する。** 「攻撃は `Damage` だけ」「量は最後の値 × 回数」のような集計は、ブロックぶんの攻撃・量の違う攻撃・同じ行動の中の弱体の付与・先に行動する敵の付与・ターン終了で減る状態を取りこぼす。効果列を書いた順にたどり、出荷データの乱択対戦で、プレイヤーの番の途中と行動の直前の両方の見積もりを実際の攻撃と照合する（044 の `IntentSummary`）。
+- **データの個数は、展開・確保の前に上限を検証する。** `deck strike 2147483647` を展開してから検証すると、拒否する前に資源を使い切る。行ごとの値と累計を long で数え、行番号付きで拒否する（044）。
+- **押した画面の照合は、意図を当てはめる直前に行う。** 入力層で全ての意図を積む前に照合すると、同じフレームの Enter で画面が移った後に、前の画面で押したクリックが次の画面の選択として効く。Flow がクリックの意図に押した画面と一時停止を持たせ、先の意図を当てはめた後の状態と比べて捨てる（044 の `SubmitPointer`）。
+- **一時停止の間は Tick（時計）も止める。** 演出だけを止めて Tick を進めると、Tick で期限を持つ通知などが一時停止の間に消える（044）。
 
 ## 注意点
 

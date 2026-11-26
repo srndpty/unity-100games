@@ -254,6 +254,39 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void ClickPressedOnAScreenLeftByAnEarlierKeyInTheSameFrameIsDropped()
+        {
+            var flow = AppLab.InBattle(0, 2);
+            var run = flow.Run!;
+            WinCurrentBattle(flow);
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Reward));
+            var hp = run.Hp;
+            var maxHp = run.MaxHp;
+
+            // 同じフレーム：Enter で報酬を去って休憩へ移り、その後に報酬のカードのクリックが届く。
+            flow.Submit(I(IntentKind.Confirm));
+            flow.SubmitPointer(I(IntentKind.Option, 1), AppScreen.Reward, false);
+            flow.Advance(0);
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Rest));
+            Assert.That(run.Stage, Is.EqualTo(RunStage.Rest), "報酬のクリックが休憩の選択にならない");
+            Assert.That((run.Hp, run.MaxHp), Is.EqualTo((hp, maxHp)));
+
+            // 押した画面のままなら効く（対の確認）。
+            flow.SubmitPointer(I(IntentKind.Option, 1), AppScreen.Rest, false);
+            flow.Advance(0);
+            Assert.That(run.MaxHp, Is.GreaterThan(maxHp));
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Route));
+
+            // 一時停止の状態が変わったクリックも捨てる。
+            flow.Submit(I(IntentKind.Cancel));
+            flow.SubmitPointer(I(IntentKind.Option, 0), AppScreen.Route, false);
+            flow.Advance(0);
+            Assert.That(flow.Paused, Is.True);
+            Assert.That(flow.Screen, Is.EqualTo(AppScreen.Route));
+            Assert.That(run.Stage, Is.EqualTo(RunStage.ChooseEncounter));
+        }
+
+        [Test]
         public void RewardRestAndResultScreensFollowTheRun()
         {
             var flow = AppLab.InBattle(0, 2);

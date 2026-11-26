@@ -34,6 +34,9 @@ namespace Game.App
 
         public bool Alive => Hp > 0;
 
+        /// <summary>今の敵の番で行動を始めたか（プレイヤーの番の始めに戻す）。</summary>
+        public bool Acted { get; internal set; }
+
         public int Status(StatusKind kind) => _status[(int)kind];
 
         internal void AddStatus(StatusKind kind, int amount) => _status[(int)kind] += amount;
@@ -122,6 +125,7 @@ namespace Game.App
                 case EventKind.TurnStarted:
                     Turn = e.Amount;
                     PlayerTurnOpen = true;
+                    foreach (var seat in _seats) { seat.Acted = false; }
                     break;
                 case EventKind.TurnEnded:
                     PlayerTurnOpen = false;
@@ -184,6 +188,8 @@ namespace Game.App
                     Seat(e.Target).Hp = 0;
                     break;
                 case EventKind.EnemyActed:
+                    Seat(e.Source).Acted = true;
+                    break;
                 case EventKind.HandFull:
                 case EventKind.Fizzled:
                     break;

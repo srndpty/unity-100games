@@ -19,6 +19,7 @@ namespace Game.App
     /// 敵の意図の表示。行動の効果列を書いた順にたどり、実際の解決と同じ式で攻撃の量を見積もる。
     /// 敵は行動の前にブロックが 0 に戻り、同じ行動の中の防御・強化・弱体の付与は後の攻撃に効く。
     /// プレイヤーの番の途中なら、ターン終了で 1 減るプレイヤーの弱体を差し引く。
+    /// 先に行動する（番号の小さい）敵のうち、まだ行動していない敵の公開済みの行動がプレイヤーに与える弱体も足す（毒で行動の前に倒れる敵は除く）。
     /// </summary>
     public readonly struct IntentSummary
     {
@@ -59,7 +60,7 @@ namespace Game.App
             long block = 0;
             int strength = enemy.Status(StatusKind.Strength);
             int weak = enemy.Status(StatusKind.Weak);
-            int vulnerable = Math.Max(0, player.Status(StatusKind.Vulnerable) - pendingDecay);
+            int vulnerable = Math.Max(0, player.Status(StatusKind.Vulnerable) - pendingDecay) + VulnerableFromEarlierFoes(enemy, table);
             var hits = new List<int>();
             bool blocks = false, buff = false, debuff = false, summon = false;
             foreach (var e in move.Effects)
@@ -100,6 +101,23 @@ namespace Game.App
             if (debuff) { return new IntentSummary(IntentIcon.Debuff, none, "妨害"); }
             if (buff) { return new IntentSummary(IntentIcon.Buff, none, "強化"); }
             return new IntentSummary(IntentIcon.Block, none, blocks ? "防御" : string.Empty);
+        }
+
+        /// <summary>この敵より先に行動し、まだ行動していない敵が与える弱体の合計。</summary>
+        private static int VulnerableFromEarlierFoes(Seat enemy, TableModel table)
+        {
+            long sum = 0;
+            foreach (var other in table.Seats)
+            {
+                if (other.Def == null || other.Id >= enemy.Id || !other.Alive || other.Acted || other.Intent == null) { continue; }
+                if (other.Hp <= other.Status(StatusKind.Poison)) { continue; }
+                foreach (var e in other.Intent.Effects)
+                {
+                    if (e.Kind == EffectKind.Status && e.Target == TargetMode.Player && e.Status == StatusKind.Vulnerable) { sum += e.Amount; }
+                }
+            }
+
+            return (int)Math.Min(int.MaxValue / 2, sum);
         }
 
         /// <summary>同じ量なら「量×回数」、違えば書いた順に「+」でつなぐ。</summary>

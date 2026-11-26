@@ -37,7 +37,7 @@ namespace Game.App
         private readonly GameData _data;
         private readonly DeckConfig _config;
         private readonly PlaybackTiming _timing;
-        private readonly Queue<Intent> _pending = new();
+        private readonly Queue<(Intent Intent, AppScreen? Screen, bool Paused)> _pending = new();
         private int _nextSeed;
         private double _tickDebt;
 
@@ -100,7 +100,13 @@ namespace Game.App
         private long _noticeUntil;
 
         /// <summary>意図を列に積む（届いた順に <see cref="Advance"/> で処理する）。</summary>
-        public void Submit(Intent intent) => _pending.Enqueue(intent);
+        public void Submit(Intent intent) => _pending.Enqueue((intent, null, false));
+
+        /// <summary>
+        /// クリックの意図を列に積む。押した時点の画面と一時停止を覚え、処理する直前（先に届いた意図を当てはめた後）に違っていたら捨てる。
+        /// 同じフレームに画面を移すキーとクリックが届いても、クリックは押した画面にだけ効く。
+        /// </summary>
+        public void SubmitPointer(Intent intent, AppScreen pressedOn, bool pausedWhenPressed) => _pending.Enqueue((intent, pressedOn, pausedWhenPressed));
 
         /// <summary>
         /// 積んだ意図を順に処理し、経過時間ぶん Tick を進める（1 回の呼び出しで最大 <see cref="MaxTicksPerFrame"/>）。
@@ -108,7 +114,12 @@ namespace Game.App
         /// </summary>
         public void Advance(double seconds)
         {
-            while (_pending.Count > 0) { Apply(_pending.Dequeue()); }
+            while (_pending.Count > 0)
+            {
+                var (intent, screen, paused) = _pending.Dequeue();
+                if (screen != null && (screen != Screen || paused != Paused)) { continue; }
+                Apply(intent);
+            }
             if (!double.IsFinite(seconds) || seconds < 0) { seconds = 0; }
             _tickDebt = Math.Min(_tickDebt + (seconds * TickRate), MaxTicksPerFrame);
             var ticks = (int)Math.Floor(_tickDebt);

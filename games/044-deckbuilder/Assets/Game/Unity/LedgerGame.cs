@@ -152,9 +152,9 @@ namespace Game.Unity
                 var justRestored = Time.frameCount <= _focusRestoredFrame + 1;
                 foreach (var (intent, pointer, screen, paused) in _intents)
                 {
-                    // ウィンドウを選び直すクリックで操作しない。押した後に画面が変わったクリックも捨てる。
-                    if (pointer && (justRestored || screen != Flow.Screen || paused != Flow.Paused)) { continue; }
-                    Flow.Submit(intent);
+                    // ウィンドウを選び直すクリックで操作しない。押した後に画面が変わったクリックは、Flow が当てはめる直前に捨てる。
+                    if (!pointer) { Flow.Submit(intent); }
+                    else if (!justRestored) { Flow.SubmitPointer(intent, screen, paused); }
                 }
             }
 
