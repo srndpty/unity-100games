@@ -1,0 +1,83 @@
+.hud { position: absolute; width: 100%; height: 100%; color: rgb(236, 226, 214); }
+.layer { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.top { position: absolute; left: 0; right: 0; top: 0; height: 56px; padding: 0 28px; flex-direction: row; align-items: center; background-color: rgba(18, 12, 12, 0.9); border-bottom-width: 2px; border-color: rgb(150, 80, 40); }
+.brand { font-size: 24px; -unity-font-style: bold; color: rgb(255, 190, 110); margin-right: 40px; }
+.route { font-size: 22px; flex-grow: 1; color: rgb(236, 226, 214); }
+.top-stat { font-size: 22px; -unity-font-style: bold; margin-left: 34px; }
+.top-hp { color: rgb(255, 140, 120); }
+
+.seat { position: absolute; width: 260px; align-items: center; }
+.seat-intent { flex-direction: row; align-items: center; justify-content: center; height: 40px; }
+.intent-icon { width: 36px; height: 36px; margin-right: 6px; -unity-background-scale-mode: scale-to-fit; }
+.intent-text { font-size: 28px; -unity-font-style: bold; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(10, 6, 4); }
+.intent-name { font-size: 17px; margin-left: 8px; color: rgba(236, 226, 214, 0.85); -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(10, 6, 4); }
+.seat-info { position: absolute; width: 260px; align-items: center; }
+.seat-name { font-size: 20px; -unity-font-style: bold; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(10, 6, 4); }
+.hp-bar { width: 200px; height: 22px; background-color: rgb(46, 16, 14); border-width: 2px; border-color: rgb(150, 60, 50); border-radius: 5px; overflow: hidden; justify-content: center; }
+.hp-fill { position: absolute; left: 0; top: 0; bottom: 0; background-color: rgb(196, 48, 40); }
+.hp-text { -unity-text-align: middle-center; font-size: 16px; -unity-font-style: bold; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(12, 6, 4); }
+.block-text { font-size: 18px; -unity-font-style: bold; color: rgb(150, 200, 255); height: 24px; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(10, 6, 4); }
+.status-text { font-size: 16px; color: rgb(250, 220, 150); white-space: normal; -unity-text-align: upper-center; width: 260px; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(10, 6, 4); }
+.seat-hit { position: absolute; border-radius: 10px; }
+.seat-hit-target { border-width: 3px; border-color: rgba(255, 220, 90, 0.9); }
+.float { position: absolute; width: 260px; font-size: 34px; -unity-font-style: bold; -unity-text-align: middle-center; -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(10, 6, 4); }
+.float-damage { color: rgb(255, 110, 90); }
+.float-block { color: rgb(140, 200, 255); }
+.float-status { color: rgb(250, 220, 120); font-size: 26px; }
+.float-poison { color: rgb(150, 230, 110); }
+
+.energy { position: absolute; left: 40px; bottom: 300px; width: 96px; height: 96px; border-radius: 48px; background-color: rgb(200, 90, 30); border-width: 4px; border-color: rgb(255, 210, 120); justify-content: center; }
+.energy-empty { background-color: rgb(70, 40, 30); border-color: rgb(140, 100, 70); }
+.energy-text { font-size: 34px; -unity-font-style: bold; -unity-text-align: middle-center; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(30, 10, 4); }
+.pile { position: absolute; font-size: 19px; padding: 4px 10px; background-color: rgba(18, 12, 12, 0.85); border-radius: 6px; }
+.pile-draw { left: 30px; bottom: 262px; }
+.pile-discard { right: 30px; bottom: 298px; }
+.pile-exhaust { right: 30px; bottom: 262px; }
+.btn { background-color: rgb(80, 40, 24); border-color: rgb(220, 140, 70); border-width: 2px; border-radius: 8px; padding: 6px 18px; justify-content: center; align-items: center; margin: 6px; }
+.btn:hover { background-color: rgb(110, 56, 32); }
+.btn-text { font-size: 21px; -unity-font-style: bold; }
+.btn-disabled { opacity: 0.4; }
+.end-turn { position: absolute; right: 24px; bottom: 340px; height: 56px; }
+.hand { position: absolute; left: 0; right: 0; bottom: 26px; height: 250px; flex-direction: row; justify-content: center; align-items: flex-end; }
+.hint { position: absolute; left: 0; right: 0; bottom: 2px; font-size: 16px; -unity-text-align: middle-center; color: rgba(236, 226, 214, 0.7); }
+.banner { position: absolute; left: 0; right: 0; top: 200px; font-size: 56px; -unity-font-style: bold; -unity-text-align: middle-center; color: rgb(255, 210, 130); -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(20, 8, 4); }
+.resolving { position: absolute; left: 50%; top: 150px; width: 240px; translate: -290px 0; align-items: center; }
+.notice { position: absolute; left: 0; right: 0; top: 150px; font-size: 30px; -unity-font-style: bold; -unity-text-align: middle-center; color: rgb(255, 160, 120); -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(20, 8, 4); }
+
+.card { width: 168px; height: 236px; margin: 0 4px; padding: 8px; border-width: 3px; border-radius: 12px; background-color: rgb(46, 34, 30); border-color: rgb(140, 110, 90); align-items: center; }
+.card:hover { border-color: rgb(255, 220, 140); }
+.card-attack { background-color: rgb(70, 30, 26); border-color: rgb(200, 90, 70); }
+.card-skill { background-color: rgb(28, 40, 60); border-color: rgb(90, 140, 200); }
+.card-power { background-color: rgb(56, 44, 20); border-color: rgb(220, 180, 80); }
+.card-selected { translate: 0 -36px; border-color: rgb(255, 236, 150); border-width: 4px; }
+.card-unaffordable { opacity: 0.45; }
+.card-big { scale: 1.2 1.2; }
+.card-cost { position: absolute; left: -10px; top: -10px; width: 40px; height: 40px; border-radius: 20px; background-color: rgb(210, 100, 30); border-width: 2px; border-color: rgb(255, 220, 140); font-size: 22px; -unity-font-style: bold; -unity-text-align: middle-center; }
+.card-name { font-size: 20px; -unity-font-style: bold; margin-top: 6px; -unity-text-align: middle-center; }
+.card-icon { width: 64px; height: 64px; margin: 4px; -unity-background-scale-mode: scale-to-fit; }
+.card-type { font-size: 14px; color: rgba(236, 226, 214, 0.75); }
+.card-text { font-size: 16px; white-space: normal; -unity-text-align: upper-center; margin-top: 4px; }
+.card-key { position: absolute; right: 8px; top: 4px; font-size: 14px; color: rgba(236, 226, 214, 0.6); }
+
+.panel-layer { position: absolute; left: 0; top: 0; right: 0; bottom: 0; justify-content: center; align-items: center; }
+.panel-shade { background-color: rgba(8, 4, 4, 0.55); }
+.panel { width: 1240px; padding: 24px 36px; background-color: rgba(26, 16, 14, 0.97); border-radius: 18px; border-width: 2px; border-color: rgb(200, 110, 50); align-items: center; display: none; }
+.headline { font-size: 56px; -unity-font-style: bold; color: rgb(255, 190, 110); -unity-text-align: middle-center; }
+.message { margin: 8px 0; font-size: 21px; white-space: normal; -unity-text-align: middle-center; }
+.howto { font-size: 19px; white-space: normal; -unity-text-align: upper-left; width: 1160px; }
+.row { flex-direction: row; justify-content: center; align-items: stretch; flex-wrap: wrap; }
+.choice { width: 470px; margin: 10px; padding: 16px; border-width: 3px; border-radius: 12px; border-color: rgb(140, 90, 60); background-color: rgb(46, 26, 20); }
+.choice:hover { border-color: rgb(255, 220, 140); }
+.choice-hard { border-color: rgb(220, 80, 60); }
+.choice-title { font-size: 28px; -unity-font-style: bold; color: rgb(255, 210, 150); }
+.choice-text { font-size: 19px; white-space: normal; margin-top: 4px; }
+.map { flex-direction: row; justify-content: center; margin: 8px 0 12px 0; }
+.node { font-size: 21px; padding: 6px 16px; margin: 0 6px; border-radius: 8px; border-width: 2px; border-color: rgb(90, 60, 50); color: rgba(236, 226, 214, 0.6); }
+.node-done { color: rgb(150, 200, 140); border-color: rgb(90, 140, 80); }
+.node-current { color: rgb(255, 220, 140); border-color: rgb(255, 190, 90); -unity-font-style: bold; }
+.section { font-size: 22px; -unity-font-style: bold; margin-top: 12px; color: rgb(255, 210, 150); }
+.chips { flex-direction: row; flex-wrap: wrap; justify-content: center; width: 1160px; }
+.chip { font-size: 17px; padding: 4px 10px; margin: 3px; border-radius: 6px; border-width: 2px; border-color: rgb(110, 80, 60); background-color: rgb(40, 28, 24); }
+.chip:hover { border-color: rgb(255, 220, 140); }
+.chip-selected { border-color: rgb(255, 120, 90); background-color: rgb(110, 40, 30); }
+.taken { opacity: 0.35; }

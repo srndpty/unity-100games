@@ -13,10 +13,16 @@ namespace Game.Core
         {
             if (attacker == null) { throw new ArgumentNullException(nameof(attacker)); }
             if (defender == null) { throw new ArgumentNullException(nameof(defender)); }
+            return Attack(baseAmount, attacker.Status(StatusKind.Strength), attacker.Status(StatusKind.Weak) > 0, defender.Status(StatusKind.Vulnerable) > 0, config);
+        }
+
+        /// <summary>状態の値から直接計算する（画面の見積もり用。式は同じ）。</summary>
+        public static int Attack(int baseAmount, int strength, bool weak, bool vulnerable, DeckConfig config)
+        {
             if (config == null) { throw new ArgumentNullException(nameof(config)); }
-            long v = (long)baseAmount + attacker.Status(StatusKind.Strength);
-            if (attacker.Status(StatusKind.Weak) > 0) { v = v * config.WeakPercent / 100; }
-            if (defender.Status(StatusKind.Vulnerable) > 0) { v = v * config.VulnerablePercent / 100; }
+            long v = (long)baseAmount + strength;
+            if (weak) { v = v * config.WeakPercent / 100; }
+            if (vulnerable) { v = v * config.VulnerablePercent / 100; }
             return (int)Math.Max(0, Math.Min(Max, v));
         }
     }

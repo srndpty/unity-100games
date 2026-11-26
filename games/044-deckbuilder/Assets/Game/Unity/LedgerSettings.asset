@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed929a594c840e144802e2af2b7222df, type: 3}
+  m_Name: LedgerSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.LedgerSettings
+  Rules:
+    PlayerMaxHp: 70
+    Energy: 3
+    DrawPerTurn: 5
+    HandLimit: 10
+    MaxEnemies: 3
+    MaxEffects: 8
+    MaxAmount: 99
+    WeakPercent: 75
+    VulnerablePercent: 150
+    RewardChoices: 3
+    MinDeckSize: 5
+    RestHealPercent: 30
+    RestMaxHpGain: 6
+    NormalRarityWeights: 460000001900000005000000i
+    HardRarityWeights: 280000002800000014000000i
+  Timing:
+    TurnStarted: 24
+    CardPlayed: 10
+    EnemyActed: 18
+    Damaged: 14
+    PoisonTick: 14
+    BlockGained: 8
+    BlockLost: 4
+    StatusApplied: 8
+    Drawn: 4
+    Shuffled: 14
+    Discarded: 2
+    Exhausted: 10
+    Fizzled: 8
+    Died: 18
+    Summoned: 18
+    Ending: 36
+    SpeedPercent: 100
+  Volume: 0.1
+  Cards: {fileID: 4900000, guid: 81e7f2c245f0fba40ad907b564ae97e1, type: 3}
+  Enemies: {fileID: 4900000, guid: fe75cea87af21f64fac40afd21183f93, type: 3}
+  Encounters: {fileID: 4900000, guid: b1fef095f8de10d4781ca9b12948b7fa, type: 3}

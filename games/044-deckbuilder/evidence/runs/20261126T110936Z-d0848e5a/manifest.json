@@ -1,0 +1,110 @@
+{
+    "Product": "CINDER LEDGER",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "b08f73ad5447404e820d17d9791ef4d6",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-26T11:09:34.5074503Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"PlayerMaxHp\":70,\"Energy\":3,\"DrawPerTurn\":5,\"HandLimit\":10,\"MaxEnemies\":3,\"MaxEffects\":8,\"MaxAmount\":99,\"WeakPercent\":75,\"VulnerablePercent\":150,\"RewardChoices\":3,\"MinDeckSize\":5,\"RestHealPercent\":30,\"RestMaxHpGain\":6,\"NormalRarityWeights\":[70,25,5],\"HardRarityWeights\":[40,40,20]},\"Timing\":{\"TurnStarted\":24,\"CardPlayed\":10,\"EnemyActed\":18,\"Damaged\":14,\"PoisonTick\":14,\"BlockGained\":8,\"BlockLost\":4,\"StatusApplied\":8,\"Drawn\":4,\"Shuffled\":14,\"Discarded\":2,\"Exhausted\":10,\"Fizzled\":8,\"Died\":18,\"Summoned\":18,\"Ending\":36,\"SpeedPercent\":100},\"Volume\":0.10000000149011612,\"Cards\":{\"instanceID\":1099511631797},\"Enemies\":{\"instanceID\":1099511631795},\"Encounters\":{\"instanceID\":1099511631796}}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "525c612ffa0059c003a31e0c1225c61e4777ece34d1c6d2c01caf378cbdba10b",
+            "Note": "タイトル"
+        },
+        {
+            "File": "02-howto.jpg",
+            "Sha256": "72f3d3c69a25d292942add1ea4eb1618a1543d49a9f5238738fe8aeb0f69dc72",
+            "Note": "遊び方（操作・効果の順序・意図の印・状態異常・ルート）"
+        },
+        {
+            "File": "03-route.jpg",
+            "Sha256": "be5201535496ac5524dbab0e9db6da7fc81d20bc23691b9b593d25abf2c5f2a7",
+            "Note": "ルートの地図と戦 1 の 2 択（通常／手強い）。シード 1、節 0、HP 70/70、デッキ 10 枚、Tick 0"
+        },
+        {
+            "File": "04-turn.jpg",
+            "Sha256": "88dace4a7269f7428ca94e2433f5d2535bbae229d3db88c9beee7c4cc3175181",
+            "Note": "戦 1 の最初のターン。敵の頭上に次の行動（意図）、下に手札とエネルギー。シード 1、節 0、HP 70/70、デッキ 10 枚、Tick 45"
+        },
+        {
+            "File": "05-target.jpg",
+            "Sha256": "75ed3e1c0b8384da6044d8acc92152af1bba34b2b7590e8725fe8111f9b90e04",
+            "Note": "「砕き」を選び、対象を選んでいるところ（矢印と足元の印）。シード 1、節 0、HP 70/70、デッキ 10 枚、Tick 45"
+        },
+        {
+            "File": "06-hit.jpg",
+            "Sha256": "93a862a767d092ba4e11b65c89909bfb93f4c339303703e9cc0aeada307cec44",
+            "Note": "解決の演出の途中。Core は解決し終えているが、卓は出来事を順に当てはめている（当たった数字）。シード 1、節 0、HP 70/70、デッキ 10 枚、Tick 60"
+        },
+        {
+            "File": "07-enemy.jpg",
+            "Sha256": "b8c0af756f794098fcddc93ead8cca26a82db8b1ba806dc0ba4de7cbbebcfeea",
+            "Note": "敵の番。公開していた行動を実行する。シード 1、節 0、HP 70/70、デッキ 10 枚、Tick 97"
+        },
+        {
+            "File": "08-reward.jpg",
+            "Sha256": "20bd657b5c91747685f6c328d55ded678c6bcc228aa94024d5b81cd3aa870e18",
+            "Note": "報酬：カード 3 択（手強い方を選んだので希少度が上がる）と、デッキから 1 枚の除去。シード 1、節 0、HP 61/70、デッキ 10 枚、Tick 677"
+        },
+        {
+            "File": "09-removal.jpg",
+            "Sha256": "621fd1fe97cd723b061deddcd5867b29a5fdbeba261525575a6b4373d57c2c4e",
+            "Note": "カードを取った後、除去の候補（打ち込み）を選んだところ。シード 1、節 0、HP 61/70、デッキ 11 枚、Tick 677"
+        },
+        {
+            "File": "10-rest.jpg",
+            "Sha256": "a46cf501b77784cc047f63ebca5d920cca97acef80619788bdf8c0d6bcc5fc56",
+            "Note": "休憩：回復か最大 HP の増加。シード 1、節 1、HP 61/70、デッキ 10 枚、Tick 677"
+        },
+        {
+            "File": "11-route2.jpg",
+            "Sha256": "1bb805220440e7441f4d970e18259fc2b341604f5fbbe68308fb9efd436248f8",
+            "Note": "戦 2 の 2 択。シード 1、節 2、HP 67/76、デッキ 10 枚、Tick 677"
+        },
+        {
+            "File": "12-boss-route.jpg",
+            "Sha256": "affc6f70d7a1437a0e978529c0524cde8c5e9ffa67a751e8335570215ceb3112",
+            "Note": "ボスの節。シード 1、節 3、HP 50/76、デッキ 10 枚、Tick 1533"
+        },
+        {
+            "File": "13-boss.jpg",
+            "Sha256": "cc65f089ab14e1d572f91e757c4e0cbd17a6f8b9edf04481111046a518478764",
+            "Note": "ボス戦の始め。シード 1、節 3、HP 50/76、デッキ 10 枚、Tick 1578"
+        },
+        {
+            "File": "14-summon.jpg",
+            "Sha256": "e0e94a24274db53d72ab65fbd4b78b9a77d9b9dca3d23807a58508a0ecc3e8d6",
+            "Note": "ボスが HP 半分で一度だけ仲間を呼ぶ。シード 1、節 3、HP 50/76、デッキ 10 枚、Tick 2669"
+        },
+        {
+            "File": "15-ending.jpg",
+            "Sha256": "4c50acb0fedd878d2c59cf493e9495e837e8a3c6f90163550332ca2b813495f5",
+            "Note": "ボス戦の決着。シード 1、節 3、HP 35/76、デッキ 10 枚、Tick 3371"
+        },
+        {
+            "File": "16-result.jpg",
+            "Sha256": "37cc5e2a683326854d9f6e44d0bf9a89ae372e3186ea12d5a6f367cb57f34bef",
+            "Note": "結果の画面。シード 1、節 3、HP 35/76、デッキ 10 枚、Tick 3397"
+        },
+        {
+            "File": "17-defeat.jpg",
+            "Sha256": "ee53413141804f1bd1a35f5ec73470755a187d3670b3e99a4dddd762a9d95557",
+            "Note": "ターン終了だけを続けて倒れた結果。倒れたら最初から。シード 2、節 0、HP 0/70、デッキ 10 枚、Tick 4194"
+        },
+        {
+            "File": "18-pause.jpg",
+            "Sha256": "0ab2b94106502239bd701693377008402d77ee8d2ad01296fc40e871b8f04f4b",
+            "Note": "一時停止。シード 3、節 0、HP 70/70、デッキ 10 枚、Tick 4194"
+        }
+    ]
+}
