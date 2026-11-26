@@ -72,6 +72,27 @@ namespace Game.App.Tests
             Assert.That(run.Record.Kills, Is.EqualTo(0));
         }
 
-        private const uint ExpectedHash = 0xA6B0053Cu;
+        [Test]
+        public void SeeksPotionsEvenWhenTheBagIsFull()
+        {
+            // 回復薬は持ち物のマスを使わない。持ち物が満杯でも、近くの回復薬を拾いに行く。
+            var run = AppLab.NewRun(1);
+            foreach (var f in run.Foes)
+            {
+                f.Dead = true;
+                f.Dropped = true;
+            }
+
+            var filler = run.EquippedAt(Slot.Weapon)!; // 装備しても強くならない品（操縦役が付け替えて空きを作らない）
+            while (run.Inventory.Count < run.Config.InventorySize) { run.AddInventoryForTest(filler); }
+            run.Hero.Potions = 0;
+            run.AddGroundForTest(FloorMap.TileCenter(36, 21), null);
+            var pilot = new Autopilot();
+            for (int i = 0; i < 2400 && run.Hero.Potions == 0 && run.FloorNumber == 1; i++) { run.Step(pilot.CommandFor(run)); }
+            Assert.That(run.FloorNumber, Is.EqualTo(1), "回復薬を残して階段を降りない");
+            Assert.That(run.Hero.Potions, Is.EqualTo(1), "階段への道から外れた行き止まりの部屋（北東）の回復薬を拾いに行く");
+        }
+
+        private const uint ExpectedHash = 0x7F2DB26Eu;
     }
 }

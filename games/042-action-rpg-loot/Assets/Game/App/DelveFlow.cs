@@ -49,9 +49,9 @@ namespace Game.App
         public DelveFlow(DelveConfig config, LootData loot, FloorSet floors, int firstSeed)
         {
             if (config == null) { throw new ArgumentNullException(nameof(config)); }
-            config.Validate();
+            config.Validate(loot);
             _config = config.Copy();
-            _loot = loot ?? throw new ArgumentNullException(nameof(loot));
+            _loot = loot;
             _floors = floors ?? throw new ArgumentNullException(nameof(floors));
             _nextSeed = firstSeed;
         }

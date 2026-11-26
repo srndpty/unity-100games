@@ -21,7 +21,7 @@ namespace Game.Core.Tests
             alive.Position = run.Hero.Position + new Vec2i(0, 600);
             alive.Life = 3;
             alive.Aggro = true;
-            var weapon = run.Equipment[Slot.Weapon];
+            var weapon = run.EquippedAt(Slot.Weapon);
 
             run.HurtHero(100000, Element.Physical);
             Assert.That(run.Hero.Dead, Is.True);
@@ -33,7 +33,7 @@ namespace Game.Core.Tests
             Assert.That(run.Hero.Dead, Is.False);
             Assert.That(run.Hero.Position, Is.EqualTo(run.Map.Entrance));
             Assert.That(run.Hero.Life, Is.EqualTo(run.Stats.Life));
-            Assert.That(run.Equipment[Slot.Weapon], Is.SameAs(weapon));
+            Assert.That(run.EquippedAt(Slot.Weapon), Is.SameAs(weapon));
             Assert.That(killed.Dead, Is.True);
             Assert.That(alive.Life, Is.EqualTo(alive.MaxLife), "生きている敵は体力が戻る");
             Assert.That(alive.Position, Is.EqualTo(alive.Spawn.Center), "生きている敵は初めの位置へ戻る");
@@ -164,6 +164,39 @@ namespace Game.Core.Tests
             foreach (var x in new[] { a, b, c, d }) { Assert.That(x.Hash(), Is.Not.EqualTo(h)); }
         }
 
+        [Test]
+        public void HashCoversProjectileRadiusAndBestRarity()
+        {
+            // 半径は以後の命中を、最も希少な品は結果の表示を変える。
+            var baseRun = Lab.NewRun(1);
+            var p = baseRun.Hero.Position + new Vec2i(2000, 0);
+            var small = baseRun.Clone();
+            small.AddProjectileForTest(new Projectile(p, new Vec2i(-10, 0), 48, 9, Element.Cold, FoeKind.Archer));
+            var large = baseRun.Clone();
+            large.AddProjectileForTest(new Projectile(p, new Vec2i(-10, 0), 64, 9, Element.Cold, FoeKind.Archer));
+            Assert.That(large.Hash(), Is.Not.EqualTo(small.Hash()), "飛び道具の半径");
+            var rare = baseRun.Clone();
+            rare.Record.BestRarity = Rarity.Rare;
+            Assert.That(rare.Hash(), Is.Not.EqualTo(baseRun.Hash()), "最も希少な品");
+        }
+
+        [Test]
+        public void EquipmentChangesOnlyThroughTheRun()
+        {
+            // 装備一式は複製だけを公開する。複製を書き換えても装備と能力値は変わらない。
+            var run = Lab.NewRun(1);
+            var before = run.Stats;
+            var weapon = run.EquippedAt(Slot.Weapon);
+            var copy = run.CopyEquipment();
+            copy.Unequip(Slot.Weapon);
+            Assert.That(run.EquippedAt(Slot.Weapon), Is.SameAs(weapon));
+            Assert.That(run.Stats, Is.EqualTo(before));
+            Assert.That(run.Stats, Is.EqualTo(StatSheet.Compute(run.Loot.Hero, run.CopyEquipment())));
+            Assert.That(run.Unequip(Slot.Weapon), Is.EqualTo(ItemResult.Done));
+            Assert.That(run.Stats, Is.Not.EqualTo(before), "武器の加算が外れる");
+            Assert.That(run.Stats, Is.EqualTo(StatSheet.Compute(run.Loot.Hero, run.CopyEquipment())));
+        }
+
         internal static void Enter(DelveRun run, int floor)
         {
             while (run.FloorNumber < floor)
@@ -259,11 +292,11 @@ namespace Game.Core.Tests
             var run = Lab.NewRun(1);
             var axe = Make(run, "warmaul");
             run.AddInventoryForTest(axe);
-            var oldWeapon = run.Equipment[Slot.Weapon]!;
+            var oldWeapon = run.EquippedAt(Slot.Weapon)!;
             Assert.That(run.Equip(0), Is.EqualTo(ItemResult.Done));
-            Assert.That(run.Equipment[Slot.Weapon], Is.SameAs(axe));
+            Assert.That(run.EquippedAt(Slot.Weapon), Is.SameAs(axe));
             Assert.That(run.Inventory[0], Is.SameAs(oldWeapon), "前の武器は同じ番号へ");
-            Assert.That(run.Stats, Is.EqualTo(StatSheet.Compute(run.Loot.Hero, run.Equipment)));
+            Assert.That(run.Stats, Is.EqualTo(StatSheet.Compute(run.Loot.Hero, run.CopyEquipment())));
             Assert.That(run.Equip(5), Is.EqualTo(ItemResult.NotFound));
             Assert.That(run.Equip(-1), Is.EqualTo(ItemResult.NotFound));
         }
@@ -288,7 +321,7 @@ namespace Game.Core.Tests
             Lab.Isolate(run, FoeKind.Grunt, 20 * 256);
             run.AddInventoryForTest(Make(run, "hood"));
             Assert.That(run.Unequip(Slot.Weapon), Is.EqualTo(ItemResult.InventoryFull));
-            Assert.That(run.Equipment[Slot.Weapon], Is.Not.Null);
+            Assert.That(run.EquippedAt(Slot.Weapon), Is.Not.Null);
             Assert.That(run.Discard(0), Is.EqualTo(ItemResult.Done));
             Assert.That(run.Inventory, Is.Empty);
             Assert.That(run.Ground.Count, Is.EqualTo(1));
@@ -404,7 +437,18 @@ namespace Game.Core.Tests
             Reject(c => c.StartWeapon = string.Empty, nameof(DelveConfig.StartWeapon));
             Reject(c => c.BossFanSpread = Trig.FullTurn, nameof(DelveConfig.BossFanSpread));
             Reject(c => c.HeroBox = 48, "自機の箱");
-            Assert.Throws<KeyNotFoundException>(() => Lab.NewRun(1, new DelveConfig { StartWeapon = "nothing" }));
+        }
+
+        [TestCase("missing_weapon", "データにありません")]
+        [TestCase("copperring", "武器ではありません")]
+        public void RejectsStartWeaponThatIsMissingOrNotAWeapon(string id, string reason)
+        {
+            var config = new DelveConfig { StartWeapon = id };
+            config.Validate();
+            var ex = Assert.Throws<ArgumentException>(() => config.Validate(Lab.Loot()));
+            Assert.That(ex!.Message.Contains(id, StringComparison.Ordinal) && ex.Message.Contains(reason, StringComparison.Ordinal), Is.True, ex.Message);
+            Assert.Throws<ArgumentException>(() => Lab.NewRun(1, config), "試合も作らない");
+            Assert.DoesNotThrow(() => new DelveConfig { StartWeapon = "warmaul" }.Validate(Lab.Loot()));
         }
     }
 }

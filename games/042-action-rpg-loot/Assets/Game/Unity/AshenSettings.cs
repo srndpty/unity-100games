@@ -25,8 +25,8 @@ namespace Game.Unity
         public void Validate()
         {
             if (Rules == null) { throw new ArgumentNullException(nameof(Rules)); }
-            Rules.Validate();
             if (Loot == null || Floors == null) { throw new InvalidOperationException("Loot・Floors の TextAsset を指定してください。"); }
+            Rules.Validate(ParseLoot());
             if (!float.IsFinite(Volume) || Volume < 0 || Volume > 1) { throw new ArgumentOutOfRangeException(nameof(Volume), Volume, "0〜1 で指定してください。"); }
             if (!float.IsFinite(ViewHeightTiles) || ViewHeightTiles < 8 || ViewHeightTiles > 23) { throw new ArgumentOutOfRangeException(nameof(ViewHeightTiles)); }
         }

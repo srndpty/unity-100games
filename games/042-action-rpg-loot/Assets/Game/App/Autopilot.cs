@@ -103,7 +103,7 @@ namespace Game.App
 
         private static bool Better(DelveRun run, Item item, decimal current)
         {
-            var trial = run.Equipment.Clone();
+            var trial = run.CopyEquipment();
             trial.Equip(item);
             return Score(StatSheet.Compute(run.Loot.Hero, trial)) > current;
         }
@@ -173,7 +173,8 @@ namespace Game.App
 
         private GroundItem? WantedLoot(DelveRun run)
         {
-            if (run.Inventory.Count >= _config.InventorySize) { return null; }
+            // 回復薬は持ち物のマスを使わないので、持ち物が満杯でも探す。
+            bool bagFull = run.Inventory.Count >= _config.InventorySize;
             var current = Score(run.Stats);
             GroundItem? best = null;
             long bestDistance = long.MaxValue;
@@ -183,7 +184,7 @@ namespace Game.App
                 {
                     if (run.Hero.Potions >= _config.MaxPotions) { continue; }
                 }
-                else if (!Better(run, g.Item!, current))
+                else if (bagFull || !Better(run, g.Item!, current))
                 {
                     continue;
                 }

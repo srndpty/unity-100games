@@ -99,20 +99,20 @@ namespace Game.App.Tests
             Begin(flow, 0);
             var run = flow.Run!;
             flow.Apply(Intent.With(IntentKind.Unequip, (int)Slot.Weapon, 0));
-            Assert.That(run.Equipment[Slot.Weapon], Is.Not.Null, "プレイ中は外さない");
+            Assert.That(run.EquippedAt(Slot.Weapon), Is.Not.Null, "プレイ中は外さない");
 
             flow.Apply(Intent.Of(IntentKind.ToggleInventory, 0));
             flow.Apply(Intent.With(IntentKind.Unequip, (int)Slot.Weapon, 0));
-            Assert.That(run.Equipment[Slot.Weapon], Is.Null);
+            Assert.That(run.EquippedAt(Slot.Weapon), Is.Null);
             Assert.That(run.Inventory.Count, Is.EqualTo(1));
             flow.Apply(Intent.With(IntentKind.Equip, 0, 0));
-            Assert.That(run.Equipment[Slot.Weapon], Is.Not.Null);
+            Assert.That(run.EquippedAt(Slot.Weapon), Is.Not.Null);
             flow.Apply(Intent.With(IntentKind.Equip, 5, 0));
             Assert.That(flow.LastItemResult, Is.EqualTo(ItemResult.NotFound));
             flow.Apply(Intent.With(IntentKind.Equip, long.MaxValue, 0));
             Assert.That(flow.LastItemResult, Is.EqualTo(ItemResult.NotFound), "範囲外の番号");
             flow.Apply(Intent.With(IntentKind.Unequip, 99, 0));
-            Assert.That(run.Equipment[Slot.Weapon], Is.Not.Null, "未定義の枠は無視");
+            Assert.That(run.EquippedAt(Slot.Weapon), Is.Not.Null, "未定義の枠は無視");
         }
 
         [Test]

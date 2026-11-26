@@ -155,6 +155,21 @@ namespace Game.Core
 
         public FoeStats Foe(FoeKind kind) => Foes[(int)kind];
 
+        /// <summary>範囲の検証に加え、戦利品のデータとの食い違い（初期武器が無い・武器でない）を理由付きで拒否する。</summary>
+        public void Validate(LootData loot)
+        {
+            if (loot == null) { throw new ArgumentNullException(nameof(loot)); }
+            Validate();
+            foreach (var b in loot.Bases)
+            {
+                if (b.Id != StartWeapon) { continue; }
+                if (b.Slot != Slot.Weapon) { throw new ArgumentException($"StartWeapon「{StartWeapon}」は武器ではありません（{SlotInfo.Name(b.Slot)}）。"); }
+                return;
+            }
+
+            throw new ArgumentException($"StartWeapon「{StartWeapon}」は戦利品のデータにありません。");
+        }
+
         /// <summary>範囲の検証。理由付きで <see cref="ArgumentException"/> を投げる。</summary>
         public void Validate()
         {

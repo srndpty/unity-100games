@@ -90,7 +90,7 @@ namespace Game.Core
         public DelveRun(DelveConfig config, LootData loot, FloorSet floors, int seed)
         {
             if (config == null) { throw new ArgumentNullException(nameof(config)); }
-            config.Validate();
+            config.Validate(loot);
             _config = config.Copy();
             Foes = _foes.AsReadOnly();
             Projectiles = _projectiles.AsReadOnly();
@@ -170,7 +170,11 @@ namespace Game.Core
 
         public StatBlock Stats => _stats;
 
-        public Equipment Equipment => _equipment;
+        /// <summary>その枠に付けている品（空なら null）。装備の変更は <see cref="Equip"/>・<see cref="Unequip"/> だけで行い、能力値を必ず計算し直す。</summary>
+        public Item? EquippedAt(Slot slot) => _equipment[slot];
+
+        /// <summary>装備一式の複製（試算用。書き換えても試合には効かない）。</summary>
+        public Equipment CopyEquipment() => _equipment.Clone();
 
         public RunRecord Record => _record;
 

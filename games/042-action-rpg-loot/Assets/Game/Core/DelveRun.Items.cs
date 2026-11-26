@@ -189,11 +189,18 @@ namespace Game.Core
             return g;
         }
 
+        /// <summary>テスト用：飛び道具を置く。</summary>
+        internal void AddProjectileForTest(Projectile projectile) => _projectiles.Add(projectile);
+
         /// <summary>テスト用：持ち物に品を入れる。</summary>
         internal void AddInventoryForTest(Item item) => _inventory.Add(item);
 
-        /// <summary>テスト用：装備を直接書き換えた後に能力値を計算し直す。</summary>
-        internal void RecomputeForTest() => Recompute();
+        /// <summary>テスト用：持ち物を通さずに装備する（能力値は計算し直す）。</summary>
+        internal void EquipForTest(Item item)
+        {
+            _equipment.Equip(item);
+            Recompute();
+        }
 
         /// <summary>テスト用：能力値を直接置く（式だけを確かめる）。</summary>
         internal void SetStatsForTest(StatBlock stats) => _stats = stats;
@@ -245,6 +252,7 @@ namespace Game.Core
                 hash.Mix(p.Position.Y);
                 hash.Mix(p.Velocity.X);
                 hash.Mix(p.Velocity.Y);
+                hash.Mix(p.Radius);
                 hash.Mix(p.Damage);
                 hash.Mix((int)p.Element);
             }
@@ -266,6 +274,7 @@ namespace Game.Core
                 hash.Mix(v);
             }
 
+            hash.Mix((int)_record.BestRarity);
             return hash.Value;
         }
 

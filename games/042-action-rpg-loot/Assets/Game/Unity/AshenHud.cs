@@ -193,7 +193,7 @@ namespace Game.Unity
             foreach (var item in run.Inventory) { signature = unchecked((signature * 31) + RuntimeHelpers.GetHashCode(item)); }
             for (int s = 0; s < SlotInfo.Count; s++)
             {
-                var item = run.Equipment[(Slot)s];
+                var item = run.EquippedAt((Slot)s);
                 signature = unchecked((signature * 31) + (item == null ? 0 : RuntimeHelpers.GetHashCode(item)));
             }
 
@@ -203,7 +203,7 @@ namespace Game.Unity
 
             for (int s = 0; s < SlotInfo.Count; s++)
             {
-                var item = run.Equipment[(Slot)s];
+                var item = run.EquippedAt((Slot)s);
                 var button = _slots[s];
                 button.text = SlotInfo.Name((Slot)s) + "：" + (item == null ? "なし" : item.Name);
                 button.style.color = item == null ? new Color(.6f, .55f, .5f) : AshenStage.RarityColor(item.Rarity);
@@ -223,7 +223,7 @@ namespace Game.Unity
             _root.Q<Label>("bag-title").text = $"持ち物  {run.Inventory.Count} / {rules.InventorySize}";
             _root.Q<Label>("sheet").text = string.Join("\n", ItemText.Stats(run.Stats));
 
-            Item chosen = Selected.Index < 0 ? null : Selected.IsSlot ? run.Equipment[(Slot)Selected.Index] : run.Inventory[Selected.Index];
+            Item chosen = Selected.Index < 0 ? null : Selected.IsSlot ? run.EquippedAt((Slot)Selected.Index) : run.Inventory[Selected.Index];
             var name = _root.Q<Label>("detail-name");
             if (chosen == null)
             {

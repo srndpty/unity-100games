@@ -252,7 +252,7 @@ namespace Game.Unity.Tests
             SendButtonClick(Root.Q<Button>("act-equip"));
             yield return null;
             yield return null;
-            Assert.That(R.Equipment[Slot.Helm], Is.SameAs(helm));
+            Assert.That(R.EquippedAt(Slot.Helm), Is.SameAs(helm));
             Assert.That(R.Stats.Life, Is.EqualTo(lifeBefore + 15 + 12));
             Assert.That(Text("sheet"), Is.EqualTo(string.Join("\n", ItemText.Stats(R.Stats))));
             Assert.That(R.Tick, Is.EqualTo(tick), "持ち物の画面の間は進まない");
@@ -418,7 +418,7 @@ namespace Game.Unity.Tests
             var run = new DelveRun(Rules, _game.Settings.ParseLoot(), _game.Floors, 1);
             var pilot = new Autopilot();
             while (!run.IsOver && run.Tick < TickLimit) { run.Step(pilot.CommandFor(run)); }
-            Assert.That(run.Hash(), Is.EqualTo(0xA6B0053Cu), "シード 1 は App テストの固定値と同じ");
+            Assert.That(run.Hash(), Is.EqualTo(0x7F2DB26Eu), "シード 1 は App テストの固定値と同じ");
         }
 
         /// <summary>

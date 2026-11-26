@@ -185,9 +185,8 @@ namespace Game.Core.Tests
             {
                 new RolledAffix(run.Loot.Affix("ember"), 2, new List<int> { 30 }),
             });
-            run.Equipment.Equip(ring);
-            run.Equipment.Equip(amulet);
-            Recompute(run);
+            run.EquipForTest(ring);
+            run.EquipForTest(amulet);
             Assert.That(run.Stats.FireResist, Is.EqualTo(75), "15 + 30 + 30 = 75（上限）");
             int life = run.Hero.Life;
             run.HurtHero(40, Element.Fire);
@@ -224,8 +223,7 @@ namespace Game.Core.Tests
             var run = Lab.NewRun();
             Assert.That(run.AttackInterval, Is.EqualTo(30));
             var dagger = new Item(run.Loot.Base("dagger"), Rarity.Normal, System.Array.Empty<RolledAffix>());
-            run.Equipment.Equip(dagger);
-            Recompute(run);
+            run.EquipForTest(dagger);
             Assert.That(run.Stats.AttackSpeed, Is.EqualTo(120));
             Assert.That(run.AttackInterval, Is.EqualTo(25), "30 × 100 / 120");
 
@@ -250,8 +248,7 @@ namespace Game.Core.Tests
             {
                 new RolledAffix(run.Loot.Affix("thirst"), 2, new List<int> { 5 }),
             });
-            run.Equipment.Equip(weapon);
-            Recompute(run);
+            run.EquipForTest(weapon);
             var foe = Lab.Isolate(run, FoeKind.Grunt, 300, life: 100000);
             run.Hero.Life = run.Stats.Life - 1;
             for (int i = 0; i < 50; i++) { run.HitFoe(foe, 1000); }
@@ -290,7 +287,5 @@ namespace Game.Core.Tests
                 s.Life, s.DamageMin, s.DamageMax, s.AttackSpeed, s.MoveSpeed, armor, s.CritChance, s.CritDamage, s.Leech, s.FireResist, s.ColdResist,
             }));
         }
-
-        private static void Recompute(DelveRun run) => run.RecomputeForTest();
     }
 }
