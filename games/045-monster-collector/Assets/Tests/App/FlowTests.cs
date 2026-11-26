@@ -19,14 +19,14 @@ namespace Game.App.Tests
         public void TitleToStarterToField()
         {
             var flow = AppLab.Flow();
-            Assert.That(flow.Screen, Is.EqualTo(Screen.Title));
+            Assert.That(flow.Screen, Is.EqualTo(FlowScreen.Title));
             Assert.That(flow.HasSave, Is.False);
             Assert.That(flow.Items.Count, Is.EqualTo(2), "セーブがなければ つづきから は出ない");
             Confirm(flow);
-            Assert.That(flow.Screen, Is.EqualTo(Screen.StarterPick));
+            Assert.That(flow.Screen, Is.EqualTo(FlowScreen.StarterPick));
             flow.Tap(InputButton.Down);
             Confirm(flow);
-            Assert.That(flow.Screen, Is.EqualTo(Screen.Field));
+            Assert.That(flow.Screen, Is.EqualTo(FlowScreen.Field));
             Assert.That(flow.InDialogue, Is.True);
             Assert.That(flow.World!.Roster.Party[0].Species.Id, Is.EqualTo("ripplet"));
             Confirm(flow);
@@ -40,10 +40,10 @@ namespace Game.App.Tests
             var flow = AppLab.Flow();
             flow.Tap(InputButton.Up);
             Confirm(flow);
-            Assert.That(flow.Screen, Is.EqualTo(Screen.HowTo));
+            Assert.That(flow.Screen, Is.EqualTo(FlowScreen.HowTo));
             flow.Tap(InputButton.Cancel);
             flow.StepTicks(1);
-            Assert.That(flow.Screen, Is.EqualTo(Screen.Title));
+            Assert.That(flow.Screen, Is.EqualTo(FlowScreen.Title));
         }
 
         [Test]
@@ -120,7 +120,7 @@ namespace Game.App.Tests
             Confirm(flow);
             Assert.That(flow.InDialogue, Is.True);
             Confirm(flow);
-            Assert.That(flow.Screen, Is.EqualTo(Screen.Battle));
+            Assert.That(flow.Screen, Is.EqualTo(FlowScreen.Battle));
             for (int i = 0; i < 2000 && flow.BattleMenu == BattleMenu.Playing; i++) { flow.StepTicks(1); }
             flow.Tap(InputButton.Up);
             var hash = w.Battle!.Hash();
@@ -141,7 +141,7 @@ namespace Game.App.Tests
             Assert.That(flow.InDialogue, Is.True);
             Confirm(flow);
             Confirm(flow);
-            Assert.That(flow.Screen, Is.EqualTo(Screen.CenterMenu));
+            Assert.That(flow.Screen, Is.EqualTo(FlowScreen.CenterMenu));
             Confirm(flow);
             Assert.That(save.Content, Is.Not.Null);
             Assert.That(flow.Cues.Save, Is.EqualTo(1));
@@ -151,7 +151,7 @@ namespace Game.App.Tests
             Assert.That(again.HasSave, Is.True);
             Assert.That(again.Items[again.Cursor].Label, Is.EqualTo("つづきから"));
             Confirm(again);
-            Assert.That(again.Screen, Is.EqualTo(Screen.Field));
+            Assert.That(again.Screen, Is.EqualTo(FlowScreen.Field));
             Assert.That(again.World!.Hash(), Is.EqualTo(hash));
         }
 
@@ -186,7 +186,7 @@ namespace Game.App.Tests
             var records = new MemorySaveStore();
             var flow = AppLab.Flow(1, records: records);
             var pilot = new Autopilot();
-            AppLab.RunUntil(flow, pilot, f => f.Screen == Screen.Result, AutopilotTests.MaxTicks);
+            AppLab.RunUntil(flow, pilot, f => f.Screen == FlowScreen.Result, AutopilotTests.MaxTicks);
             var first = flow.World!;
             Assert.That(first.Hash(), Is.EqualTo(SeedOneClearHash), "シード 1 の通しは Mono と .NET で同じ");
             Assert.That(flow.Records.Clears, Is.EqualTo(1));
@@ -196,9 +196,9 @@ namespace Game.App.Tests
             flow.Tap(InputButton.Cancel);
             flow.Tap(InputButton.Left);
             flow.StepTicks(5);
-            Assert.That(flow.Screen, Is.EqualTo(Screen.Result));
+            Assert.That(flow.Screen, Is.EqualTo(FlowScreen.Result));
             Confirm(flow);
-            Assert.That(flow.Screen, Is.EqualTo(Screen.Title));
+            Assert.That(flow.Screen, Is.EqualTo(FlowScreen.Title));
             Assert.That(flow.Records.Clears, Is.EqualTo(1), "タイトルで記録を読み直す");
             Confirm(flow);
             Assert.That(flow.World!.Seed, Is.Not.EqualTo(first.Seed), "再戦は新しいシード");
@@ -211,7 +211,7 @@ namespace Game.App.Tests
             var flow = AppLab.Flow(4, save);
             var pilot = new Autopilot { SaveAtCenter = true };
             AppLab.RunUntil(flow, pilot, _ => save.Content != null, AutopilotTests.MaxTicks);
-            AppLab.RunUntil(flow, pilot, f => f.Screen == Screen.Field && !f.InDialogue, 2000);
+            AppLab.RunUntil(flow, pilot, f => f.Screen == FlowScreen.Field && !f.InDialogue, 2000);
             var a = AppLab.Flow(9, save);
             var b = AppLab.Flow(9, save);
             Confirm(a);

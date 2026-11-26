@@ -46,20 +46,20 @@ namespace Game.App
 
             switch (flow.Screen)
             {
-                case Screen.Title:
+                case FlowScreen.Title:
                     Select(flow, 0);
                     break;
-                case Screen.HowTo:
-                case Screen.FieldMenu:
-                case Screen.Party:
-                case Screen.Dex:
-                case Screen.Storage:
+                case FlowScreen.HowTo:
+                case FlowScreen.FieldMenu:
+                case FlowScreen.Party:
+                case FlowScreen.Dex:
+                case FlowScreen.Storage:
                     flow.Tap(InputButton.Cancel);
                     break;
-                case Screen.StarterPick:
+                case FlowScreen.StarterPick:
                     Select(flow, (int)((uint)flow.World!.Seed % (uint)flow.Items.Count));
                     break;
-                case Screen.CenterMenu:
+                case FlowScreen.CenterMenu:
                     if (SaveAtCenter && !_savedHere)
                     {
                         if (flow.Cursor == 0) { _savedHere = true; }
@@ -71,17 +71,17 @@ namespace Game.App
                     }
 
                     break;
-                case Screen.Field:
+                case FlowScreen.Field:
                     _savedHere = false;
                     DriveField(flow);
                     break;
-                case Screen.Battle:
+                case FlowScreen.Battle:
                     DriveBattle(flow);
                     break;
-                case Screen.LearnMove:
+                case FlowScreen.LearnMove:
                     Select(flow, ChooseForget(flow));
                     break;
-                case Screen.Result:
+                case FlowScreen.Result:
                     flow.Tap(InputButton.Confirm);
                     break;
             }

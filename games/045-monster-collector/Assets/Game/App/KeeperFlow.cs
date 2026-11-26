@@ -5,7 +5,7 @@ using IntGeometry;
 
 namespace Game.App
 {
-    public enum Screen
+    public enum FlowScreen
     {
         Title = 1,
         HowTo = 2,
@@ -94,7 +94,7 @@ namespace Game.App
             _records = records ?? throw new ArgumentNullException(nameof(records));
             _settings = settings ?? new FlowSettings();
             _seedRng = new RandomSeries(initialSeed);
-            Screen = Screen.Title;
+            Screen = FlowScreen.Title;
             RefreshTitle();
         }
 
@@ -104,7 +104,7 @@ namespace Game.App
 
         public BattlePresenter? Presenter { get; private set; }
 
-        public Screen Screen { get; private set; }
+        public FlowScreen Screen { get; private set; }
 
         public BattleMenu BattleMenu { get; private set; }
 
@@ -198,7 +198,7 @@ namespace Game.App
             if (InGame) { IsPaused = true; }
         }
 
-        private bool InGame => Screen != Screen.Title && Screen != Screen.HowTo && Screen != Screen.Result;
+        private bool InGame => Screen != FlowScreen.Title && Screen != FlowScreen.HowTo && Screen != FlowScreen.Result;
 
         private void ClearHeld()
         {
@@ -267,10 +267,10 @@ namespace Game.App
             if (World != null && InGame) { World.AddPlayTicks(1); }
             switch (Screen)
             {
-                case Screen.Field:
+                case FlowScreen.Field:
                     if (!InDialogue) { TickField(); }
                     break;
-                case Screen.Battle:
+                case FlowScreen.Battle:
                     TickBattle();
                     break;
             }
@@ -305,7 +305,7 @@ namespace Game.App
         private void OnDirection(Direction dir)
         {
             if (InDialogue) { return; }
-            if (Screen == Screen.Field)
+            if (Screen == FlowScreen.Field)
             {
                 // 歩いている間は 1 つだけ先行入力、止まっていれば次の Tick で歩き出す（同じフレームで離しても 1 歩は歩く）。
                 if (World!.Explorer.IsMoving) { World.Explorer.Buffer(dir); }
@@ -335,18 +335,18 @@ namespace Game.App
 
             switch (Screen)
             {
-                case Screen.Title: ConfirmTitle(); break;
-                case Screen.HowTo: GoTitle(); break;
-                case Screen.StarterPick: ConfirmStarter(); break;
-                case Screen.Field: Interact(); break;
-                case Screen.FieldMenu: ConfirmFieldMenu(); break;
-                case Screen.Party: ConfirmParty(); break;
-                case Screen.Dex: OpenFieldMenu(); break;
-                case Screen.CenterMenu: ConfirmCenter(); break;
-                case Screen.Storage: ConfirmStorage(); break;
-                case Screen.Battle: ConfirmBattle(); break;
-                case Screen.LearnMove: ConfirmLearn(); break;
-                case Screen.Result: GoTitle(); break;
+                case FlowScreen.Title: ConfirmTitle(); break;
+                case FlowScreen.HowTo: GoTitle(); break;
+                case FlowScreen.StarterPick: ConfirmStarter(); break;
+                case FlowScreen.Field: Interact(); break;
+                case FlowScreen.FieldMenu: ConfirmFieldMenu(); break;
+                case FlowScreen.Party: ConfirmParty(); break;
+                case FlowScreen.Dex: OpenFieldMenu(); break;
+                case FlowScreen.CenterMenu: ConfirmCenter(); break;
+                case FlowScreen.Storage: ConfirmStorage(); break;
+                case FlowScreen.Battle: ConfirmBattle(); break;
+                case FlowScreen.LearnMove: ConfirmLearn(); break;
+                case FlowScreen.Result: GoTitle(); break;
             }
         }
 
@@ -356,10 +356,10 @@ namespace Game.App
             if (InDialogue) { return; }
             switch (Screen)
             {
-                case Screen.HowTo: GoTitle(); break;
-                case Screen.Field: OpenFieldMenu(); break;
-                case Screen.FieldMenu: CloseToField(); break;
-                case Screen.Party:
+                case FlowScreen.HowTo: GoTitle(); break;
+                case FlowScreen.Field: OpenFieldMenu(); break;
+                case FlowScreen.FieldMenu: CloseToField(); break;
+                case FlowScreen.Party:
                     if (_swapFrom >= 0)
                     {
                         _swapFrom = -1;
@@ -371,10 +371,10 @@ namespace Game.App
                     }
 
                     break;
-                case Screen.Dex: OpenFieldMenu(); break;
-                case Screen.CenterMenu: CloseToField(); break;
-                case Screen.Storage: OpenCenterMenu(); break;
-                case Screen.Battle: CancelBattle(); break;
+                case FlowScreen.Dex: OpenFieldMenu(); break;
+                case FlowScreen.CenterMenu: CloseToField(); break;
+                case FlowScreen.Storage: OpenCenterMenu(); break;
+                case FlowScreen.Battle: CancelBattle(); break;
                 default: return;
             }
 
@@ -467,7 +467,7 @@ namespace Game.App
             _titleOptions.Add(TitleOption.NewGame);
             if (HasSave) { _titleOptions.Add(TitleOption.Continue); }
             _titleOptions.Add(TitleOption.HowTo);
-            if (Screen == Screen.Title) { BuildTitleItems(); }
+            if (Screen == FlowScreen.Title) { BuildTitleItems(); }
         }
 
         private void BuildTitleItems()
@@ -483,7 +483,7 @@ namespace Game.App
 
         private void GoTitle()
         {
-            Screen = Screen.Title;
+            Screen = FlowScreen.Title;
             World = null;
             Presenter = null;
             IsPaused = false;
@@ -507,7 +507,7 @@ namespace Game.App
                     ContinueGame();
                     break;
                 default:
-                    Screen = Screen.HowTo;
+                    Screen = FlowScreen.HowTo;
                     _items = new List<MenuItem>();
                     break;
             }
@@ -518,7 +518,7 @@ namespace Game.App
         {
             World = World.New(Data, seed);
             Presenter = null;
-            Screen = Screen.StarterPick;
+            Screen = FlowScreen.StarterPick;
             _items = new List<MenuItem>();
             foreach (var s in Data.Rules.Starters) { _items.Add(new MenuItem(s.Name, true, s.Type.Name)); }
             Cursor = 0;
@@ -553,7 +553,7 @@ namespace Game.App
 
         private void CloseToField()
         {
-            Screen = Screen.Field;
+            Screen = FlowScreen.Field;
             _items = new List<MenuItem>();
             Heading = string.Empty;
             _swapFrom = -1;
@@ -577,7 +577,7 @@ namespace Game.App
 
         private void OpenFieldMenu()
         {
-            Screen = Screen.FieldMenu;
+            Screen = FlowScreen.FieldMenu;
             _items = new List<MenuItem> { new("てもち", true), new("ずかん", true), new("とじる", true) };
             Cursor = 0;
             Heading = string.Empty;
@@ -598,7 +598,7 @@ namespace Game.App
 
         private void OpenParty()
         {
-            Screen = Screen.Party;
+            Screen = FlowScreen.Party;
             var keep = Cursor;
             _items = new List<MenuItem>();
             foreach (var m in World!.Roster.Party) { _items.Add(new MenuItem(MonLabel(m), true, MonDetail(m))); }
@@ -623,7 +623,7 @@ namespace Game.App
 
         private void OpenDex()
         {
-            Screen = Screen.Dex;
+            Screen = FlowScreen.Dex;
             _items = new List<MenuItem>();
             var w = World!;
             foreach (var s in Data.Species)
@@ -641,7 +641,7 @@ namespace Game.App
 
         private void OpenCenterMenu()
         {
-            Screen = Screen.CenterMenu;
+            Screen = FlowScreen.CenterMenu;
             _items = new List<MenuItem> { new("記録する", true), new("ボックス", true), new("やめる", true) };
             Cursor = 0;
             Heading = "回復所";
@@ -685,7 +685,7 @@ namespace Game.App
 
         private void OpenStorage()
         {
-            Screen = Screen.Storage;
+            Screen = FlowScreen.Storage;
             var keep = Cursor;
             var r = World!.Roster;
             _items = new List<MenuItem>();
@@ -738,7 +738,7 @@ namespace Game.App
         private void EnterBattle()
         {
             var battle = World!.Battle!;
-            Screen = Screen.Battle;
+            Screen = FlowScreen.Battle;
             ClearHeld();
             Presenter = new BattlePresenter(battle.Kind, _settings.TextTicks, _settings.QuietTicks, _settings.MinTicks, Cues);
             Presenter.Enqueue(battle.Log);
@@ -765,7 +765,7 @@ namespace Game.App
                 case BattleMenu.Moves:
                     foreach (var s in me.Moves)
                     {
-                        _items.Add(new MenuItem(s.Move.Name, s.Pp > 0, $"{s.Move.Type?.Name ?? "なし"}　PP {s.Pp}/{s.Move.Pp}"));
+                        _items.Add(new MenuItem(s.Move.Name, s.Pp > 0, $"{MoveDetail(s.Move)}　PP {s.Pp}/{s.Move.Pp}"));
                     }
 
                     Heading = "わざを えらぶ";
@@ -939,12 +939,12 @@ namespace Game.App
 
             var p = w.PendingLearns[0];
             var m = w.Roster.Party[p.Member];
-            Screen = Screen.LearnMove;
+            Screen = FlowScreen.LearnMove;
             _items = new List<MenuItem>();
-            foreach (var s in m.Moves) { _items.Add(new MenuItem(s.Move.Name, true, $"{s.Move.Type?.Name ?? "なし"}　威力 {s.Move.Power}")); }
+            foreach (var s in m.Moves) { _items.Add(new MenuItem(s.Move.Name, true, MoveDetail(s.Move))); }
             _items.Add(new MenuItem($"{p.Move.Name}を おぼえない", true));
             Cursor = 0;
-            Heading = $"{m.Name}は {p.Move.Name}（{p.Move.Type?.Name ?? "なし"}・威力 {p.Move.Power}）を おぼえたい。わすれる 技を えらぶ";
+            Heading = $"{m.Name}は {p.Move.Name}（{MoveDetail(p.Move)}）を おぼえたい。わすれる 技を えらぶ";
         }
 
         private void ConfirmLearn()
@@ -968,7 +968,7 @@ namespace Game.App
             ResultTicks = w.PlayTicks;
             Records = Records.WithClear(w.PlayTicks, w.CaughtCount);
             _records.TryWrite(Records.Encode(), out _);
-            Screen = Screen.Result;
+            Screen = FlowScreen.Result;
             _items = new List<MenuItem> { new("タイトルへ", true) };
             Cursor = 0;
             Heading = string.Empty;
@@ -977,6 +977,9 @@ namespace Game.App
         // --- 表示用 ---
 
         public static string MonLabel(Monster m) => $"{m.Name} Lv{m.Level}";
+
+        /// <summary>技の属性（なしは「―」）と威力（威力のない技は「変化」）。</summary>
+        public static string MoveDetail(MoveDef move) => $"{move.Type?.Name ?? "―"}・{(move.Power > 0 ? "威力 " + move.Power : "変化")}";
 
         public static string MonDetail(Monster m)
         {

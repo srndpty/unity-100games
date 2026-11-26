@@ -15,6 +15,9 @@ namespace Game.App
 
         public string SpeciesId { get; internal set; } = string.Empty;
 
+        /// <summary>種族の番号（絵を選ぶ）。</summary>
+        public int SpeciesIndex { get; internal set; } = -1;
+
         public int Level { get; internal set; }
 
         /// <summary>HP の目標（出来事を当てた後の値）。</summary>
@@ -168,6 +171,8 @@ namespace Game.App
                     side.Visible = true;
                     side.Slot = e.Slot;
                     side.Name = e.Name;
+                    side.SpeciesId = e.Species?.Id ?? string.Empty;
+                    side.SpeciesIndex = e.Species?.Index ?? -1;
                     side.Level = e.Level;
                     side.Hp = e.HpAfter;
                     side.ShownHp = e.HpAfter;

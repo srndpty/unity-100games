@@ -422,6 +422,7 @@ namespace Game.Core
         {
             var m = player ? _party[slot] : _foes[slot];
             var ev = Emit(BattleEventKind.SentOut, player, slot, m.Name);
+            ev.Species = m.Species;
             ev.Level = m.Level;
             ev.HpAfter = m.Hp;
             ev.MaxHp = m.MaxHp;

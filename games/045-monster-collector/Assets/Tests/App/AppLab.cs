@@ -52,7 +52,7 @@ namespace Game.App.Tests
         {
             var flow = Flow(seed, save);
             var pilot = new Autopilot();
-            RunUntil(flow, pilot, f => f.Screen == Screen.Field && !f.InDialogue, 2000);
+            RunUntil(flow, pilot, f => f.Screen == FlowScreen.Field && !f.InDialogue, 2000);
             return flow;
         }
     }

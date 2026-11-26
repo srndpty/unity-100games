@@ -93,6 +93,9 @@ namespace Game.Core
 
         public MoveDef? Move { get; internal set; }
 
+        /// <summary>場に出した個体の種族（SentOut のみ）。</summary>
+        public SpeciesDef? Species { get; internal set; }
+
         public StatusDef? Status { get; internal set; }
 
         public StatKind Stat { get; internal set; }
