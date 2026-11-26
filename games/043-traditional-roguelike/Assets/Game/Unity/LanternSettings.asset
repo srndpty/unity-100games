@@ -1,0 +1,120 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe46e47b1009ebd42a019cacd272a898, type: 3}
+  m_Name: LanternSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.LanternSettings
+  Rules:
+    Width: 48
+    Height: 27
+    MinRooms: 6
+    MaxRooms: 9
+    MinExtraCorridors: 1
+    MaxExtraCorridors: 2
+    GenerationAttempts: 20
+    ViewRadius: 8
+    PlayerHp: 24
+    PlayerAttack: 5
+    PlayerDefense: 1
+    LevelExp: 080000001400000028000000460000006e000000a0000000e600000040010000ae010000i
+    LevelHp: 5
+    LevelAttack: 1
+    LevelDefenseEvery: 2
+    RegenEvery: 6
+    MaxSatiety: 100
+    HungerEvery: 10
+    StarveDamage: 1
+    HungryWarning: 20
+    HitPercent: 90
+    DamageMinPercent: 87
+    DamageMaxPercent: 112
+    InventoryCapacity: 16
+    FloorItemCap: 48
+    ThrowRange: 10
+    MonstersBase: 4
+    MonstersPerFloor: 1
+    ItemsBase: 5
+    ItemsPerFloor: 1
+    HealAmount: 30
+    PoisonSelfDamage: 6
+    PoisonThrowDamage: 15
+    StoneDamage: 7
+    ThrowBumpDamage: 1
+    SleepTurns: 6
+    BreadSatiety: 50
+    BigBreadSatiety: 100
+    Monsters:
+    - Kind: 0
+      Hp: 7
+      Attack: 3
+      Defense: 0
+      ActionCost: 50
+      Exp: 3
+      Range: 0
+      ArrowDamage: 0
+      FloorWeights: 0600000004000000030000000200000001000000i
+    - Kind: 1
+      Hp: 30
+      Attack: 9
+      Defense: 3
+      ActionCost: 200
+      Exp: 14
+      Range: 0
+      ArrowDamage: 0
+      FloorWeights: 0000000001000000020000000300000003000000i
+    - Kind: 2
+      Hp: 12
+      Attack: 3
+      Defense: 1
+      ActionCost: 100
+      Exp: 8
+      Range: 6
+      ArrowDamage: 4
+      FloorWeights: 0200000003000000030000000300000002000000i
+    - Kind: 3
+      Hp: 14
+      Attack: 2
+      Defense: 1
+      ActionCost: 100
+      Exp: 9
+      Range: 0
+      ArrowDamage: 0
+      FloorWeights: 0200000002000000020000000100000001000000i
+    - Kind: 4
+      Hp: 40
+      Attack: 11
+      Defense: 3
+      ActionCost: 100
+      Exp: 24
+      Range: 0
+      ArrowDamage: 0
+      FloorWeights: 0000000000000000010000000200000003000000i
+    Items:
+    - Kind: 0
+      FloorWeights: 0500000005000000050000000500000005000000i
+    - Kind: 1
+      FloorWeights: 0200000002000000020000000200000002000000i
+    - Kind: 2
+      FloorWeights: 0200000002000000020000000200000002000000i
+    - Kind: 3
+      FloorWeights: 0400000004000000040000000400000004000000i
+    - Kind: 4
+      FloorWeights: 0100000001000000010000000100000001000000i
+    - Kind: 5
+      FloorWeights: 0500000005000000040000000400000004000000i
+    - Kind: 6
+      FloorWeights: 0200000002000000020000000200000002000000i
+    - Kind: 7
+      FloorWeights: 0200000002000000020000000200000002000000i
+  Volume: 0.1
+  RepeatDelay: 0.22
+  RepeatInterval: 0.07
+  VisibleRows: 13

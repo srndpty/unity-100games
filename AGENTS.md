@@ -45,8 +45,8 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - 共通コードは、3題以上で再利用価値が明確になってから `packages/` にローカル UPM パッケージとして抽出する。
   - 作品からは `Packages/manifest.json` に `"file:../../../packages/<名前>"` と `testables` を書き、`dev test NNN -Unity` でパッケージのテストも Mono で流す。dotnet 側は作品の Core の csproj から `ProjectReference` する。
   - パッケージも Core と同じく Unity API に依存しない（`noEngineReferences`）。中身を変えると全作品が検査対象になる（`dev lint/check -Staged`）。
-  - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う（033・034 は `StateHash` だけ、035・036・037・038 は `StateHash` を使う、042 は `Box`・`BodyMotion`・`StateHash` を使う）。
-  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）。025〜027 の実装から抽出し、028 から使う（032 は `SeededRandom` だけ、033 は `Vec2i`・`IntMath`・`Sweep`、035・036 は `Vec2i`・`IntMath`・`Sweep`・`Trig`・`SeededRandom` を使う、037 は `Vec2i`・`IntMath`・`Sweep`・`Trig` を使う、038 は `IntMath`・`Trig`・`SeededRandom` を使う、042 は `Vec2i`・`IntMath`・`Sweep`・`SeededRandom` を使う）。
+  - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う（033・034 は `StateHash` だけ、035・036・037・038 は `StateHash` を使う、042 は `Box`・`BodyMotion`・`StateHash` を使う、043 は `StateHash` だけ）。
+  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）。025〜027 の実装から抽出し、028 から使う（032 は `SeededRandom` だけ、033 は `Vec2i`・`IntMath`・`Sweep`、035・036 は `Vec2i`・`IntMath`・`Sweep`・`Trig`・`SeededRandom` を使う、037 は `Vec2i`・`IntMath`・`Sweep`・`Trig` を使う、038 は `IntMath`・`Trig`・`SeededRandom` を使う、042 は `Vec2i`・`IntMath`・`Sweep`・`SeededRandom` を使う、043 は `Vec2i`・`SeededRandom` を使う）。
 
 ## 技術スタック
 
@@ -273,6 +273,10 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - **再計算で保つ値（装備から決まる能力値など）の元になる可変の部品を公開しない。** 試合が `Equipment` をそのまま返すと、試合の `Equip` を通さずに付け替えられ、能力値が古いまま残る。枠ごとの参照と試算用の複製だけを出し、変更は再計算を必ず通す 1 つの入口にする（042）。
 - **データの ID を指す設定は、データと合わせて検証する。** 空でないかだけでは、存在しない ID は試合の開始で例外になり、別の枠の品（指輪）を初期武器にもできた。Flow の生成と設定アセットの検証でデータとの相互検証を呼び、ID と理由を含めて拒否する（042）。
 - **操縦役の回帰テストは、別の経路で条件を満たして通らないようにする。** 「満杯でも回復薬を拾う」は、修正前でも操縦役が階段を降りて次の階の薬を拾って通った。修正前のコードで失敗することを確かめ、階が変わったら打ち切るなど場面を閉じる条件を入れる（042）。
+- **隠す情報は「画面に出してよい窓口」の型で閉じる。** 試合の中身（敵の一覧・床の品・地形）を `internal` にし、Unity と操縦役には既知の地形・視界の中の敵・見えた出来事だけを写した `PlayerView` を渡すと、「視界外を UI に出さない」を型で保証でき、テストは窓口の全局面の照合と、描いた物が視界・既知の中かの照合で済む。出来事にも「見えたか」を付け、文と音は見えた出来事からだけ作る（043）。
+- **検証済みの設定を持つクラスは、内部で使う参照と公開する複製を分ける。** `Config` で中の設定をそのまま返すと、試合の途中で命中率や行動の重さを書き換えられ、作ったときに計算した指紋（ハッシュ）とも食い違う。内部は `internal` の参照を読み、公開の口は深い複製を返す。042 の可変の部品と同じ問題が設定オブジェクトにも出た（043）。
+- **設定から実行時に求める数は、積も含めて long で検証する。** 「基本 + 1 階あたり × 階数 ≤ 40」を int で計算すると、正の値でも 0 に折り返して検証を通った（041 は和、043 は積）。上限ちょうど・1 超え・折り返す値・負の値をテストする（043 の `ConfigTests`）。
+- **UI Toolkit の半透明の重ねは、線形の色空間で合成されるので暗い画面の上では濃く見える。** 不透明度 150/255 の地図がほぼ不透明に見えた。撮影の画素の値で確かめて決める（043）。
 
 ## 注意点
 
