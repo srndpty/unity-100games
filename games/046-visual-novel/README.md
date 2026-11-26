@@ -131,7 +131,7 @@ dev capture 046  # 証跡を evidence/ に撮る（画像は captures/<画像世
 | 種類 | 場所 | 実行 | 件数 |
 |---|---|---|---|
 | Core | `Assets/Tests/Core/` | `dev test 046`（.NET）／`dev test 046 -Unity`（Mono） | 81 |
-| App | `Assets/Tests/App/` | 同上 | 39 |
+| App | `Assets/Tests/App/` | 同上 | 40 |
 | Editor | `Assets/Tests/Editor/` | `dev test 046 -Unity` | 4 |
 | PlayMode（実シーン） | `Assets/Tests/Unity/NovelSceneTests.cs` | `dev test 046 -Unity -Mode PlayMode` | 12 |
 

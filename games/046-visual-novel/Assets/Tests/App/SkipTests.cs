@@ -143,6 +143,35 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void InputArrivingAfterFocusLossIsRejected()
+        {
+            // フォーカス喪失の通知の後に届いた入力は当てはめない（喪失 → 押下の順序）。
+            var f = AppLab.Started(settings: new FlowSettings { TicksPerChar = 0 });
+            foreach (var id in AppLab.Script.TextIds) { f.Log.MarkRead(id); }
+            var at = f.StoryHash;
+            f.OnFocusChanged(false);
+            f.Press(InputButton.SkipHold, 1);
+            f.StepTicks(8);
+            Assert.That(f.StoryHash, Is.EqualTo(at), "押し続けのスキップで進まない");
+            f.Tap(InputButton.SkipToggle);
+            f.Tap(InputButton.Confirm);
+            f.Click(-1);
+            f.Tap(InputButton.Cancel);
+            f.StepTicks(8);
+            Assert.That(f.StoryHash, Is.EqualTo(at), "決定・クリック・切り替えでも進まない");
+            Assert.That(f.Screen, Is.EqualTo(FlowScreen.Reading), "一時停止にもならない");
+            Assert.That(f.SkipActive, Is.False);
+
+            // 復帰した後の新しい入力は効く。喪失中に押したキーは押したままとみなさない。
+            f.OnFocusChanged(true);
+            f.StepTicks(8);
+            Assert.That(f.StoryHash, Is.EqualTo(at));
+            f.Tap(InputButton.Confirm);
+            f.FlushIntents();
+            Assert.That(f.StoryHash, Is.Not.EqualTo(at));
+        }
+
+        [Test]
         public void SkippedReadTextIsShownInFull()
         {
             var f = AppLab.Started();

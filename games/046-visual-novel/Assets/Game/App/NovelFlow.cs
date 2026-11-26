@@ -280,6 +280,8 @@ namespace Game.App
 
         private void Apply(Intent intent)
         {
+            // フォーカスを失っている間は押下を当てはめない（喪失の通知の後に届いた入力も遷移させない）。離す入力は押している印を消すので通す。
+            if (!HasFocus && intent.Pressed) { return; }
             if (intent.Button == InputButton.SkipHold)
             {
                 var bit = 1 << (intent.KeySlot & 31);

@@ -8,8 +8,8 @@
 |---|---|
 | dev lint | 成功 |
 | dev check | 成功（警告 0） |
-| dev test | 成功。Core 81/81、App 39/39 |
-| Unity EditMode | 134/134（パッケージ tile-motion 10・Core 81・App 39・ビルドの前の検証 4。Mono） |
+| dev test | 成功。Core 81/81、App 40/40 |
+| Unity EditMode | 135/135（パッケージ tile-motion 10・Core 81・App 40・ビルドの前の検証 4。Mono） |
 | Unity PlayMode | 28/28（実シーン 12、共通の証跡公開 16） |
 | Windows ビルド | 成功、StandaloneWindows64（ビルドログにライセンスクライアントの署名検証の警告が残るが、結果は成功・終了コード 0）。ビルドの前の検証フックが本番シナリオを検証して通過 |
 | 壊したシナリオのビルド | `-> hall_meeting` を `-> hall_meetng` に変えて `dev build 046` を流すと、`BuildFailedException: シナリオの検証に失敗しました` と `行 203：存在しないラベル hall_meetng を参照しています`（ほか 2 行）でビルドが止まることを確かめてから戻した |
