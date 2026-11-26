@@ -275,6 +275,12 @@
     <Project Path="games/046-visual-novel/dotnet/Core.Tests/G046.Core.Tests.csproj" />
     <Project Path="games/046-visual-novel/dotnet/Core/G046.Core.csproj" />
   </Folder>
+  <Folder Name="/047-point-click/">
+    <Project Path="games/047-point-click/dotnet/App.Tests/G047.App.Tests.csproj" />
+    <Project Path="games/047-point-click/dotnet/App/G047.App.csproj" />
+    <Project Path="games/047-point-click/dotnet/Core.Tests/G047.Core.Tests.csproj" />
+    <Project Path="games/047-point-click/dotnet/Core/G047.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />
