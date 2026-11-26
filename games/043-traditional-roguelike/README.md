@@ -77,7 +77,20 @@ dev capture 043  # 証跡を evidence/ に撮る（画像は captures/<画像世
 
 ## テスト
 
-（セッション4で記入）
+| 種類 | 場所 | 件数 | 実行 |
+|---|---|---|---|
+| Core（EditMode・dotnet） | `Assets/Tests/Core/` | 70 | `dev test 043` |
+| App（EditMode・dotnet） | `Assets/Tests/App/` | 22 | `dev test 043` |
+| Unity EditMode（Mono） | 共通パッケージ＋Core＋App | 154 | `dev test 043 -Unity` |
+| PlayMode（実シーン） | `Assets/Tests/Unity/LanternSceneTests.cs` | 11（共通の証跡公開 16 を含め 27） | `dev test 043 -Unity -Mode PlayMode` |
+
+題材固有テスト：
+
+- **無効操作で敵ターンが進まない**：`InvalidCommandTests`（壁・角抜け・空の拾う／使う／投げる／置く・石を使う・満杯で拾う・階段外で降りる・範囲外の値・終了後の操作で、ハッシュ・時刻・乱数・満腹度・敵の位置が変わらない。続く有効操作では動く）、PlayMode `BumpingAWallMovesNobody`
+- **視界外の情報を UI に出さない**：`ViewTests`（無作為の操作の全局面で、PlayerView の敵は視界の中だけ・未知のマスの地形と品は null・視界の外の品は記憶だけ・出来事は見えたものだけ）、`MessageTests`（視界の外の出来事は文にも音にもならない）、PlayMode `MonstersOutsideTheViewAreNotDrawnAndTerrainIsRemembered`・`AutopilotFinishesARunInTheRealSceneAndDrawingNeverLeaks`
+- **同一シード・操作列で地形・結果一致**：`TerrainTests`（全階の地形、操作が違っても次の階の地形と配置は同じ）、`ReplayTests`（無効な操作を混ぜた無作為の操作列）、`AutopilotTests`（記録した操作列の再生、シード 1 の固定ハッシュ）
+
+その他：視界の対称性（乱数の盤の全ての床の組）と半径の円、スケジューラの速さの比と同時刻の順序、戦闘の式の範囲と最低 1、レベル、敵 5 種の考え（追跡・射撃の直線と遮蔽・盗んで跳ぶ・眠りと起床・見失った位置へ）、品 8 種、投げる（射程・壁・埋まった床・上限で消える）、満腹度と自然回復の境界、勝利、画面遷移・連続移動と停止・Shift と Ctrl・物理キーごとの保持・フォーカス喪失・持ち物の画面、設定アセットとコードの既定値の一致、タイトルへ戻った表示が起動直後と一致。
 
 ## 未実装範囲
 

@@ -312,5 +312,76 @@ namespace Game.Unity.Tests
             yield return _keyboard.Tap(Key.Enter);
             Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Title));
         }
+
+        [UnityTest]
+        public IEnumerator AutopilotFinishesARunInTheRealSceneAndDrawingNeverLeaks()
+        {
+            yield return StartGame();
+            _game.Flow.Pilot = new Autopilot(_game.Rules);
+            var step = new System.Collections.Generic.List<double>();
+            var draw = new System.Collections.Generic.List<double>();
+            var watch = new System.Diagnostics.Stopwatch();
+            int maxMonsters = 0;
+            int maxItems = 0;
+            for (int i = 0; i < 20_000 && _game.Flow.Screen == AppScreen.Playing; i++)
+            {
+                watch.Restart();
+                _game.Flow.StepPilot();
+                watch.Stop();
+                step.Add(watch.Elapsed.TotalMilliseconds);
+                _game.ConsumeEvents();
+                watch.Restart();
+                _game.Render();
+                watch.Stop();
+                draw.Add(watch.Elapsed.TotalMilliseconds);
+                maxMonsters = Math.Max(maxMonsters, Stage.VisibleMonsters);
+                maxItems = Math.Max(maxItems, Stage.VisibleItems);
+                if (i % 25 == 0) { AssertDrawingMatchesTheView(); }
+                if (i % 200 == 0) { yield return null; }
+            }
+
+            Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Result), "操縦役が決着まで進む");
+            yield return null;
+            AssertDrawingMatchesTheView();
+            step.Sort();
+            draw.Sort();
+            double P(System.Collections.Generic.List<double> list, double q) => list[Math.Min(list.Count - 1, (int)(list.Count * q))];
+            Debug.Log($"[Perf] 操作 {step.Count} 回：Submit p50 {P(step, .5):0.000} ms / p95 {P(step, .95):0.000} ms / 最大 {step[step.Count - 1]:0.000} ms、" +
+                $"描画 p50 {P(draw, .5):0.000} ms / p95 {P(draw, .95):0.000} ms / 最大 {draw[draw.Count - 1]:0.000} ms、最多の敵 {maxMonsters}・品 {maxItems}、描画物 {Stage.PooledRenderers}");
+            Assert.That(P(step, .95), Is.LessThan(5), "1 操作（敵の行動を含む）の p95");
+            Assert.That(P(draw, .95), Is.LessThan(5), "描画の更新の p95");
+        }
+
+        /// <summary>描いている敵と品が、窓口の視界・記憶と一致する（視界外の敵を描かない）。</summary>
+        private void AssertDrawingMatchesTheView()
+        {
+            var view = _game.Flow.View;
+            int enabled = 0;
+            foreach (var r in Stage.MonsterRenderers)
+            {
+                if (!r.enabled) { continue; }
+                enabled++;
+                var local = r.transform.localPosition;
+                var p = new Vec2i(Mathf.FloorToInt(local.x), Stage.Height - 1 - Mathf.FloorToInt(local.y));
+                Assert.That(view.IsVisible(p), Is.True, $"見えないマス {p} に敵を描いた");
+                Assert.That(view.MonsterAt(p).HasValue, Is.True);
+            }
+
+            Assert.That(enabled, Is.EqualTo(view.Monsters.Count));
+            foreach (var m in R.Monsters)
+            {
+                if (!R.IsVisible(m.Position)) { Assert.That(view.MonsterAt(m.Position), Is.Null); }
+            }
+
+            for (int y = 0; y < Stage.Height; y++)
+            {
+                for (int x = 0; x < Stage.Width; x++)
+                {
+                    var p = new Vec2i(x, y);
+                    var tile = Stage.Terrain.GetTile(LanternStage.Cell(p, Stage.Height));
+                    Assert.That(tile != null, Is.EqualTo(view.IsKnown(p)), $"既知でないマス {p} を描いた／既知のマスを描かない");
+                }
+            }
+        }
     }
 }
