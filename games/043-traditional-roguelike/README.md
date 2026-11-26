@@ -29,10 +29,13 @@ dev capture 043  # 証跡を evidence/ に撮る（画像は captures/<画像世
 | Space / テンキー 5 | 足踏み（押したままで繰り返す） |
 | G | 足元の品を拾う（品の上に乗ると自動でも拾う） |
 | . / Enter | 階段を降りる |
-| I / Tab | 持ち物の画面。↑↓ で選び、Enter / U で使う、T で投げる、X で足元に置く、I / Esc で閉じる |
+| I / Tab | 持ち物の画面（品の絵と名前の 2 列）。矢印 / WASD / テンキーの上下左右で選び（左右で 1 つ、上下で 1 行）、Enter / U で使う、T で投げる、X で足元に置く、I / Esc で閉じる |
+| M（押している間） | 全体の地図を重ねて出す（時間を使わない。離すと消える） |
 | Esc | 一時停止（Enter で再開、T でタイトルへ） |
 
 押したままの連続移動は、敵が新しく見えた・攻撃した／された・品を拾った・壁に当たったなどで止まり、キーを押し直すまで再開しない。
+
+試合中の画面は自機を中心に周り 13 行ぶん（設定の `VisibleRows`）を映し、自機について動く。タイトルの背景だけは見本の階の全体を映す。
 
 ## 採用ルール
 
@@ -64,7 +67,7 @@ dev capture 043  # 証跡を evidence/ に撮る（画像は captures/<画像世
 |---|---|
 | Core（`Game.Core`） | 地形の生成（`FloorGenerator`）、視界（`Fov`）、既知マップ（`KnownMap`）、統一ターンスケジューラ（`TurnScheduler`）、試合（`CrawlRun`：操作の検証と実行・敵の考え・品・満腹度・勝敗・状態ハッシュ）、画面に出す窓口（`PlayerView`） |
 | App（`Game.App`） | 画面遷移（`CrawlFlow`）、物理キーごとの保持と方向（`HeldKeys`）、押したままの連続移動と停止、持ち物の画面の選択、メッセージ（`MessageLog`）、操縦役（`Autopilot`） |
-| Unity（`Game.Unity`） | 入力の変換（物理キーごとのアクション）・描画（`LanternStage`：既知のマスだけを Tilemap に塗る、視界の外は暗く）・HUD（`LanternHud`）・音・撮影台本（`LanternCaptureScenario`） |
+| Unity（`Game.Unity`） | 入力の変換（物理キーごとのアクション）・描画（`LanternStage`：既知のマスだけを Tilemap に塗る、視界の外は暗く）・自機を追うカメラ・HUD（`LanternHud`）・全体の地図（`LanternMinimap`）・音・撮影台本（`LanternCaptureScenario`） |
 
 - **視界と既知マップを分ける。** `Fov` は毎回の位置から「今見えるマス」を作るだけで、記憶は `KnownMap` が持つ。`PlayerView` はこの 2 つを合わせて「既知の地形・視界の中なら今の品／外なら記憶・視界の中の敵」を出す。試合の中身（`CrawlRun` の敵の一覧・床の品・地形）は `internal` で、Unity 層と操縦役は `PlayerView` しか読めない。
 - **出来事に「見えたか」を付ける。** `CrawlRun` は全ての出来事を記録し、起きた場所が自機の位置か視界の中なら `Seen`。`PlayerView.Events` は見えた出来事だけを出し、メッセージと音はそこからだけ作る（視界の外で敵が目を覚ましても文も音も出ない）。
@@ -72,7 +75,9 @@ dev capture 043  # 証跡を evidence/ に撮る（画像は captures/<画像世
 - **敵の経路は地形だけの距離の地図。** 地形は階の中で変わらないので、目的地ごとの距離の地図を階の間だけ覚える（結果は変わらず、速さだけのため）。
 - **操縦役は画面の情報だけで遊ぶ。** `Autopilot.Decide(PlayerView)` は既知マップの幅優先探索で、起きた敵 → 品 → 未知の境界 → 階段の順に向かう。見た眠っている敵の位置は覚えて避ける（見える・見えないで行き先が往復しないように）。行き先が全て眠った敵の向こうなら起こして倒す。
 - **描画も `PlayerView` だけから。** `LanternStage` は前回と同じ地形・明るさのマスを塗り直さず、敵と品はプールの SpriteRenderer を使い回す。Prefab にはシード 1 の 1 階の「床と床に接する壁」を焼き（プレイ前から Scene ビューで見える）、タイトルの背景も同じ見本を記憶の色で描く。焼いた地形は種類と位置まで見本と照合する（`Mismatch`）。
-- **T キーは画面で意味が変わる。** 一時停止・結果ではタイトルへ、持ち物の画面では投げる。Unity は両方の意図を並べて送り、Flow はその画面で意味のない意図を捨てる（↑↓ も移動のキーと持ち物の選択の両方を送る）。
+- **T キーは画面で意味が変わる。** 一時停止・結果ではタイトルへ、持ち物の画面では投げる。Unity は両方の意図を並べて送り、Flow はその画面で意味のない意図を捨てる（方向キーも移動のキーと持ち物の選択の両方を送る）。
+- **全体の地図も `PlayerView` だけから。** `LanternMinimap` は 1 マスを 3 画素の四角にしたテクスチャに、既知の床と階段・記憶の品・視界の中の敵・自機だけを描く（壁は描かない）。地図を出すかは App が決める（`CrawlFlow.MapShown`：プレイ中に M を押している間だけ。画面の切り替えとフォーカス喪失で押していたキーを捨てるので消える）。
+- **持ち物の選択は 2 列の格子。** 左右は並びの順に 1 つずつ端で折り返し、上下は同じ列の中で 1 行ずつ反対の端へ折り返す（`CrawlFlow.MoveSelection`）。HUD の並びは `CrawlFlow.InventoryColumns` に合わせる。
 - 操縦役の成績（既定の設定）：40 シード中 38 勝（2 敗は 2 階の岩人形・5 階の大蛇との戦闘）、20 シードの決着はいずれも 2,000 行動以内。シード 1 の最終ハッシュ 0x48E3B9C7 は .NET と Mono で一致
 
 ## テスト
@@ -80,9 +85,9 @@ dev capture 043  # 証跡を evidence/ に撮る（画像は captures/<画像世
 | 種類 | 場所 | 件数 | 実行 |
 |---|---|---|---|
 | Core（EditMode・dotnet） | `Assets/Tests/Core/` | 70 | `dev test 043` |
-| App（EditMode・dotnet） | `Assets/Tests/App/` | 22 | `dev test 043` |
-| Unity EditMode（Mono） | 共通パッケージ＋Core＋App | 154 | `dev test 043 -Unity` |
-| PlayMode（実シーン） | `Assets/Tests/Unity/LanternSceneTests.cs` | 11（共通の証跡公開 16 を含め 27） | `dev test 043 -Unity -Mode PlayMode` |
+| App（EditMode・dotnet） | `Assets/Tests/App/` | 25 | `dev test 043` |
+| Unity EditMode（Mono） | 共通パッケージ＋Core＋App | 157 | `dev test 043 -Unity` |
+| PlayMode（実シーン） | `Assets/Tests/Unity/LanternSceneTests.cs` | 13（共通の証跡公開 16 を含め 29） | `dev test 043 -Unity -Mode PlayMode` |
 
 題材固有テスト：
 
@@ -90,7 +95,7 @@ dev capture 043  # 証跡を evidence/ に撮る（画像は captures/<画像世
 - **視界外の情報を UI に出さない**：`ViewTests`（無作為の操作の全局面で、PlayerView の敵は視界の中だけ・未知のマスの地形と品は null・視界の外の品は記憶だけ・出来事は見えたものだけ）、`MessageTests`（視界の外の出来事は文にも音にもならない）、PlayMode `MonstersOutsideTheViewAreNotDrawnAndTerrainIsRemembered`・`AutopilotFinishesARunInTheRealSceneAndDrawingNeverLeaks`
 - **同一シード・操作列で地形・結果一致**：`TerrainTests`（全階の地形、操作が違っても次の階の地形と配置は同じ）、`ReplayTests`（無効な操作を混ぜた無作為の操作列）、`AutopilotTests`（記録した操作列の再生、シード 1 の固定ハッシュ）
 
-その他：視界の対称性（乱数の盤の全ての床の組）と半径の円、スケジューラの速さの比と同時刻の順序、戦闘の式の範囲と最低 1、レベル、敵 5 種の考え（追跡・射撃の直線と遮蔽・盗んで跳ぶ・眠りと起床・見失った位置へ）、品 8 種、投げる（射程・壁・埋まった床・上限で消える）、満腹度と自然回復の境界、勝利、画面遷移・連続移動と停止・Shift と Ctrl・物理キーごとの保持・フォーカス喪失・持ち物の画面、設定アセットとコードの既定値の一致、タイトルへ戻った表示が起動直後と一致。
+その他：視界の対称性（乱数の盤の全ての床の組）と半径の円、スケジューラの速さの比と同時刻の順序、戦闘の式の範囲と最低 1、レベル、敵 5 種の考え（追跡・射撃の直線と遮蔽・盗んで跳ぶ・眠りと起床・見失った位置へ）、品 8 種、投げる（射程・壁・埋まった床・上限で消える）、満腹度と自然回復の境界、勝利、画面遷移・連続移動と停止・Shift と Ctrl・物理キーごとの保持・フォーカス喪失・持ち物の画面（2 列の格子の選択と品の絵）・全体の地図（押している間だけ・時間を使わない・見ていない所と視界の外の敵を描かない）・カメラ（タイトルは全体、試合中は自機の周り）、設定アセットとコードの既定値の一致、タイトルへ戻った表示が起動直後と一致。
 
 ## 未実装範囲
 

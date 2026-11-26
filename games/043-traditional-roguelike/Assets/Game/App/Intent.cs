@@ -28,6 +28,9 @@ namespace Game.App
 
         /// <summary>階段を降りる（. ・Enter はプレイ中の決定として同じ）。</summary>
         Descend,
+
+        /// <summary>押している間だけ、全体の地図を重ねて出す（M）。時間は使わない。</summary>
+        Map,
     }
 
     public enum IntentKind
@@ -50,7 +53,7 @@ namespace Game.App
         KeyDown,
         KeyUp,
 
-        /// <summary>持ち物の選択を <see cref="Intent.Argument"/>（±1）動かす。</summary>
+        /// <summary>持ち物の選択を <see cref="Intent.Argument"/> 動かす（左右は ±1、上下は ±<see cref="CrawlFlow.InventoryColumns"/>）。</summary>
         InventoryMove,
 
         /// <summary>選んだ品を使う・投げる・置く（持ち物の画面）。</summary>

@@ -34,6 +34,9 @@ namespace Game.App
     /// </summary>
     public sealed class CrawlFlow
     {
+        /// <summary>持ち物の画面の列の数。左右で 1 つ、上下で 1 行（この数）ずつ選択を動かす。HUD の並びもこの数に合わせる。</summary>
+        public const int InventoryColumns = 2;
+
         private readonly CrawlConfig _config;
         private readonly HeldKeys _held = new();
         private readonly List<RunEvent> _pendingEvents = new();
@@ -81,6 +84,9 @@ namespace Game.App
 
         public IPilot? Pilot { get; set; }
 
+        /// <summary>全体の地図を重ねて出すか（プレイ中に地図のキーを押している間だけ）。</summary>
+        public bool MapShown => Screen == AppScreen.Playing && _held.IsHeld(Control.Map);
+
         /// <summary>連続移動が止まっていて、方向キーを押し直すまで再開しないか。</summary>
         public bool RepeatHalted => _halted;
 
@@ -122,8 +128,7 @@ namespace Game.App
                 case IntentKind.InventoryMove:
                     if (Screen == AppScreen.Inventory && Run!.View.Inventory.Count > 0)
                     {
-                        var count = Run.View.Inventory.Count;
-                        Selected = (((Selected + intent.Argument) % count) + count) % count;
+                        Selected = MoveSelection(Selected, intent.Argument, Run.View.Inventory.Count);
                     }
 
                     break;
@@ -209,6 +214,7 @@ namespace Game.App
                     return;
                 case Control.Diagonal:
                 case Control.Turn:
+                case Control.Map:
                     return;
             }
 
@@ -239,6 +245,22 @@ namespace Game.App
             _repeating = true;
             _repeatWait = wait;
             _repeatAt = time + RepeatDelay;
+        }
+
+        /// <summary>
+        /// 選択を動かした先。左右（±1）は並びの順に端で折り返し、上下（±<see cref="InventoryColumns"/>）は同じ列の中で端から反対の端へ折り返す。
+        /// </summary>
+        public static int MoveSelection(int selected, int delta, int count)
+        {
+            if (count <= 0) { throw new ArgumentOutOfRangeException(nameof(count)); }
+            if (selected < 0 || selected >= count) { throw new ArgumentOutOfRangeException(nameof(selected)); }
+            if (delta != InventoryColumns && delta != -InventoryColumns) { return (((selected + delta) % count) + count) % count; }
+            var target = selected + delta;
+            if (target >= 0 && target < count) { return target; }
+            var column = selected % InventoryColumns;
+            if (delta > 0) { return column; }
+            var last = count - 1;
+            return last - ((last - column) % InventoryColumns);
         }
 
         /// <summary>連続移動の 1 歩。止める出来事があれば、押し直すまで止める。</summary>

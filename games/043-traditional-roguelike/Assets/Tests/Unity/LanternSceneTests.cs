@@ -108,7 +108,15 @@ namespace Game.Unity.Tests
         {
             yield return null;
             Assert.That(() => _game.Settings.Validate(), Throws.Nothing);
-            Assert.That(JsonUtility.ToJson(_game.Settings.Rules), Is.EqualTo(JsonUtility.ToJson(new CrawlConfig())), "コードの既定値を変えたら .asset も直す（024）");
+            var defaults = ScriptableObject.CreateInstance<LanternSettings>();
+            try
+            {
+                Assert.That(JsonUtility.ToJson(_game.Settings), Is.EqualTo(JsonUtility.ToJson(defaults)), "コードの既定値を変えたら .asset も直す（024）");
+            }
+            finally
+            {
+                Object.Destroy(defaults);
+            }
         }
 
         [UnityTest]
@@ -252,14 +260,103 @@ namespace Game.Unity.Tests
             yield return _keyboard.Tap(Key.I);
             Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Inventory));
             Assert.That(IsShown("inventory"), Is.True);
+            Assert.That(IconOf(Root.Q("bag").ElementAt(0)), Is.EqualTo(Stage.ItemSprite(ItemKind.Bread)), "持ち物に品の絵を出す");
+            Assert.That(IconOf(Root.Q("bag").ElementAt(2)), Is.Null, "空の枠には絵を出さない");
             yield return _keyboard.Tap(Key.DownArrow);
+            Assert.That(_game.Flow.Selected, Is.EqualTo(0), "2 列の格子で下の行がないので動かない");
+            yield return _keyboard.Tap(Key.RightArrow);
+            Assert.That(_game.Flow.Selected, Is.EqualTo(1), "右で隣へ");
+            yield return _keyboard.Tap(Key.LeftArrow);
+            Assert.That(_game.Flow.Selected, Is.EqualTo(0), "左で戻る");
+            yield return _keyboard.Tap(Key.D);
             Assert.That(_game.Flow.Selected, Is.EqualTo(1));
+            Assert.That(R.Player.Position, Is.EqualTo(start), "持ち物の画面の左右では歩かない");
             Assert.That(Text("detail-name"), Is.EqualTo("石"));
+            Assert.That(IconOf(Root.Q("detail-icon")), Is.EqualTo(Stage.ItemSprite(ItemKind.Stone)), "説明にも選んだ品の絵");
             yield return _keyboard.Tap(Key.T);
             Assert.That(_game.Flow.Screen, Is.EqualTo(AppScreen.Playing), "T は持ち物の画面では投げる（タイトルへは戻らない）");
             Assert.That(golem.Hp, Is.EqualTo(golem.MaxHp - R.Config.StoneDamage));
             Assert.That(R.Player.Inventory, Is.EqualTo(new[] { ItemKind.Bread }));
             Assert.That(Root.Q("lines").Children(), Has.Some.Matches<Label>(l => l.text.Contains("石が岩人形に当たった", StringComparison.Ordinal)));
+        }
+
+        private static Sprite IconOf(VisualElement element)
+        {
+            var e = element.ClassListContains("cell") ? element.Q(className: "cell-icon") : element;
+            var image = e.style.backgroundImage;
+            return image.keyword == StyleKeyword.Undefined ? image.value.sprite : null;
+        }
+
+        /// <summary>帯の間に映るワールドの範囲（行の数と、帯の間の中心）。</summary>
+        private (float Rows, Vector3 Center) MapWindow()
+        {
+            var camera = _game.ViewCamera;
+            var height = camera.orthographicSize * 2;
+            var mapShare = (LanternGame.ReferenceHeight - LanternGame.TopBand - LanternGame.BottomBand) / LanternGame.ReferenceHeight;
+            var bottomShare = LanternGame.BottomBand / LanternGame.ReferenceHeight;
+            var bottom = camera.transform.position.y - (height / 2);
+            var center = new Vector3(camera.transform.position.x, bottom + (height * bottomShare) + (height * mapShare / 2), 0);
+            return (height * mapShare, Stage.transform.InverseTransformPoint(center));
+        }
+
+        [UnityTest]
+        public IEnumerator CameraShowsTheWholeFloorOnTheTitleAndFollowsThePlayerInPlay()
+        {
+            yield return null;
+            var (titleRows, _) = MapWindow();
+            Assert.That(titleRows, Is.GreaterThanOrEqualTo(Stage.Height - .01f), "タイトルは盤の全体");
+            yield return StartGame();
+            var start = QuietRoom();
+            yield return null;
+            var (rows, center) = MapWindow();
+            Assert.That(rows, Is.EqualTo(_game.Settings.VisibleRows).Within(.01f), "試合中は周りの数行だけ");
+            Assert.That(rows, Is.LessThan(Stage.Height), "全体の俯瞰ではない");
+            var expected = LanternStage.CellCenter(start, Stage.Height);
+            Assert.That(center.x, Is.EqualTo(expected.x).Within(.01f));
+            Assert.That(center.y, Is.EqualTo(expected.y).Within(.01f));
+            yield return _keyboard.Tap(Key.Numpad6);
+            yield return null;
+            (_, center) = MapWindow();
+            Assert.That(center.x, Is.EqualTo(expected.x + 1).Within(.01f), "自機について動く");
+        }
+
+        [UnityTest]
+        public IEnumerator HoldingMShowsTheMinimapFromTheViewOnly()
+        {
+            yield return StartGame();
+            var home = QuietRoom();
+            Vec2i far = default;
+            foreach (var room in R.Grid.Rooms)
+            {
+                if (!R.View.IsKnown(room.Center)) { far = room.Center; }
+            }
+
+            Assert.That(far, Is.Not.EqualTo(default(Vec2i)), "まだ見ていない部屋がある");
+            var near = home + new Vec2i(1, 0);
+            var seen = R.AddMonster(MonsterKind.Skitter, near);
+            seen.SleepTurns = 1000;
+            var hidden = R.AddMonster(MonsterKind.Golem, far);
+            hidden.SleepTurns = 1000;
+            R.Refresh();
+            yield return null;
+            Assert.That(IsShown("map-layer"), Is.False, "押していなければ出さない");
+
+            var hash = R.Hash();
+            _keyboard.Hold(Key.M);
+            yield return null;
+            yield return null;
+            Assert.That(IsShown("map-layer"), Is.True, "押している間は出す");
+            Assert.That(R.Hash(), Is.EqualTo(hash), "地図を見ても時間は進まない");
+            var map = _game.Minimap;
+            Assert.That(map.CenterOf(home), Is.EqualTo(LanternMinimap.Player));
+            Assert.That(map.CenterOf(near), Is.EqualTo(LanternMinimap.Monster), "見えている敵は出す");
+            Assert.That(map.CenterOf(far), Is.EqualTo(LanternMinimap.Empty), "見ていない所は地形も敵も出さない");
+            Assert.That(map.CornerOf(home), Is.EqualTo(LanternMinimap.Room));
+
+            _keyboard.Hold();
+            yield return null;
+            yield return null;
+            Assert.That(IsShown("map-layer"), Is.False, "離すと消える");
         }
 
         [UnityTest]

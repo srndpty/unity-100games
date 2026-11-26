@@ -29,10 +29,16 @@ Button:active { background-color: rgb(60, 100, 72); }
 .inv-detail { width: 54%; }
 .inv-title { font-size: 24px; -unity-font-style: bold; color: rgb(255, 214, 120); margin: 0 0 8px 0; }
 .bag { flex-direction: row; flex-wrap: wrap; }
-.cell { width: 48%; height: 40px; margin: 3px 1% 0 1%; padding-left: 10px; font-size: 19px; -unity-text-align: middle-left; border-width: 1px; border-radius: 6px; border-color: rgba(110, 150, 90, 0.4); }
+.cell { width: 48%; height: 44px; margin: 3px 1% 0 1%; padding-left: 8px; flex-direction: row; align-items: center; border-width: 1px; border-radius: 6px; border-color: rgba(110, 150, 90, 0.4); }
+.cell-icon { width: 32px; height: 32px; margin-right: 8px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; }
+.cell-text { font-size: 19px; margin: 0; padding: 0; -unity-text-align: middle-left; }
 .selected { border-width: 3px; border-color: rgb(255, 230, 140); background-color: rgb(52, 80, 56); }
 .empty { color: rgba(226, 232, 222, 0.3); }
-.detail-name { font-size: 28px; -unity-font-style: bold; white-space: normal; margin-bottom: 10px; color: rgb(255, 230, 170); }
+.detail-head { flex-direction: row; align-items: center; margin-bottom: 10px; }
+.detail-icon { width: 64px; height: 64px; margin-right: 14px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; }
+.detail-name { font-size: 28px; -unity-font-style: bold; white-space: normal; flex-shrink: 1; color: rgb(255, 230, 170); }
 .detail { font-size: 21px; white-space: normal; margin-bottom: 18px; }
 .inv-keys { font-size: 18px; white-space: normal; color: rgba(226, 232, 222, 0.8); }
 .inv-facing { font-size: 18px; margin-top: 8px; color: rgb(170, 220, 255); }
+.map-layer { position: absolute; left: 0; right: 0; top: 64px; bottom: 200px; justify-content: center; align-items: center; background-color: rgba(0, 0, 0, 0.45); }
+.minimap { width: 1344px; height: 756px; -unity-background-scale-mode: stretch-to-fill; }

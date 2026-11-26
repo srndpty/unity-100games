@@ -1,0 +1,90 @@
+{
+    "Product": "MIRE LANTERN",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "dcc8daa46e634d609732416cafb1c07c",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-26T07:23:13.8602495Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "settings",
+            "Value": "{\"Rules\":{\"Width\":48,\"Height\":27,\"MinRooms\":6,\"MaxRooms\":9,\"MinExtraCorridors\":1,\"MaxExtraCorridors\":2,\"GenerationAttempts\":20,\"ViewRadius\":8,\"PlayerHp\":24,\"PlayerAttack\":5,\"PlayerDefense\":1,\"LevelExp\":[8,20,40,70,110,160,230,320,430],\"LevelHp\":5,\"LevelAttack\":1,\"LevelDefenseEvery\":2,\"RegenEvery\":6,\"MaxSatiety\":100,\"HungerEvery\":10,\"StarveDamage\":1,\"HungryWarning\":20,\"HitPercent\":90,\"DamageMinPercent\":87,\"DamageMaxPercent\":112,\"InventoryCapacity\":16,\"FloorItemCap\":48,\"ThrowRange\":10,\"MonstersBase\":4,\"MonstersPerFloor\":1,\"ItemsBase\":5,\"ItemsPerFloor\":1,\"HealAmount\":30,\"PoisonSelfDamage\":6,\"PoisonThrowDamage\":15,\"StoneDamage\":7,\"ThrowBumpDamage\":1,\"SleepTurns\":6,\"BreadSatiety\":50,\"BigBreadSatiety\":100,\"Monsters\":[{\"Kind\":0,\"Hp\":7,\"Attack\":3,\"Defense\":0,\"ActionCost\":50,\"Exp\":3,\"Range\":0,\"ArrowDamage\":0,\"FloorWeights\":[6,4,3,2,1]},{\"Kind\":1,\"Hp\":30,\"Attack\":9,\"Defense\":3,\"ActionCost\":200,\"Exp\":14,\"Range\":0,\"ArrowDamage\":0,\"FloorWeights\":[0,1,2,3,3]},{\"Kind\":2,\"Hp\":12,\"Attack\":3,\"Defense\":1,\"ActionCost\":100,\"Exp\":8,\"Range\":6,\"ArrowDamage\":4,\"FloorWeights\":[2,3,3,3,2]},{\"Kind\":3,\"Hp\":14,\"Attack\":2,\"Defense\":1,\"ActionCost\":100,\"Exp\":9,\"Range\":0,\"ArrowDamage\":0,\"FloorWeights\":[2,2,2,1,1]},{\"Kind\":4,\"Hp\":40,\"Attack\":11,\"Defense\":3,\"ActionCost\":100,\"Exp\":24,\"Range\":0,\"ArrowDamage\":0,\"FloorWeights\":[0,0,1,2,3]}],\"Items\":[{\"Kind\":0,\"FloorWeights\":[5,5,5,5,5]},{\"Kind\":1,\"FloorWeights\":[2,2,2,2,2]},{\"Kind\":2,\"FloorWeights\":[2,2,2,2,2]},{\"Kind\":3,\"FloorWeights\":[4,4,4,4,4]},{\"Kind\":4,\"FloorWeights\":[1,1,1,1,1]},{\"Kind\":5,\"FloorWeights\":[5,5,4,4,4]},{\"Kind\":6,\"FloorWeights\":[2,2,2,2,2]},{\"Kind\":7,\"FloorWeights\":[2,2,2,2,2]}]},\"Volume\":0.10000000149011612,\"RepeatDelay\":0.2199999988079071,\"RepeatInterval\":0.07000000029802322,\"VisibleRows\":13}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01-title.jpg",
+            "Sha256": "90e6969485c6cd858956016652eeca468d16ac4256ca7e3aca60d9a8c3507701",
+            "Note": "タイトル（背景は見本の階を記憶の色で描いたもの）"
+        },
+        {
+            "File": "02-howto.jpg",
+            "Sha256": "a1525973d04d54098c734ec257bfa252a54b696fb86e6e7a75f21c98aac0afb4",
+            "Note": "遊び方（操作・ターン・視界と記憶・満腹度・勝ち負け）"
+        },
+        {
+            "File": "03-start.jpg",
+            "Sha256": "d9504ff905f19da34716e25b93e4c695efadf9260c1bb55eeaf22123d5ec92c9",
+            "Note": "1 階の始め。画面は自機の周りだけを映し、見えているのは灯りの届く範囲だけ（他の地形は未知で黒）。シード 1、1 階、行動 0、HP 24/24、満腹 100、Lv 1"
+        },
+        {
+            "File": "04-explored.jpg",
+            "Sha256": "f40119ba4a55f29c4b27d5ae0f21c5c96abb85e197de69009d85c5c8c46cbf6c",
+            "Note": "探索の途中。見た地形は暗く残り（既知マップ）、明るいのは今の視界だけ。シード 1、1 階、行動 60、HP 29/29、満腹 94、Lv 2"
+        },
+        {
+            "File": "05-map.jpg",
+            "Sha256": "a244323ad6732c97d3efa66648a431b9dd9b5dec60bf6d20a51933b2e314ff25",
+            "Note": "M を押している間だけ重ねる全体の地図（見た床・階段・記憶の品・見えている敵・自機）。シード 1、1 階、行動 60、HP 29/29、満腹 94、Lv 2"
+        },
+        {
+            "File": "06-fight.jpg",
+            "Sha256": "22b0360feed400fe780eb85fd1f4367c573943064b09b67c29eb9c61188ec1bf",
+            "Note": "敵と戦う。下の欄に見えた出来事だけが文で出る。シード 1、1 階、行動 194、HP 27/29、満腹 81、Lv 2"
+        },
+        {
+            "File": "07-inventory.jpg",
+            "Sha256": "8377dc263db38fe413c27d9ba47309938d3790de9fe6aff688668527f42d6806",
+            "Note": "持ち物の画面（品の絵と名前の 2 列、矢印の上下左右で選ぶ。使う・投げる・置く、選んだ品の説明）。シード 1、1 階、行動 195、HP 32/34、満腹 81、Lv 3"
+        },
+        {
+            "File": "08-throw.jpg",
+            "Sha256": "8077c756a9533d230a5b5352b218347d0a614b35ce151cf702a5d06a7f7bb06f",
+            "Note": "直線上の敵へ品を投げて当てた。シード 1、2 階、行動 334、HP 32/34、満腹 67、Lv 3"
+        },
+        {
+            "File": "09-floor3.jpg",
+            "Sha256": "bc942f3fcf7103fe8950bbfbb84e0f7844f64891b4e21a01a197a7588ad4a781",
+            "Note": "階段を降りて 3 階。新しい階の既知マップは空から始まる。シード 1、3 階、行動 481、HP 39/39、満腹 52、Lv 4"
+        },
+        {
+            "File": "10-hungry.jpg",
+            "Sha256": "7c62a34edb5f6005b05f6f2261ce2109a8d8ed51448940bf012a7e04d37bf37c",
+            "Note": "満腹度が 20 まで減って「おなかが減ってきた」（10 行動で 1 減る）。シード 1、4 階、行動 800、HP 51/54、満腹 20、Lv 7"
+        },
+        {
+            "File": "11-floor5.jpg",
+            "Sha256": "930c3e7dc8cdef41168a08c9d9f2e78ca5ce171088d6081d4ab27de74974a6f8",
+            "Note": "5 階。この階の階段を降りれば生還。シード 1、5 階、行動 910、HP 54/54、満腹 9、Lv 7"
+        },
+        {
+            "File": "12-result.jpg",
+            "Sha256": "577a48fa426f7f8ee03f4615d0b674f110d49fb24debb09136d185ceb66c6249",
+            "Note": "結果の画面（勝敗・レベル・行動数・倒した敵）。シード 1、5 階、行動 990、HP 54/54、満腹 51、Lv 7"
+        },
+        {
+            "File": "13-dead.jpg",
+            "Sha256": "45f3891a137fa611a093ea40f691253ac7f815dd6935de55d712e188c781bd9a",
+            "Note": "足踏みを続けて敵に倒された結果。倒れたら最初から。シード 2、1 階、行動 56、HP 0/24、満腹 95、Lv 1"
+        },
+        {
+            "File": "14-pause.jpg",
+            "Sha256": "12b0fccd07e75f60c7fd85b100156e90adfa53d649cc6a9b63021e3c5670d478",
+            "Note": "一時停止。シード 3、1 階、行動 0、HP 24/24、満腹 100、Lv 1"
+        }
+    ]
+}

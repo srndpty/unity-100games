@@ -237,6 +237,83 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void InventorySelectionMovesOnTwoColumnGrid()
+        {
+            // 5 品：a b / c d / e
+            Assert.That(CrawlFlow.MoveSelection(0, 1, 5), Is.EqualTo(1), "右");
+            Assert.That(CrawlFlow.MoveSelection(1, 1, 5), Is.EqualTo(2), "右は並びの順に次の行へ");
+            Assert.That(CrawlFlow.MoveSelection(4, 1, 5), Is.EqualTo(0), "最後の右は先頭へ");
+            Assert.That(CrawlFlow.MoveSelection(0, -1, 5), Is.EqualTo(4), "先頭の左は最後へ");
+            Assert.That(CrawlFlow.MoveSelection(0, 2, 5), Is.EqualTo(2), "下は同じ列の次の行");
+            Assert.That(CrawlFlow.MoveSelection(4, 2, 5), Is.EqualTo(0), "左の列の最後の下は左の列の先頭へ");
+            Assert.That(CrawlFlow.MoveSelection(3, 2, 5), Is.EqualTo(1), "右の列の最後の下は右の列の先頭へ");
+            Assert.That(CrawlFlow.MoveSelection(0, -2, 5), Is.EqualTo(4), "左の列の先頭の上は左の列の最後へ");
+            Assert.That(CrawlFlow.MoveSelection(1, -2, 5), Is.EqualTo(3), "右の列の先頭の上は右の列の最後へ");
+            Assert.That(CrawlFlow.MoveSelection(0, 2, 1), Is.EqualTo(0), "1 品なら動かない");
+            Assert.That(CrawlFlow.MoveSelection(0, -2, 1), Is.EqualTo(0));
+            Assert.That(CrawlFlow.MoveSelection(1, -2, 2), Is.EqualTo(1), "1 行だけなら上下で動かない");
+            for (int count = 1; count <= 16; count++)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    foreach (var delta in new[] { -2, -1, 1, 2 })
+                    {
+                        var to = CrawlFlow.MoveSelection(i, delta, count);
+                        Assert.That(to, Is.InRange(0, count - 1));
+                        if (delta % 2 == 0) { Assert.That(to % 2, Is.EqualTo(i % 2), "上下は列を変えない"); }
+                    }
+                }
+            }
+        }
+
+        [Test]
+        public void InventoryMoveIntentUsesGrid()
+        {
+            var flow = Quiet(8);
+            var run = flow.Run!;
+            for (int i = 0; i < 5; i++) { run.Player.Inventory.Add(ItemKind.Stone); }
+            run.Refresh();
+            flow.Apply(Intent.Of(IntentKind.ToggleInventory, 0));
+            flow.Apply(Intent.Move(CrawlFlow.InventoryColumns, 0));
+            Assert.That(flow.Selected, Is.EqualTo(2));
+            flow.Apply(Intent.Move(1, 0));
+            Assert.That(flow.Selected, Is.EqualTo(3));
+            flow.Apply(Intent.Move(-CrawlFlow.InventoryColumns, 0));
+            Assert.That(flow.Selected, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void MapShowsOnlyWhileHeldDuringPlayAndUsesNoTime()
+        {
+            var flow = Quiet(8);
+            var run = flow.Run!;
+            var hash = run.Hash();
+            Assert.That(flow.MapShown, Is.False);
+            flow.Apply(Intent.Down(Control.Map, 0));
+            Assert.That(flow.MapShown, Is.True);
+            Assert.That(run.Hash(), Is.EqualTo(hash), "地図を見ても時間は進まない");
+            flow.Apply(Intent.Up(Control.Map, 1));
+            Assert.That(flow.MapShown, Is.False, "離すと消える");
+
+            flow.Apply(Intent.Down(Control.Map, 2));
+            flow.Apply(Intent.Of(IntentKind.Back, 3));
+            Assert.That(flow.MapShown, Is.False, "一時停止では出さない");
+            flow.Apply(Intent.Of(IntentKind.Submit, 4));
+            Assert.That(flow.MapShown, Is.False, "押していたキーは画面の切り替えで捨てる");
+
+            flow.Apply(Intent.Down(Control.Map, 5));
+            flow.SetFocus(false);
+            flow.SetFocus(true);
+            Assert.That(flow.MapShown, Is.False, "フォーカスを失ったら消す");
+
+            flow.Apply(Intent.Of(IntentKind.Submit, 6));
+            flow.Apply(Intent.Of(IntentKind.ToggleInventory, 7));
+            flow.Apply(Intent.Down(Control.Map, 8));
+            flow.Apply(Intent.Of(IntentKind.ToggleInventory, 9));
+            Assert.That(flow.MapShown, Is.False, "持ち物の画面で押したキーは持ち越さない");
+        }
+
+        [Test]
         public void SubmitOnStairsDescendsAndElsewhereExplains()
         {
             var flow = Quiet(9);

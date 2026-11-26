@@ -117,3 +117,4 @@ MonoBehaviour:
   Volume: 0.1
   RepeatDelay: 0.22
   RepeatInterval: 0.07
+  VisibleRows: 13

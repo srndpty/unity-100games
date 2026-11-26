@@ -40,6 +40,7 @@ namespace Game.Unity
         private FloorLayout _preview;
         private Font _font;
         private AudioSource _audio;
+        private LanternMinimap _minimap;
 
         public CrawlFlow Flow { get; private set; }
 
@@ -50,6 +51,9 @@ namespace Game.Unity
         public Camera ViewCamera => _camera;
 
         public LanternHud Hud { get; private set; }
+
+        /// <summary>全体の地図の絵（M を押している間だけ出す）。</summary>
+        public LanternMinimap Minimap => _minimap;
 
         public VisualElement HudRoot => Hud?.Root;
 
@@ -81,6 +85,7 @@ namespace Game.Unity
             // 再戦は新しいシード（起動時の値から試合ごとに 1 進める。010）。撮影中は固定のシード。
             var seed = EvidenceCapture.IsRunning ? EvidenceCapture.Seed : Environment.TickCount;
             Flow = new CrawlFlow(_rules, seed, _settings.RepeatDelay, _settings.RepeatInterval);
+            _minimap = new LanternMinimap(_stage.Width, _stage.Height);
             _audio = GetComponent<AudioSource>();
             _audio.playOnAwake = false;
             _audio.volume = _settings.Volume;
@@ -109,8 +114,11 @@ namespace Game.Unity
             Bind(new[] { IntentKind.BackToTitle, IntentKind.InventoryThrow }, "<Keyboard>/t");
             Bind(new[] { IntentKind.InventoryUse }, "<Keyboard>/u");
             Bind(new[] { IntentKind.InventoryDrop }, "<Keyboard>/x");
-            Select(-1, "<Keyboard>/upArrow", "<Keyboard>/w", "<Keyboard>/numpad8");
-            Select(1, "<Keyboard>/downArrow", "<Keyboard>/s", "<Keyboard>/numpad2");
+            // 持ち物は 2 列の格子：左右で 1 つ、上下で 1 行ずつ動かす。
+            Select(-1, "<Keyboard>/leftArrow", "<Keyboard>/a", "<Keyboard>/numpad4");
+            Select(1, "<Keyboard>/rightArrow", "<Keyboard>/d", "<Keyboard>/numpad6");
+            Select(-CrawlFlow.InventoryColumns, "<Keyboard>/upArrow", "<Keyboard>/w", "<Keyboard>/numpad8");
+            Select(CrawlFlow.InventoryColumns, "<Keyboard>/downArrow", "<Keyboard>/s", "<Keyboard>/numpad2");
 
             Hold(Control.Left, "<Keyboard>/leftArrow", "<Keyboard>/a");
             Hold(Control.Right, "<Keyboard>/rightArrow", "<Keyboard>/d");
@@ -123,6 +131,7 @@ namespace Game.Unity
             Hold(Control.Wait, "<Keyboard>/space", "<Keyboard>/numpad5");
             Hold(Control.Pickup, "<Keyboard>/g");
             Hold(Control.Descend, "<Keyboard>/period", "<Keyboard>/numpadPeriod");
+            Hold(Control.Map, "<Keyboard>/m");
 
             _font = Font.CreateDynamicFontFromOSFont("Yu Gothic", 24);
             _hudRenderer.RegisterUIReloadCallback(OnHudReloaded);
@@ -249,20 +258,35 @@ namespace Game.Unity
             Hud?.Render(Flow);
         }
 
-        /// <summary>盤の全体を、上の帯と下のメッセージ欄の間に収める（盤は 1 画面に収まる大きさ）。</summary>
+        /// <summary>
+        /// 上の帯と下のメッセージ欄の間に映す範囲を決める。試合中は自機を中心に周り <see cref="LanternSettings.VisibleRows"/> 行ぶん
+        /// （盤の外も黒のまま映す）、タイトルでは見本の階の全体（盤は 1 画面に収まる大きさ）。
+        /// </summary>
         private void Frame()
         {
             var aspect = Mathf.Max(.01f, _camera.aspect);
             var bottomShare = BottomBand / ReferenceHeight;
             var mapShare = (ReferenceHeight - TopBand - BottomBand) / ReferenceHeight;
+            var view = Flow.View;
+            float height;
+            Vector3 focus;
+            if (view == null)
+            {
+                // 縦は帯の間に盤の高さ、横は盤の幅と左右 1 マスの余白が入る大きさ。
+                height = Mathf.Max(_stage.Height / mapShare, (_stage.Width + 2) / aspect);
+                focus = new Vector3(_stage.Width / 2f, _stage.Height / 2f, 0);
+            }
+            else
+            {
+                height = _settings.VisibleRows / mapShare;
+                focus = LanternStage.CellCenter(view.Position, _stage.Height);
+            }
 
-            // 縦は帯の間に盤の高さ、横は盤の幅と左右 1 マスの余白が入る大きさ。
-            var height = Mathf.Max(_stage.Height / mapShare, (_stage.Width + 2) / aspect);
             _camera.orthographicSize = height / 2;
 
-            // 盤の中心が、帯の間の中心に来るようにする。
-            var centerY = (_stage.Height / 2f) + (height / 2) - (height * bottomShare) - (height * mapShare / 2);
-            var world = _stage.transform.TransformPoint(new Vector3(_stage.Width / 2f, centerY, 0));
+            // 注目点が、帯の間の中心に来るようにする。
+            var centerY = focus.y + (height / 2) - (height * bottomShare) - (height * mapShare / 2);
+            var world = _stage.transform.TransformPoint(new Vector3(focus.x, centerY, 0));
             _camera.transform.position = new Vector3(world.x, world.y, _camera.transform.position.z);
         }
 
@@ -271,7 +295,7 @@ namespace Game.Unity
             if (Hud != null && _version == version) { return; }
             _version = version;
             root.style.unityFont = _font;
-            Hud = new LanternHud(root, _rules.InventoryCapacity, intent => Queue(intent, true));
+            Hud = new LanternHud(root, _rules.InventoryCapacity, _stage.ItemSprite, _minimap, intent => Queue(intent, true));
             Connect(root, "submit", IntentKind.Submit);
             Connect(root, "back", IntentKind.Back);
             Connect(root, "title", IntentKind.BackToTitle);
@@ -304,6 +328,7 @@ namespace Game.Unity
             foreach (var action in _actions) { action.Dispose(); }
             if (_hudRenderer != null) { _hudRenderer.UnregisterUIReloadCallback(OnHudReloaded); }
             Destroy(_font);
+            _minimap?.Dispose();
             foreach (var clip in _clips) { Destroy(clip); }
         }
     }

@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using Game.App;
 using Game.Core;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Game.Unity
 {
     /// <summary>
-    /// HUD（UI Toolkit）。上の帯（階・レベル・HP・満腹度・行動数）、下のメッセージ欄、タイトルなどのパネル、持ち物の画面。
+    /// HUD（UI Toolkit）。上の帯（階・レベル・HP・満腹度・行動数）、下のメッセージ欄、タイトルなどのパネル、持ち物の画面（品の絵と名前）、
+    /// 地図のキーを押している間だけ重ねる全体の地図。
     /// 数値は <see cref="PlayerView"/>、文は <see cref="MessageLog"/> から出すだけ。書き換えは表示が変わるときだけ行う。
     /// ボタンは意図にして <see cref="_queue"/> へ渡す（キーと同じ列で処理する）。
     /// </summary>
@@ -17,15 +19,20 @@ namespace Game.Unity
 
         private readonly VisualElement _root;
         private readonly List<Label> _lines = new();
-        private readonly List<Label> _cells = new();
+        private readonly List<(VisualElement Cell, VisualElement Icon, Label Text)> _cells = new();
+        private readonly Func<ItemKind, Sprite> _itemSprite;
+        private readonly LanternMinimap _minimap;
+        private bool? _shownMap;
         private (int RunNumber, int Version, AppScreen Screen) _shownStats = (-1, -1, AppScreen.Title);
         private (int Messages, AppScreen Screen) _shownLog = (-1, AppScreen.Title);
         private (AppScreen Screen, int RunNumber) _shownPanel = ((AppScreen)(-1), -1);
         private (int Version, int Selected, AppScreen Screen, int RunNumber) _shownInventory = (-1, -1, AppScreen.Title, -1);
 
-        public LanternHud(VisualElement root, int inventoryCapacity, Action<Intent> queue)
+        public LanternHud(VisualElement root, int inventoryCapacity, Func<ItemKind, Sprite> itemSprite, LanternMinimap minimap, Action<Intent> queue)
         {
             _root = root ?? throw new ArgumentNullException(nameof(root));
+            _itemSprite = itemSprite ?? throw new ArgumentNullException(nameof(itemSprite));
+            _minimap = minimap ?? throw new ArgumentNullException(nameof(minimap));
             if (queue == null) { throw new ArgumentNullException(nameof(queue)); }
             var lines = root.Q("lines");
             for (int i = 0; i < LogLines; i++)
@@ -39,11 +46,19 @@ namespace Game.Unity
             var bag = root.Q("bag");
             for (int i = 0; i < inventoryCapacity; i++)
             {
-                var cell = new Label(" ");
+                var cell = new VisualElement();
                 cell.AddToClassList("cell");
+                var icon = new VisualElement();
+                icon.AddToClassList("cell-icon");
+                var text = new Label(" ");
+                text.AddToClassList("cell-text");
+                cell.Add(icon);
+                cell.Add(text);
                 bag.Add(cell);
-                _cells.Add(cell);
+                _cells.Add((cell, icon, text));
             }
+
+            root.Q("minimap").style.backgroundImage = new StyleBackground(minimap.Texture);
 
             root.Query<Button>().ForEach(button => button.focusable = false);
         }
@@ -65,7 +80,7 @@ namespace Game.Unity
         public static string HowToText(CrawlConfig c) =>
             "移動：テンキー 1〜9（8 方向）、または矢印 / WASD。Shift を押しながら 2 キーで斜め。Ctrl＋方向で向きだけ変える。\n" +
             "敵のいる方へ動くと攻撃。Space / テンキー 5 で足踏み。品の上に乗ると拾う（G でも拾う）。階段の上で . か Enter で降りる。\n" +
-            "I で持ち物：使う・投げる（向いている方へ）・置く。Esc で一時停止。\n" +
+            "I で持ち物：使う・投げる（向いている方へ）・置く。M を押している間は全体の地図を重ねて出す。Esc で一時停止。\n" +
             "あなたが 1 回動くと、敵もそれぞれの速さで動く（速い敵は 2 回）。壁に向かうなど無効な操作では誰も動かない。\n" +
             $"見えているのは周り {c.ViewRadius} マスまで。一度見た地形は暗く残り、品は最後に見たものを覚えている。敵は見えている間だけ映る。\n" +
             $"満腹度は {c.HungerEvery} 行動で 1 減り、0 になると HP が減っていく。パンを食べて補う。5 階の階段を降りれば生還。倒れたら最初から。";
@@ -77,6 +92,16 @@ namespace Game.Unity
             RenderLog(flow);
             RenderPanel(flow);
             RenderInventory(flow);
+            RenderMap(flow);
+        }
+
+        private void RenderMap(CrawlFlow flow)
+        {
+            var show = flow.MapShown && flow.View != null;
+            if (show) { _minimap.Paint(flow.View!); }
+            if (show == _shownMap) { return; }
+            _shownMap = show;
+            Show("map-layer", show);
         }
 
         private void RenderStats(CrawlFlow flow)
@@ -174,15 +199,17 @@ namespace Game.Unity
             _root.Q<Label>("bag-title").text = $"持ち物 {items.Count} / {view.InventoryCapacity}";
             for (int i = 0; i < _cells.Count; i++)
             {
-                var cell = _cells[i];
+                var (cell, icon, text) = _cells[i];
                 var has = i < items.Count;
-                cell.text = has ? $"{(char)('a' + i)}  {Names.Of(items[i])}" : "―";
+                text.text = has ? $"{(char)('a' + i)}  {Names.Of(items[i])}" : "―";
+                icon.style.backgroundImage = has ? new StyleBackground(_itemSprite(items[i])) : new StyleBackground(StyleKeyword.None);
                 cell.EnableInClassList("empty", !has);
                 cell.EnableInClassList("selected", has && i == flow.Selected);
             }
 
             var selected = flow.Selected < items.Count ? items[flow.Selected] : (ItemKind?)null;
             _root.Q<Label>("detail-name").text = selected.HasValue ? Names.Of(selected.Value) : "持ち物は空です";
+            _root.Q("detail-icon").style.backgroundImage = selected.HasValue ? new StyleBackground(_itemSprite(selected.Value)) : new StyleBackground(StyleKeyword.None);
             _root.Q<Label>("detail").text = selected.HasValue ? Names.Describe(selected.Value, flow.Config) : " ";
             _root.Q<Label>("facing").text = $"今の向き：{DirectionName(view.Facing)}";
         }
