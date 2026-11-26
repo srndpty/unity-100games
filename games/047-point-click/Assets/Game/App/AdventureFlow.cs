@@ -120,6 +120,9 @@ namespace Game.App
 
         public bool Solved(int puzzle) => _world?.Solved(puzzle) ?? false;
 
+        /// <summary>部屋の座標の点にある、今の部屋の見えている物で一番手前のもの（遊んでいなければ -1）。</summary>
+        public int HotspotAt(int x, int y) => _world?.HotspotAt(new Vec2i(x, y)) ?? -1;
+
         /// <summary>持ち物（手に入れた順、枠の順）。</summary>
         public IReadOnlyList<int> Inventory => _world?.Inventory ?? Array.Empty<int>();
 
