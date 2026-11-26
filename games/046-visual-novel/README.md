@@ -132,6 +132,11 @@ dev capture 046  # 証跡を evidence/ に撮る（画像は captures/<画像世
 | Core | `Assets/Tests/Core/` | `dev test 046`（.NET）／`dev test 046 -Unity`（Mono） | 76 |
 | App | `Assets/Tests/App/` | 同上 | 35 |
 | Editor | `Assets/Tests/Editor/` | `dev test 046 -Unity` | 4 |
+| PlayMode（実シーン） | `Assets/Tests/Unity/NovelSceneTests.cs` | `dev test 046 -Unity -Mode PlayMode` | 12 |
+
+PlayMode は `Time.timeScale = 0` で実時間を止め、仮想キーボード・仮想マウスで入力を送り、Tick はテストから進める。キーだけで最初の選択肢まで読む・クリックでタイトルの項目と選択肢を選ぶ・フォーカス復帰のクリックを捨てる・Ctrl のスキップが最初の未読で止まる・F5/F9 とシーンを読み直した「つづきから」・壊れたクイックセーブの案内・3 つの結末の結果画面とタイトルへ戻った表示・枠を隠す・一時停止からタイトル・終了を確かめる。
+
+検証の記録と画面は [evidence/README.md](evidence/README.md)。
 
 題材固有テストの場所：
 
@@ -142,6 +147,12 @@ dev capture 046  # 証跡を evidence/ に撮る（画像は captures/<画像世
 | ロードで選択前状態復帰 | `RunnerTests.RestoringChoiceSnapshot*`・`SaveTests.QuickSaveAtChoiceRestoresBeforeTheChoice`・`FlowTests.QuickLoadReturnsToBeforeTheChoice` |
 
 固定値（.NET と Mono で一致）：スクリプトの指紋 `FE5A8E61`、各結末の代表の選び方の最終ハッシュ 真相 `41310A48`・通常 `82B1D343`・バッド `BED96A3E`。
+
+## 未解決事項・試遊で見てほしい点
+
+- 文字送りの速さ（既定 2 Tick/字 ＝ 30 字/秒）、スキップの間隔（4 Tick/文）、案内を出す長さは `NovelSettings.asset` で変えられる。試遊で決める。
+- クリックとキーの感触（押した瞬間に効く・表示途中の決定で全文）、Ctrl と S のスキップの止まり方、選択肢の分かりやすさ、1 周の長さ（10 分相当か）、3 つの結末の分かれ方、音量。
+- 立ち絵は生成した簡素なドット絵（表情は目と口だけ）。
 
 ## 未実装範囲
 
