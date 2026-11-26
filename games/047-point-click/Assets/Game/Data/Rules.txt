@@ -1,0 +1,132 @@
+# 灯台守小屋（047 の本番のルール表）。文法は README の「ルール表の文法」。
+# 嵐の夜、灯台の灯が消えた。灯をともせば、船頭が小舟で町へ送ってくれる。
+# 座標は 1920 × 1080 の画面そのまま（y は下から）。下の 200 は HUD の帯なので、床（足もと）は y = 230。
+
+@start cottage
+
+@room cottage 灯台守小屋 width 1920 start 960
+@room dock 船着き場 width 1920 start 160
+@room lighthouse 灯室 width 1920 start 1700
+
+# ---- 灯台守小屋 ----
+@exit cottage.door 外への戸 rect 1760 230 1900 760 stand 1820 -> dock at 160
+@exit cottage.tower_door 灯台への扉 rect 40 230 220 780 stand 150 -> lighthouse at 1700 locked
+@object cottage.window 窓 rect 380 520 660 820 stand 520
+@object cottage.table 机 rect 700 230 1040 470 stand 870
+@object cottage.knife 包丁 rect 740 470 860 520 stand 800
+@object cottage.cup カップ rect 900 470 970 550 stand 935
+@object cottage.shelf 棚 rect 1100 600 1400 860 stand 1250
+@object cottage.tea_tin 茶葉の缶 rect 1180 690 1260 790 stand 1220
+@object cottage.bottle 空き瓶 rect 1440 230 1510 380 stand 1475
+@object cottage.stove ストーブ rect 1540 230 1720 600 stand 1630
+
+# ---- 船着き場 ----
+@exit dock.path 小屋への小道 rect 20 230 200 720 stand 120 -> cottage at 1700
+@object dock.net 漁網 rect 330 230 640 430 stand 480
+@object dock.barrel 油樽 rect 760 230 920 470 stand 840
+@npc dock.captain 船頭 rect 1080 230 1240 600 stand 1010
+@object dock.boat 小舟 rect 1380 230 1880 420 stand 1400
+@object dock.sea 嵐の海 rect 1300 421 1920 900 stand 1500
+
+# ---- 灯室 ----
+@exit lighthouse.stairs 下への階段 rect 1720 230 1900 700 stand 1780 -> cottage at 330
+@object lighthouse.window 窓の外 rect 160 420 520 880 stand 340
+@object lighthouse.lamp ランプ rect 760 380 1160 900 stand 960
+@object lighthouse.logbook 灯台日誌 rect 1300 230 1500 420 stand 1400
+
+# ---- 持ち物 ----
+@item knife 包丁
+@item rusty_key 錆びた鍵
+@item bottle 空き瓶
+@item oil 油の瓶
+@item cup カップ
+@item hot_water お湯のカップ
+@item tea_leaves 茶葉
+@item tea 温かいお茶
+@item matches マッチ
+
+@flag met_captain
+@flag asked_leave
+@flag asked_fire
+@flag tap_open
+@flag lamp_oiled
+
+# ---- 謎（after は先に解く謎） ----
+@puzzle free_key 網から鍵を外す
+@puzzle open_tower 灯台の扉を開ける after free_key
+@puzzle draw_oil 樽から油を汲む
+@puzzle warm_captain 船頭にお茶を出す
+@puzzle light_lamp 灯台に灯をともす after open_tower draw_oil warm_captain
+@goal light_lamp
+
+# ---- 小屋のルール ----
+look cottage.door : 「船着き場へ出る戸だ。」
+look cottage.tower_door when !solved open_tower : 「灯台へ続く扉。錆びた錠がかかっている。」
+look cottage.tower_door when solved open_tower : 「灯台へ続く扉。もう開いている。」
+use knife on cottage.tower_door : 「包丁でこじ開けるのは無理だ。鍵がいる。」
+use rusty_key on cottage.tower_door : unlock cottage.tower_door ; lose rusty_key ; solve open_tower ; 「錆びた鍵が回った！ 扉が開いた。」
+look cottage.window : 「横殴りの雨だ。灯台の灯が消えている。」
+look cottage.table : 「使い込まれた木の机だ。」
+look cottage.knife : 「よく研いだ包丁だ。」
+take cottage.knife : give knife ; hide cottage.knife ; 「包丁を手に取った。」
+look cottage.cup : 「空のカップだ。」
+take cottage.cup : give cup ; hide cottage.cup ; 「カップを手に取った。」
+look cottage.shelf : 「缶や瓶が並んだ棚だ。」
+look cottage.tea_tin : 「茶葉の缶だ。」
+take cottage.tea_tin : give tea_leaves ; hide cottage.tea_tin ; 「缶から茶葉をひとつかみ取った。」
+look cottage.bottle : 「空き瓶だ。何か入れられそうだ。」
+take cottage.bottle : give bottle ; hide cottage.bottle ; 「空き瓶を拾った。」
+look cottage.stove : 「ストーブの上でやかんが湯気を立てている。」
+use cup on cottage.stove : lose cup ; give hot_water ; 「やかんのお湯をカップに注いだ。」
+use bottle on cottage.stove : 「油を入れる瓶だ。お湯は要らない。」
+
+# ---- 船着き場のルール ----
+look dock.path : 「小屋へ戻る小道だ。」
+look dock.net when !solved free_key : 「古い漁網に、何か光る物が絡まっている。」
+look dock.net when solved free_key : 「切れた漁網だ。」
+take dock.net when !solved free_key : 「固く絡まっていて、手では外せない。」
+use knife on dock.net : solve free_key ; give rusty_key ; 「網を切ると、錆びた鍵が落ちた。」
+look dock.barrel when !tap_open : 「灯台用の油の樽だ。栓が固く閉まっている。」
+look dock.barrel when tap_open : 「灯台用の油の樽だ。栓はゆるんでいる。」
+use knife on dock.barrel when !tap_open : set tap_open ; 「包丁でこじると、栓がゆるんだ。」
+use knife on dock.barrel when tap_open : 「栓はもうゆるんでいる。」
+use bottle on dock.barrel when !tap_open : 「栓が固くて開かない。何かでこじれば……。」
+use bottle on dock.barrel when tap_open : lose bottle ; give oil ; solve draw_oil ; 「瓶に油を汲んだ。」
+look dock.captain when !met_captain : 「小舟のそばで、男が寒そうに震えている。」
+look dock.captain when met_captain : 「町の船頭だ。寒そうに震えている。」
+talk dock.captain when !met_captain : set met_captain ; 「おう、灯台守の見習いか。ひどい嵐だな。」
+talk dock.captain when met_captain : 「どうした？」
+use hot_water on dock.captain : 「ただのお湯か。せめて茶葉くらい入れてくれ。」
+use tea on dock.captain when !asked_fire : 「茶か。ありがたいが、何の用だ？」
+use tea on dock.captain when asked_fire : lose tea ; give matches ; solve warm_captain ; 「ああ、生き返る。約束のマッチだ。」
+look dock.boat : 「船頭の小舟だ。嵐の中でも出せそうだ。」
+look dock.sea : 「荒れた海だ。岩場で白い波が砕けている。」
+
+topic dock.captain leave 「町へ戻れませんか？」 when !asked_leave : set asked_leave ; 「灯台の灯が消えてちゃ、岩場を抜けられん。」 ; 「灯がともれば、すぐ船を出すさ。」
+topic dock.captain leave_again 「灯台のことですが……」 when asked_leave : 「灯がともれば船を出す。それだけだ。」
+topic dock.captain fire 「火を持っていませんか？」 when asked_leave and !asked_fire : set asked_fire ; 「マッチならある。だが体が冷えてかなわん。」 ; 「温かい茶でも一杯あればなあ。」
+topic dock.captain fire_again 「マッチを貸してください。」 when asked_fire and !solved warm_captain : 「温かい茶が先だ。小屋にストーブがあるだろう。」
+topic dock.captain storm 「ひどい嵐ですね。」 : 「朝までは止まんだろうな。」
+
+# ---- 灯室のルール ----
+look lighthouse.stairs : 「小屋へ下りる階段だ。」
+look lighthouse.window : 「嵐の海だ。灯がなければ船は出せない。」
+look lighthouse.logbook : 「日誌だ。油は船着き場の樽、火は船頭が持っている。」
+look lighthouse.lamp when !lamp_oiled : 「大きなランプだ。油が切れて消えている。」
+look lighthouse.lamp when lamp_oiled : 「油は入った。あとは火をつけるだけだ。」
+use oil on lighthouse.lamp : lose oil ; set lamp_oiled ; 「ランプに油を注いだ。あとは火だ。」
+use matches on lighthouse.lamp when !lamp_oiled : 「油が空だ。先に油を入れないと。」
+use matches on lighthouse.lamp when lamp_oiled : lose matches ; solve light_lamp ; 「灯がともった！ 光が嵐の海を照らす。」
+
+# ---- 持ち物 ----
+look knife : 「よく研いだ包丁だ。」
+look rusty_key : 「錆びた鍵だ。灯台の錠に合いそうだ。」
+look bottle : 「空き瓶だ。」
+look oil : 「灯台用の油が入っている。」
+look cup : 「空のカップだ。」
+look hot_water : 「熱いお湯の入ったカップだ。」
+look tea_leaves : 「ひとつかみの茶葉だ。」
+look tea : 「湯気の立つお茶だ。」
+look matches : 「湿っていないマッチだ。」
+use tea_leaves on hot_water : lose tea_leaves ; lose hot_water ; give tea ; 「茶葉を入れて、温かいお茶ができた。」
+use tea_leaves on cup : 「お湯がなければお茶にならない。」

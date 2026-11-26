@@ -1,0 +1,24 @@
+# 解答手順（テスト・撮影で再生する。ゲーム本体は使わない）。書き方は「go 出口」「bye」と、ルールの頭の書き方。
+look cottage.window
+take cottage.knife
+take cottage.cup
+take cottage.tea_tin
+take cottage.bottle
+use cup on cottage.stove
+use tea_leaves on hot_water
+go cottage.door
+look dock.net
+use knife on dock.net
+use bottle on dock.barrel
+use knife on dock.barrel
+use bottle on dock.barrel
+talk dock.captain
+topic dock.captain leave
+topic dock.captain fire
+bye
+use tea on dock.captain
+go dock.path
+use rusty_key on cottage.tower_door
+go cottage.tower_door
+use oil on lighthouse.lamp
+use matches on lighthouse.lamp

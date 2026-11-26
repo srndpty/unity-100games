@@ -19,12 +19,9 @@ namespace Game.Core.Tests
             Assert.That(report.Errors, Is.Empty);
             // 到達できる全ての状態で、そこから脱出できる手順があることを、手の列で 1 つずつ確かめ直す（探索とは別の経路）。
             var book = Lab.Book;
-            var states = Enumerate(book);
+            var states = Lab.Enumerate(book);
             Assert.That(states.Length, Is.EqualTo(report.States));
-            foreach (var w in states)
-            {
-                Assert.That(CanEscape(w), Is.True, w.AbstractKey());
-            }
+            Assert.That(Lab.StuckStates(book), Is.Empty);
         }
 
         [Test]
@@ -173,53 +170,6 @@ namespace Game.Core.Tests
             Assert.That(PuzzleGraph.Reduce(Lab.Ints(0, 1, 3)), Is.EqualTo(Lab.Ints(0, 1, 2)));
         }
 
-        // ---- 道具 ----
-
-        /// <summary>探索とは独立に、手の列を深さ優先でたどって到達状態を列挙する。</summary>
-        private static World[] Enumerate(RuleBook book)
-        {
-            var seen = new System.Collections.Generic.Dictionary<string, World>(StringComparer.Ordinal);
-            var stack = new System.Collections.Generic.Stack<World>();
-            var start = new World(book, new WorldSettings());
-            seen[start.AbstractKey()] = start;
-            stack.Push(start);
-            while (stack.Count > 0)
-            {
-                var w = stack.Pop();
-                foreach (var m in StateSpace.Moves(w))
-                {
-                    var n = w.Clone();
-                    m.ApplyInstantly(n);
-                    var k = n.AbstractKey();
-                    if (seen.ContainsKey(k)) { continue; }
-                    seen[k] = n;
-                    stack.Push(n);
-                }
-            }
-
-            return seen.Values.ToArray();
-        }
-
-        private static bool CanEscape(World from)
-        {
-            var seen = new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal) { from.AbstractKey() };
-            var queue = new System.Collections.Generic.Queue<World>();
-            queue.Enqueue(from);
-            while (queue.Count > 0)
-            {
-                var w = queue.Dequeue();
-                if (w.Escaped) { return true; }
-                foreach (var m in StateSpace.Moves(w))
-                {
-                    var n = w.Clone();
-                    m.ApplyInstantly(n);
-                    if (seen.Add(n.AbstractKey())) { queue.Enqueue(n); }
-                }
-            }
-
-            return false;
-        }
-
-        private static int MaxHeld() => Enumerate(Lab.Book).Max(w => w.Inventory.Count);
+        private static int MaxHeld() => Lab.Enumerate(Lab.Book).Max(w => w.Inventory.Count);
     }
 }

@@ -1,5 +1,8 @@
 using System;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using Game.Core.Analysis;
 using Game.Core.Play;
 using Game.Core.Rules;
 using NUnit.Framework;
@@ -138,6 +141,102 @@ look torch : 「火のついた松明。」
         {
             Assert.That(Small.Contains(from, StringComparison.Ordinal), Is.True, from);
             return Small.Replace(from, to, StringComparison.Ordinal);
+        }
+
+        public static string DataText(string name, [CallerFilePath] string source = "")
+        {
+            var dir = Path.GetDirectoryName(source) ?? ".";
+            return File.ReadAllText(Path.GetFullPath(Path.Combine(dir, "..", "..", "Game", "Data", name)));
+        }
+
+        public static string ReadmeText([CallerFilePath] string source = "")
+        {
+            var dir = Path.GetDirectoryName(source) ?? ".";
+            return File.ReadAllText(Path.GetFullPath(Path.Combine(dir, "..", "..", "..", "README.md")));
+        }
+
+        /// <summary>手の列を、遊ぶときと同じく歩いて着いた Tick に解決させて進める。</summary>
+        public static World PlayWalking(RuleBook book, System.Collections.Generic.IEnumerable<Move> moves, int walkSpeed = 10)
+        {
+            var w = new World(book, new WorldSettings { WalkSpeed = walkSpeed });
+            foreach (var m in moves)
+            {
+                Outcome o;
+                switch (m.Kind)
+                {
+                    case MoveKind.Ask:
+                        o = w.Ask(m.Topic);
+                        break;
+                    case MoveKind.EndTalk:
+                        o = w.EndTalk();
+                        break;
+                    default:
+                        o = w.Act(m.Verb, m.Target, m.Tool);
+                        break;
+                }
+
+                Assert.That(o.Accepted, Is.True, $"{m.Describe(book)}: {o.Reason}");
+                for (int i = 0; i < 10000 && w.IsWalking; i++) { w.Step(); }
+            }
+
+            return w;
+        }
+
+        /// <summary>探索とは独立に、手の列を深さ優先でたどって到達状態を列挙する。</summary>
+        public static World[] Enumerate(RuleBook book)
+        {
+            var seen = new System.Collections.Generic.Dictionary<string, World>(StringComparer.Ordinal);
+            var stack = new System.Collections.Generic.Stack<World>();
+            var start = new World(book, new WorldSettings());
+            seen[start.AbstractKey()] = start;
+            stack.Push(start);
+            while (stack.Count > 0)
+            {
+                var w = stack.Pop();
+                foreach (var m in StateSpace.Moves(w))
+                {
+                    var n = w.Clone();
+                    m.ApplyInstantly(n);
+                    var k = n.AbstractKey();
+                    if (seen.ContainsKey(k)) { continue; }
+                    seen[k] = n;
+                    stack.Push(n);
+                }
+            }
+
+            return seen.Values.ToArray();
+        }
+
+        /// <summary>
+        /// 探索とは独立に、脱出できない到達状態の鍵を求める。全ての状態と次の状態を列挙し、
+        /// 「脱出した、または次のどれかが脱出できる」が変わらなくなるまで繰り返す（不動点）。
+        /// </summary>
+        public static string[] StuckStates(RuleBook book)
+        {
+            var states = Enumerate(book);
+            var keys = states.Select(w => w.AbstractKey()).ToArray();
+            var index = new System.Collections.Generic.Dictionary<string, int>(StringComparer.Ordinal);
+            for (int i = 0; i < keys.Length; i++) { index[keys[i]] = i; }
+            var next = states.Select(w => StateSpace.Moves(w).Select(m =>
+            {
+                var n = w.Clone();
+                m.ApplyInstantly(n);
+                return index[n.AbstractKey()];
+            }).ToArray()).ToArray();
+            var ok = states.Select(w => w.Escaped).ToArray();
+            bool changed = true;
+            while (changed)
+            {
+                changed = false;
+                for (int i = 0; i < ok.Length; i++)
+                {
+                    if (ok[i] || !next[i].Any(n => ok[n])) { continue; }
+                    ok[i] = true;
+                    changed = true;
+                }
+            }
+
+            return keys.Where((k, i) => !ok[i]).ToArray();
         }
 
         /// <summary>配列の定数を引数に直接書かない（CA1861）ための道具。</summary>
