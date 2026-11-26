@@ -65,8 +65,8 @@ namespace Game.Unity
         }
 
         /// <summary>
-        /// 席を立ち位置へ割り当てる。始めの敵は出た順に 0・1・2、呼ばれた敵は倒れた敵の位置か空いた位置の若い方へ。
-        /// 卓だけから決まるので、HUD の重ね表示も同じ割り当てを使う。
+        /// 席を立ち位置へ割り当てる。席は番号の位置（1 番 → 0）に立ち、そこが埋まっていれば（呼ばれた敵）倒れた敵の位置か空いた位置の若い方へ。
+        /// 倒れた敵の位置に後ろの敵が詰めて動くことはない。卓だけから決まるので、HUD の重ね表示も同じ割り当てを使う。
         /// </summary>
         public static void Assign(TableModel table, Seat[] slots)
         {
@@ -75,7 +75,7 @@ namespace Game.Unity
             for (int i = 1; i < table.Seats.Count; i++)
             {
                 var seat = table.Seats[i];
-                var slot = -1;
+                var slot = i - 1 < slots.Length && slots[i - 1] == null ? i - 1 : -1;
                 for (int s = 0; s < slots.Length && slot < 0; s++)
                 {
                     if (slots[s] == null || !slots[s].Alive) { slot = s; }

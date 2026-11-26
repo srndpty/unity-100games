@@ -172,10 +172,13 @@ namespace Game.App
                 case EventKind.Defeat:
                     Phase = BattlePhase.Lost;
                     break;
+                case EventKind.Died:
+                    // 記録が揃っていれば HP は既に 0。倒れた印として HP 0 に揃える。
+                    Seat(e.Target).Hp = 0;
+                    break;
                 case EventKind.EnemyActed:
                 case EventKind.HandFull:
                 case EventKind.Fizzled:
-                case EventKind.Died:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(e), e.Kind, "未定義の出来事です。");
