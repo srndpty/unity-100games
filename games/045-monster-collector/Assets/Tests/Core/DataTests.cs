@@ -58,7 +58,7 @@ namespace Game.Core.Tests
                 "Species.txt",
                 "species burrowroot ネモグラ moss 56 56 46 40 190 54",
                 "species extra ナナツメ moss 50 50 50 50 100 50\nlearn 1 tackle\nspecies burrowroot ネモグラ moss 56 56 46 40 190 54");
-            Assert.That(MonsterDataValidator.Validate(data), Has.Some.Contains("種族は 6 種"));
+            Assert.That(MonsterDataValidator.Validate(data).Exists(e => e.Contains("種族は 6 種", StringComparison.Ordinal)), Is.True);
         }
 
         [TestCase("Moves.txt", "do inflict poison 100", "do inflict fever 100")]
@@ -83,7 +83,7 @@ namespace Game.Core.Tests
                 Lab.DataText("Moves.txt").Replace("move blaze ほむらうず ember 85 85 8 0", "move blaze ほむらうず ember 85 0 8 0", StringComparison.Ordinal),
                 Lab.DataText("Species.txt"),
                 Lab.DataText("World.txt")));
-            Assert.That(ex!.Message, Does.Contain("blaze"));
+            Assert.That(ex!.Message.Contains("blaze", System.StringComparison.Ordinal), Is.True, ex!.Message);
         }
     }
 }
