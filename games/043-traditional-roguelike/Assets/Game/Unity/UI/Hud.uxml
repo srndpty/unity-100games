@@ -1,0 +1,44 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Hud.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:VisualElement name="stats" class="stats" picking-mode="Ignore">
+            <ui:Label name="floor" text=" " class="stat floor" picking-mode="Ignore" />
+            <ui:Label name="level" text=" " class="stat level" picking-mode="Ignore" />
+            <ui:VisualElement class="bar hp-bar" picking-mode="Ignore">
+                <ui:VisualElement name="hp-fill" class="bar-fill hp-fill" picking-mode="Ignore" />
+                <ui:Label name="hp" text=" " class="bar-text" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:VisualElement class="bar food-bar" picking-mode="Ignore">
+                <ui:VisualElement name="food-fill" class="bar-fill food-fill" picking-mode="Ignore" />
+                <ui:Label name="food" text=" " class="bar-text" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label name="turns" text=" " class="stat turns" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:VisualElement name="log" class="log" picking-mode="Ignore">
+            <ui:Label name="hint" text="テンキー/矢印 移動（Shift で斜め・Ctrl で向き）　Space 足踏み　G 拾う　. / Enter 降りる　I 持ち物　Esc 一時停止" class="hint" picking-mode="Ignore" />
+            <ui:VisualElement name="lines" class="lines" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:VisualElement name="panel" class="panel">
+            <ui:Label name="headline" text="MIRE LANTERN" class="headline" />
+            <ui:Label name="message" class="message" />
+            <ui:VisualElement class="buttons">
+                <ui:Button name="submit" text="はじめる / Enter" />
+                <ui:Button name="back" text="戻る / Esc" />
+                <ui:Button name="title" text="タイトルへ / T" />
+                <ui:Button name="quit" text="終了" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="inventory" class="inventory">
+            <ui:VisualElement class="inv-column inv-list">
+                <ui:Label name="bag-title" text="持ち物" class="inv-title" />
+                <ui:VisualElement name="bag" class="bag" />
+            </ui:VisualElement>
+            <ui:VisualElement class="inv-column inv-detail">
+                <ui:Label name="detail-name" text=" " class="detail-name" />
+                <ui:Label name="detail" text=" " class="detail" />
+                <ui:Label name="inv-keys" text="↑↓ 選ぶ　Enter / U 使う　T 投げる（向いている方へ）　X 足元に置く　I / Esc 閉じる" class="inv-keys" />
+                <ui:Label name="facing" text=" " class="inv-facing" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

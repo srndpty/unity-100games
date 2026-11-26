@@ -50,6 +50,9 @@ namespace Game.Core
             Inventory = _inventory.AsReadOnly();
         }
 
+        /// <summary>写し直すたびに増える番号（描画の書き換えの判定用）。</summary>
+        public int Version { get; private set; }
+
         public int Width => _run.Grid.Width;
 
         public int Height => _run.Grid.Height;
@@ -126,6 +129,7 @@ namespace Game.Core
         /// <summary>試合の状態を写し直す（<see cref="CrawlRun"/> が操作のたびに呼ぶ）。</summary>
         internal void Refresh()
         {
+            Version++;
             _monsters.Clear();
             foreach (var m in _run.Monsters)
             {
