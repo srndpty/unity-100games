@@ -352,6 +352,13 @@ namespace Game.Core
 
         internal void DefeatTrainerForTest(int index) => TrainersDefeated |= 1 << index;
 
+        /// <summary>テスト用：戦闘を結果なしで打ち切ってフィールドへ戻る。</summary>
+        internal void AbortBattleForTest()
+        {
+            Battle = null;
+            Mode = WorldMode.Field;
+        }
+
         internal void WarpForTest(string mapId, int x, int y, Direction facing) => Explorer.WarpTo(mapId, x, y, facing);
 
         /// <summary>テスト用：野生の戦闘を直接始める。</summary>

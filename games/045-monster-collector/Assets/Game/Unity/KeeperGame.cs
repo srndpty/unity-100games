@@ -179,6 +179,9 @@ namespace Game.Unity
                     var match = string.Equals(s.MapId, mapId, StringComparison.Ordinal);
                     s.gameObject.SetActive(match);
                     if (match) { active = s; }
+
+                    // タイトルでは見えていない Stage も初期の姿に戻す（前の試合の倒したトレーナーを残さない、021）。
+                    if (!playing) { s.ShowPreview(Data); }
                 }
 
                 if (active != null)

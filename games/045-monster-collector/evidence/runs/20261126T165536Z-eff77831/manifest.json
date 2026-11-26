@@ -2,9 +2,9 @@
     "Product": "THORNWILD KEEPERS",
     "Version": "1.0",
     "UnityVersion": "6000.6.9f1",
-    "BuildGuid": "3de2847840e74935b67254027a04c0ff",
+    "BuildGuid": "1b66811cbbf34c359453dd3455a97f24",
     "Seed": 1,
-    "CapturedAtUtc": "2026-11-26T16:46:44.7287866Z",
+    "CapturedAtUtc": "2026-11-26T16:55:35.2863126Z",
     "Info": [
         {
             "Key": "imageEncoding",
@@ -61,7 +61,7 @@
         },
         {
             "File": "12_capture.jpg",
-            "Sha256": "687623f9a2774ffd430cc3b4c91105a4035a63a1e5988031a5c2e8a5c1626094",
+            "Sha256": "e42c394c48c91cd1e04e4c903a053443ccceae217171772737b114c6bd8c456f",
             "Note": "捕獲玉で捕まえた (seed=524866043, playTick=319, battles=1)"
         },
         {

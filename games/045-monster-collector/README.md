@@ -88,9 +88,33 @@ dev capture 045  # 証跡を evidence/ に撮る（画像は captures/<画像世
 - 戦闘の手持ちは始めに複製し、終わったら書き戻す。戦闘中の世界は `World.Battle` だけが変わる。
 - 読み取りだけを見せる：`Monster` などの状態を変える操作は `internal` で、Unity と操縦役は公開の読み取りだけを使う。
 
+- **Unity**：`KeeperGame`（物理キーごとの意図・Flow の駆動・同期）、`KeeperHud`（UI Toolkit をコードで組む）、`KeeperMapStage`（Tilemap の地図 Prefab、データとマスの種類・トレーナーの位置まで照合）、`KeeperBattleStage`、`KeeperAudio`、`FileSaveStore`（セーブと記録の 2 ファイル、原子的な置き換え）、`KeeperCaptureScenario`。シーンと Prefab と絵は `Editor/KeeperSceneBuilder`・`KeeperArtGenerator` で作る（`unity run games/045-monster-collector -- -executeMethod Game.Unity.Editor.KeeperSceneBuilder.Build`）。
+- 操縦役は「トレーナーの番号 = 草むらの文字の番号」（1 人目の手前は `"`、2 人目は `;`、3 人目は `:`）を前提に鍛える場所を選ぶ。地図を変えたら操縦役も見直す。
+
 ## テスト
 
-（セッション4で記入）
+| 種類 | 場所 | 件数 | 内容 |
+|---|---|---|---|
+| Core（NUnit、dotnet と Mono） | `Assets/Tests/Core/` | 121 | データの検証（負例 27 か所）、相性と命中（題材固有）、状態異常の解除の予定（題材固有）、フェーズと拒否で状態不変、捕獲・育成、手持ちとボックス（題材固有）、フィールド、セーブ（全切り位置・1 文字改変・版・指紋・値域）と記録、固定ハッシュ |
+| App（NUnit、dotnet と Mono） | `Assets/Tests/App/` | 13 | 画面の遷移、キーの扱い（タップで 1 歩・押し続け・フォーカス喪失）、重なった決定で捕獲玉を 2 個使わない、トレーナー戦の拒否、セーブ・つづきから・壊れたセーブ・書き込み失敗、結果と記録と再戦の新しいシード、操縦役の 20 シードの通し、セーブから同じ未来 |
+| PlayMode（実シーン） | `Assets/Tests/Unity/` | 9（＋共通の証跡公開 17） | 実データと Prefab の照合（動かしたトレーナー・変えたマスを検出）、タイトルの行揃え、キーで歩く・止まる・メニュー、草むらで遭遇してキーで技、トレーナー戦の捕獲玉の拒否と野生での投球、記録 → 読み直し → つづきから（実ファイル）、壊れたセーブの案内、フォーカス喪失の一時停止、操縦役の通しとタイトルの姿、性能 |
+
+```
+dev test 045                      # Core / App（dotnet）
+dev test 045 -Unity               # EditMode（Mono、パッケージのテストも）
+dev test 045 -Unity -Mode PlayMode
+```
+
+検証の記録と画面：[evidence/README.md](evidence/README.md)
+
+## 試遊で見てほしい点
+
+- メニューの操作の感触（決定・もどる・文送りの速さ、技・交代・どうぐの階層）
+- 遭遇率（15%）と、草むらを避けて道だけを歩けること
+- 捕まえやすさ（捕獲率・弱らせ方・眠りの効き）と、手持ち 6 匹を超えてボックスへ送る流れ
+- レベル上げの量（L³/2）とトレーナー 3 人の強さ（Lv 7〜8 / 10〜11 / 13〜14）
+- 相性の分かりやすさ（技の一覧に属性を出し、相性の結果は「ばつぐん」「いまひとつ」の文で出す）
+- 音量
 
 ## 未実装範囲
 
