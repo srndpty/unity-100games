@@ -1,0 +1,60 @@
+# 技。
+# move <id> <名前> <属性（- は属性なし）> <威力> <命中> <PP（0 は減らない）> <優先度>
+# 続く do 行が効果の列（書いた順に解決する）：
+#   do damage                         威力でダメージ
+#   do inflict <状態> <確率 %>         相手に状態異常
+#   do heal <割合 %>                  自分の最大 HP の割合を回復
+#   do stat <self|foe> <atk|def|spd> <段>   能力の段階（-3〜+3）
+
+move tackle たいあたり - 35 100 35 0
+do damage
+
+move struggle わるあがき - 40 100 0 0
+do damage
+
+move harden かたくなる - 0 100 20 0
+do stat self def 1
+
+move growl すごむ - 0 100 20 0
+do stat foe atk -1
+
+move spark ひのこ ember 40 100 25 0
+do damage
+
+move cinderfang こげつくきば ember 65 95 15 0
+do damage
+
+move smolder いぶしけむり ember 0 85 15 0
+do inflict poison 100
+
+move blaze ほむらうず ember 85 85 8 0
+do damage
+
+move splash みずでっぽう tide 40 100 25 0
+do damage
+
+move tidecrash しおなぐり tide 65 95 15 0
+do damage
+
+move lull なぎのうた tide 0 70 15 0
+do inflict sleep 100
+
+move torrent おおしお tide 85 85 8 0
+do damage
+
+move vinewhip つるうち moss 40 100 25 0
+do damage
+
+move sporeburst ほうしはじき moss 55 100 15 0
+do damage
+do inflict poison 30
+
+move sleepspore ねむりごな moss 0 75 15 0
+do inflict sleep 100
+
+move rootdrain ねっこすい moss 60 95 10 0
+do damage
+do heal 25
+
+move quickjab すばやづき - 30 100 20 1
+do damage

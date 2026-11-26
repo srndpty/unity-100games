@@ -1,0 +1,17 @@
+# 属性と相性表。行頭が # の行は注釈。
+# type <id> <名前>
+type ember 灯
+type tide 潮
+type moss 苔
+
+# chart <技の属性> <受ける属性> <百分率>。書かない組は 100（等倍）。
+# 灯は苔に強く、苔は潮に強く、潮は灯に強い（三すくみ）。同じ属性どうしは いまひとつ。
+chart ember moss 200
+chart ember tide 50
+chart ember ember 50
+chart tide ember 200
+chart tide moss 50
+chart tide tide 50
+chart moss tide 200
+chart moss ember 50
+chart moss moss 50
