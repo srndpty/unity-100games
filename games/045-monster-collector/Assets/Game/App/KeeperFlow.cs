@@ -181,12 +181,24 @@ namespace Game.App
             StepTicks(ticks);
         }
 
-        /// <summary>たまった入力と押しているキーを捨てる（自動プレイの間、人のキーを混ぜない）。</summary>
-        public void ClearPendingInput()
+        /// <summary>
+        /// 自動プレイの間の人の入力：一時停止（P）と、一時停止中の再開（P・決定）だけを当て、他のキーと押しているキーは捨てる。
+        /// </summary>
+        public void ApplyPauseInputOnly()
         {
-            _intents.Clear();
+            while (_intents.Count > 0)
+            {
+                var intent = _intents.Dequeue();
+                if (!intent.Pressed || !InGame) { continue; }
+                if (intent.Button == InputButton.Pause) { IsPaused = !IsPaused; }
+                else if (intent.Button == InputButton.Confirm && IsPaused) { IsPaused = false; }
+            }
+
             ClearHeld();
         }
+
+        /// <summary>一時停止を解く（眺める自動プレイを始めたとき）。</summary>
+        public void Resume() => IsPaused = false;
 
         public void FlushIntents()
         {

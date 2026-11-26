@@ -83,6 +83,29 @@ namespace Game.App.Tests
 
         private const int Lab8 = 8;
 
+        /// <summary>自動プレイの間の人の入力は、一時停止（P）と再開（P・決定）だけが効き、他のキーは捨てる。</summary>
+        [Test]
+        public void DuringAutoplayOnlyPauseAndResumeAreApplied()
+        {
+            var flow = AppLab.FieldReady();
+            var x = flow.World!.Explorer.X;
+            flow.Tap(InputButton.Left);
+            flow.Tap(InputButton.Cancel);
+            flow.Tap(InputButton.Pause);
+            flow.ApplyPauseInputOnly();
+            Assert.That(flow.IsPaused, Is.True);
+            Assert.That(flow.Screen, Is.EqualTo(FlowScreen.Field), "もどるキーは捨てる");
+            flow.Tap(InputButton.Confirm);
+            flow.ApplyPauseInputOnly();
+            Assert.That(flow.IsPaused, Is.False, "決定で再開");
+            flow.Tap(InputButton.Pause);
+            flow.Tap(InputButton.Pause);
+            flow.ApplyPauseInputOnly();
+            Assert.That(flow.IsPaused, Is.False, "P を 2 回で止めて再開");
+            flow.StepTicks(30);
+            Assert.That(flow.World.Explorer.X, Is.EqualTo(x), "方向キーは捨てる");
+        }
+
         /// <summary>壁に向かって押し続けても、ぶつかる音は一定の間隔でしか鳴らない（試遊で連続して鳴るとされた）。</summary>
         [Test]
         public void HoldingIntoAWallBumpsOnlyOncePerCooldown()

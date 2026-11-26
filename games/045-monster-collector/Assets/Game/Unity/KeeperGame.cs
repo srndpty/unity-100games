@@ -74,6 +74,9 @@ namespace Game.Unity
             if (on == IsAutoplaying) { return; }
             _autoplay = on ? new Autopilot { HumanPace = true, SaveAtCenter = false } : null;
             _autoplayTicks = 0;
+
+            // フォーカスを失って止まっていたら、自動プレイを始めた時点で再開する。
+            if (on) { Flow.Resume(); }
             Render();
         }
 
@@ -164,8 +167,8 @@ namespace Game.Unity
 
         private void OnApplicationFocus(bool hasFocus)
         {
-            // 撮影中はフォーカスで止めない（038）。
-            if (Flow == null || EvidenceCapture.IsRunning) { return; }
+            // 撮影中と眺める自動プレイの間は、フォーカスで止めない（038。自動プレイは人のキーで再開できないので止めない）。
+            if (Flow == null || EvidenceCapture.IsRunning || IsAutoplaying) { return; }
             Flow.OnFocusChanged(hasFocus);
         }
 
@@ -190,7 +193,15 @@ namespace Game.Unity
         public void StepAutoplay(double deltaSeconds)
         {
             if (_autoplay == null) { return; }
-            Flow.ClearPendingInput();
+
+            // 人の P で一時停止・P か決定で再開できる。止めている間は自動でも進めない。
+            Flow.ApplyPauseInputOnly();
+            if (Flow.IsPaused)
+            {
+                _autoplayTicks = 0;
+                return;
+            }
+
             _autoplayTicks += Math.Max(0, deltaSeconds) * 60.0 * _settings!.AutoplaySpeed;
             var ticks = Math.Min(MaxAutoplayTicksPerFrame, (int)Math.Floor(_autoplayTicks));
             _autoplayTicks = Math.Min(_autoplayTicks - ticks, 1.0);

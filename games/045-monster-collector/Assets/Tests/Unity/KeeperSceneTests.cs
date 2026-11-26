@@ -362,6 +362,46 @@ namespace Game.Unity.Tests
             Assert.That(Flow.World.PlayTicks, Is.EqualTo(ticks), "止めたら自動では進まない");
         }
 
+        /// <summary>
+        /// 自動プレイ中はフォーカスを失っても止まらない。P で止めると進まず、P か Enter で再開できる
+        /// （試遊で「一時停止から P も Enter も効かない」とされた）。止まっていた状態から F9 で始めても進む。
+        /// </summary>
+        [UnityTest]
+        public IEnumerator AutoplayIgnoresFocusLoss_AndPauseResumesWithPOrEnter()
+        {
+            yield return null;
+            Flow.StartNewGame(5);
+            Flow.World!.ChooseStarter(0);
+            Flow.StepTicks(1);
+            Flow.OnFocusChanged(false);
+            Assert.That(Flow.IsPaused, Is.True, "手で遊んでいる間はフォーカス喪失で止まる");
+            yield return _keyboard.Tap(Key.F9);
+            Assert.That(Flow.IsPaused, Is.False, "自動プレイを始めたら再開する");
+
+            _game.SendMessage("OnApplicationFocus", false);
+            Assert.That(Flow.IsPaused, Is.False, "自動プレイ中はフォーカスを失っても止めない");
+            var t0 = Flow.World.PlayTicks;
+            for (int i = 0; i < 60; i++) { _game.StepAutoplay(1.0 / 60.0); }
+            Assert.That(Flow.World.PlayTicks, Is.GreaterThan(t0));
+
+            foreach (var resume in new[] { Key.P, Key.Enter })
+            {
+                yield return _keyboard.Tap(Key.P);
+                _game.StepAutoplay(1.0 / 60.0);
+                Assert.That(Flow.IsPaused, Is.True, "P で止まる");
+                var t1 = Flow.World.PlayTicks;
+                for (int i = 0; i < 60; i++) { _game.StepAutoplay(1.0 / 60.0); }
+                Assert.That(Flow.World.PlayTicks, Is.EqualTo(t1), "止めている間は進まない");
+                yield return _keyboard.Tap(resume);
+                _game.StepAutoplay(1.0 / 60.0);
+                Assert.That(Flow.IsPaused, Is.False, $"{resume} で再開する");
+                for (int i = 0; i < 60; i++) { _game.StepAutoplay(1.0 / 60.0); }
+                Assert.That(Flow.World.PlayTicks, Is.GreaterThan(t1));
+            }
+
+            yield return _keyboard.Tap(Key.F9);
+        }
+
         /// <summary>性能の記録：描画の更新と戦闘の 1 ターンの解決（この PC の CPU 時間）。</summary>
         [UnityTest]
         public IEnumerator RenderAndBattleResolveStayCheap()
