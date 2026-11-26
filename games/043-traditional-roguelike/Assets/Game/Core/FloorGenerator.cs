@@ -32,7 +32,7 @@ namespace Game.Core
         public static FloorLayout Generate(int matchSeed, int floor, CrawlConfig config)
         {
             if (config == null) { throw new ArgumentNullException(nameof(config)); }
-            var rng = GameRng.For(matchSeed, floor, RngPurpose.Terrain);
+            var rng = RandomSeries.Derive(matchSeed, floor, (int)RngPurpose.Terrain);
             for (int attempt = 1; attempt <= config.GenerationAttempts; attempt++)
             {
                 var layout = TryGenerate(rng, config, attempt);
@@ -60,7 +60,7 @@ namespace Game.Core
             return true;
         }
 
-        private static FloorLayout? TryGenerate(GameRng rng, CrawlConfig config, int attempt)
+        private static FloorLayout? TryGenerate(RandomSeries rng, CrawlConfig config, int attempt)
         {
             int w = config.Width;
             int h = config.Height;
@@ -142,7 +142,7 @@ namespace Game.Core
         private static bool IsHorizontal(int a, int b) => a / Cells == b / Cells;
 
         /// <summary>隣り合う区画の全域木（無作為な Prim 法）と余分な辺。各組は (左, 右) か (上, 下) の順。</summary>
-        private static List<(int, int)> Connections(GameRng rng, CrawlConfig config)
+        private static List<(int, int)> Connections(RandomSeries rng, CrawlConfig config)
         {
             var all = new List<(int, int)>();
             for (int cell = 0; cell < Cells * Cells; cell++)
@@ -193,7 +193,7 @@ namespace Game.Core
         /// 2 つの区画を通路でつなぐ。部屋の壁の 1 マスを出入口にし、2 つの出入口の間の列（行）で折れる。
         /// 折れる位置は両方の部屋の壁より内側（区画の余白）なので、通路が部屋を横切らない。
         /// </summary>
-        private static void Carve(GameRng rng, Tile[] tiles, int w, Room a, bool aRoom, Room b, bool bRoom, bool horizontal)
+        private static void Carve(RandomSeries rng, Tile[] tiles, int w, Room a, bool aRoom, Room b, bool bRoom, bool horizontal)
         {
             Vec2i from;
             Vec2i to;
@@ -232,9 +232,9 @@ namespace Game.Core
             }
         }
 
-        private static Vec2i RandomIn(GameRng rng, Room room) => new(rng.Range(room.X0, room.X1), rng.Range(room.Y0, room.Y1));
+        private static Vec2i RandomIn(RandomSeries rng, Room room) => new(rng.Range(room.X0, room.X1), rng.Range(room.Y0, room.Y1));
 
-        private static int[] Shuffled(GameRng rng, int count)
+        private static int[] Shuffled(RandomSeries rng, int count)
         {
             var order = new int[count];
             for (int i = 0; i < count; i++) { order[i] = i; }

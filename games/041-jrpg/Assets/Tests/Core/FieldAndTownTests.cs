@@ -1,4 +1,5 @@
 using System;
+using IntGeometry;
 using NUnit.Framework;
 
 namespace Game.Core.Tests
@@ -129,7 +130,7 @@ namespace Game.Core.Tests
                 world.Party,
                 world.Inventory,
                 new[] { BattleCommand.Defend(), BattleCommand.Defend(), BattleCommand.Defend() },
-                new GameRng(5),
+                new RandomSeries(5),
                 new EnemyDecision?[] { new EnemyDecision(EnemyActionKind.Spell, "flame_wave", -1), null });
             Assert.That(wipeBattle.Outcome, Is.EqualTo(BattleOutcome.PartyWiped));
             world.Explorer.WarpTo("dungeon_f2", 6, 5, Direction.Down);

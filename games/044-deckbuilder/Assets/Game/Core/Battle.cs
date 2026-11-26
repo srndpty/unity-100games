@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using IntGeometry;
 using TileMotion;
 
 namespace Game.Core
@@ -32,9 +33,9 @@ namespace Game.Core
         private List<CardRef> _exhaust;
         private List<BattleEvent> _events;
         private Queue<Command> _queue = new();
-        private GameRng _shuffleRng;
-        private GameRng _aiRng;
-        private GameRng _effectRng;
+        private RandomSeries _shuffleRng;
+        private RandomSeries _aiRng;
+        private RandomSeries _effectRng;
         private int _nextEnemyId;
 
         /// <param name="config">検証済みの設定。戦闘の間は書き換えない前提で参照を持つ（<see cref="Run"/> が複製を渡す）。</param>
@@ -69,9 +70,9 @@ namespace Game.Core
             _discard = new List<CardRef>();
             _exhaust = new List<CardRef>();
             _events = new List<BattleEvent>();
-            _shuffleRng = GameRng.For(seed, node, RngPurpose.Shuffle);
-            _aiRng = GameRng.For(seed, node, RngPurpose.EnemyAi);
-            _effectRng = GameRng.For(seed, node, RngPurpose.Effect);
+            _shuffleRng = RandomSeries.Derive(seed, node, (int)RngPurpose.Shuffle);
+            _aiRng = RandomSeries.Derive(seed, node, (int)RngPurpose.EnemyAi);
+            _effectRng = RandomSeries.Derive(seed, node, (int)RngPurpose.Effect);
             Encounter = encounter;
             ShuffleInPlace(_draw);
             MakeViews();

@@ -1,4 +1,5 @@
 using System;
+using IntGeometry;
 using TileMotion;
 
 namespace Game.Core
@@ -141,7 +142,7 @@ namespace Game.Core
         }
 
         /// <summary>次の戦闘専用の決定的な乱数系列を返す。</summary>
-        public GameRng CreateBattleRng() => GameRng.ForBattle(MatchSeed, BattleCount);
+        public RandomSeries CreateBattleRng() => RandomSeries.Derive(MatchSeed, BattleCount, 0);
 
         /// <summary>現在、教会の神父と向かい合っていて移動中でないかを返す（セーブ許可条件）。</summary>
         public bool CanSaveAtChurch()

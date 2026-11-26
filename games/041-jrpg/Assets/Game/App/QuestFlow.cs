@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Game.Core;
+using IntGeometry;
 
 namespace Game.App
 {
@@ -111,7 +112,7 @@ namespace Game.App
             Data = data ?? throw new ArgumentNullException(nameof(data));
             _saveStore = saveStore ?? throw new ArgumentNullException(nameof(saveStore));
             _eventDurationTicks = Math.Max(1, eventDurationTicks);
-            _nextSeedState = new GameRng(initialSeed).State;
+            _nextSeedState = new RandomSeries(initialSeed).State;
             _titleOptionsView = Array.AsReadOnly(_titleOptions);
             RefreshTitleState();
         }
@@ -951,7 +952,7 @@ namespace Game.App
                 case TitleOptionKind.NewGame:
                     {
                         AudioCues.Confirm++;
-                        var seedRng = GameRng.FromState(_nextSeedState);
+                        var seedRng = RandomSeries.FromState(_nextSeedState);
                         var seed = (int)(seedRng.NextUInt() & 0x7FFFFFFFu);
                         if (seed == 0)
                         {

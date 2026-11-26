@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Game.Core;
+using IntGeometry;
 
 namespace Game.App
 {
@@ -41,7 +42,7 @@ namespace Game.App
         private static readonly string[] _rootLabels = { "たたかう", "じゅもん", "どうぐ", "ぼうぎょ", "にげる" };
 
         private readonly World _world;
-        private readonly GameRng _battleRng;
+        private readonly RandomSeries _battleRng;
         private readonly BattleCommand[] _pendingCommands;
         private readonly ReadOnlyCollection<BattleCommand> _pendingView;
         private readonly int _eventDurationTicks;

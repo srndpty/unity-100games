@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using IntGeometry;
 using TileMotion;
 
 namespace Game.Core
@@ -301,7 +302,7 @@ namespace Game.Core
 
         private RouteOption[][] MakeRoute()
         {
-            var rng = GameRng.For(Seed, 0, RngPurpose.Route);
+            var rng = RandomSeries.Derive(Seed, 0, (int)RngPurpose.Route);
             var easy = Tier(EncounterTier.Easy);
             var normal = Tier(EncounterTier.Normal);
             var hard = Tier(EncounterTier.Hard);
@@ -375,7 +376,7 @@ namespace Game.Core
         /// <summary>報酬の候補：希少度の重みでカードを重複なく引く（カードごとの重み = 希少度の重み）。</summary>
         private CardDef[] RollRewards(bool hard)
         {
-            var rng = GameRng.For(Seed, Node, RngPurpose.Reward);
+            var rng = RandomSeries.Derive(Seed, Node, (int)RngPurpose.Reward);
             var weights = hard ? _config.HardRarityWeights : _config.NormalRarityWeights;
             var pool = new List<CardDef>();
             var w = new List<int>();

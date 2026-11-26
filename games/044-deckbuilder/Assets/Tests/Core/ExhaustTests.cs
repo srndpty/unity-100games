@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using IntGeometry;
 using NUnit.Framework;
 
 namespace Game.Core.Tests
@@ -90,7 +91,7 @@ namespace Game.Core.Tests
             var deck = Lab.Deck(ids);
             var encounter = data.Encounters[seed % data.Encounters.Count];
             var battle = new Battle(data, new DeckConfig(), deck, 70, 70, encounter, seed, 0);
-            var rng = new GameRng(seed * 31);
+            var rng = new RandomSeries(seed * 31);
             var exhausted = new List<int>();
             for (int step = 0; step < 300 && !battle.IsOver; step++)
             {

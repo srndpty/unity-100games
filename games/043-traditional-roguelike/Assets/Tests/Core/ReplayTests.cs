@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using IntGeometry;
 using NUnit.Framework;
 
 namespace Game.Core.Tests
@@ -9,7 +10,7 @@ namespace Game.Core.Tests
         /// <summary>無作為の操作列（無効な操作も混ぜる）。操作の選び方は試合と別の系列。</summary>
         internal static List<Command> RandomCommands(int seed, int count)
         {
-            var rng = new GameRng(seed * 7919);
+            var rng = new RandomSeries(seed * 7919);
             var commands = new List<Command>();
             for (int i = 0; i < count; i++)
             {
