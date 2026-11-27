@@ -312,7 +312,7 @@ namespace Game.Core.Data
     public sealed class SummerBook
     {
         internal SummerBook(int days, Weekday firstWeekday, List<StatDef> stats, List<string> flags, List<CharDef> chars, List<BackgroundDef> backgrounds,
-            List<ActionDef> actions, List<OutcomeDef> outcomes, int forcedAction, Cond? forcedWhen, List<EventDef> events, bool[,] exclusive, List<EndingDef> endings, uint fingerprint)
+            List<ActionDef> actions, List<OutcomeDef> outcomes, int forcedAction, Cond? forcedWhen, List<EventDef> events, bool[,] exclusive, List<EndingDef> endings, List<string> hints, uint fingerprint)
         {
             Days = days;
             FirstWeekday = firstWeekday;
@@ -330,6 +330,7 @@ namespace Game.Core.Data
             ordered.Sort((a, b) => b.Priority.CompareTo(a.Priority));
             Endings = endings.AsReadOnly();
             EndingsByPriority = ordered.AsReadOnly();
+            Hints = hints.AsReadOnly();
             Fingerprint = fingerprint;
         }
 
@@ -360,6 +361,9 @@ namespace Game.Core.Data
 
         /// <summary>ED（優先度の高い順。既定の ED が最後）。</summary>
         public ReadOnlyCollection<EndingDef> EndingsByPriority { get; }
+
+        /// <summary>遊ぶ人への目安（@hint、書いた順）。ルールには効かない。</summary>
+        public ReadOnlyCollection<string> Hints { get; }
 
         /// <summary>データの指紋（状態のハッシュとセーブに混ぜる）。</summary>
         public uint Fingerprint { get; }

@@ -85,9 +85,9 @@ namespace Game.App.Tests
         }
 
         /// <summary>本番の台本・固定のシードの最終ハッシュ（.NET と Mono で同じ値）。</summary>
-        [TestCase(PilotPolicy.Sumi, 0xE8E4C4BAu)]
-        [TestCase(PilotPolicy.Shiori, 0xFAD00C13u)]
-        [TestCase(PilotPolicy.Drift, 0xA2795083u)]
+        [TestCase(PilotPolicy.Sumi, 0x1D23CE38u)]
+        [TestCase(PilotPolicy.Shiori, 0x9DE01A7Eu)]
+        [TestCase(PilotPolicy.Drift, 0xDC02ECF8u)]
         public void FinalHash_IsFixed(PilotPolicy policy, uint expected)
         {
             var s = Run(policy, 2026);

@@ -102,11 +102,14 @@ namespace Game.App
             return best;
         }
 
-        /// <summary>夏休みを最後まで進める（App を通さない）。</summary>
-        public void Play(Summer s)
+        /// <summary>命令の数の上限（暦の上限 60 日 × 1 日の命令 3 つより多い）。</summary>
+        public const int MaxCommands = 1000;
+
+        /// <summary>夏休みを最後まで進める（App を通さない）。上限の命令の数で終わらなければ例外。</summary>
+        public void Play(Summer s, int maxCommands = MaxCommands)
         {
             if (s == null) { throw new ArgumentNullException(nameof(s)); }
-            for (int i = 0; i < 1000 && s.Phase != Phase.Ended; i++)
+            for (int i = 0; i < maxCommands && s.Phase != Phase.Ended; i++)
             {
                 var r = s.Phase switch
                 {
@@ -115,6 +118,8 @@ namespace Game.App
                 };
                 if (!r.Accepted) { throw new InvalidOperationException($"操縦役の命令が拒否されました：{r}"); }
             }
+
+            if (s.Phase != Phase.Ended) { throw new InvalidOperationException($"{maxCommands} 命令で ED に着きませんでした（{s.Day} 日目）"); }
         }
 
         /// <summary>

@@ -1,0 +1,118 @@
+{
+    "Product": "Meteor Summer",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "59fb96a5bd0d46dfb5ed3cf0f1c17913",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-27T17:45:02.5703484Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "fingerprint",
+            "Value": "0D305AD7"
+        },
+        {
+            "Key": "pilot",
+            "Value": "Sumi (seed 7)"
+        },
+        {
+            "Key": "ticksPerChar",
+            "Value": "2"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01_title.jpg",
+            "Sha256": "382ba8aec058a5c7496818cf2895a4054e7581df60f9b0c3dbeae03d90080772",
+            "Note": "タイトル (day=0, tick=0, hash=0x00000000)"
+        },
+        {
+            "File": "02_howto.jpg",
+            "Sha256": "06fc8b198d6b0745c55000debbc9d66f1198290ebaabd83d9fa544f2e9ca8a6c",
+            "Note": "操作説明 (day=0, tick=3, hash=0x00000000)"
+        },
+        {
+            "File": "03_morning.jpg",
+            "Sha256": "3b031db5726d53cfb4b6d6289fbbaac33910bfac76395a0eff2ed2670545c245",
+            "Note": "1 日目の朝（行動の選択と能力値） (day=1, tick=5, hash=0x618B907D)"
+        },
+        {
+            "File": "04_report.jpg",
+            "Sha256": "36119200534a53cb58b3e5b483bda822833ddbd845acc84f61fde60a7e60545f",
+            "Note": "行動の結果（段階と能力値の増減） (day=1, tick=25, hash=0x101A7775)"
+        },
+        {
+            "File": "05_text_reveal.jpg",
+            "Sha256": "013f9ac5e1311c2af3b1df1c538c691cd96eaf64c712f5501d277186e31695f0",
+            "Note": "1 日目の出来事の会話（文字送りの途中） (day=1, tick=38, hash=0x101A7775)"
+        },
+        {
+            "File": "06_meet_sumi.jpg",
+            "Sha256": "5b5a2a9cb7fec36864ed81c2db97f2f9e4afd486c7254e28384dd9f781e84ca0",
+            "Note": "天文部で先輩に会う（立ち絵と名札） (day=2, tick=142, hash=0x5DE013B2)"
+        },
+        {
+            "File": "07_choice.jpg",
+            "Sha256": "6d090bba6cdbc83c43a30ace274a8ef98fc5e853e8ed2071c9c8435315dcff69",
+            "Note": "選択肢 (day=2, tick=183, hash=0x5DE013B2)"
+        },
+        {
+            "File": "08_detail.jpg",
+            "Sha256": "4c11c4a2061f963d75810a14c4bf34239f9fb96696330c07c03c52e66d9926d2",
+            "Note": "能力値の詳細（Tab） (day=7, tick=385, hash=0xFFD8AF1C)"
+        },
+        {
+            "File": "09_sunday.jpg",
+            "Sha256": "b838d203fdf8df2df5bfe7be6d7c879342c158c1d4740f0c62c86e4251c729b1",
+            "Note": "日曜は図書室が閉まっている（拒否と案内） (day=7, tick=387, hash=0xFFD8AF1C)"
+        },
+        {
+            "File": "10_pause.jpg",
+            "Sha256": "48054b71539c20b247f45aac31590889d0726ea211a185d2f2b69ba43bfe7c35",
+            "Note": "一時停止 (day=10, tick=549, hash=0xA2462629)"
+        },
+        {
+            "File": "11_title_continue.jpg",
+            "Sha256": "4bb1e2544de23bb1e8c75b937177379b167968f2fc6a4e1ec620cd238c61fcb5",
+            "Note": "タイトル（つづきから：10 日目の朝から） (day=0, tick=550, hash=0x00000000)"
+        },
+        {
+            "File": "12_roof.jpg",
+            "Sha256": "7eef0847496e0c9b140ebd171d7bd81c7232f15e54c8fc0fb09f05e97aa46a20",
+            "Note": "屋上で月を見る (day=13, tick=754, hash=0xAD6666BB)"
+        },
+        {
+            "File": "13_poster.jpg",
+            "Sha256": "5689f2b6244a6acefe2831c9c8c92b6aefb0e7382c2e6323412b351656a4f566",
+            "Note": "15 日目の夜の夏祭りの予告（お金が要る） (day=15, tick=896, hash=0xBF16974F)"
+        },
+        {
+            "File": "14_festival.jpg",
+            "Sha256": "5e533a3781987017cc2682dbf694722959f9c7562996ddf570105c8f8c400f77",
+            "Note": "20 日目の夏祭り（先輩の誘い） (day=20, tick=1220, hash=0x9EF05FC2)"
+        },
+        {
+            "File": "15_meteor.jpg",
+            "Sha256": "92b1162709f75b29cd81e4e5de7b23d1a89a2870ecc7664c77d91599bb222204",
+            "Note": "30 日目の夜の流星群 (day=30, tick=1641, hash=0x96297DE7)"
+        },
+        {
+            "File": "16_ending.jpg",
+            "Sha256": "47de0de9fa5d261fc8052636ed975315b359d4634ed03f1199a00747ef5fe35d",
+            "Note": "ED（先輩と星を数えた夏） (day=30, tick=1683, hash=0x13D7D914)"
+        },
+        {
+            "File": "17_result.jpg",
+            "Sha256": "89020b8f918e5bb7f1a6a427097c38a7cc17659ba1b7288b764c48b522ccf1c9",
+            "Note": "結果画面 (day=30, tick=1724, hash=0x13D7D914)"
+        },
+        {
+            "File": "18_title_broken_save.jpg",
+            "Sha256": "f106a0c13dbc18c5436718f4bbcdc6da41773455d7e1422a2b7a27a8ee550d6a",
+            "Note": "壊れたセーブの案内（つづきからを選べない） (day=0, tick=0, hash=0x00000000)"
+        }
+    ]
+}

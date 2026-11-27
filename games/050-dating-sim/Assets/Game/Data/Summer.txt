@@ -30,6 +30,13 @@
 @bg festival 夏祭り
 @bg meteor 流星群の夜
 
+# ---- 遊ぶ人への目安（操作説明と Tab の詳細に出す。ED の条件と合わせて直す）----
+@hint 澄（天文部）と結ばれるには：好感度 70 以上・感性 50 以上、20 日目の夏祭りに一緒に行く
+@hint 栞（図書室）と結ばれるには：好感度 70 以上・学力 50 以上、読書会に参加する
+@hint 好感度は会いに行くと上がる。2 人に分けて通うと、どちらにも届きにくい
+@hint 夏祭りには、好感度 40 以上の相手（高い方）から誘われる。お金が 300 要る
+@hint 疲労 80 以上は失敗しやすく、100 になると翌日は休むしかない
+
 # ---- 行動（1 日に 1 つ）----
 @action study 勉強 bg room : study += 3..5 ; fatigue += 10
 @action exercise 運動 bg town : body += 3..5 ; fatigue += 15
@@ -129,6 +136,12 @@ shiori「流星群の夜、晴れるといいね」
 @exclusive e_sumi_roof e_shiori_rain
 
 # ---- 夏祭り（20 日目）----
+# 5 日前に予告する（お金が要ることを、遊んでいる中で知らせる）。
+@event e_festival_poster slot night day 15 priority 70 chance 100 once bg town
+昼間、商店街で夏祭りのポスターを見かけた。20 日の夜らしい。
+誰かを誘うなら、お金が 300 は要りそうだ。
+@end
+
 @event e_festival_sumi slot night day 20 priority 900 chance 100 when sumi >= 40 and sumi >= shiori and money >= 300
 @bg festival
 sumi「夏祭り、一緒に行かない？　浴衣、着てみたんだ」

@@ -8,6 +8,7 @@ namespace Game.Core.Tests
     public sealed class CompilerTests
     {
         private static readonly string[] _statIds = { "study", "fatigue", "aoi" };
+        private static readonly string[] _hints = { "一つ目", "二つ目" };
 
         [Test]
         public void Small_Compiles_WithDeclaredTables()
@@ -104,6 +105,32 @@ namespace Game.Core.Tests
         [TestCase("@outcome great 大成功 x200 weight 20", "@outcome great 大成功 x500 weight 20", "倍率は 0〜400")]
         [TestCase("@calendar 8 mon", "@calendar 8 noday", "@calendar は")]
         public void Ranges(string from, string to, string message) => Lab.AssertError(Lab.Replace(from, to), message);
+
+        [Test]
+        public void Hints_AreKeptInOrder_AndChecked()
+        {
+            var b = Lab.Compile(Lab.Small + "\n@hint 一つ目\n@hint 二つ目 # コメント\n");
+            Assert.That(b.Hints, Is.EqualTo(_hints));
+            Assert.That(Lab.SmallBook.Hints, Is.Empty);
+            Lab.AssertError(Lab.Small + "\n@hint\n", "@hint の文がありません");
+            Lab.AssertError(Lab.Small + "\n@hint " + new string('あ', SummerLimits.MaxTextLength + 1) + "\n", "字です");
+            Lab.AssertError(Lab.Small + string.Concat(Enumerable.Repeat("\n@hint ひとこと", SummerLimits.MaxHints + 1)) + "\n", $"@hint は {SummerLimits.MaxHints} 個まで");
+        }
+
+        [Test]
+        public void DayWithoutAnySelectableAction_IsRejected()
+        {
+            // 全ての行動を月〜土にすると、7 日目（日曜）に選べる行動がなく先へ進めない。
+            var s = Lab.Replace("@action study 勉強 :", "@action study 勉強 week mon..sat :")
+                .Replace("@action rest 休む bg room", "@action rest 休む week mon..sat bg room", StringComparison.Ordinal);
+            Lab.AssertError(s, "7 日目（sun）に選べる行動がありません");
+
+            // 休むだけを毎日選べるなら通る（強制の行動には頼らない）。
+            Lab.Compile(Lab.Replace("@action study 勉強 :", "@action study 勉強 week mon..sat :"));
+
+            // 6 日しかない暦なら日曜は来ないので通る。
+            Lab.Compile(s.Replace("@calendar 8 mon", "@calendar 6 mon", StringComparison.Ordinal).Replace("day 1..8", "day 1..6", StringComparison.Ordinal));
+        }
 
         [Test]
         public void TwoDefaultEndings_AreRejected() =>

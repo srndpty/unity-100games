@@ -10,7 +10,7 @@ namespace Game.Core.Tests
     /// <summary>本番の台本の検証（数・名前・区間の検証を通ること）。</summary>
     public sealed class DataTests
     {
-        private static readonly string[] _fixedDayEvents = { "e_open", "e_meteor" };
+        private static readonly string[] _fixedDayEvents = { "e_open", "e_festival_poster", "e_meteor" };
 
         private static SummerBook B => Lab.RealBook;
 
@@ -38,6 +38,37 @@ namespace Game.Core.Tests
                 Assert.That(e.DayFrom, Is.EqualTo(e.DayTo));
                 var rivals = B.Events.Where(o => o.Slot == e.Slot && o.Index != e.Index && o.OpenOn(e.DayFrom, B.WeekdayOf(e.DayFrom)));
                 Assert.That(rivals.All(o => o.Priority < e.Priority), Is.True, id);
+            }
+        }
+
+        [Test]
+        public void RealBook_HintsMentionTheEndingThresholds()
+        {
+            // ヒントの数値が ED の条件とずれないよう、条件のある ED の「能力値 >= 数」を全てヒントの中に探す。
+            Assert.That(B.Hints.Count, Is.InRange(1, SummerLimits.MaxHints));
+            foreach (var e in B.Endings)
+            {
+                if (e.When == null) { continue; }
+                var words = Thresholds(e.When).Select(t => (B.Stats[t.Stat].IsHeart ? "好感度" : B.Stats[t.Stat].Name) + " " + t.Value).ToList();
+                Assert.That(words, Is.Not.Empty, e.Id);
+                Assert.That(B.Hints.Any(h => words.All(w => h.Contains(w, StringComparison.Ordinal))), Is.True, $"ED {e.Id} の「{string.Join("・", words)}」を全て書いたヒントがない");
+            }
+        }
+
+        private static System.Collections.Generic.IEnumerable<(int Stat, int Value)> Thresholds(Cond c)
+        {
+            switch (c.Kind)
+            {
+                case CondKind.And:
+                case CondKind.Or:
+                    foreach (var t in Thresholds(c.A!)) { yield return t; }
+                    foreach (var t in Thresholds(c.B!)) { yield return t; }
+                    break;
+                case CondKind.Compare when c.Left.Kind == OperandKind.Stat && c.Right.Kind == OperandKind.Const && c.Op == CompareOp.Ge:
+                    yield return (c.Left.Value, c.Right.Value);
+                    break;
+                default:
+                    break;
             }
         }
 

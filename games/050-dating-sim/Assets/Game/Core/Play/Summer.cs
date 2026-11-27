@@ -342,24 +342,109 @@ namespace Game.Core.Play
             return new SummerSnapshot(Seed, Day, (int[])_stats.Clone(), (bool[])_flags.Clone(), (bool[])_done.Clone(), _log.ToArray());
         }
 
-        /// <summary>写しから朝の状態を作り直す。データと合わない写し（数・範囲・日）は理由を返して null。</summary>
+        /// <summary>
+        /// 写しから朝の状態を作り直す。シードと記録の行動・選択を 1 日目から再生し、再生した状態（日・能力値・フラグ・済み・記録）が
+        /// 写しと全て一致するときだけ返す。範囲外の値、記録にない行動・選択、記録と食い違う状態は理由を返して null。
+        /// </summary>
         public static Summer? Restore(SummerBook book, SummerSnapshot snapshot, out string? reason)
         {
             if (book == null) { throw new ArgumentNullException(nameof(book)); }
             if (snapshot == null) { throw new ArgumentNullException(nameof(snapshot)); }
             reason = Check(book, snapshot);
             if (reason != null) { return null; }
-            var s = new Summer(book, snapshot.Seed);
-            snapshot.Stats.CopyTo(s._stats, 0);
-            snapshot.Flags.CopyTo(s._flags, 0);
-            snapshot.Done.CopyTo(s._done, 0);
-            s._log.Clear();
-            s._log.AddRange(snapshot.Log);
-            s.Day = snapshot.Day;
-            s._events.Clear();
-            s.StartDay();
+            var s = Replay(book, snapshot, out reason);
+            if (s == null) { return null; }
             s._events.Clear();
             return s;
+        }
+
+        /// <summary>記録の行動と選択だけを入力にして再生し、写しと照合する。</summary>
+        private static Summer? Replay(SummerBook book, SummerSnapshot snapshot, out string? reason)
+        {
+            var s = new Summer(book, snapshot.Seed);
+            var log = snapshot.Log;
+            var next = 0;
+
+            // 入力は行動と選択だけ（イベントの記録は再生で同じものが出るかを照合する）。
+            int NextInput()
+            {
+                while (next < log.Count && log[next].Kind == LogKind.Event) { next++; }
+                return next < log.Count ? next++ : -1;
+            }
+
+            for (int guard = 0; guard < (book.Days * 8) + 8; guard++)
+            {
+                if (s.Phase == Phase.Ended) { break; }
+                if (s.Phase == Phase.Action && s.Day == snapshot.Day) { break; }
+                Outcome r;
+                if (s.Phase == Phase.Action)
+                {
+                    var i = NextInput();
+                    if (i < 0 || log[i].Kind != LogKind.Action || log[i].Day != s.Day)
+                    {
+                        reason = $"記録に {s.Day} 日目の行動がありません";
+                        return null;
+                    }
+
+                    r = s.ChooseAction(log[i].Index);
+                }
+                else if (book.Events[s.Scene].Choices.Count > 0)
+                {
+                    var i = NextInput();
+                    if (i < 0 || log[i].Kind != LogKind.Choice || log[i].Index != s.Scene)
+                    {
+                        reason = $"記録に {s.Day} 日目のイベント {book.Events[s.Scene].Id} の選択がありません";
+                        return null;
+                    }
+
+                    r = s.Choose(log[i].Value);
+                }
+                else
+                {
+                    r = s.Continue();
+                }
+
+                if (!r.Accepted)
+                {
+                    reason = $"記録の {s.Day} 日目の命令を受け付けません（{r}）";
+                    return null;
+                }
+            }
+
+            if (s.Phase != Phase.Action || s.Day != snapshot.Day || !Same(s, snapshot))
+            {
+                reason = "記録を再生した状態がセーブと一致しません";
+                return null;
+            }
+
+            reason = null;
+            return s;
+        }
+
+        private static bool Same(Summer s, SummerSnapshot snapshot)
+        {
+            if (s._log.Count != snapshot.Log.Count) { return false; }
+            for (int i = 0; i < s._log.Count; i++)
+            {
+                if (s._log[i] != snapshot.Log[i]) { return false; }
+            }
+
+            for (int i = 0; i < s._stats.Length; i++)
+            {
+                if (s._stats[i] != snapshot.Stats[i]) { return false; }
+            }
+
+            for (int i = 0; i < s._flags.Length; i++)
+            {
+                if (s._flags[i] != snapshot.Flags[i]) { return false; }
+            }
+
+            for (int i = 0; i < s._done.Length; i++)
+            {
+                if (s._done[i] != snapshot.Done[i]) { return false; }
+            }
+
+            return true;
         }
 
         private static string? Check(SummerBook book, SummerSnapshot snapshot)

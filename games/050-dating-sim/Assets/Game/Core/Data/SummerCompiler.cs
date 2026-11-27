@@ -55,6 +55,9 @@ namespace Game.Core.Data
         public const int MaxPercent = 400;
         public const int MaxStatValue = 99999;
 
+        /// <summary>ヒント（@hint）の数の上限（操作説明と詳細の枠に収まる数）。</summary>
+        public const int MaxHints = 6;
+
         /// <summary>1 行の会話の文字数の上限（会話の枠に収まる長さ）。</summary>
         public const int MaxTextLength = 80;
     }
@@ -119,6 +122,7 @@ namespace Game.Core.Data
             private readonly List<OutcomeDef> _outcomes = new();
             private readonly List<EventDef> _events = new();
             private readonly List<EndingDef> _endings = new();
+            private readonly List<string> _hints = new();
             private readonly List<(int Line, string A, string B)> _exclusiveRaw = new();
             private readonly Dictionary<string, List<(Cond When, int Weight)>> _overrides = new(StringComparer.Ordinal);
             private int _days;
@@ -157,7 +161,7 @@ namespace Game.Core.Data
                     exclusive[ib, ia] = true;
                 }
 
-                Book = new SummerBook(_days, _first, _stats, _flags, _chars, _bgs, _actions, _outcomes, _forced, _forcedWhen, _events, exclusive, _endings, Fingerprint());
+                Book = new SummerBook(_days, _first, _stats, _flags, _chars, _bgs, _actions, _outcomes, _forced, _forcedWhen, _events, exclusive, _endings, _hints, Fingerprint());
                 CheckRanges(Book);
                 if (Errors.Count > 0) { Book = null; }
             }
@@ -402,6 +406,17 @@ namespace Game.Core.Data
                     case "@ending":
                         DefineEnding(r);
                         return;
+                    case "@hint":
+                        {
+                            // 遊ぶ人への目安（操作説明と詳細に出す）。ルールには効かない。
+                            var text = r.Rest.Trim();
+                            if (text.Length == 0) { Error(r.Line, "@hint の文がありません"); return; }
+                            if (text.Length > SummerLimits.MaxTextLength) { Error(r.Line, $"@hint の文が {text.Length} 字です（{SummerLimits.MaxTextLength} 字まで）"); }
+                            if (_hints.Count >= SummerLimits.MaxHints) { Error(r.Line, $"@hint は {SummerLimits.MaxHints} 個までです"); return; }
+                            _hints.Add(text);
+                            return;
+                        }
+
                     default:
                         Error(r.Line, $"未知の文 {r.Keyword} です");
                         return;
@@ -948,6 +963,16 @@ namespace Game.Core.Data
                 foreach (var a in _actions)
                 {
                     if (a.WeekMask == 0) { Error(a.Line, "選べる曜日がありません"); }
+                }
+
+                // 暦の全ての日に、曜日で選べる行動が 1 つ以上あること（ない日は先へ進めない）。強制の行動には頼らない。
+                if (_actions.Count > 0 && _calendar)
+                {
+                    for (int d = 1; d <= Math.Min(_days, 7); d++)
+                    {
+                        var w = (int)(((int)_first + d - 1) % 7);
+                        if (!_actions.Exists(a => (a.WeekMask & (1 << w)) != 0)) { Error(0, $"{d} 日目（{_weekdays[w]}）に選べる行動がありません"); }
+                    }
                 }
 
                 if (_flags.Count > SummerLimits.MaxFlags) { Error(0, $"フラグは {SummerLimits.MaxFlags} 個までです"); }

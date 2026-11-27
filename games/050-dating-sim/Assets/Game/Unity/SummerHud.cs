@@ -56,6 +56,8 @@ namespace Game.Unity
         private readonly Row[] _optionRows = new Row[MaxOptions];
         private readonly VisualElement _detail;
         private readonly Label _detailBody;
+        private readonly Label _howToHints;
+        private readonly Label _detailHints;
         private readonly Label _hint;
         private readonly Label _notice;
         private readonly VisualElement _pause;
@@ -113,7 +115,7 @@ namespace Game.Unity
             _howTo.style.position = Position.Absolute;
             _howTo.style.left = 260;
             _howTo.style.right = 260;
-            _howTo.style.top = 120;
+            _howTo.style.top = 90;
             root.Add(_howTo);
             var howTitle = Text("howto-title", 42, Accent);
             howTitle.text = "操作説明";
@@ -124,13 +126,17 @@ namespace Game.Unity
             how.text =
                 "↑↓ と Enter、またはクリック：行動・選択肢を選ぶ\n" +
                 "Enter / Space / クリック：会話を送る（表示の途中なら全文を出す）\n" +
-                "Tab：能力値の詳細　Esc：一時停止（タイトルへ戻る）\n\n" +
+                "Tab：能力値の詳細と結末の目安　Esc：一時停止（タイトルへ戻る）\n\n" +
                 "夏休みは 30 日。毎朝 1 つ行動を選ぶと、能力値と疲労が動き、その日の出来事が起きる。\n" +
-                "疲労が 80 を超えると失敗しやすく、100 になると翌朝は休むしかない。\n" +
                 "天文部の先輩・星野澄と、図書室の同級生・本田栞。30 日目の夜、流星群の下で夏の終わり方が決まる。\n" +
-                "毎朝自動でセーブされ、タイトルの「つづきから」で再開できる。\n\n" +
-                "クリックか Enter でタイトルへ";
+                "毎朝自動でセーブされ、タイトルの「つづきから」で再開できる。";
             _howTo.Add(how);
+            _howToHints = Hints("howto-hints");
+            _howTo.Add(_howToHints);
+            var howBack = Text("howto-back", 26, Muted);
+            howBack.text = "クリックか Enter でタイトルへ";
+            howBack.style.marginTop = 16;
+            _howTo.Add(howBack);
 
             // 日付
             _date = Window("date");
@@ -246,9 +252,9 @@ namespace Game.Unity
             // 詳細（Tab）
             _detail = Window("detail");
             _detail.style.position = Position.Absolute;
-            _detail.style.left = 560;
-            _detail.style.right = 560;
-            _detail.style.top = 180;
+            _detail.style.left = 400;
+            _detail.style.right = 400;
+            _detail.style.top = 140;
             root.Add(_detail);
             var detailTitle = Text("detail-title", 36, Accent);
             detailTitle.text = "能力値の詳細";
@@ -257,6 +263,12 @@ namespace Game.Unity
             _detailBody = Text("detail-body", 28, Light);
             _detailBody.style.whiteSpace = WhiteSpace.Normal;
             _detail.Add(_detailBody);
+            _detailHints = Hints("detail-hints");
+            _detail.Add(_detailHints);
+            var detailBack = Text("detail-back", 24, Muted);
+            detailBack.text = "Tab / Esc で閉じる";
+            detailBack.style.marginTop = 16;
+            _detail.Add(detailBack);
 
             // 操作の案内・案内
             _hint = Text("hint", 22, Muted);
@@ -333,6 +345,7 @@ namespace Game.Unity
             var view = flow.View;
             Show(_title, screen == FlowScreen.Title);
             Show(_howTo, screen == FlowScreen.HowTo);
+            if (screen == FlowScreen.HowTo) { _howToHints.text = HintText(flow); }
             Show(_pause, screen == FlowScreen.Paused);
             Show(_result, screen == FlowScreen.Result);
             Show(_date, playing);
@@ -418,8 +431,8 @@ namespace Game.Unity
                     lines.Append('\n');
                 }
 
-                lines.Append("\n疲労 80 以上は失敗しやすく、100 で翌朝は休むだけ。");
-                _detailBody.text = lines.ToString();
+                _detailBody.text = lines.ToString().TrimEnd('\n');
+                _detailHints.text = HintText(flow);
             }
 
             if (screen == FlowScreen.Result)
@@ -444,6 +457,9 @@ namespace Game.Unity
         public int MenuIndexAt(SummerFlow flow, Vector2 panelPosition)
         {
             if (flow == null) { throw new ArgumentNullException(nameof(flow)); }
+
+            // 詳細（モーダル）を開いている間は、背後の項目に当てない。
+            if (flow.InSummer && flow.DetailOpen) { return -1; }
             switch (flow.Screen)
             {
                 case FlowScreen.Title:
@@ -497,6 +513,17 @@ namespace Game.Unity
             }
 
             return -1;
+        }
+
+        /// <summary>結末の目安（台本の @hint）。</summary>
+        private static string HintText(SummerFlow flow) => flow.Book.Hints.Count == 0 ? "" : "結末の目安\n・" + string.Join("\n・", flow.Book.Hints);
+
+        private static Label Hints(string name)
+        {
+            var l = Text(name, 26, Accent);
+            l.style.whiteSpace = WhiteSpace.Normal;
+            l.style.marginTop = 20;
+            return l;
         }
 
         private static string Hearts(int n) => new string('♥', n) + new string('♡', 5 - n);

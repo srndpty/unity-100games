@@ -120,21 +120,23 @@ namespace Game.Unity
 
             Until(() => flow.SceneIndex == book.EventIndex("e_sumi_roof") && flow.IsRevealed, "屋上の月");
             await Shoot("12_roof", "屋上で月を見る");
+            Until(() => flow.SceneIndex == book.EventIndex("e_festival_poster") && flow.IsRevealed, "夏祭りの予告");
+            await Shoot("13_poster", "15 日目の夜の夏祭りの予告（お金が要る）");
             Until(() => flow.IsChoice && flow.SceneIndex == book.EventIndex("e_festival_sumi"), "夏祭りの誘い");
-            await Shoot("13_festival", "20 日目の夏祭り（先輩の誘い）");
+            await Shoot("14_festival", "20 日目の夏祭り（先輩の誘い）");
             Until(() => flow.SceneIndex == book.EventIndex("e_meteor") && flow.IsRevealed, "流星群");
-            await Shoot("14_meteor", "30 日目の夜の流星群");
+            await Shoot("15_meteor", "30 日目の夜の流星群");
             Until(() => flow.View == PlayView.Ending && flow.SpeakerId.Length > 0 && flow.IsRevealed, "ED の台詞");
-            await Shoot("15_ending", "ED（先輩と星を数えた夏）");
+            await Shoot("16_ending", "ED（先輩と星を数えた夏）");
             for (int i = 0; i < MaxActs && flow.Screen != FlowScreen.Result; i++) { Step(); }
             if (book.Endings[flow.EndingIndex].Id != "sumi") { throw new InvalidOperationException($"ED が {flow.EndingName}"); }
-            await Shoot("16_result", "結果画面");
+            await Shoot("17_result", "結果画面");
             Tap(InputButton.Confirm);
 
             if (!store.TryWrite("kind=summer\nversion=1\nbroken", out var failure)) { throw new InvalidOperationException(failure); }
             game.Reinitialize(store, EvidenceCapture.Seed);
             flow = game.Flow;
-            await Shoot("17_title_broken_save", "壊れたセーブの案内（つづきからを選べない）");
+            await Shoot("18_title_broken_save", "壊れたセーブの案内（つづきからを選べない）");
             store.Delete();
         }
     }

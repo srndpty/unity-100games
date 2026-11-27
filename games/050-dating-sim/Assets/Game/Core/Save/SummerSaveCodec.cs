@@ -12,10 +12,14 @@ namespace Game.Core.Save
     /// </summary>
     public static class SummerSaveCodec
     {
-        public const int Version = 1;
+        /// <summary>版 2：遊んだ時間（playms）を足した。版 1 は読まない（移行しない）。</summary>
+        public const int Version = 2;
+
+        /// <summary>遊んだ時間の上限（99:59:59 のミリ秒）。</summary>
+        public const int MaxPlayMilliseconds = 359999000;
         private const string Kind = "summer";
 
-        public static string Encode(SummerBook book, SummerSnapshot s)
+        public static string Encode(SummerBook book, SummerSnapshot s, int playMilliseconds)
         {
             if (book == null) { throw new ArgumentNullException(nameof(book)); }
             if (s == null) { throw new ArgumentNullException(nameof(s)); }
@@ -24,7 +28,9 @@ namespace Game.Core.Save
             sb.Append(SaveText.Line("version", SaveText.Num(Version)));
             sb.Append(SaveText.Line("fingerprint", SaveText.Hex(book.Fingerprint)));
             sb.Append(SaveText.Line("seed", SaveText.Num(s.Seed)));
+            if (playMilliseconds < 0 || playMilliseconds > MaxPlayMilliseconds) { throw new ArgumentOutOfRangeException(nameof(playMilliseconds)); }
             sb.Append(SaveText.Line("day", SaveText.Num(s.Day)));
+            sb.Append(SaveText.Line("playms", SaveText.Num(playMilliseconds)));
             foreach (var st in book.Stats) { sb.Append(SaveText.Line("stat." + st.Id, SaveText.Num(s.Stats[st.Index]))); }
             for (int i = 0; i < book.Flags.Count; i++) { sb.Append(SaveText.Line("flag." + book.Flags[i], s.Flags[i] ? "1" : "0")); }
             foreach (var e in book.Events) { sb.Append(SaveText.Line("done." + e.Id, s.Done[e.Index] ? "1" : "0")); }
@@ -40,16 +46,19 @@ namespace Game.Core.Save
         }
 
         /// <summary>保存の文から朝の状態を作り直す。書式・版・指紋・キーの数・中身（範囲・記録）を全て確かめる。</summary>
-        public static bool TryDecode(SummerBook book, string? text, out Summer? summer, out SaveError? error)
+        public static bool TryDecode(SummerBook book, string? text, out Summer? summer, out int playMilliseconds, out SaveError? error)
         {
             if (book == null) { throw new ArgumentNullException(nameof(book)); }
             summer = null;
+            playMilliseconds = 0;
             if (!SaveText.TryOpen(text, Kind, Version, book.Fingerprint, out var map, out error)) { return false; }
             if (!SaveText.TryInt(map, "seed", out var seed, out error)) { return false; }
             if (!SaveText.TryInt(map, "day", out var day, out error)) { return false; }
+            if (!SaveText.TryInt(map, "playms", out var playMs, out error)) { return false; }
+            if (playMs < 0 || playMs > MaxPlayMilliseconds) { return SaveText.Fail(SaveErrorKind.Invalid, $"遊んだ時間 {playMs} が範囲外です", out error); }
             if (!SaveText.TryInt(map, "log.count", out var count, out error)) { return false; }
             if (count < 0 || count > book.Days * 5) { return SaveText.Fail(SaveErrorKind.Invalid, $"記録の数 {count} は範囲外です", out error); }
-            var expected = 6 + book.Stats.Count + book.Flags.Count + book.Events.Count + count;
+            var expected = 7 + book.Stats.Count + book.Flags.Count + book.Events.Count + count;
             if (map.Count != expected) { return SaveText.Fail(SaveErrorKind.Invalid, $"キーの数が違います（{map.Count}）", out error); }
 
             var stats = new int[book.Stats.Count];
@@ -79,6 +88,7 @@ namespace Game.Core.Save
 
             summer = Summer.Restore(book, new SummerSnapshot(seed, day, stats, flags, done, log), out var reason);
             if (summer == null) { return SaveText.Fail(SaveErrorKind.Invalid, reason!, out error); }
+            playMilliseconds = playMs;
             error = null;
             return true;
         }

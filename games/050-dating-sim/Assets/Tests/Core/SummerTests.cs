@@ -498,16 +498,67 @@ namespace Game.Core.Tests
             Assert.That(Summer.Restore(B, With(flags: Array.Empty<bool>()), out _), Is.Null);
             Assert.That(Summer.Restore(B, With(day: 2, log: new[] { new LogEntry(2, LogKind.Action, 0, 0) }), out _), Is.Null, "今日以降の記録");
             Assert.That(Summer.Restore(B, With(day: 2, log: new[] { new LogEntry(1, LogKind.Event, 99, 0) }), out _), Is.Null);
-            Assert.That(Summer.Restore(B, With(day: 8), out _), Is.Not.Null);
+            Assert.That(Summer.Restore(B, With(day: 8), out var r3), Is.Null, "8 日目の朝なのに行動の記録がない");
+            Assert.That(r3!.Contains("1 日目の行動がありません", StringComparison.Ordinal), Is.True, r3);
+            Assert.That(Summer.Restore(B, With(), out _), Is.Not.Null, "1 日目の朝の写し");
+        }
+
+        [Test]
+        public void Restore_RejectsStatesTheLogCannotProduce()
+        {
+            // 1 日目の朝なのに能力値が全て最大（範囲の中だが、記録からは作れない）。
+            var ok = new Summer(B, 1).Snapshot();
+            var max = B.Stats.Select(st => st.Max).ToArray();
+            Assert.That(Summer.Restore(B, new SummerSnapshot(ok.Seed, 1, max, ok.Flags.ToArray(), ok.Done.ToArray(), Array.Empty<LogEntry>()), out var r1), Is.Null);
+            Assert.That(r1, Does.Contain("一致しません"));
+
+            // 出会いのイベントの記録なしに、一度限りの済みとフラグだけが立っている。
+            var flags = ok.Flags.ToArray();
+            flags[B.FlagIndex("met")] = true;
+            Assert.That(Summer.Restore(B, new SummerSnapshot(ok.Seed, 1, ok.Stats.ToArray(), flags, ok.Done.ToArray(), Array.Empty<LogEntry>()), out _), Is.Null);
+            var done = ok.Done.ToArray();
+            done[E("e_first")] = true;
+            Assert.That(Summer.Restore(B, new SummerSnapshot(ok.Seed, 1, ok.Stats.ToArray(), ok.Flags.ToArray(), done, Array.Empty<LogEntry>()), out _), Is.Null);
+        }
+
+        [Test]
+        public void Restore_ReplaysEveryMorning_OfRandomSummers()
+        {
+            for (int seed = 0; seed < 40; seed++)
+            {
+                var s = new Summer(B, seed);
+                var rng = new SeededRandom(seed + 11);
+                while (s.Phase != Phase.Ended)
+                {
+                    if (s.Phase == Phase.Action && s.Action < 0)
+                    {
+                        var r = Summer.Restore(B, s.Snapshot(), out var reason);
+                        Assert.That(reason, Is.Null, $"seed {seed} day {s.Day}");
+                        Assert.That(r!.Hash(), Is.EqualTo(s.Hash()), $"seed {seed} day {s.Day}");
+                    }
+
+                    if (s.Phase == Phase.Action)
+                    {
+                        var options = Enumerable.Range(0, B.Actions.Count).Where(s.CanChoose).ToArray();
+                        Lab.Do(s, s.ChooseAction(options[rng.Next(options.Length)]));
+                    }
+                    else
+                    {
+                        var n = B.Events[s.Scene].Choices.Count;
+                        Lab.Do(s, n > 0 ? s.Choose(rng.Next(n)) : s.Continue());
+                    }
+                }
+            }
         }
 
         [Test]
         public void Restore_RecomputesForcedRest()
         {
-            var ok = new Summer(B, 1).Snapshot();
-            var stats = ok.Stats.ToArray();
-            stats[S("fatigue")] = 100;
-            var r = Summer.Restore(B, new SummerSnapshot(ok.Seed, 3, stats, ok.Flags.ToArray(), ok.Done.ToArray(), Array.Empty<LogEntry>()), out _);
+            var s = new Summer(B, 2);
+            while (s.Day < 5) { Lab.Step(s, Lab.Prefer("study")); }
+            Assert.That(s.Forced, Is.True);
+            var r = Summer.Restore(B, s.Snapshot(), out var reason);
+            Assert.That(reason, Is.Null);
             Assert.That(r!.Forced, Is.True);
         }
 

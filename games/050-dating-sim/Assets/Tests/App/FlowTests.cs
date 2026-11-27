@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Game.Core.Data;
 using Game.Core.Play;
 using NUnit.Framework;
@@ -340,6 +341,169 @@ namespace Game.App.Tests
         {
             Assert.Throws<ArgumentException>(() => AppLab.Flow(settings: new FlowSettings { TickRate = 0 }));
             Assert.Throws<ArgumentException>(() => AppLab.Flow(settings: new FlowSettings { TicksPerChar = 31 }));
+        }
+
+        // ---- レビュー対応 ----
+
+        /// <summary>P2-1：結果の段は行動した日を出し、能力値は会話の始めの効果を会話が終わるまで出さない。</summary>
+        [Test]
+        public void Report_ShowsTheDayOfTheAction_AndSceneEffectsWaitForTheScene()
+        {
+            var seen = new int[3];
+            foreach (var policy in new[] { PilotPolicy.Sumi, PilotPolicy.Shiori, PilotPolicy.Drift })
+            {
+                for (int seed = 0; seed < 6; seed++)
+                {
+                    var f = Started(seed: seed);
+                    var pilot = new Autopilot(B, policy, seed);
+                    for (int step = 0; step < 3000 && f.Screen != FlowScreen.Result; step++)
+                    {
+                        if (f.View != PlayView.Morning)
+                        {
+                            pilot.Drive(f);
+                            f.FlushIntents();
+                            continue;
+                        }
+
+                        var day = f.Day;
+                        var weekday = f.WeekdayName;
+                        var before = f.Stats.Select(s => s.Value).ToArray();
+                        pilot.Drive(f);
+                        f.FlushIntents();
+                        Assert.That(f.View, Is.EqualTo(PlayView.Report));
+                        Assert.That(f.Day, Is.EqualTo(day), "結果の段は行動した日");
+                        Assert.That(f.WeekdayName, Is.EqualTo(weekday));
+
+                        // 結果の段の能力値は、行動の効果だけが当たった値（会話の始めの効果はまだ出さない）。
+                        var actionDelta = new int[before.Length];
+                        foreach (var e in f.Summer!.Events)
+                        {
+                            if (e.Kind == SummerEventKind.SceneStarted) { break; }
+                            if (e.Kind == SummerEventKind.StatChanged) { actionDelta[e.Index] += e.Value; }
+                        }
+
+                        Assert.That(f.Stats.Select(s => s.Value).ToArray(), Is.EqualTo(before.Select((v, i) => v + actionDelta[i]).ToArray()));
+                        var kind = f.Summer.Phase == Phase.Action ? 0 : B.Events[f.Summer.Scene].Slot == Slot.After ? 1 : 2;
+                        seen[kind]++;
+                    }
+
+                    Assert.That(f.Screen, Is.EqualTo(FlowScreen.Result));
+                }
+            }
+
+            Assert.That(seen, Has.All.GreaterThan(0), "出来事のない日・行動の後のイベントの日・夜だけイベントの日を全て通った");
+        }
+
+        [Test]
+        public void SceneDoEffects_AppearWhenTheSceneEnds()
+        {
+            // 勉強の後の「問題が解けた」（@do 学力 +2）が出る日を探し、会話の間は表示の学力に含めない。
+            var study = B.StatIndex("study");
+            for (int seed = 0; seed < 40; seed++)
+            {
+                var f = Started(seed: seed);
+                AppLab.ClickNow(f, B.ActionIndex("study"));
+                AppLab.Tap(f, InputButton.Confirm);
+                if (f.SceneIndex != B.EventIndex("e_study_good")) { continue; }
+                var actual = f.Summer!.Stat(study);
+                Assert.That(f.Stats[study].Value, Is.EqualTo(actual - 2), "会話の間は @do を出さない");
+                AppLab.Tap(f, InputButton.Confirm);
+                Assert.That(f.Notice, Does.Contain("学力 +2"));
+                Assert.That(f.Stats[study].Value, Is.EqualTo(actual), "会話が終わったら出す");
+                return;
+            }
+
+            Assert.Fail("勉強の後の出来事が出るシードがない");
+        }
+
+        /// <summary>P2-3：つづきからは、セーブした朝までの遊んだ時間から数える。</summary>
+        [Test]
+        public void Continue_RestoresPlayTime()
+        {
+            var store = new MemorySaveStore();
+            var f = Started(store, seed: 4);
+            var pilot = new Autopilot(B, PilotPolicy.Sumi, 4);
+            for (int i = 0; i < 5000; i++)
+            {
+                pilot.Drive(f);
+                f.FlushIntents();
+                if (f.View == PlayView.Morning && f.Day == 3) { break; }
+                f.UpdateFrame(0.5);
+            }
+
+            var played = f.PlaySeconds;
+            Assert.That(played, Is.GreaterThan(1.0));
+            var g = AppLab.Flow(store, seed: 99);
+            AppLab.ClickNow(g, SummerFlow.TitleContinue);
+            Assert.That(g.PlaySeconds, Is.EqualTo(played).Within(0.001), "朝のセーブの時点までの時間");
+            g.UpdateFrame(2.0);
+            Assert.That(g.PlaySeconds, Is.EqualTo(played + 2.0).Within(0.001));
+        }
+
+        /// <summary>P2-4：ED を読み終えるまでセーブを消さない。</summary>
+        [Test]
+        public void Save_IsKeptWhileReadingTheEnding()
+        {
+            var store = new MemorySaveStore();
+            var f = Started(store, seed: 2);
+            var pilot = new Autopilot(B, PilotPolicy.Drift, 2);
+            for (int i = 0; i < 5000 && f.View != PlayView.Ending; i++)
+            {
+                pilot.Drive(f);
+                f.FlushIntents();
+            }
+
+            Assert.That(f.View, Is.EqualTo(PlayView.Ending));
+            Assert.That(store.Content, Is.Not.Null, "ED の途中で終了しても 30 日目の朝から読み直せる");
+            Assert.That(AppLab.Flow(store).TitleItems[SummerFlow.TitleContinue].Detail, Is.EqualTo("30 日目の朝から"));
+            AppLab.DriveToResult(f, pilot);
+            Assert.That(store.Content, Is.Null, "読み終えたら消す");
+        }
+
+        /// <summary>P2-6：詳細はモーダル。開いている間はクリック・Enter・選択を背後に通さない。</summary>
+        [Test]
+        public void Detail_IsModal()
+        {
+            var f = Started(seed: 9);
+            AppLab.Tap(f, InputButton.Detail);
+            var hash = f.SummerHash;
+            var version = f.Version;
+            AppLab.ClickNow(f, B.ActionIndex("study"));
+            AppLab.Tap(f, InputButton.Confirm);
+            AppLab.Tap(f, InputButton.Down);
+            Assert.That(f.Commands, Is.EqualTo(0));
+            Assert.That(f.SummerHash, Is.EqualTo(hash));
+            Assert.That(f.MenuCursor, Is.EqualTo(0), "カーソルも動かない");
+            Assert.That(f.Screen, Is.EqualTo(FlowScreen.Playing));
+
+            // Esc は一時停止ではなく詳細を閉じる。閉じる前の版のクリックは通さない。
+            AppLab.Tap(f, InputButton.Cancel);
+            Assert.That(f.DetailOpen, Is.False);
+            Assert.That(f.Screen, Is.EqualTo(FlowScreen.Playing));
+            f.Enqueue(Intent.Click(B.ActionIndex("study"), version));
+            f.FlushIntents();
+            Assert.That(f.Commands, Is.EqualTo(0), "開いている間の版のクリック");
+
+            // 会話の途中で開いても送らない。
+            AppLab.ClickNow(f, B.ActionIndex("club"));
+            AppLab.Tap(f, InputButton.Confirm);
+            Assert.That(f.View, Is.EqualTo(PlayView.Scene));
+            var text = f.FullText;
+            AppLab.Tap(f, InputButton.Detail);
+            AppLab.ClickNow(f, -1);
+            AppLab.Tap(f, InputButton.Confirm);
+            Assert.That(f.FullText, Is.EqualTo(text));
+            AppLab.Tap(f, InputButton.Detail);
+            Assert.That(f.DetailOpen, Is.False);
+        }
+
+        /// <summary>P3-1：操縦役は上限の命令の数で ED に着かなければ例外にする。</summary>
+        [Test]
+        public void Autopilot_Throws_WhenTheLimitEndsBeforeTheEnding()
+        {
+            var s = new Summer(B, 1);
+            Assert.Throws<InvalidOperationException>(() => new Autopilot(B, PilotPolicy.Sumi, 1).Play(s, 10));
+            Assert.That(s.Phase, Is.Not.EqualTo(Phase.Ended));
         }
 
         [Test]

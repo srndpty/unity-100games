@@ -260,8 +260,31 @@ namespace Game.Unity.Tests
             yield return Press(Key.Tab);
             Assert.That(Visible("detail"), Is.True);
             Assert.That(Hud.Q<Label>("detail-body").text.Contains("学力　10 / 100", StringComparison.Ordinal), Is.True);
+            var hints = Hud.Q<Label>("detail-hints").text;
+            Assert.That(hints.StartsWith("結末の目安", StringComparison.Ordinal), Is.True, hints);
+            foreach (var h in _game.Book.Hints) { Assert.That(hints.Contains(h, StringComparison.Ordinal), Is.True, h); }
             yield return Press(Key.Tab);
             Assert.That(Visible("detail"), Is.False);
+        }
+
+        [UnityTest]
+        public IEnumerator Detail_IsModal_ClicksAndKeysDoNotReachBehind()
+        {
+            yield return Press(Key.Enter);
+            yield return Press(Key.Tab);
+            Assert.That(Visible("detail"), Is.True);
+            var hash = Flow.SummerHash;
+            yield return Click(ScreenPointIn(Hud.Q("action-row-0")));
+            yield return Press(Key.Enter);
+            yield return Press(Key.DownArrow);
+            Assert.That(Flow.Commands, Is.EqualTo(0));
+            Assert.That(Flow.SummerHash, Is.EqualTo(hash));
+            Assert.That(Flow.Day, Is.EqualTo(1));
+            yield return Press(Key.Escape);
+            Assert.That(Visible("detail"), Is.False);
+            Assert.That(Flow.Screen, Is.EqualTo(FlowScreen.Playing), "Esc は詳細を閉じるだけ");
+            yield return Press(Key.Enter);
+            Assert.That(Flow.Commands, Is.EqualTo(1), "閉じた後は選べる");
         }
 
         // ---- 通し ----

@@ -104,6 +104,9 @@ namespace Game.App
         private readonly ReadOnlyCollection<MenuItem> _pauseItems;
         private readonly List<string> _reportChanges = new();
         private readonly List<string> _sceneChanges = new();
+
+        /// <summary>会話の始めに当たったが、まだ表示に出していない能力値の増減（会話が終わったら 0 に戻す）。</summary>
+        private readonly int[] _hidden;
         private Summer? _summer;
         private int _nextSeed;
         private int _line;
@@ -114,6 +117,9 @@ namespace Game.App
         private int _scene = -1;
         private int _reportAction = -1;
         private int _reportOutcome = -1;
+        private int _reportDay;
+        private Weekday _reportWeekday;
+        private int _sceneStartCollected = -1;
         private int _ending = -1;
         private double _accumulator;
         private long _noticeUntil;
@@ -127,6 +133,7 @@ namespace Game.App
             var errors = _settings.Validate();
             if (errors.Count > 0) { throw new ArgumentException(string.Join("\n", errors), nameof(settings)); }
             _nextSeed = firstSeed;
+            _hidden = new int[book.Stats.Count];
             _pauseItems = Array.AsReadOnly(new[] { new MenuItem("つづける", true), new MenuItem("タイトルへ", true) });
             RefreshTitle();
         }
@@ -171,11 +178,14 @@ namespace Game.App
 
         // ---- 夏休みの表示 ----
 
-        public int Day => _summer?.Day ?? 0;
+        /// <summary>表示する日。結果の段では行動した日（出来事のない日は Core が次の朝まで進んでいる）。</summary>
+        public int Day => _summer == null ? 0 : InReport ? _reportDay : _summer.Day;
 
         public int Days => _book.Days;
 
-        public string WeekdayName => _summer == null ? "" : _weekdayNames[(int)_summer.Weekday];
+        public string WeekdayName => _summer == null ? "" : _weekdayNames[(int)(InReport ? _reportWeekday : _summer.Weekday)];
+
+        private bool InReport => InSummer && View == PlayView.Report;
 
         public IReadOnlyList<StatLine> Stats
         {
@@ -183,7 +193,7 @@ namespace Game.App
             {
                 var list = new List<StatLine>();
                 if (_summer == null) { return list.AsReadOnly(); }
-                foreach (var s in _book.Stats) { list.Add(new StatLine(s.Id, s.Name, _summer.Stat(s.Index), s.Min, s.Max, s.IsHeart)); }
+                foreach (var s in _book.Stats) { list.Add(new StatLine(s.Id, s.Name, _summer.Stat(s.Index) - _hidden[s.Index], s.Min, s.Max, s.IsHeart)); }
                 return list.AsReadOnly();
             }
         }
@@ -413,10 +423,10 @@ namespace Game.App
                     var seed = _nextSeed;
                     // 再戦は新しいシード（時刻を読み直さず、起動時の値から試合ごとに進める、010）。
                     _nextSeed = unchecked(_nextSeed * 1103515245 + 12345);
-                    StartSummer(new Summer(_book, seed));
+                    StartSummer(new Summer(_book, seed), 0);
                     break;
                 case TitleContinue:
-                    if (TryReadSave(out var restored, out var reason)) { StartSummer(restored!); }
+                    if (TryReadSave(out var restored, out var played, out var reason)) { StartSummer(restored!, played); }
                     else
                     {
                         Cues.Reject++;
@@ -445,6 +455,13 @@ namespace Game.App
 
         private void Playing(Intent intent)
         {
+            // 詳細はモーダル：開いている間は Tab と Esc で閉じるだけで、背後の行動・選択・会話送りを受け付けない。
+            if (DetailOpen)
+            {
+                if (intent.Button is InputButton.Detail or InputButton.Cancel) { SetDetail(false); }
+                return;
+            }
+
             switch (intent.Button)
             {
                 case InputButton.Cancel:
@@ -452,7 +469,7 @@ namespace Game.App
                     SetScreen(FlowScreen.Paused);
                     return;
                 case InputButton.Detail:
-                    DetailOpen = !DetailOpen;
+                    SetDetail(true);
                     return;
                 default:
                     break;
@@ -487,6 +504,9 @@ namespace Game.App
                 return;
             }
 
+            // 出来事のない日は Core が次の朝まで進むので、結果の段では行動した日を出す。
+            _reportDay = s.Day;
+            _reportWeekday = s.Weekday;
             var r = s.ChooseAction(a.Index);
             if (!r.Accepted) { throw new InvalidOperationException(r.ToString()); }
             Commands++;
@@ -503,6 +523,7 @@ namespace Game.App
             _background = a.Background >= 0 ? a.Background : 0;
             _reportChanges.Clear();
             Collect(s.Events, _reportChanges);
+            CollectSceneStart(s);
             SetView(PlayView.Report);
         }
 
@@ -543,6 +564,8 @@ namespace Game.App
 
             if (View == PlayView.Ending)
             {
+                // ED を読み終えてからセーブを消す（読む途中で終了しても 30 日目の朝から読み直せる）。
+                DeleteSave();
                 SetScreen(FlowScreen.Result);
                 return;
             }
@@ -566,10 +589,12 @@ namespace Game.App
         private void AfterCommand()
         {
             var s = _summer!;
-            if (View == PlayView.Scene && _sceneChanges.Count > 0)
+            if (View == PlayView.Scene)
             {
-                ShowNotice(string.Join("　", _sceneChanges));
+                // 会話が終わったので、始めに当たった効果も能力値の表示に出す。
+                if (_sceneChanges.Count > 0) { ShowNotice(string.Join("　", _sceneChanges)); }
                 _sceneChanges.Clear();
+                Array.Clear(_hidden, 0, _hidden.Length);
             }
 
             switch (s.Phase)
@@ -593,8 +618,7 @@ namespace Game.App
             if (e.Background >= 0) { _background = e.Background; }
             _line = 0;
             _choosing = false;
-            // 始めに当たった効果（@do）は、会話が終わったときに案内する。
-            Collect(_summer!.Events, _sceneChanges, afterScene: true);
+            CollectSceneStart(_summer!);
             SetView(PlayView.Scene);
             ShowLine();
         }
@@ -608,7 +632,6 @@ namespace Game.App
             _line = 0;
             _choosing = false;
             Cues.Ending++;
-            DeleteSave();
             SetView(PlayView.Ending);
             ShowLine();
         }
@@ -646,21 +669,51 @@ namespace Game.App
             }
         }
 
-        private void StartSummer(Summer s)
+        /// <summary>
+        /// 会話が始まったときに当たった効果（@do）は、その会話が終わるまで能力値の表示に出さず（<see cref="_hidden"/>）、終わったときに案内する。
+        /// 命令ごとに 1 回だけ集める（行動の結果の段と、その後の会話の始まりが同じ命令の出来事を読むため）。
+        /// </summary>
+        private void CollectSceneStart(Summer s)
+        {
+            if (_sceneStartCollected == Commands) { return; }
+            _sceneStartCollected = Commands;
+            var started = false;
+            foreach (var e in s.Events)
+            {
+                if (e.Kind == SummerEventKind.SceneStarted) { started = true; }
+                if (started && e.Kind == SummerEventKind.StatChanged) { _hidden[e.Index] += e.Value; }
+            }
+
+            Collect(s.Events, _sceneChanges, afterScene: true);
+        }
+
+        private void StartSummer(Summer s, double playSeconds)
         {
             _summer = s;
             _ending = -1;
             _reportChanges.Clear();
             _sceneChanges.Clear();
+            Array.Clear(_hidden, 0, _hidden.Length);
+            _sceneStartCollected = -1;
             DetailOpen = false;
-            PlaySeconds = 0;
+            PlaySeconds = playSeconds;
             SetScreen(FlowScreen.Playing);
             Morning();
         }
 
+        private void SetDetail(bool open)
+        {
+            DetailOpen = open;
+
+            // 開閉の前に押したクリックを、開閉の後の画面に通さない。
+            Version++;
+        }
+
         private void AutoSave()
         {
-            if (!_store.TryWrite(SummerSaveCodec.Encode(_book, _summer!.Snapshot()), out var failure))
+            // 遊んだ時間は朝の時点までを保存し、再開したらそこから数える。
+            var ms = (int)Math.Min(SummerSaveCodec.MaxPlayMilliseconds, Math.Round(PlaySeconds * 1000));
+            if (!_store.TryWrite(SummerSaveCodec.Encode(_book, _summer!.Snapshot(), ms), out var failure))
             {
                 ShowNotice("セーブできませんでした：" + failure);
             }
@@ -671,9 +724,10 @@ namespace Game.App
             if (!_store.TryDelete(out var failure)) { ShowNotice("セーブを消せませんでした：" + failure); }
         }
 
-        private bool TryReadSave(out Summer? summer, out string reason)
+        private bool TryReadSave(out Summer? summer, out double playSeconds, out string reason)
         {
             summer = null;
+            playSeconds = 0;
             switch (_store.TryRead(out var content, out var failure))
             {
                 case SaveReadStatus.Missing:
@@ -686,12 +740,13 @@ namespace Game.App
                     break;
             }
 
-            if (!SummerSaveCodec.TryDecode(_book, content, out summer, out var error))
+            if (!SummerSaveCodec.TryDecode(_book, content, out summer, out var ms, out var error))
             {
                 reason = "セーブを読めませんでした：" + error;
                 return false;
             }
 
+            playSeconds = ms / 1000.0;
             reason = "";
             return true;
         }
@@ -700,7 +755,7 @@ namespace Game.App
         {
             _titleItems.Clear();
             _titleItems.Add(new MenuItem("はじめから", true));
-            var canContinue = TryReadSave(out var s, out var reason);
+            var canContinue = TryReadSave(out var s, out _, out var reason);
             _titleItems.Add(new MenuItem("つづきから", canContinue, canContinue ? $"{s!.Day} 日目の朝から" : reason));
             _titleItems.Add(new MenuItem("操作説明", true));
             _titleItems.Add(new MenuItem("終了", true));
