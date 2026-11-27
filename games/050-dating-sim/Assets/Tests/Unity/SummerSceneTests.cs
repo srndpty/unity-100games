@@ -268,6 +268,26 @@ namespace Game.Unity.Tests
         }
 
         [UnityTest]
+        public IEnumerator FocusLossWithDetailOpen_PauseMenuStillTakesClicks()
+        {
+            yield return Press(Key.Enter);
+            yield return Press(Key.Tab);
+            Assert.That(Visible("detail"), Is.True);
+            _game.SendMessage("OnApplicationFocus", false);
+            _game.SendMessage("OnApplicationFocus", true);
+            _game.Render();
+            yield return null;
+            yield return null;
+            Assert.That(Flow.Screen, Is.EqualTo(FlowScreen.Paused));
+            Assert.That(Visible("pause"), Is.True);
+            Assert.That(Visible("detail"), Is.False, "一時停止の間は詳細を出さない");
+            yield return Click(ScreenPointIn(Hud.Q("pause-row-0")));
+            Assert.That(Flow.Screen, Is.EqualTo(FlowScreen.Playing), "「つづける」をクリックで選べる");
+            Assert.That(Flow.DetailOpen, Is.True, "詳細は開いたまま戻る");
+            Assert.That(Visible("detail"), Is.True);
+        }
+
+        [UnityTest]
         public IEnumerator Detail_IsModal_ClicksAndKeysDoNotReachBehind()
         {
             yield return Press(Key.Enter);

@@ -1009,9 +1009,17 @@ namespace Game.Core.Data
                     if (tri == Tri.True) { Error(e.Line, $"ED {e.Id} の条件は必ず成り立つので、優先度の低い ED に届きません"); }
                 }
 
-                if (book.ForcedWhen != null && book.ForcedWhen.EvalRange(end, bounds.FlagPossible) == Tri.True)
+                // 強制の条件は毎朝評価されるので、全ての日の朝で必ず成り立つと言い切れるときだけ拒否する。
+                // d 日目の朝の能力値は d - 1 日目の終わりの値で、d 日目の見積もり（大きめ）に含まれる。大きい範囲で必ず真なら、その朝も必ず真。
+                if (book.ForcedWhen != null)
                 {
-                    Error(0, "@forced の条件が必ず成り立ち、ほかの行動を選べません");
+                    var always = true;
+                    for (int d = 1; d <= book.Days && always; d++)
+                    {
+                        if (book.ForcedWhen.EvalRange(bounds.On(d), bounds.FlagPossible) != Tri.True) { always = false; }
+                    }
+
+                    if (always) { Error(0, "@forced の条件が全ての朝で必ず成り立ち、ほかの行動を選べません"); }
                 }
             }
 

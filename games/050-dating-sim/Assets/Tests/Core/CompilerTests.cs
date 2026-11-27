@@ -118,6 +118,18 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void Forced_IsRejectedOnlyWhenItHoldsOnEveryMorning()
+        {
+            // 最終日（8 日目）は月曜。最終日だけで判定すると、月曜だけ休む台本まで拒否してしまう。
+            Lab.Compile(Lab.Replace("@forced rest when fatigue >= 100", "@forced rest when weekday == mon"));
+            Lab.Compile(Lab.Replace("@forced rest when fatigue >= 100", "@forced rest when day >= 5"));
+
+            // 全ての朝で必ず成り立つ条件は拒否する。
+            Lab.AssertError(Lab.Replace("@forced rest when fatigue >= 100", "@forced rest when day >= 1"), "全ての朝で必ず成り立ち");
+            Lab.AssertError(Lab.Replace("@forced rest when fatigue >= 100", "@forced rest when fatigue >= 0"), "全ての朝で必ず成り立ち");
+        }
+
+        [Test]
         public void DayWithoutAnySelectableAction_IsRejected()
         {
             // 全ての行動を月〜土にすると、7 日目（日曜）に選べる行動がなく先へ進めない。

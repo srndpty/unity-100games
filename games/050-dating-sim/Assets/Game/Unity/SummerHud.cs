@@ -354,7 +354,7 @@ namespace Game.Unity
             Show(_report, playing && view == PlayView.Report);
             Show(_window, playing && flow.InText && !flow.IsChoice);
             Show(_choices, playing && flow.IsChoice);
-            Show(_detail, playing && flow.DetailOpen);
+            Show(_detail, screen == FlowScreen.Playing && flow.DetailOpen);
             Show(_hint, playing);
             _notice.text = flow.Notice;
             Show(_notice, flow.Notice.Length > 0);
@@ -458,8 +458,8 @@ namespace Game.Unity
         {
             if (flow == null) { throw new ArgumentNullException(nameof(flow)); }
 
-            // 詳細（モーダル）を開いている間は、背後の項目に当てない。
-            if (flow.InSummer && flow.DetailOpen) { return -1; }
+            // 詳細（モーダル）を出している間は、背後の項目に当てない。一時停止の間は詳細を隠してメニューを出すので遮らない。
+            if (flow.Screen == FlowScreen.Playing && flow.DetailOpen) { return -1; }
             switch (flow.Screen)
             {
                 case FlowScreen.Title:
