@@ -1,0 +1,65 @@
+{
+    "Product": "After Hours at the Museum",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "e935e5ca679347b3b0e9c8818c6626a0",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-27T13:05:08.5481767Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "attempts",
+            "Value": "3"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01_title.jpg",
+            "Sha256": "f7d87dd2681956e48596736047693c0fcfe0f401c89a11b41b8a97db80b96bd2",
+            "Note": "タイトル (tick=1)"
+        },
+        {
+            "File": "00_help.jpg",
+            "Sha256": "241afbe7aa57ef637c997b2a6bde5eaf325c94a8bac5a2bbb343d04342b837c3",
+            "Note": "遊び方 (tick=2)"
+        },
+        {
+            "File": "02_question.jpg",
+            "Sha256": "f935abc850b3b36a77ccad0f74a571947869bf58f536d376cc69e5ee0def0070",
+            "Note": "警備員に尋問 (tick=4)"
+        },
+        {
+            "File": "03_incorrect.jpg",
+            "Sha256": "1ac8f86ae11ea420bfc07a8c1de18b65e96b6c285fe5bf07af700eed29050ac1",
+            "Note": "展示目録を誤提示 (tick=5)"
+        },
+        {
+            "File": "04_lost.jpg",
+            "Sha256": "e717c40ca9d447fc2243845fa03b0299bc63a50b89a8a4238fc19d0f1b7ff8fc",
+            "Note": "敗北 (tick=7)"
+        },
+        {
+            "File": "05_correct.jpg",
+            "Sha256": "3613a5f175d587b39d338f1bbd3e0fd773d67111f90c27fec3eb55a0336aba97",
+            "Note": "入退室ログで証言を覆す (tick=11)"
+        },
+        {
+            "File": "06_seal.jpg",
+            "Sha256": "f3e5ed7d59adf5283fbbb497c75566fede61e7aa61c23ff65e8ba4d5bca31342",
+            "Note": "封印の検印と複製品の刻印 (tick=18)"
+        },
+        {
+            "File": "08_records.jpg",
+            "Sha256": "d54c4b64de933036c7c3775313821058755c4ec262797f9ba89345ab457a0772",
+            "Note": "取得した8点の証拠 (tick=22)"
+        },
+        {
+            "File": "07_won.jpg",
+            "Sha256": "68727aa964c424367a4a50153201075910636de09467ae7b4dc7e41286194ebb",
+            "Note": "真相 (tick=23)"
+        }
+    ]
+}
