@@ -1,0 +1,70 @@
+{
+    "Product": "Canyon Gate",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "763d4069ddfc44e28443b5ad010ed29f",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-27T18:45:18.0103371Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "rules",
+            "Value": "{\"StartingLives\":10,\"StartingMoney\":160,\"WaveIncome\":25,\"SpawnInterval\":30,\"Costs\":[45,80,60,90],\"Ranges\":[2500,2300,2000,2100],\"Cooldowns\":[15,36,24,24],\"Power\":[5,10,3,12],\"Increments\":[3,5,2,6],\"HitPoints\":[18,12,32],\"Speeds\":[60,90,40],\"Rewards\":[8,9,14],\"Enemies\":[6,0,0,6,2,0,5,4,0,6,0,2,4,5,2,6,3,3,4,6,3,5,4,5,4,6,6,6,6,8]}"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01_title.jpg",
+            "Sha256": "8c1c05deb18bf48f2730960bbcd121edaa382cf3bdcb0e78a19e3cdf1e390097",
+            "Note": "タイトル (tick=0)"
+        },
+        {
+            "File": "02_help.jpg",
+            "Sha256": "02fa5ca23cea8ee413bb16bbd95a516fe2b46559d8c7458c9771b82aac76ef79",
+            "Note": "操作説明 (tick=0)"
+        },
+        {
+            "File": "03_preparation.jpg",
+            "Sha256": "b55b5231b06f9b8cf49b77d93729c859c27ecb06e1a48cba5bc20b041b2abfac",
+            "Note": "準備と射程 (tick=0)"
+        },
+        {
+            "File": "08_pause.jpg",
+            "Sha256": "186ff8daaea1f1ecd5dbfcd53288e24a485378d34d98a715de7341170a5cfa59",
+            "Note": "一時停止と再開 (tick=0)"
+        },
+        {
+            "File": "04_attack.jpg",
+            "Sha256": "8d291b1879a3c926a6d84d3443f3dcdb8dcc0094477f9cde8f2e0337672cdde8",
+            "Note": "第1Waveの攻撃 (tick=33)"
+        },
+        {
+            "File": "10_hit.jpg",
+            "Sha256": "3ebb1a89e40e743c0d9f0a8006127980d1146006ee6e44f4bcd05fb56321c604",
+            "Note": "矢の着弾と被弾明滅 (tick=37)"
+        },
+        {
+            "File": "09_between_waves.jpg",
+            "Sha256": "b4b6dd8af49bf5079613e846331df8fc899d76a0739418cb644967f754cb52ac",
+            "Note": "第1Wave終了後の準備 (tick=246)"
+        },
+        {
+            "File": "05_final_wave.jpg",
+            "Sha256": "d858f77741fe974aa7bf780e736535c204fcd398725c3be1004863c623d83109",
+            "Note": "第10Wave (tick=4161)"
+        },
+        {
+            "File": "06_won.jpg",
+            "Sha256": "640707eda7d479ac8e567d2ca3e9f27491afc4e9de01a4e666c951d73f3dd28c",
+            "Note": "10Waveを防衛 (tick=4794)"
+        },
+        {
+            "File": "07_lost.jpg",
+            "Sha256": "888f7aa7489f96f1a039ff827d7123b7732d3413bccba7a7fc2adaf49f7ffa13",
+            "Note": "ライフを失い敗北 (tick=803)"
+        }
+    ]
+}

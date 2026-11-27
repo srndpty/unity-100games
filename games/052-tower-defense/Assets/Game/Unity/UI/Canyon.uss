@@ -1,0 +1,80 @@
+#hud { background-color: #152221; color: #f5e9c9; font-size: 17px; }
+.layout { flex-grow: 1; flex-direction: row; justify-content: center; align-items: center; }
+.board { flex-shrink: 0; width: 648px; height: 432px; overflow: visible; }
+.road { background-color: #948464; }
+.mark { color: #211f18; -unity-text-align: middle-center; -unity-font-style: bold; font-size: 13px; margin: 0; }
+.range { border-width: 2px; border-color: #ddcf85; background-color: rgba(235, 222, 154, 0.13); }
+.sidebar { width: 312px; flex-shrink: 0; margin-left: 24px; padding: 18px; background-color: #293a34; border-radius: 10px; }
+.heading { font-size: 29px; -unity-font-style: bold; margin: 0 0 12px; }
+.status { font-size: 19px; margin: 0 0 12px; color: #f8d78c; }
+.notice { height: 38px; white-space: normal; margin-top: 5px; }
+Button { color: #f5e9c9; background-color: #334e43; border-color: #789186; min-height: 30px; margin: 2px 0; }
+Button:hover { background-color: #4b6959; }
+Button.selected { border-color: #f3db88; border-width: 2px; }
+Button:disabled { opacity: 0.48; }
+Button.slot { margin: 0; -unity-font-style: bold; color: #121f19; border-radius: 8px; }
+.landing { flex-grow: 1; align-items: flex-start; justify-content: center; padding-left: 140px; }
+.landing .heading { font-size: 64px; }
+.landing .copy { white-space: normal; margin-bottom: 20px; font-size: 23px; }
+.landing Button { width: 240px; height: 42px; }
+
+.layout { background-size: cover; }
+.road { background-color: rgba(182, 143, 91, 0.88); border-bottom-width: 1px; border-bottom-color: rgba(76, 55, 32, 0.2); }
+.sidebar { padding: 15px 16px; background-color: #243731; }
+.sidebar Button { min-height: 28px; font-size: 15px; }
+.choice-group, .action-group { border-radius: 7px; padding: 7px; }
+.choice-group { background-color: #192b29; }
+.action-group { background-color: #4a402d; margin-top: 13px; }
+.action-group Button { background-color: #5c4c32; border-color: #94784e; }
+.section-heading { color: #ebcf91; font-size: 13px; -unity-font-style: bold; margin: 0 0 4px; }
+.kind-grid { flex-direction: row; flex-wrap: wrap; justify-content: space-between; }
+.kind-grid Button { width: 49%; height: 41px; padding-left: 24px; }
+.kind-icon { position: absolute; left: 3px; top: 3px; width: 28px; height: 30px; }
+Button.primary { background-color: #b28b50; color: #1f261c; border-color: #ebcc85; -unity-font-style: bold; }
+Button.primary:hover { background-color: #d3b071; }
+Button.slot { background-size: contain; color: #fff4d1; -unity-text-align: lower-right; font-size: 11px; -unity-text-outline-width: 1px; -unity-text-outline-color: #182724; }
+.effects { position: absolute; }
+.magic-beam { border-radius: 4px; }
+.shell { background-color: #392c26; border-radius: 50%; border-width: 2px; border-color: #ffc477; }
+.arrow { background-color: #f0db9c; border-radius: 2px; }
+.arrow-head {
+    position: absolute; right: -1px; top: -2px; width: 7px; height: 7px;
+    background-color: #fff4da; rotate: 45deg;
+}
+.arrow-tail {
+    position: absolute; left: 0; top: -2px; width: 6px; height: 7px;
+    background-color: #d58f50; border-radius: 2px;
+}
+.impact { border-radius: 50%; border-width: 2px; border-color: #fff5d8; }
+.landing { background-size: cover; padding-left: 110px; }
+.landing-card { background-color: rgba(19, 33, 32, 0.94); border-radius: 13px; padding: 32px; align-items: flex-start; max-width: 930px; }
+.pause-scrim {
+    position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+    background-color: rgba(9, 17, 17, 0.8); justify-content: center; align-items: center;
+}
+.pause-card { width: 455px; padding: 30px; border-width: 2px; border-color: #c4a36a; border-radius: 12px; background-color: #2d3e37; }
+.pause-copy { white-space: normal; margin: 0 0 18px; }
+.pause-card Button { height: 52px; font-size: 20px; }
+
+.slot-tag {
+    position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+    margin: 0; padding: 0; color: #fff4d1; font-size: 22px; -unity-text-align: middle-center;
+    -unity-text-outline-width: 0; -unity-font-style: bold;
+}
+.slot.occupied .slot-tag {
+    left: auto; right: 0; top: auto; bottom: 0; padding: 0 3px;
+    font-size: 11px; background-color: #17251f; border-radius: 3px;
+}
+
+.enemy { background-size: contain; }
+.enemy.slowed { -unity-background-image-tint-color: #a6dfff; }
+.enemy.hit { opacity: 0.48; -unity-background-image-tint-color: #ffb39e; }
+
+.health {
+    position: absolute; width: 24px; height: 5px;
+    background-color: #4c2926; border-radius: 2px; overflow: hidden;
+    border-width: 1px; border-color: #17241d;
+}
+.health-fill { height: 100%; background-color: #a8df68; }
+
+.tactical-info { color: #ebd8a8; font-size: 12px; white-space: normal; margin: 4px 0 2px; }
