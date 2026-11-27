@@ -287,6 +287,12 @@
     <Project Path="games/048-escape-room/dotnet/Core.Tests/G048.Core.Tests.csproj" />
     <Project Path="games/048-escape-room/dotnet/Core/G048.Core.csproj" />
   </Folder>
+  <Folder Name="/050-dating-sim/">
+    <Project Path="games/050-dating-sim/dotnet/App.Tests/G050.App.Tests.csproj" />
+    <Project Path="games/050-dating-sim/dotnet/App/G050.App.csproj" />
+    <Project Path="games/050-dating-sim/dotnet/Core.Tests/G050.Core.Tests.csproj" />
+    <Project Path="games/050-dating-sim/dotnet/Core/G050.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />
