@@ -16,6 +16,18 @@
 - **状況：** 027 は 026 から写して使っている（2 作品目）。026 の `Sweep.First` は座標が大きいと 2 次式が long を超えうる（026 の座標の範囲では超えない）。
 - **対応：** 3 作品目で円どうしの掃引を使うときに、`VeilRun.Touches` の厳密な判定を含めて `packages/` へ抽出し、026・027 をパッケージの参照に置き換える。完走ハッシュなどの固定値が変わらないことを .NET と Mono の両方で確かめる。
 
+### 041・045・046・050：セーブの行指向テキスト（SaveText・FileSaveStore）を共通パッケージへ抽出する候補
+
+- **対象：** `games/046-visual-novel` と `games/050-dating-sim` の `Assets/Game/Core/Save/SaveText.cs`・`Assets/Game/Unity/FileSaveStore.cs`・`Assets/Game/App/ISaveStore.cs`（041・045 にも同じ方式の複製がある）
+- **状況：** 050 は 046 から写した（チェックサムの種と案内の文だけ違う。050 の `ISaveStore` には `TryDelete` を足した）。049 が別の worktree で並行していたので、050 では作品の中に写した。
+- **対応：** Core の `SaveText`（key=value・版・指紋・チェックサム）と App の `ISaveStore`・`MemorySaveStore` を `packages/` へ抽出し、Unity の `FileSaveStore` は作品に残すか別のパッケージにする。各作品の全ての切り位置・1 文字の改変のテストが通ることと、既存のセーブの書式（チェックサムの種）が変わらないことを確かめる。
+
+### 046・047・050：行指向 DSL の構文解析の土台を共通化する候補
+
+- **対象：** `games/046-visual-novel` の `ScriptParser`・`ScriptCompiler`、`games/047-point-click` の `RuleCompiler`、`games/050-dating-sim` の `SummerCompiler`（行の読み・コメント・`@end` の塊・行番号付きの誤り・ID の検査・字句）
+- **状況：** 3 作品とも行指向で、誤りを行番号と理由で返す形は同じだが、文法・塊の種類・条件式は作品ごとに違う。
+- **対応：** 行の分割・コメント・塊の切り出し・`SummerError` 相当の誤りの型・ID の正規表現だけを `packages/` に抜き出せるかを、文法の違いを含めて検討する。抜き出しても各作品のコンパイラのテスト（誤りの文と行番号）が変わらないことを確かめる。
+
 ### 010 SAFE DIG：フォーカス復帰のクリックでゲームが終了する
 
 - **対象：** `games/010-minesweeper/Assets/Game/Unity/SafeDigGame.cs` の終了ボタン

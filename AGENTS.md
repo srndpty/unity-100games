@@ -45,8 +45,8 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - 共通コードは、3題以上で再利用価値が明確になってから `packages/` にローカル UPM パッケージとして抽出する。
   - 作品からは `Packages/manifest.json` に `"file:../../../packages/<名前>"` と `testables` を書き、`dev test NNN -Unity` でパッケージのテストも Mono で流す。dotnet 側は作品の Core の csproj から `ProjectReference` する。
   - パッケージも Core と同じく Unity API に依存しない（`noEngineReferences`）。中身を変えると全作品が検査対象になる（`dev lint/check -Staged`）。
-  - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う（033・034 は `StateHash` だけ、035・036・037・038 は `StateHash` を使う、042 は `Box`・`BodyMotion`・`StateHash` を使う、043・044・045・046・047 は `StateHash` だけ、048 は `StateHash` を使う）。
-  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）、状態を保存できる乱数系列と試合シード・番号・用途からの派生（`RandomSeries`、041・043・044 の GameRng から 045 の着手時に抽出）。025〜027 の実装から抽出し、028 から使う（032 は `SeededRandom` だけ、033 は `Vec2i`・`IntMath`・`Sweep`、035・036 は `Vec2i`・`IntMath`・`Sweep`・`Trig`・`SeededRandom` を使う、037 は `Vec2i`・`IntMath`・`Sweep`・`Trig` を使う、038 は `IntMath`・`Trig`・`SeededRandom` を使う、042 は `Vec2i`・`IntMath`・`Sweep`・`SeededRandom` を使う、043 は `Vec2i`・`SeededRandom` を使う、041・043・044 は `SeededRandom`・`RandomSeries`、045 は `SeededRandom`（`RandomSeries` の撹拌）・`RandomSeries` を使う、047 は `Vec2i`・`Rect` を使う、048 は `IntMath`・`Vec2i`・`SeededRandom`・`RandomSeries` を使う）。
+  - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う（033・034 は `StateHash` だけ、035・036・037・038 は `StateHash` を使う、042 は `Box`・`BodyMotion`・`StateHash` を使う、043・044・045・046・047 は `StateHash` だけ、048・050 は `StateHash` を使う）。
+  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）、状態を保存できる乱数系列と試合シード・番号・用途からの派生（`RandomSeries`、041・043・044 の GameRng から 045 の着手時に抽出）。025〜027 の実装から抽出し、028 から使う（032 は `SeededRandom` だけ、033 は `Vec2i`・`IntMath`・`Sweep`、035・036 は `Vec2i`・`IntMath`・`Sweep`・`Trig`・`SeededRandom` を使う、037 は `Vec2i`・`IntMath`・`Sweep`・`Trig` を使う、038 は `IntMath`・`Trig`・`SeededRandom` を使う、042 は `Vec2i`・`IntMath`・`Sweep`・`SeededRandom` を使う、043 は `Vec2i`・`SeededRandom` を使う、041・043・044 は `SeededRandom`・`RandomSeries`、045 は `SeededRandom`（`RandomSeries` の撹拌）・`RandomSeries` を使う、047 は `Vec2i`・`Rect` を使う、048 は `IntMath`・`Vec2i`・`SeededRandom`・`RandomSeries` を使う、050 は `SeededRandom`・`RandomSeries` を使う）。
 
 ## 技術スタック
 
@@ -302,6 +302,13 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - **操縦役は、命令ごとに「実行された」ことを記録で確かめる。** 前の `LastOutcome` を見るだけでは、フォーカス喪失・演出中で捨てられた入力も成功になる。Flow が実行した命令の通し番号と命令を持ち、ちょうど 1 つ・狙った命令・受理を確かめる。持ち物の選択のように入力の意味を変える状態は、命令の前に合わせる（048）。
 - **ドラッグは押した画面の版を持たせ、操作の対象が変わったら捨てる。** 手に取った物を置く・画面が変わった後に届いた古いドラッグや端数が、次の物を回さないようにする（048）。
 - **向きで意味が変わる手がかり（文字盤・並び）は正立だけを有効にする。** 「面がこちらを向く」だけで判定すると、上下逆さで時刻や並びを逆に読み、試遊で先へ進めなくなった（048）。
+
+- **状態の組み合わせが多すぎて探索できない DSL は、条件式を取りうる範囲で 3 値（必ず偽・不明・必ず真）に評価して検証する。** 1 日の最大の増減から各能力値の d 日目の範囲を大きめに見積もり、どの日にも成り立たないイベント・ED の条件と、必ず成り立って下の ED を隠す条件を行番号付きで拒否する。見積もりは過大なので「言い切れるもの」だけを拒否し、到達そのものは操縦役の通しで確かめる（050 の `StatBounds`・`Cond.EvalRange`）。
+- **操縦役が全シードで攻略できても、人が攻略できるとは限らない。** 操縦役は内部の条件と選択肢の効果を読むので、画面に条件が出ていなくても届く。試遊で 3 回とも既定の ED になった。結末の条件はデータ（`@hint`）に書いて画面に出し、ヒントの数値が条件とずれないことをテストで確かめる（050）。
+- **Core が 1 命令で何段も進むとき、App の表示の段ごとに見せる日付と値を決める。** 出来事のない日は行動 1 つで次の朝まで進み、結果の段の日付が翌日になった。会話の始めに当たる効果も、会話を読む前に能力値に出た。App が行動した日と「まだ見せない増減」を持ち、出来事なし・行動の後・夜だけの 3 通りでテストする（050）。
+- **乱数を用途ごとの系列（シード・日・用途）にしたセーブは、記録の再生で整合を確かめる。** 範囲の検査だけでは「25 日目なのに行動の記録がない」「記録にないフラグ」が通る。シードと記録の入力（行動・選択）だけを 1 日目から再生し、再生した状態がセーブと全て一致するときだけ読む。遊んだ時間のような App の値もセーブに入れて戻す（050）。
+- **重ねて開く画面（詳細など）はモーダルにし、開閉で画面の版を進める。** パネルの座標で項目を照合する方式では、上に重なった窓を見ないので、詳細を読みながらのクリックが背後の会話を送った。開いている間は閉じる操作だけを受け付け、Esc も一時停止ではなく閉じるにする（050）。
+- **DSL の検証は、宣言ごとの検査に加えて暦（日ごと）の検査をする。** 行動ごとに選べる曜日があっても、全ての行動が月〜土なら日曜に進めなくなる（050）。
 
 ## 注意点
 
