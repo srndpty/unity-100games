@@ -45,8 +45,8 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - 共通コードは、3題以上で再利用価値が明確になってから `packages/` にローカル UPM パッケージとして抽出する。
   - 作品からは `Packages/manifest.json` に `"file:../../../packages/<名前>"` と `testables` を書き、`dev test NNN -Unity` でパッケージのテストも Mono で流す。dotnet 側は作品の Core の csproj から `ProjectReference` する。
   - パッケージも Core と同じく Unity API に依存しない（`noEngineReferences`）。中身を変えると全作品が検査対象になる（`dev lint/check -Staged`）。
-  - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う（033・034 は `StateHash` だけ、035・036・037・038 は `StateHash` を使う、042 は `Box`・`BodyMotion`・`StateHash` を使う、043・044・045・046・047 は `StateHash` だけ）。
-  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）、状態を保存できる乱数系列と試合シード・番号・用途からの派生（`RandomSeries`、041・043・044 の GameRng から 045 の着手時に抽出）。025〜027 の実装から抽出し、028 から使う（032 は `SeededRandom` だけ、033 は `Vec2i`・`IntMath`・`Sweep`、035・036 は `Vec2i`・`IntMath`・`Sweep`・`Trig`・`SeededRandom` を使う、037 は `Vec2i`・`IntMath`・`Sweep`・`Trig` を使う、038 は `IntMath`・`Trig`・`SeededRandom` を使う、042 は `Vec2i`・`IntMath`・`Sweep`・`SeededRandom` を使う、043 は `Vec2i`・`SeededRandom` を使う、041・043・044 は `SeededRandom`・`RandomSeries`、045 は `SeededRandom`（`RandomSeries` の撹拌）・`RandomSeries` を使う、047 は `Vec2i`・`Rect` を使う）。
+  - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う（033・034 は `StateHash` だけ、035・036・037・038 は `StateHash` を使う、042 は `Box`・`BodyMotion`・`StateHash` を使う、043・044・045・046・047 は `StateHash` だけ、048 は `StateHash` を使う）。
+  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）、状態を保存できる乱数系列と試合シード・番号・用途からの派生（`RandomSeries`、041・043・044 の GameRng から 045 の着手時に抽出）。025〜027 の実装から抽出し、028 から使う（032 は `SeededRandom` だけ、033 は `Vec2i`・`IntMath`・`Sweep`、035・036 は `Vec2i`・`IntMath`・`Sweep`・`Trig`・`SeededRandom` を使う、037 は `Vec2i`・`IntMath`・`Sweep`・`Trig` を使う、038 は `IntMath`・`Trig`・`SeededRandom` を使う、042 は `Vec2i`・`IntMath`・`Sweep`・`SeededRandom` を使う、043 は `Vec2i`・`SeededRandom` を使う、041・043・044 は `SeededRandom`・`RandomSeries`、045 は `SeededRandom`（`RandomSeries` の撹拌）・`RandomSeries` を使う、047 は `Vec2i`・`Rect` を使う、048 は `IntMath`・`Vec2i`・`SeededRandom`・`RandomSeries` を使う）。
 
 ## 技術スタック
 
@@ -296,6 +296,12 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - **状態空間の探索の手は、命令の全ての候補を実際の受付（`Check`）で絞って作る。** 探索用に手を別に列挙すると、遊ぶときに命じられる手（出口への「取る」「話す」）が漏れて使われないルールと誤り、手前の物に覆われてクリックできない物を探索だけが扱う。探索の手と受け付ける命令が全ての到達状態で一致することをテストする（047 の `StateSpace.Moves`）。
 - **終わった後の Tick でも出来事の記録を消す。** 脱出の後の `Step` が出来事を消さずに戻り、画面が毎 Tick 同じ台詞と効果音を読み直して先へ進めなかった。毎 Tick 台詞を送る操縦役の通しでは見えないので、「入力せずに待つ」テストを別に置く（047）。
 - **画面の枠の数で決まる上限（同時に並ぶ選択肢など）は、HUD とデータの検証で同じ定数を使い、探索の全ての到達状態で確かめる。** 総数だけを数えると、時期がずれて出る話題まで拒否するか、同時に並ぶ数を見逃す（047 の `BookLimits.MaxTopicChoices`）。
+
+- **3D のクリックは、Core の整数のレイと箱で決め、Unity の Collider は照合専用にする。** 見下ろす角度を整数の直角三角形（3:4:5・24:7:25 など）の表から選ぶとカメラの基底が整数のまま作れ、スラブ法の t を有理数の交差乗算で比べれば厳密になる。カメラは同じ宣言から作り、PlayMode で全ての視点・全ての部品の面の中心について `Physics.Raycast` と当たりを照合する（048 の `CameraPose`・`Slab`）。
+- **探索の「受け付ける」と、画面で「作れる」を分ける。** 命令の受付（`Check`）が通っても、遮蔽・画角・HUD の帯で画面からはその命令を作れないことがある。探索は寄る・拾う・使う・操作の命令ごとに、対応する全ての画面で届く範囲でその命令になる点を探し、見つからなければ拒否する（fail-closed、048 の `ClickSearch`・`ScreenRegion`）。操縦役のクリックも同じ範囲から選び、Flow は範囲外のクリックを部屋に通さない。
+- **操縦役は、命令ごとに「実行された」ことを記録で確かめる。** 前の `LastOutcome` を見るだけでは、フォーカス喪失・演出中で捨てられた入力も成功になる。Flow が実行した命令の通し番号と命令を持ち、ちょうど 1 つ・狙った命令・受理を確かめる。持ち物の選択のように入力の意味を変える状態は、命令の前に合わせる（048）。
+- **ドラッグは押した画面の版を持たせ、操作の対象が変わったら捨てる。** 手に取った物を置く・画面が変わった後に届いた古いドラッグや端数が、次の物を回さないようにする（048）。
+- **向きで意味が変わる手がかり（文字盤・並び）は正立だけを有効にする。** 「面がこちらを向く」だけで判定すると、上下逆さで時刻や並びを逆に読み、試遊で先へ進めなくなった（048）。
 
 ## 注意点
 

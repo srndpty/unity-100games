@@ -1,0 +1,126 @@
+# 048. 脱出ゲーム
+
+仕様書：[plan/games/048-escape-room.md](../../plan/games/048-escape-room.md)　実装計画：[plan/games/048-escape-room-implementation.md](../../plan/games/048-escape-room-implementation.md)
+
+## 環境
+
+- Unity：6000.6.9f1（URP 3D）
+- 対象プラットフォーム：Windows (StandaloneWindows64)
+- 入力方式：マウスが主、キーボードを併用（Input System）
+
+## 起動手順
+
+```
+dev gui 048      # エディタで開く
+dev build 048    # Windows ビルド
+dev run 048      # ビルドを起動
+dev capture 048  # 証跡を evidence/ に撮る（画像は captures/<画像世代>/、撮影記録は runs/）
+```
+
+## 操作
+
+| 入力 | 動き |
+|---|---|
+| ← → ・A / D | 壁の視点で隣の壁へ向き直る |
+| 左クリック | 壁の視点：家具へ寄る（近景）。近景：部品を操作する・物を拾う・手がかりを手に取る |
+| 右クリック・Esc | 一段戻る（手に取った物を置く → 近景から壁へ）。壁の視点の Esc は一時停止。ウィンドウのフォーカスを失っても一時停止になり、戻ったら「つづける」で再開する |
+| 手に取った物をドラッグ | 回す（横はヨー 45° ずつ、縦はピッチ 90° ずつ） |
+| 持ち物の枠をクリック | 選ぶ／外す。選んだまま部品をクリックすると「使う」。手に取れる持ち物は選んだ枠をもう一度クリックで手に取る |
+| H | ヒント（同じ一手には 方向付け → 手がかり → 答え の順） |
+| R（一時停止の中） | リセット（同じシードで最初から） |
+
+## 採用ルール
+
+### 仕掛け 5 種と鍵の連鎖
+
+| # | 仕掛け（種類） | 操作 | 手がかり | 解くと |
+|---|---|---|---|---|
+| 1 | 机の引き出しの**数字ダイヤル錠**（3 桁） | 桁をクリックして 1 つ進める（0〜9 で循環） | 机の上の**真鍮の筒**を手に取って回すと、底に 3 桁が刻まれている | 引き出しの前板が倒れ、**真鍮の鍵**が取れる |
+| 2 | キャビネットの**鍵穴** | 真鍮の鍵を選んで鍵穴をクリック | — | 扉が開き、**星図の円盤**が取れる |
+| 3 | **天球儀のリング合わせ**（3 本） | 星図の円盤を台座のくぼみにはめると回るようになる。リングをクリックして 45° ずつ回す（8 星座） | 星図の円盤を手に取って裏返すと、3 つの星座が上から並んでいる（はめた後も台座の円盤を手に取れる） | ふたが外れ、**歯車**が取れる |
+| 4 | **柱時計の針合わせ** | 歯車を文字盤の軸にはめると針が動く。短針・長針のつまみをクリックで 1 段（1 時間・5 分）進める | 本棚から飛び出している**天文書**を手に取って回すと、裏表紙に時刻が書いてある | 振り子の扉が開き、**金庫のハンドル**が取れる |
+| 5 | **金庫の順番ボタン**（4 つの宝石） | ハンドルを穴に差すと押せるようになる。宝石を順に押す | **望遠鏡**をのぞくと、窓の外の星が宝石の色の順に瞬く | 金庫が開き、**出口の鍵**が取れる |
+| 出口 | 扉の**鍵穴** | 出口の鍵を使う | — | 脱出（結果画面へ） |
+
+- 依存は 1 → 2 → 3 → 4 → 5 → 出口の一本の連鎖。手がかり（筒・本・望遠鏡）は最初から触れるので、ダイヤルと時刻・宝石の順は先に知ることができる。
+- 答えは試合のシードから作る（仕掛けごとに派生した乱数系列）：ダイヤルの 3 桁（000 以外）、リングの 3 星座（全て始めの位置の組以外）、時計の時刻（12 時 00 分以外）、宝石の順（4 つの並べ替え）。
+
+| 項目 | 採用ルール |
+|---|---|
+| 仕掛けの状態 | `Locked`（必要な持ち物が入っていない）→ `Active`（操作できる）→ `Solved`（解けて開いた・以後は不変）。ダイヤルは最初から Active、鍵穴は鍵を差すと Solved、ほかは持ち物をはめると Active |
+| 遷移の表 | 全ての仕掛けで 1 つの表（状態 × 操作 → 遷移または拒否）を共有する。Locked：入れる→はめる、動かす・触る→「鍵がかかっている」。Active：入れる→「もう入っている」、動かす→値を動かし答えなら Solved、触る→「操作はない」。Solved：全て「もう解けている」 |
+| 拒否 | 表にない操作・前提の足りない操作・範囲外の番号は理由付きで拒否し、状態・ハッシュ・操作の回数・出来事を何も変えない |
+| 宝石の順番 | 答えの順に 1 回ずつ押す。間違えると最初から。ただし間違えた宝石が答えの最初なら、それを 1 つ目として数える（答えの順に 4 つ押せば、途中の状態に依らず必ず開く） |
+| 持ち物 | 拾う物は 1 試合に 1 回だけ。使うと手放す（鍵穴・差し込み口に残る）。入れ物（引き出し・キャビネット・天球儀・柱時計・金庫）の中の物は、その仕掛けが解けるまで拾えない |
+| 視点 | 4 面の壁（部屋の中央の目の高さ）と、家具ごとの近景 8 つ（机・望遠鏡・キャビネット・本棚・出口の扉・柱時計・天球儀・金庫）。壁の視点で家具をクリックすると、その壁の近景へ寄る（壁の端に見える隣の壁の家具には寄らない）。部品の操作は、その部品の近景でだけ受け付ける |
+| 手に取る | 筒・天文書・円盤（持ち物から、またははめた台座から）を手に取ると、回す・置く・ヒント以外を受け付けない。向きはヨー 45° × 8 段・ピッチ 90° × 4 段。**手がかりの面がこちらを向き、正立しているときだけ**手がかりが読める（32 通りの向きのうち 1 通り。Core が判定し、表示もこれで決める）。上下を逆さにすると文字盤の時刻・円盤の星座の並びを読み違えるため |
+| ヒント | 出口から依存をさかのぼり、最初に満たしていない一手を案内する（操作できる仕掛けなら解く、Locked なら持ち物を使う、持っていなければ拾う、入れ物が閉じていれば入れ物の仕掛けへ）。同じ一手には 0 方向付け → 1 具体的な手がかり → 2 答え（今のシードの答えの文）と進み、一手が変わったら 0 から。リングの答えは星座の名前が画面に出ないので「今の位置から、上のリングをあと N 回…」を添え、宝石には色を添える |
+| 操作の回数 | 部品の操作・持ち物を使う・拾う・手に取るを数える。視点の移動・回す・置く・ヒントは数えない |
+| 敗北 | ない（時間切れもない）。脱出したら結果画面（経過時間・操作の回数・ヒントの数）。脱出の後はリセット以外を拒否する。経過時間は実時間で数え（処理落ちのフレームの Tick 上限とは別）、一時停止・フォーカスのない間は数えない |
+| リセット | 同じシードで最初から（視点・持ち物・仕掛け・ヒントの段階・操作の回数・経過時間が始めに戻る）。再戦は新しいシード |
+| 再現性 | 1 試合 = 1 シード。整数だけの規則なので、同じシードと同じ命令の列なら .NET と Mono で同じ状態ハッシュになる |
+
+## カメラとヒットテスト
+
+- 部屋の座標は mm の整数（原点は床の中央、x 右・y 上・z 奥の Unity と同じ左手系）。部品は軸に平行な箱で、状態から「今ある箱」を決める（閉じた前板・扉は閉じている間だけある、拾った物はなくなる）。
+- 視点は「向く壁（ヨー 90° × 壁）・目の位置・見下ろす角度・焦点距離」で宣言する。見下ろす角度は整数の直角三角形（3:4:5 など）の表から選ぶので、カメラの基底は整数のまま厳密に作れる。
+- クリックは、画面の点を縦の半分 = 1000 の整数座標にしてからレイにし、今ある全ての箱とスラブ法で交差させる。比較は有理数（long の積）で厳密に行い、境界ちょうども当たりとする。最も近い箱が当たり、同じ距離なら後に定義した部品（手前に付けた部品）が勝つ。
+- 中に物が入る家具は、空洞を本体の箱で囲み、開口を前板・扉の箱でふさぐ。閉じている間は中の物へのレイが必ず前板に当たる（引き出しの鍵の位置をクリックすると前板に当たる、をテストで確かめる）。
+- Unity のカメラは同じ宣言から作る（位置・回転 `Euler(見下ろす角度, 90 × 壁, 0)`・縦の画角 `2 atan(1000 / 焦点距離)`）。
+
+## 設計上の選択
+
+| 層 | 責務 |
+|---|---|
+| Unity | 進行役（`EscapeGame`：キーごとのアクションとマウスの押下・ドラッグを意図に、ウィンドウを選び直したクリックを捨てる）、カメラ（`StageMath`：Core の視点の宣言から位置・回転・画角、演出の間は補間）、描画（`StudyStage`：部品ごとの物は Core の箱の位置・大きさで、照合専用の BoxCollider 付き。状態で出し入れし、桁・リング・針・宝石・はめた物・手に取った物・手がかり・望遠鏡の星を写す）、HUD（`EscapeHud`、PanelRenderer）、音（`EscapeAudio`）、設定アセット（`EscapeSettings`）、撮影台本（`EscapeCaptureScenario`）、素材とシーンの生成（`EscapeArtGenerator`・`EscapeSceneBuilder`）、ビルド前の検証（`RoomBuildCheck`：部屋の定義・状態空間の探索・Stage Prefab の照合） |
+| App | 画面の流れ（`EscapeFlow`：タイトル／操作説明／遊ぶ／一時停止／結果）。意図の列（`Intent`）を 1 本で順に当てはめ、クリックは押した画面の版を照合する。クリックを Core のヒットテストで命令にし、持ち物の選択・手に取った物のドラッグ（`DragStepUnits` ごとに 1 段）・ヒント・リセット・知らせ・音の合図（`AudioCues`）・カメラの演出の間の受付を持つ。操縦役（`Autopilot`：ヒントと同じ次の一手を、キーと画面の点のクリックだけで行う） |
+| Core | 部屋の定義（`RoomDef`・`RoomBuilder`・`StudyRoom`、作るときに検証）、仕掛けの種類 5 つ（`IMechanism`：`DialLock`・`KeyLock`・`RingLock`・`ClockHands`・`SequenceLock`）と共有の遷移の表（`MechanismTable`）、試合（`Room` = 定義 + シードから作った答え）、世界（`World`：命令 `Command`・拒否 `Refusal`・出来事 `EscapeEvent`・Clone・Hash）、整数の幾何（`Vec3i`・`Box3`・`CameraPose`・`Slab`）、ヒント（`HintEngine`）、視点の移動の列（`Navigation`）、状態空間の探索（`StateSpace`） |
+
+- 仕掛けの値（ダイヤルの桁など）は世界が持ち、仕掛けの種類の実装は答えと値の動かし方だけを持つ。複製とハッシュを世界の 1 か所にするため。
+- 前提（入れ物が開いているか・持ち物が入っているか）の評価は `World.IsPresent`・`IsReachable` と遷移の表に置き、全ての仕掛けで共有する。
+- 作品名は **STARGAZER'S STUDY**（オリジナル）。素材はプリミティブと座標から決まる模様の生成テクスチャ（木目・壁紙・床板・文字盤・数字と星座の表・持ち物の絵）だけで作る。
+- 遊ぶときの当たりは Core のヒットテストだけで決める。Unity の BoxCollider は Core の箱と同じ位置・大きさの照合専用（PlayMode で `Physics.Raycast` と照合する）。
+- **画面の契約**：対応する画面の比率は 16:10〜21:9（AGENTS.md の横長の範囲）。Unity はこれより狭い・広い画面に黒い帯を付けて描画の矩形を収め、部屋のクリックが届く範囲（`ScreenRegion`：横は描画の矩形の比率、下は HUD の持ち物の帯（1080 のうち 150）の上）を Flow に渡す。範囲の外のクリックは部屋に通さない。ビルド前の検証と操縦役は、対応する全ての画面で届く範囲（±1600・y≥-700、`ScreenRegion.Guaranteed`）だけを使う。
+- **論理とクリックの区別**：`World.Check` は論理的に受け付けるか（あって、入れ物が開いているか）だけを見る。画面で作れるかは `World.CommandAt`（Core のヒットテスト）で決まる。状態空間の探索は、近景へ寄る命令とクリックで出す命令ごとに、決めた範囲でその命令になる点を `ClickSearch` で探し、見つからなければ誤りにする（fail-closed）。探し方は部品の手前の面の 5 × 5 の点、次に範囲を 20 刻みで走査する十分条件で、完全な可視領域の判定ではない（刻みの間にしか見えない部品は、クリックできても拒否しうる）。
+- 操縦役は、命令ごとに Flow の実行の記録（通し番号・命令・結果）で「入力がちょうどその命令として実行され、受け付けられた」ことを確かめる。持ち物の選択は命令の前に合わせる。
+- 天井のランプは影を落とさない（点光源の影の継ぎ目が壁と床に線として出たため）。試遊で暗いとされたので、環境光・ランプ・月明かりを強め、壁紙を明るくした。窓の夜空は光の影響を受けない紺にした。
+- 試合のシードは、起動時の値と何試合目かから派生する（再戦は新しいシード、リセットは同じシード）。
+- 視点は命令の時点で切り替わり、カメラの移動は App の演出の進み具合（`TransitionProgress`）で Unity が補間して描く。演出の間のクリック・向き直り・戻るは受付で捨てる。視点・手に取った物・画面が変わると版が進むので、同じフレームの 2 回目のクリック（壁の視点で押した）は近景の部品を操作しない。
+- 状態空間の探索は 047 の方式（命令の候補を遊ぶときと同じ `World.Check` で絞る）を写した。抽象状態は「仕掛けの状態・持ち物・拾った物・脱出」で、仕掛けの値は「解けたか」に縮める。そのため 1 段ずつの操作に加えて「今の値から答えまで動かす」手（1 段ずつの操作の列そのもの）も加える。視点・手に取った物は鍵に含めず、探索の手は視点を移す命令を含めて当てはめる。迂回（前提が揃う前に動く・解けていないのに脱出・閉じた入れ物の中を拾う）・詰み・持ち物の違反を拒否する。書斎の状態は 15・遷移 63（シードに依らない）。
+
+## テスト
+
+| 種類 | 場所 | 実行 | 件数 |
+|---|---|---|---|
+| Core（.NET） | `Assets/Tests/Core/` | `dev test 048` | 67 |
+| App（.NET） | `Assets/Tests/App/` | `dev test 048` | 38 |
+| EditMode（Mono、共通パッケージと Editor を含む） | 上の 2 つ＋ `Assets/Tests/Editor/`＋ `packages/` | `dev test 048 -Unity` | 182 |
+| PlayMode（実シーン 18・証跡の公開 16） | `Assets/Tests/Unity/` | `dev test 048 -Unity -Mode PlayMode` | 34 |
+
+| 観点 | 主なテスト |
+|---|---|
+| 未解除ロックを操作で迂回できない | `StateSpaceTests.Study_HasNoBypassDeadEndOrItemViolation`（全到達状態）、`Explore_RejectsGeometricallyUnclickableRooms`（遮られた・画面の外・HUD の下の必須の部品は手にしない）、`WorldTests.Bypass_*`（鍵なしの鍵穴・ハンドルなしの宝石・歯車なしの針・円盤なしのリング・閉じた引き出しの鍵は前板に当たる・出口） |
+| ヒント表示と実状態が一致 | `StateSpaceTests.Hint_IsConsistent_InEveryReachableState`・`Hint_NeverPointsAtSolvedOrLockedBeyond_AlongWholePlaythrough`、`WorldTests.Hint_*`、`FlowTests.Hint_ShowsAnswerOfThisSeed_AtThirdPress`、`EscapeSceneTests.ArrowsAndAdTurn_HintKeyShowsHint` |
+| 同時操作で状態破綻なし | `FlowTests.SameFrame_*`（6 件）、`StateSpaceTests.RandomCommands_KeepInvariants` |
+| カメラとヒットテスト | `GeometryTests`（スラブ法と参照実装の照合・縁・角・基底）、`WorldTests.HitTest_NoUnreachablePartIsEverClicked_AndWallClicksStayOnWall`・`EveryPart_IsHitAtItsFrontCenter_InItsCloseUp_WhenReachable`、`EscapeSceneTests.CoreHitTest_MatchesPhysicsRaycast_InEveryView_AtStartAndAfterEscape`・`FocusZoomsCamera_AndRightClickReturnsToWall` |
+| 完了判定 | `WorldTests.Acceptance_*`、`FlowTests.Autopilot_EscapesInManySeeds_ByClicksAndKeysOnly`・`Reset_FromPause_RestoresInitialState`、`EscapeSceneTests.PlayByMouseAndKeyboardOnly_EscapesAndShowsResult`・`ResetFromPause_LooksLikeNewGame_AndTitleLooksLikeStartup` |
+| 状態遷移・負テスト | `FlowTests.ScreenFlow_TitleHowToPlayResultTitleRematch`（結果の後の入力を無視）、`WorldTests.Negative_*`（範囲外の番号・二重に拾う・使った物を使う）、`FlowTests.FocusLoss_DropsPendingAndLaterIntents`、`EscapeSceneTests.ClickRightAfterFocusRestoreIsIgnored` |
+| 再現性 | `StateSpaceTests.SameSeedAndCommands_GiveSameHash_AndFinalHashIsFixed`（`0x44E972DE`）、`FlowTests.Autopilot_FinalHash_IsFixed`（`0x8B6DBBC1`）。どちらも .NET と Mono で一致 |
+| ビルド前の検証 | `EditorChecksTests`（本番の部屋が通る・詰む部屋・クリックできない部屋・不正な定義でビルドが止まる・Stage Prefab の照合が動かした部品を見つける） |
+| 操縦役と入力 | `FlowTests.Perform_*`・`Verify_*`（入力が捨てられた・別の命令になった場合を成功にしない、選択を外してから戻る）、`Autopilot_FromMidGameWithItemSelected_Escapes`、`ClickOutsideRegion_IsNotPassedToTheRoom`、`Drag_*`、`EscapeSceneTests.HeldLeftButtonAcrossPutDown_DoesNotRotateTheNextObject`・`ViewportKeepsSupportedAspect_AndRegionCoversGuaranteed` |
+| 手がかりの表示 | `EscapeSceneTests.CluesShowTheAnswersOfEachSeed`（筒の底・円盤・天文書の針・望遠鏡の星の順を、3 つのシードの答えと照合） |
+
+検証の記録と画面は [evidence/README.md](evidence/README.md)。
+
+## 未解決事項
+
+- クリックの感触（近景へ寄る速さ `TransitionTicks`・ドラッグの重さ `DragStepUnits`・向き直りのキー）と謎の難しさ・音量は、人間の試遊で確かめる。値は `Assets/Game/Unity/EscapeSettings.asset` にある。
+- 攻略（デバッグ用）は [walkthrough.md](walkthrough.md)。
+- 手がかりを見ないと解けない、という条件は付けない（答えを知っていれば解ける）。手がかりの表示が答えと合うことは PlayMode で照合する（OCR はしない）。
+
+## 未実装範囲
+
+- 仕様書の Out of scope：部屋の複数化・高精細なアセット。
+- 計画で足さないもの：セーブ、時間切れ、自由な見回し。
+
+証跡画像はJPEG（`.jpg`）、品質85を標準とし、保存したJPEGのSHA-256をマニフェストに記録する。

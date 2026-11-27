@@ -281,6 +281,12 @@
     <Project Path="games/047-point-click/dotnet/Core.Tests/G047.Core.Tests.csproj" />
     <Project Path="games/047-point-click/dotnet/Core/G047.Core.csproj" />
   </Folder>
+  <Folder Name="/048-escape-room/">
+    <Project Path="games/048-escape-room/dotnet/App.Tests/G048.App.Tests.csproj" />
+    <Project Path="games/048-escape-room/dotnet/App/G048.App.csproj" />
+    <Project Path="games/048-escape-room/dotnet/Core.Tests/G048.Core.Tests.csproj" />
+    <Project Path="games/048-escape-room/dotnet/Core/G048.Core.csproj" />
+  </Folder>
   <Folder Name="/049-deduction/">
     <Project Path="games/049-deduction/dotnet/App.Tests/G049.App.Tests.csproj" />
     <Project Path="games/049-deduction/dotnet/App/G049.App.csproj" />
