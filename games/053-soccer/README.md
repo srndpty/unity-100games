@@ -1,4 +1,4 @@
-# 053. サッカー
+# 053. サッカー『MINI PITCH』
 
 仕様書：[plan/games/053-soccer.md](../../plan/games/053-soccer.md)　実装計画：[plan/games/053-soccer-implementation.md](../../plan/games/053-soccer-implementation.md)
 
@@ -19,7 +19,18 @@ dev capture 053  # 証跡を evidence/ に撮る（画像は captures/<画像世
 
 ## 操作
 
-（セッション 3 で記入）
+| 入力 | 動き |
+|---|---|
+| WASD・矢印 | 移動（メニューでは ↑↓ で選ぶ、相手の方針は ←→ でも切り替え） |
+| J | パス（向いている方の味方へ）。守備ではタックル |
+| K | シュート（W を押していれば左の隅、S なら右の隅） |
+| L | ループパス |
+| Space | 操作する選手の切替 |
+| Enter・クリック | メニューの決定 |
+| Esc | 一時停止（つづける・タイトルへ）。一時停止の中では戻る。ウィンドウのフォーカスを失っても一時停止になり、戻ったら手で再開する |
+| F1 | 役割の表示（支援・抜け出し・寄せ・カバー・回収・待機の名札と目標の印） |
+
+- 画面の流れ：タイトル（試合開始・相手の方針・操作説明・終了）→ 試合（5 分）→ 試合終了 → 結果（勝ち・負け・引き分け、シュート・パス成功・保持率・タックル）→ タイトル。再戦は新しいシード。
 
 ## 採用ルール
 
@@ -112,8 +123,11 @@ dev capture 053  # 証跡を evidence/ に撮る（画像は captures/<画像世
 | 層 | 内容 |
 |---|---|
 | Core | `Pitch`（寸法・ゴール・ポスト）、`SoccerConfig`（調整値と検証）、`Ball`（高さ付きの球）、`BallPredictor`（軌跡と到着時刻）、`PassTable`（パスの速さの表）、`Footballer`、`Match`（1 Tick の進行・保持・キック・タックル・GK・得点・ライン外・再開・時計・Clone・Hash）、`PassEvaluator`（パスとシュートの候補評価）、`TeamAi`（役割割当と保持者の判断）、`Tactics`、`MatchStats` |
+| Unity | 進行役（`SoccerGame`：物理キーごとの押下・解放、マウスの押下をパネルの座標でメニューの項目と照合）、Stage（`SoccerStage`：コート・選手 6 人と向きの印・球と影・操作中の輪・役割の目標の印）、投影（`PitchProjection`：真上から、1 m = 1 単位、球は高さで上へずらし大きく描く）、HUD（`SoccerHud`：UI Toolkit。役割の名札は選手の位置をパネルの座標へ写して出す）、効果音（`SoccerAudio`）、設定（`SoccerSettings`）、撮影台本（`SoccerCaptureScenario`） |
+| Editor | 素材の生成（`SoccerArtGenerator`：コートの線はルールの寸法から描く）、シーンの生成（`SoccerSceneBuilder`）、ビルド前の設定の検証（`SoccerBuildCheck`） |
 | App | `SoccerFlow`（タイトル・操作説明・試合・一時停止・結果、相手の方針の選択、意図の列、画面の版、フォーカス喪失、経過時間、自動操縦）、`HumanControl`（人間の命令と切替） |
 
+- 描画は Tick の状態をそのまま描く（補間しない）。選手は実寸より大きく（1.2 m）、球と影は 2 倍で描く（実寸では見えにくい）。当たりは Core の実寸のまま。
 - 共通パッケージ：int-geometry（`Vec2i`・`IntMath`・`Sweep`・`RandomSeries`）、tile-motion（`StateHash`）。
 - 到着時刻：選手が止まった状態からまっすぐ走った距離（毎 Tick 加速して最高速で頭打ち）の閉じた式で求め、試合の移動と Tick 単位で一致する。
 - GK の反応の遅れ・ドリブルの運び込みを取る・GK が持つ間は離れる、の 3 つは CPU どうしの試合を回して足した（GK がどのシュートにも届いて得点がなく、GK の配球を目の前の相手が拾い続けた）。
@@ -130,6 +144,7 @@ dev capture 053  # 証跡を evidence/ に撮る（画像は captures/<画像世
 | Core（AI・戦術） | `Assets/Tests/Core/AiTests.cs` | 13 | 同上 |
 | App（切替） | `Assets/Tests/App/SwitchTests.cs` | 7 | 同上 |
 | App（画面の流れ） | `Assets/Tests/App/FlowTests.cs` | 10 | 同上 |
+| Editor（ビルド前の検証） | `Assets/Tests/Editor/SoccerBuildCheckTests.cs` | 2 | `dev test 053 -Unity` |
 
 - 題材固有「得点は一度だけ」：ラインちょうど・1 単位越え、クロスバーの上・ポストの外、ポストに当たって戻る、得点の間に球を動かしてもラインを戻しても数えない、自陣のゴール、乱択の通しで得点の出来事とスコアが一致。
 - 予測：地を這う・浮き球・ポストの軌跡が本番と Tick 単位で一致。到着時刻が実際に走った選手の保持の Tick と一致。パスの表が本番の球と一致。
