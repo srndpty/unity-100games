@@ -147,6 +147,7 @@ namespace Game.Core
             Taker = other.Taker;
             KickCount = other.KickCount;
             KeeperHold = other.KeeperHold;
+            TicksSinceKick = other.TicksSinceKick;
             _lastGoalTeam = other._lastGoalTeam;
         }
 
@@ -193,6 +194,9 @@ namespace Game.Core
         /// <summary>GK が球を持ってからの Tick。</summary>
         public int KeeperHold { get; private set; }
 
+        /// <summary>最後に蹴られてからの Tick（GK の反応の遅れに使う）。</summary>
+        public int TicksSinceKick { get; private set; }
+
         public int Score(Team team) => _score[(int)team];
 
         /// <summary>最後の Tick に起きた出来事。</summary>
@@ -228,6 +232,7 @@ namespace Game.Core
             }
 
             if (Owner >= 0 && _players[Owner].IsKeeper) { KeeperHold++; }
+            TicksSinceKick++;
 
             Act(commands);
             var starts = new Vec2i[PlayerCount];
@@ -282,6 +287,7 @@ namespace Game.Core
             h.Mix(Taker);
             h.Mix(KickCount);
             h.Mix(KeeperHold);
+            h.Mix(TicksSinceKick);
             h.Mix((int)_lastGoalTeam);
             return h.Value;
         }
@@ -429,8 +435,26 @@ namespace Game.Core
             if (Phase is not (MatchPhase.Play or MatchPhase.SetPiece)) { return; }
             if (Owner >= 0 && _players[Owner].IsKeeper && KeeperHold >= _config.KeeperHoldTicks)
             {
+                // GK の配球：安全なパス、なければ一番点数の高いループ（パス候補評価）。
                 var k = Owner;
-                Kick(k, PlayerAction.Pass, _players[NearestTeammate(k)].Position);
+                var option = PassEvaluator.Best(this, k, safeOnly: true) ?? PassEvaluator.Best(this, k, safeOnly: false, kind: PlayerAction.Lob);
+                if (option.HasValue) { Kick(k, option.Value.Kind, option.Value.Target); }
+                else { Kick(k, PlayerAction.Pass, _players[NearestTeammate(k)].Position); }
+            }
+
+            // GK は自分の範囲の中で、届く距離に来た相手の球を取る（ドリブルでゴールへ運び込ませない）。
+            if (Phase == MatchPhase.Play && Owner >= 0 && !_players[Owner].IsKeeper)
+            {
+                var keeper = Keeper(Pitch.Opponent(_players[Owner].Team));
+                if (Vec2i.DistanceSquared(keeper.Position, _ball.Position) < (long)_config.KeeperReach * _config.KeeperReach)
+                {
+                    var victim = _players[Owner];
+                    victim.KickCooldown = _config.KickCooldownTicks;
+                    Owner = keeper.Index;
+                    LastTouch = keeper.Team;
+                    KeeperHold = 0;
+                    _events.Add(new MatchEvent(MatchEventKind.Capture, keeper.Index, keeper.Team));
+                }
             }
 
             for (int i = 0; i < PlayerCount; i++)
@@ -462,6 +486,7 @@ namespace Game.Core
             var from = _ball.Position;
             var rng = RandomSeries.Derive(Seed, KickCount, KickPurpose);
             KickCount++;
+            TicksSinceKick = 0;
             var spread = action == PlayerAction.Shoot ? _config.ShotSpread : _config.PassSpread;
             var aim = target - from;
             if (aim.IsZero) { aim = p.Facing; }
@@ -572,7 +597,8 @@ namespace Game.Core
                 else
                 {
                     var move = commands[p.Index].Move;
-                    desired = move.IsZero ? Vec2i.Zero : IntMath.Scale(move, max);
+                    // 移動の長さが最高速以下なら、その分だけ動く（目標の点に止まれる）。長ければ最高速。
+                    desired = move.LengthSquared <= (long)max * max ? move : IntMath.Scale(move, max);
                     if (!move.IsZero) { p.Facing = IntMath.Scale(move, Footballer.FacingLength); }
                 }
 
@@ -625,7 +651,8 @@ namespace Game.Core
             if (Owner == k.Index) { return k.Position; }
             if (Owner < 0 && Phase == MatchPhase.Play)
             {
-                var crossing = GoalCrossing(k.Team);
+                // 蹴られてから反応の遅れの間は、シュートの越える位置へ動かない。
+                var crossing = TicksSinceKick > _config.KeeperReactionTicks ? GoalCrossing(k.Team) : null;
                 if (crossing.HasValue) { return new Vec2i(goal.X + (dir * 400), crossing.Value); }
                 if (Vec2i.DistanceSquared(_ball.Position, goal) < (long)Pitch.KeeperAreaRadius * Pitch.KeeperAreaRadius) { return _ball.Position; }
             }
@@ -678,15 +705,26 @@ namespace Game.Core
 
             if (Phase is MatchPhase.SetPiece or MatchPhase.Stopped)
             {
-                foreach (var p in _players)
-                {
-                    if (p.Team == RestartTeam || p.IsKeeper) { continue; }
-                    var d = p.Position - RestartSpot;
-                    if (d.LengthSquared >= (long)Pitch.ExclusionRadius * Pitch.ExclusionRadius) { continue; }
-                    var n = d.IsZero ? new Vec2i(-Pitch.Direction(RestartTeam), 0) : d;
-                    p.Position = RestartSpot + IntMath.Scale(n, Pitch.ExclusionRadius);
-                    p.Velocity = Vec2i.Zero;
-                }
+                KeepAway(RestartTeam, RestartSpot);
+            }
+            else if (Phase == MatchPhase.Play && Owner >= 0 && _players[Owner].IsKeeper)
+            {
+                // GK が持っている間も、相手は球から離れる（GK の配球をすぐ奪えない）。
+                KeepAway(_players[Owner].Team, _ball.Position);
+            }
+        }
+
+        /// <summary><paramref name="team"/> の相手のフィールドの選手を、<paramref name="spot"/> から入れない距離の外へ出す。</summary>
+        private void KeepAway(Team team, Vec2i spot)
+        {
+            foreach (var p in _players)
+            {
+                if (p.Team == team || p.IsKeeper) { continue; }
+                var d = p.Position - spot;
+                if (d.LengthSquared >= (long)Pitch.ExclusionRadius * Pitch.ExclusionRadius) { continue; }
+                var n = d.IsZero ? new Vec2i(-Pitch.Direction(team), 0) : d;
+                p.Position = spot + IntMath.Scale(n, Pitch.ExclusionRadius);
+                p.Velocity = Vec2i.Zero;
             }
         }
 

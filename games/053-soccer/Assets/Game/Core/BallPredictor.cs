@@ -55,20 +55,20 @@ namespace Game.Core
         /// 選手が軌跡のどこかで球に届く最初の Tick（届く距離 <paramref name="reach"/>・高さの上限 <paramref name="maxHeight"/>）。届かなければ -1。
         /// 軌跡が止まって終わったら、止まった位置へ走って届く Tick も数える。
         /// </summary>
-        public static int ArrivalTick(IReadOnlyList<BallSample> trajectory, Vec2i from, int maxSpeed, int acceleration, int reach, int maxHeight, int horizon)
+        public static int ArrivalTick(IReadOnlyList<BallSample> trajectory, Vec2i from, int maxSpeed, int acceleration, int reach, int maxHeight, int horizon, int delay = 0)
         {
             if (trajectory == null) { throw new ArgumentNullException(nameof(trajectory)); }
             foreach (var s in trajectory)
             {
                 if (s.Height > maxHeight) { continue; }
-                if (Arrives(from, s.Position, s.Tick, maxSpeed, acceleration, reach)) { return s.Tick; }
+                if (Arrives(from, s.Position, s.Tick - delay, maxSpeed, acceleration, reach)) { return s.Tick; }
             }
 
             if (trajectory.Count == 0) { return -1; }
             var last = trajectory[trajectory.Count - 1];
             for (int t = last.Tick + 1; t <= horizon; t++)
             {
-                if (last.Height <= maxHeight && Arrives(from, last.Position, t, maxSpeed, acceleration, reach)) { return t; }
+                if (last.Height <= maxHeight && Arrives(from, last.Position, t - delay, maxSpeed, acceleration, reach)) { return t; }
             }
 
             return -1;

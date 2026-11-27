@@ -107,16 +107,19 @@ namespace Game.Core
 
         // ---- GK ----
 
-        public int KeeperSpeed = 85;
+        public int KeeperSpeed = 70;
 
         /// <summary>GK が球に届く距離（中心どうし）。</summary>
-        public int KeeperReach = 700;
+        public int KeeperReach = 600;
 
         /// <summary>GK が届く球の高さ（下端）の上限。</summary>
         public int KeeperReachHeight = 2200;
 
         /// <summary>GK が球を持ってから出すまでの Tick。</summary>
         public int KeeperHoldTicks = 75;
+
+        /// <summary>蹴られてから GK がシュートの越える位置へ動き出すまでの Tick（反応の遅れ）。</summary>
+        public int KeeperReactionTicks = 12;
 
         public SoccerConfig Copy() => (SoccerConfig)MemberwiseClone();
 
@@ -168,6 +171,7 @@ namespace Game.Core
             Range(nameof(KeeperReach), KeeperReach, 100, 2000);
             Range(nameof(KeeperReachHeight), KeeperReachHeight, 0, 4000);
             Range(nameof(KeeperHoldTicks), KeeperHoldTicks, 1, 600);
+            Range(nameof(KeeperReactionTicks), KeeperReactionTicks, 0, 120);
 
             // 1 Tick の球の移動は、ポストとの掃引（int-geometry の Sweep.First）の上限に収める（上限を超えた設定は例外ではなく検証で拒否）。
             // 速さの上限：パス・ロブ・シュート・弾いた球の最大。縦の速さは横に効かない。

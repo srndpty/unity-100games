@@ -139,7 +139,7 @@ namespace Game.Core.Tests
             for (int t = 1; t <= 600 && arrived < 0; t++)
             {
                 var cmd = Lab.Idle();
-                cmd[1] = new PlayerCommand(new Vec2i(1, 0));
+                cmd[1] = new PlayerCommand(new Vec2i(1000, 0));
                 m.Step(cmd);
                 if (m.Owner == 1) { arrived = t; }
             }

@@ -51,6 +51,24 @@ namespace Game.Core.Tests
 
         public static int Count(IEnumerable<MatchEvent> events, MatchEventKind kind) => events.Count(e => e.Kind == kind);
 
+        /// <summary>CPU どうしの試合を最後まで（または指定の Tick まで）進め、集計を返す。</summary>
+        public static MatchStats CpuMatch(Match m, Tactics blue, Tactics red, int maxTicks = int.MaxValue)
+        {
+            var a = new TeamAi(Team.Blue, blue);
+            var b = new TeamAi(Team.Red, red);
+            var stats = new MatchStats();
+            var c = Idle();
+            for (int t = 0; t < maxTicks && m.Phase != MatchPhase.Ended; t++)
+            {
+                a.Decide(m, -1, c);
+                b.Decide(m, -1, c);
+                m.Step(c);
+                stats.Observe(m);
+            }
+
+            return stats;
+        }
+
         /// <summary>シード付きの乱択の命令（移動・行動）。長い通しの検査に使う。</summary>
         public static Func<Match, int, PlayerCommand> Random(int seed)
         {

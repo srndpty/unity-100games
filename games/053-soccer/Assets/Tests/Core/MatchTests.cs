@@ -53,7 +53,7 @@ namespace Game.Core.Tests
             var m = Lab.Open();
             m.PlacePlayer(1, Vec2i.Zero);
             m.GiveBall(1);
-            Lab.Run(m, 60, (x, i) => i == 1 ? new PlayerCommand(new Vec2i(0, 1)) : PlayerCommand.Idle);
+            Lab.Run(m, 60, (x, i) => i == 1 ? new PlayerCommand(new Vec2i(0, 1000)) : PlayerCommand.Idle);
             var p = m.Players[1];
             Assert.That(m.Owner, Is.EqualTo(1));
             Assert.That(p.Velocity.Y, Is.EqualTo(c.PlayerMaxSpeed * c.DribbleSpeedPercent / 100));
@@ -272,7 +272,7 @@ namespace Game.Core.Tests
             var m = new Match(new SoccerConfig(), 2026);
             Lab.Run(m, 6000, Lab.Random(77));
             TestContext.WriteLine($"hash 0x{m.Hash():X8} score {m.Score(Team.Blue)}-{m.Score(Team.Red)} kicks {m.KickCount}");
-            Assert.That(m.Hash(), Is.EqualTo(0xB3BC40FAu));
+            Assert.That(m.Hash(), Is.EqualTo(0x19B63D66u));
         }
 
         // ---- 設定 ----
