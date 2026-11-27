@@ -185,7 +185,7 @@ namespace Game.Core.Tests
             Assert.That(a.Hash(), Is.EqualTo(b.Hash()));
             Assert.That(Lab.NewWorld(2).Hash(), Is.Not.EqualTo(Lab.NewWorld(1).Hash()), "シードが違えば答えが違い、ハッシュも違う");
             TestContext.WriteLine($"操作 {a.Actions}・ハッシュ 0x{a.Hash():X8}");
-            Assert.That(a.Hash(), Is.EqualTo(0xB262B1C4u), "整数だけの規則なので、.NET と Mono で同じ値になる");
+            Assert.That(a.Hash(), Is.EqualTo(0x44E972DEu), "整数だけの規則なので、.NET と Mono で同じ値になる");
         }
 
         private static Command RandomCommand(SeededRandom r, World w)

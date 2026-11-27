@@ -142,7 +142,7 @@ namespace Game.App.Tests
             var flow = NewGame(1);
             new Autopilot().RunToResult(flow);
             TestContext.WriteLine($"シード {flow.Seed}・操作 {flow.Actions}・Tick {flow.PlayTicks}・ハッシュ 0x{flow.WorldHash:X8}");
-            Assert.That(flow.WorldHash, Is.EqualTo(0xB1F87E0Bu), "整数だけの規則なので、.NET と Mono で同じ値になる");
+            Assert.That(flow.WorldHash, Is.EqualTo(0x8B6DBBC1u), "整数だけの規則なので、.NET と Mono で同じ値になる");
         }
 
         // ---- 完了判定：リセットで初期状態へ ----

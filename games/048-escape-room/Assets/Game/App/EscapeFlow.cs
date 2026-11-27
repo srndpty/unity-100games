@@ -79,6 +79,9 @@ namespace Game.App
 
         public bool QuitRequested { get; private set; }
 
+        /// <summary>手に取った物を 1 段回すドラッグの長さ。</summary>
+        public int DragStepUnits => _settings.DragStepUnits;
+
         public bool HasFocus { get; private set; } = true;
 
         public int MenuCursor { get; private set; }

@@ -36,7 +36,7 @@ namespace Game.Core.Rooms
             b.Mechanism("dial", "引き出しのダイヤル錠", MechanismKind.Dial, -1,
                 "机の引き出しに 3 桁のダイヤル錠がある。数字はどこかに刻まれていそうだ。",
                 "机の上の真鍮の筒を手に取って、底を見てみよう。");
-            b.Mechanism("cabinet", "キャビネットの鍵穴", MechanismKind.KeyLock, brassKey,
+            b.Mechanism("cabinet", "キャビネット", MechanismKind.KeyLock, brassKey,
                 "キャビネットには鍵がかかっている。",
                 "真鍮の鍵が合いそうだ。");
             b.Mechanism("globe", "天球儀", MechanismKind.Rings, disc,
@@ -58,12 +58,12 @@ namespace Game.Core.Rooms
             b.WallView("east", "東の壁", new CameraPose(center, 1, 1, 1500));
             b.WallView("south", "南の壁", new CameraPose(center, 2, 1, 1500));
             b.WallView("west", "西の壁", new CameraPose(center, 3, 1, 1500));
-            var deskView = b.CloseUp(DeskView, "机", new CameraPose(new Vec3i(-900, 1400, 800), 0, 3, 1500));
-            var scopeView = b.CloseUp("telescope", "望遠鏡", new CameraPose(new Vec3i(850, 1450, 1150), 0, 0, 1600), safe);
-            var cabinetView = b.CloseUp("cabinet", "キャビネット", new CameraPose(new Vec3i(800, 1400, 950), 1, 2, 1500));
+            var deskView = b.CloseUp(DeskView, "机", new CameraPose(new Vec3i(-900, 1150, 700), 0, 3, 1500));
+            var scopeView = b.CloseUp("telescope", "望遠鏡", new CameraPose(new Vec3i(850, 1550, 1300), 0, 0, 2400), safe);
+            var cabinetView = b.CloseUp("cabinet", "キャビネット", new CameraPose(new Vec3i(800, 1400, 1050), 1, 2, 1500));
             var shelfView = b.CloseUp("bookshelf", "本棚", new CameraPose(new Vec3i(900, 1300, -1000), 1, 0, 1500));
             var doorView = b.CloseUp("door", "出口の扉", new CameraPose(new Vec3i(700, 1300, -900), 2, 1, 1500));
-            var clockView = b.CloseUp("clock", "柱時計", new CameraPose(new Vec3i(-1250, 1500, -300), 2, 1, 1300));
+            var clockView = b.CloseUp("clock", "柱時計", new CameraPose(new Vec3i(-450, 1500, -300), 2, 1, 1300));
             var globeView = b.CloseUp("globe", "天球儀", new CameraPose(new Vec3i(-600, 1550, -900), 3, 3, 1500));
             var safeView = b.CloseUp("safe", "金庫", new CameraPose(new Vec3i(-800, 1100, 900), 3, 4, 1500));
 
@@ -84,7 +84,7 @@ namespace Game.Core.Rooms
 
             b.Examine("desk.cylinder", "真鍮の筒", deskView, B(-500, 760, 1600, -420, 900, 1680), cylinder);
             b.Body("window", "窓", scopeView, B(300, 1000, 1980, 1500, 2200, 2000));
-            b.Body("telescope", "望遠鏡", scopeView, B(700, 900, 1400, 1000, 1500, 1700));
+            b.Body("telescope", "望遠鏡", scopeView, B(750, 900, 1450, 950, 1350, 1650));
 
             // 東：キャビネット（空洞 x 1600〜1980・y 800〜1500・z 550〜1350）と本棚。
             b.Body("cabinet.base", "キャビネットの下段", cabinetView, B(1600, 0, 500, 2000, 800, 1400));
@@ -106,20 +106,20 @@ namespace Game.Core.Rooms
 
             b.Examine("shelf.astronomy", "古い天文書", shelfView, B(1620, 1050, -1030, 1700, 1340, -970), book);
 
-            // 南：出口の扉と柱時計（空洞 x -1400〜-1100・y 300〜1300・z -1950〜-1650）。
+            // 南：出口の扉と柱時計（空洞 x -600〜-300・y 300〜1300・z -1950〜-1650）。
             b.Body("door.slab", "出口の扉", doorView, B(200, 0, -2000, 1200, 2100, -1960));
             b.Keyhole("door.keyhole", "鍵穴", doorView, B(1060, 950, -1960, 1120, 1050, -1940), door);
-            b.Body("clock.lower", "柱時計の台", clockView, B(-1500, 0, -2000, -1000, 300, -1650));
-            b.Body("clock.upper", "柱時計の文字盤", clockView, B(-1500, 1300, -2000, -1000, 2100, -1650));
-            b.Body("clock.side0", "柱時計の側板", clockView, B(-1500, 300, -2000, -1400, 1300, -1650));
-            b.Body("clock.side1", "柱時計の側板", clockView, B(-1100, 300, -2000, -1000, 1300, -1650));
-            b.Body("clock.back", "柱時計の奥", clockView, B(-1400, 300, -2000, -1100, 1300, -1950));
-            b.Pickup("clock.handle", "金庫のハンドル", clockView, B(-1300, 300, -1850, -1200, 340, -1750), handle, clock);
-            b.Body("clock.door", "振り子の扉", clockView, B(-1400, 300, -1650, -1100, 1300, -1630), Presence.WhileClosed, clock);
-            b.Body("clock.open", "開いた振り子の扉", clockView, B(-1100, 300, -1650, -1080, 1300, -1050), Presence.WhileOpen, clock);
-            b.Socket("clock.axle", "文字盤の軸", clockView, B(-1290, 1660, -1650, -1210, 1740, -1630), clock);
-            b.Slot("clock.hour", "短針のつまみ", clockView, B(-1220, 1340, -1650, -1140, 1420, -1630), clock, 0);
-            b.Slot("clock.minute", "長針のつまみ", clockView, B(-1360, 1340, -1650, -1280, 1420, -1630), clock, 1);
+            b.Body("clock.lower", "柱時計の台", clockView, B(-700, 0, -2000, -200, 300, -1650));
+            b.Body("clock.upper", "柱時計の文字盤", clockView, B(-700, 1300, -2000, -200, 2100, -1650));
+            b.Body("clock.side0", "柱時計の側板", clockView, B(-700, 300, -2000, -600, 1300, -1650));
+            b.Body("clock.side1", "柱時計の側板", clockView, B(-300, 300, -2000, -200, 1300, -1650));
+            b.Body("clock.back", "柱時計の奥", clockView, B(-600, 300, -2000, -300, 1300, -1950));
+            b.Pickup("clock.handle", "金庫のハンドル", clockView, B(-500, 300, -1850, -400, 340, -1750), handle, clock);
+            b.Body("clock.door", "振り子の扉", clockView, B(-600, 300, -1650, -300, 1300, -1630), Presence.WhileClosed, clock);
+            b.Body("clock.open", "開いた振り子の扉", clockView, B(-300, 300, -1650, -280, 1300, -1050), Presence.WhileOpen, clock);
+            b.Socket("clock.axle", "文字盤の軸", clockView, B(-490, 1660, -1650, -410, 1740, -1630), clock);
+            b.Slot("clock.hour", "短針のつまみ", clockView, B(-420, 1340, -1650, -340, 1420, -1630), clock, 0);
+            b.Slot("clock.minute", "長針のつまみ", clockView, B(-560, 1340, -1650, -480, 1420, -1630), clock, 1);
 
             // 西：天球儀（台座の前にくぼみ・3 本のリング・ふたの下に歯車）と金庫（空洞 x -1950〜-1550・y 100〜500・z 600〜1200）。
             b.Body("globe.stand", "天球儀の台座", globeView, B(-1700, 0, -1100, -1300, 800, -700));
@@ -132,7 +132,7 @@ namespace Game.Core.Rooms
 
             b.Pickup("globe.gear", "歯車", globeView, B(-1540, 1200, -940, -1460, 1240, -860), gear, globe);
             b.Body("globe.lid", "天球儀のふた", globeView, B(-1660, 1200, -1060, -1340, 1280, -740), Presence.WhileClosed, globe);
-            b.Body("globe.lidOpen", "外したふた", globeView, B(-1900, 1100, -1060, -1860, 1500, -740), Presence.WhileOpen, globe);
+            b.Body("globe.lidOpen", "外したふた", globeView, B(-1660, 0, -1330, -1340, 80, -1170), Presence.WhileOpen, globe);
             b.Socket("globe.socket", "台座のくぼみ", globeView, B(-1300, 500, -1000, -1280, 700, -800), globe);
             b.Examine("globe.disc", "はめた星図の円盤", globeView, B(-1280, 500, -1000, -1260, 700, -800), discFace, Presence.WhileInstalled, globe);
 

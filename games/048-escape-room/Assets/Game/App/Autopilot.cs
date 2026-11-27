@@ -13,6 +13,12 @@ namespace Game.App
     /// </summary>
     public sealed class Autopilot
     {
+        /// <summary>
+        /// クリックしてよい画面の下端（画面の整数座標）。これより下は HUD の持ち物の帯（1080 の 150）に隠れて部屋に届かないので、
+        /// 操縦役はここより上だけをクリックする（部品がこの上で押せることを App のテストで確かめる）。
+        /// </summary>
+        public const int MinClickY = -700;
+
         private const int ScanStep = 20;
 
         private readonly Queue<Command> _plan = new();
@@ -30,11 +36,21 @@ namespace Game.App
             if (!flow.IsIdle) { return; }
             var w = flow.Snapshot()!;
             if (_plan.Count == 0 || !w.Check(_plan.Peek()).Accepted) { Plan(w); }
-            var command = _plan.Dequeue();
+            Perform(flow, _plan.Dequeue());
+            Issued++;
+        }
+
+        /// <summary>
+        /// 命令を 1 つ、遊ぶときと同じ入力（キー・画面の点のクリック・持ち物の枠・ドラッグ）にして当てはめる（撮影の台本も使う）。
+        /// 受け付けなければ例外。
+        /// </summary>
+        public static void Perform(EscapeFlow flow, Command command)
+        {
+            if (flow == null) { throw new ArgumentNullException(nameof(flow)); }
+            var w = flow.Snapshot() ?? throw new InvalidOperationException("遊ぶ画面ではありません");
             Issue(flow, w, command);
             flow.FlushIntents();
             if (!flow.LastOutcome.Accepted) { throw new InvalidOperationException($"{command} を {flow.LastOutcome.Reason} で受け付けませんでした"); }
-            Issued++;
         }
 
         /// <summary>Tick を 1 つずつ進めながら、結果画面になるまで動かす。<paramref name="maxTicks"/> 回の反復で届かなければ例外。</summary>
@@ -64,11 +80,11 @@ namespace Game.App
             var pose = def.Views[world.View].Pose;
             foreach (var part in TargetParts(def, command))
             {
-                if (!world.IsPresent(part.Index) || !pose.TryProject(part.Box.FrontCenter(pose.Wall), out var x, out var y)) { continue; }
+                if (!world.IsPresent(part.Index) || !pose.TryProject(part.Box.FrontCenter(pose.Wall), out var x, out var y) || y < MinClickY) { continue; }
                 if (world.CommandAt(x, y, selectedItem) == command) { return (x, y); }
             }
 
-            for (int sy = -CameraPose.HalfHeight + 10; sy < CameraPose.HalfHeight; sy += ScanStep)
+            for (int sy = MinClickY; sy < CameraPose.HalfHeight; sy += ScanStep)
             {
                 for (int sx = -1760; sx <= 1760; sx += ScanStep)
                 {
@@ -106,6 +122,21 @@ namespace Game.App
                 case CommandKind.Hint:
                     flow.Press(IntentKind.Hint);
                     return;
+                case CommandKind.Rotate:
+                    {
+                        // 右へドラッグするとヨーが負、上へドラッグするとピッチが正（EscapeFlow と同じ向き）。
+                        var step = flow.DragStepUnits;
+                        flow.Drag(-command.A * step, command.B * step);
+                        return;
+                    }
+
+                case CommandKind.InspectItem:
+                    {
+                        var slot = IndexOf(w.Inventory, command.A);
+                        if (flow.SelectedItem != command.A) { flow.Click(ClickTarget.Item, slot); }
+                        flow.Click(ClickTarget.Item, slot);
+                        return;
+                    }
                 case CommandKind.UseItem:
                     {
                         // 持ち物の枠を選んでから部品をクリックする。
