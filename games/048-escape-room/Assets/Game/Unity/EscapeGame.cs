@@ -35,6 +35,7 @@ namespace Game.Unity
         private int _focusRestoredFrame = -10;
         private bool _dragging;
         private Vector2 _dragFrom;
+        private int _dragVersion;
         private bool _quitCalled;
 
         /// <summary>終了の処理（PlayMode テストでは差し替えてエディタを閉じない）。</summary>
@@ -69,7 +70,22 @@ namespace Game.Unity
         }
 
         /// <summary>画面のピクセル（左下が原点）を Core の画面の整数座標にする。</summary>
-        public Vector2Int CorePoint(Vector2 pixel) => StageMath.ToCore(pixel, _camera!.pixelWidth, _camera.pixelHeight);
+        public Vector2Int CorePoint(Vector2 pixel) => StageMath.ToCore(pixel, _camera!.pixelRect);
+
+        /// <summary>Core の画面の整数座標をピクセル（左下が原点）にする。</summary>
+        public Vector2 PixelPoint(Vector2Int core) => StageMath.ToPixel(core, _camera!.pixelRect);
+
+        /// <summary>
+        /// 画面の比率を対応する範囲（16:10〜21:9）に収め（外は黒い帯）、部屋のクリックが届く範囲を Flow に渡す。
+        /// 対応する範囲の画面では、届く範囲が部屋の定義の検証で使う範囲（ScreenRegion.Guaranteed）を必ず含む。
+        /// </summary>
+        public void UpdateViewport()
+        {
+            if (_camera == null || Flow == null || Screen.height <= 0) { return; }
+            var rect = StageMath.Viewport(Screen.width, Screen.height);
+            if (_camera.rect != rect) { _camera.rect = rect; }
+            Flow.SetRegion(StageMath.Region(_camera.pixelRect, Screen.height));
+        }
 
         private void Awake()
         {
@@ -155,6 +171,7 @@ namespace Game.Unity
         public void Render()
         {
             if (Flow == null || _stage == null || _camera == null) { return; }
+            UpdateViewport();
             var views = Def.Views;
             if (Flow.InTransition) { StageMath.Blend(_camera, views[Flow.PreviousView].Pose, views[Flow.View].Pose, (float)Flow.TransitionProgress); }
             else { StageMath.Apply(_camera, views[Flow.View].Pose); }
@@ -200,16 +217,15 @@ namespace Game.Unity
             if (mouse == null || _hud == null || !_hasFocus) { return; }
             var screen = mouse.position.ReadValue();
             var justFocused = Time.frameCount <= _focusRestoredFrame + 1;
-            if (_dragging)
+
+            // ドラッグは左ボタンを押した画面の版の間だけ続ける（物を置く・寄る・画面が変わると終わる）。
+            if (_dragging && (!mouse.leftButton.isPressed || Flow.Version != _dragVersion)) { _dragging = false; }
+            if (_dragging && screen != _dragFrom)
             {
-                if (!mouse.leftButton.isPressed) { _dragging = false; }
-                else if (screen != _dragFrom)
-                {
-                    var a = CorePoint(_dragFrom);
-                    var b = CorePoint(screen);
-                    if (b != a) { Flow.Drag(b.x - a.x, b.y - a.y); }
-                    _dragFrom = screen;
-                }
+                var a = CorePoint(_dragFrom);
+                var b = CorePoint(screen);
+                if (b != a) { Flow.Enqueue(Intent.Drag(b.x - a.x, b.y - a.y, _dragVersion)); }
+                _dragFrom = screen;
             }
 
             if (mouse.rightButton.wasPressedThisFrame && !justFocused) { Flow.Press(IntentKind.Back); }
@@ -235,6 +251,7 @@ namespace Game.Unity
                     }
 
                     var core = CorePoint(screen);
+                    _dragVersion = Flow.Version;
                     Flow.ClickWorld(core.x, core.y);
                     _dragging = true;
                     _dragFrom = screen;

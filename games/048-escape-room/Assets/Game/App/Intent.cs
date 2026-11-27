@@ -28,7 +28,10 @@ namespace Game.App
         /// <summary>マウスの左ボタンを押した。<see cref="Intent.Target"/> が押した場所、<see cref="Intent.Version"/> が押した画面の版。</summary>
         Click,
 
-        /// <summary>左ボタンを押したまま動かした（<see cref="Intent.X"/>・<see cref="Intent.Y"/>：画面の整数座標の差）。</summary>
+        /// <summary>
+        /// 左ボタンを押したまま動かした（<see cref="Intent.X"/>・<see cref="Intent.Y"/>：画面の整数座標の差、<see cref="Intent.Version"/>：ドラッグを始めた画面の版）。
+        /// 手に取った物・視点・画面が変わった後の古いドラッグは捨てる。
+        /// </summary>
         Drag,
     }
 
@@ -73,7 +76,7 @@ namespace Game.App
 
         public static Intent ClickWorld(int x, int y, int version) => new(IntentKind.Click, ClickTarget.World, -1, x, y, version);
 
-        public static Intent Drag(int dx, int dy) => new(IntentKind.Drag, ClickTarget.World, -1, dx, dy, -1);
+        public static Intent Drag(int dx, int dy, int version) => new(IntentKind.Drag, ClickTarget.World, -1, dx, dy, version);
 
         public bool Equals(Intent other) =>
             Kind == other.Kind && Target == other.Target && Index == other.Index && X == other.X && Y == other.Y && Version == other.Version;

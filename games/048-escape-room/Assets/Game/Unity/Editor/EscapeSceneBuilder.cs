@@ -105,14 +105,21 @@ namespace Game.Unity.Editor
             {
                 light.transform.rotation = Quaternion.Euler(35f, 200f, 0f);
                 light.color = new Color(0.55f, 0.62f, 0.85f);
-                light.intensity = 0.35f;
+                light.intensity = 0.6f;
                 light.shadows = LightShadows.None;
             }
 
             RenderSettings.skybox = null;
             RenderSettings.ambientMode = AmbientMode.Flat;
-            RenderSettings.ambientLight = new Color(0.3f, 0.27f, 0.24f);
+            RenderSettings.ambientLight = new Color(0.62f, 0.57f, 0.5f);
             RenderSettings.fog = false;
+
+            // 画面の比率を収めたときの上下・左右の帯を黒で塗るカメラ（何も描かない）。
+            var letterbox = new GameObject(Prefix + "Letterbox").AddComponent<Camera>();
+            letterbox.depth = camera.depth - 10;
+            letterbox.cullingMask = 0;
+            letterbox.clearFlags = CameraClearFlags.SolidColor;
+            letterbox.backgroundColor = Color.black;
 
             var backdrop = GameObject.CreatePrimitive(PrimitiveType.Quad);
             backdrop.name = Prefix + "HeldBackdrop";
@@ -361,7 +368,9 @@ namespace Game.Unity.Editor
                             }
 
                             _rings.Add(ring);
-                            _ringSymbols.Add(FrontQuad(t, wall, "Symbol", EscapeArtGenerator.SymbolName(0), new Vector2(0.34f, 0.9f), Vector2.zero, 0.53f));
+
+                            // 印は回るリングの刻み（半径 0.56 まで）より手前に、正面に固定して置く。
+                            _ringSymbols.Add(FrontQuad(t, wall, "Symbol", EscapeArtGenerator.SymbolName(0), new Vector2(0.34f, 0.9f), Vector2.zero, 0.6f));
                             break;
                         }
 
@@ -428,7 +437,7 @@ namespace Game.Unity.Editor
                 if (id.StartsWith("safe.", StringComparison.Ordinal)) { material = EscapeArtGenerator.Iron; }
                 if (id.StartsWith("globe.", StringComparison.Ordinal)) { material = EscapeArtGenerator.Brass; }
                 if (id == "globe.stand") { material = EscapeArtGenerator.DarkWood; }
-                if (id == "shelf") { material = EscapeArtGenerator.DarkWood; }
+                if (id.StartsWith("shelf.", StringComparison.Ordinal)) { material = EscapeArtGenerator.DarkWood; }
                 switch (id)
                 {
                     case "window":
@@ -492,9 +501,9 @@ namespace Game.Unity.Editor
                 Primitive(leaf, "Panel2", PrimitiveType.Cube, EscapeArtGenerator.DarkWood, new Vector3(0f, -0.25f, 0.55f), new Vector3(0.8f, 0.35f, 0.2f));
                 _doorHinge = hinge;
 
-                // 扉の向こう（部屋の外）の明るい夜明けの空。扉が開くと見える。
+                // 扉の向こう（部屋の外）の夜明け前の星空（地平線が明るむ）。扉が開くと見える。
                 // 閉じている間は扉の板の中に隠れる位置（壁の面の 2 mm 手前）。
-                var outside = Primitive(_decor, "Outside", PrimitiveType.Quad, EscapeArtGenerator.Lamp, StageMath.ToWorld(new Vec3i((box.Min.X + box.Max.X) / 2, 1050, box.Min.Z + 2)), new Vector3(width, 2.1f, 1f));
+                var outside = Primitive(_decor, "Outside", PrimitiveType.Quad, EscapeArtGenerator.Dawn, StageMath.ToWorld(new Vec3i((box.Min.X + box.Max.X) / 2, 1050, box.Min.Z + 2)), new Vector3(width, 2.1f, 1f));
                 outside.localRotation = Quaternion.Euler(0f, 180f, 0f);
             }
 
@@ -518,8 +527,8 @@ namespace Game.Unity.Editor
                 lampLight.transform.localPosition = new Vector3(0f, size.y - 0.7f, 0f);
                 lampLight.type = LightType.Point;
                 lampLight.color = new Color(1f, 0.82f, 0.6f);
-                lampLight.intensity = 6f;
-                lampLight.range = 9f;
+                lampLight.intensity = 14f;
+                lampLight.range = 12f;
                 lampLight.shadows = LightShadows.None;
             }
 

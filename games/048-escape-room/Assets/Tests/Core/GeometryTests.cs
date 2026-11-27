@@ -138,6 +138,36 @@ namespace Game.Core.Tests
             Assert.That(new Orientation(-1, -1), Is.EqualTo(new Orientation(7, 3)), "負の段は循環する");
         }
 
+        /// <summary>手がかりは正立しているときだけ読める（試遊：円盤を縦に 180° 裏返すと星座が逆さ・並びが逆に見えて読み違えた）。</summary>
+        [Test]
+        public void Orientation_ClueIsReadableOnlyUpright()
+        {
+            var back = new Vec3i(0, 0, 1);
+            var up = new Vec3i(0, 1, 0);
+            Assert.That(new Orientation(4, 0).ShowsUpright(back, up), Is.True, "横に 180°：正立");
+            Assert.That(new Orientation(0, 2).Faces(back), Is.True);
+            Assert.That(new Orientation(0, 2).ShowsUpright(back, up), Is.False, "縦に 180°：手前を向くが上下が逆さ");
+            var bottom = new Vec3i(0, -1, 0);
+            var front = new Vec3i(0, 0, -1);
+            Assert.That(new Orientation(0, 1).ShowsUpright(bottom, front), Is.True, "筒を縦に 90°：底が正立");
+            Assert.That(new Orientation(4, 1).ShowsUpright(bottom, front), Is.False, "底は手前を向くが 180° 回っている");
+            Assert.That(new Orientation(2, 1).ShowsUpright(bottom, front), Is.False, "底は手前を向くが 90° 回っている");
+            Assert.That(new Orientation(1, 1).ShowsUpright(bottom, front), Is.False, "45° 回っている");
+            foreach (var (n, u) in new[] { (back, up), (bottom, front) })
+            {
+                int readable = 0;
+                for (int y = 0; y < Orientation.YawSteps; y++)
+                {
+                    for (int p = 0; p < Orientation.PitchSteps; p++)
+                    {
+                        if (new Orientation(y, p).ShowsUpright(n, u)) { readable++; }
+                    }
+                }
+
+                Assert.That(readable, Is.EqualTo(1), "32 通りの向きのうち正立は 1 通りだけ");
+            }
+        }
+
         /// <summary>面ごとの交差：各面の平面との交点を求め、その面の長方形の中（縁を含む）なら候補にする。原点が中なら 0。</summary>
         private static bool Reference(Ray3 ray, Box3 box, out Fraction t)
         {

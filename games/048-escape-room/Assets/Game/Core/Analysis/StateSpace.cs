@@ -65,14 +65,20 @@ namespace Game.Core.Analysis
     /// 状態空間の探索。各近景で、全ての部品 × 命令の種類 × 持ち物の候補を遊ぶときと同じ <see cref="World.Check"/> で絞り、
     /// 視点を移す命令を含めて当てはめる。仕掛けの値は抽象状態では「解けたか」に縮めるので、1 段ずつの操作に加えて
     /// 「今の値から答えまで動かす」手も加える。抽象状態を幅優先にたどり、迂回・詰み・持ち物の違反を拒否する。
+    /// さらに、論理的に受け付ける命令（<see cref="World.Check"/>）と、画面でクリックして作れる命令（<see cref="World.CommandAt"/>）を
+    /// 分けて扱う：近景へ寄る命令とクリックで出す命令は、決めた画面の範囲（<see cref="ScreenRegion"/>）の中に
+    /// その命令になる点が見つかったときだけ手にし、受け付けるのに点が見つからない命令は誤りにする（fail-closed）。
     /// </summary>
     public static class StateSpace
     {
-        public static StateSpaceReport Explore(Room room, int maxStates)
+        public static StateSpaceReport Explore(Room room, int maxStates) => Explore(room, maxStates, ScreenRegion.Guaranteed);
+
+        public static StateSpaceReport Explore(Room room, int maxStates, ScreenRegion region)
         {
             if (room == null) { throw new ArgumentNullException(nameof(room)); }
             var def = room.Def;
             var errors = new List<string>();
+            var unclickable = new HashSet<string>(StringComparer.Ordinal);
             var start = new World(room);
             var worlds = new List<World> { start };
             var parent = new List<int> { -1 };
@@ -87,7 +93,8 @@ namespace Game.Core.Analysis
             {
                 var w = worlds[s];
                 if (w.Escaped) { continue; }
-                foreach (var move in Moves(w))
+                var found = new List<string>();
+                foreach (var move in Moves(w, region, found))
                 {
                     var next = w.Clone();
                     try
@@ -126,14 +133,25 @@ namespace Game.Core.Analysis
 
                     reverse[to].Add(s);
                 }
+
+                foreach (var f in found)
+                {
+                    if (unclickable.Add(f)) { errors.Add($"クリックできない：{f} は受け付けるのに、画面の範囲 {region} にその命令になる点がありません（{PathText(parent, via, s)}）"); }
+                }
             }
 
             if (!aborted) { CheckDeadEnds(worlds, parent, via, reverse, errors); }
             return new StateSpaceReport(worlds.Count, transitions, errors.AsReadOnly(), worlds.AsReadOnly());
         }
 
-        /// <summary>今の状態で取れる全ての手（遊ぶときに作れる命令と同じ集合を World.Check で絞る）。</summary>
-        public static IEnumerable<Move> Moves(World world)
+        /// <summary>今の状態で取れる全ての手（遊ぶときに作れる命令と同じ集合を World.Check で絞る。クリックの可否は見ない）。</summary>
+        public static IEnumerable<Move> Moves(World world) => Moves(world, null, null);
+
+        /// <summary>
+        /// 今の状態で取れる全ての手。region を渡すと、寄る命令とクリックで出す命令はその範囲で点が見つかるものだけにし、
+        /// 受け付けるのに点がない命令を unclickable に「近景:命令」の形で足す。
+        /// </summary>
+        public static IEnumerable<Move> Moves(World world, ScreenRegion? region, List<string>? unclickable)
         {
             if (world == null) { throw new ArgumentNullException(nameof(world)); }
             var def = world.Def;
@@ -142,32 +160,59 @@ namespace Game.Core.Analysis
             {
                 if (view.Kind != ViewKind.CloseUp) { continue; }
                 var at = world.Clone();
+                var entered = true;
                 foreach (var c in Navigation.PathTo(at, view.Index))
                 {
+                    if (region != null && ClickSearch.NeedsClick(c) && ClickSearch.PointFor(at, c, ClickSearch.SelectedFor(c), region.Value) == null)
+                    {
+                        unclickable?.Add($"{def.Views[at.View].Id}:focus {view.Id}");
+                        entered = false;
+                        break;
+                    }
+
                     if (!at.Apply(c).Accepted) { throw new InvalidOperationException($"近景 {view.Id} へ移れません：{c}"); }
                 }
 
+                if (!entered) { continue; }
                 foreach (var part in def.Parts)
                 {
                     var candidates = new List<Command> { Command.Operate(part.Index), Command.Take(part.Index), Command.Inspect(part.Index) };
                     foreach (var item in world.Inventory) { candidates.Add(Command.UseItem(item, part.Index)); }
                     foreach (var c in candidates)
                     {
-                        if (at.Check(c).Accepted) { yield return new Move(view.Index, new[] { c }, $"{view.Id}:{Describe(def, c)}"); }
+                        if (!at.Check(c).Accepted) { continue; }
+                        if (region != null && ClickSearch.PointFor(at, c, ClickSearch.SelectedFor(c), region.Value) == null)
+                        {
+                            unclickable?.Add($"{view.Id}:{Describe(def, c)}");
+                            continue;
+                        }
+
+                        yield return new Move(view.Index, new[] { c }, $"{view.Id}:{Describe(def, c)}");
                     }
                 }
 
-                // 値を縮めた抽象状態のための「答えまで動かす」手（1 段ずつの操作の列そのもの）。
+                // 値を縮めた抽象状態のための「答えまで動かす」手（1 段ずつの操作の列そのもの。各段もクリックできるかを確かめる）。
                 foreach (var m in def.Mechanisms)
                 {
                     if (def.ViewOf(m.Index) != view.Index || at.PhaseOf(m.Index) != Phase.Active) { continue; }
                     var commands = new List<Command>();
+                    var sim = at.Clone();
+                    var clickable = true;
                     foreach (var slot in at.Room.Mechanisms[m.Index].SolutionFrom(at.ValuesOf(m.Index)))
                     {
-                        commands.Add(Command.Operate(def.SlotPart(m.Index, slot)));
+                        var c = Command.Operate(def.SlotPart(m.Index, slot));
+                        if (region != null && ClickSearch.PointFor(sim, c, -1, region.Value) == null)
+                        {
+                            unclickable?.Add($"{view.Id}:{Describe(def, c)}");
+                            clickable = false;
+                            break;
+                        }
+
+                        sim.Apply(c);
+                        commands.Add(c);
                     }
 
-                    yield return new Move(view.Index, commands.AsReadOnly(), $"{view.Id}:solve {m.Id}");
+                    if (clickable) { yield return new Move(view.Index, commands.AsReadOnly(), $"{view.Id}:solve {m.Id}"); }
                 }
             }
         }

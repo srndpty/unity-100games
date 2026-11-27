@@ -32,6 +32,10 @@ namespace Game.Unity.Tests
         public void PressRight(Vector2 screen) =>
             InputSystem.QueueStateEvent(_mouse, new MouseState { position = screen }.WithButton(MouseButton.Right));
 
+        /// <summary>画面の座標で左ボタンを押したまま右ボタンも押した状態にする。</summary>
+        public void PressBoth(Vector2 screen) =>
+            InputSystem.QueueStateEvent(_mouse, new MouseState { position = screen }.WithButton(MouseButton.Left).WithButton(MouseButton.Right));
+
         /// <summary>ボタンを全て離した状態にする。</summary>
         public void Release(Vector2 screen) => Move(screen);
 

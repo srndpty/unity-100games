@@ -65,7 +65,7 @@ namespace Game.App.Tests
                         flow.Press(IntentKind.Back);
                         break;
                     default:
-                        var p = Autopilot.ClickPointFor(flow.Snapshot()!, c, -1)!.Value;
+                        var p = ClickSearch.PointFor(flow.Snapshot()!, c, -1, flow.Region)!.Value;
                         flow.ClickWorld(p.X, p.Y);
                         break;
                 }
@@ -77,7 +77,7 @@ namespace Game.App.Tests
             Assert.That(flow.View, Is.EqualTo(view));
         }
 
-        private static (int X, int Y) PointOf(EscapeFlow flow, Command c, int selected = -1) => Autopilot.ClickPointFor(flow.Snapshot()!, c, selected)!.Value;
+        private static (int X, int Y) PointOf(EscapeFlow flow, Command c, int selected = -1) => ClickSearch.PointFor(flow.Snapshot()!, c, selected, flow.Region)!.Value;
 
         // ---- 状態遷移：タイトル → 遊ぶ → 結果 → タイトル → 再戦 ----
 
@@ -142,7 +142,7 @@ namespace Game.App.Tests
             var flow = NewGame(1);
             new Autopilot().RunToResult(flow);
             TestContext.WriteLine($"シード {flow.Seed}・操作 {flow.Actions}・Tick {flow.PlayTicks}・ハッシュ 0x{flow.WorldHash:X8}");
-            Assert.That(flow.WorldHash, Is.EqualTo(0x8B6DBBC1u), "整数だけの規則なので、.NET と Mono で同じ値になる");
+            Assert.That(flow.WorldHash, Is.EqualTo(0x8503582Eu), "整数だけの規則なので、.NET と Mono で同じ値になる");
         }
 
         // ---- 完了判定：リセットで初期状態へ ----
@@ -362,7 +362,7 @@ namespace Game.App.Tests
             flow.Drag(-1000, 0);
             flow.FlushIntents();
             Assert.That(flow.Orientation.Yaw, Is.EqualTo(5), "左へ 1000 は 5 段（ヨーは正）");
-            Assert.That(flow.ClueFacing, Is.True, "底の面はヨーに依らない");
+            Assert.That(flow.ClueFacing, Is.False, "底は手前を向いたままでも、斜めに回すと正立していないので読めない");
         }
 
         [Test]
@@ -436,7 +436,7 @@ namespace Game.App.Tests
         }
 
         [Test]
-        public void ClickPointFor_FindsPointForEveryReachableCloseUpCommand()
+        public void ClickSearch_FindsPointInsideGuaranteedRegion_ForEveryReachableCloseUpCommand()
         {
             var flow = NewGame();
             var w = flow.Snapshot()!;
@@ -453,12 +453,158 @@ namespace Game.App.Tests
                         PartKind.Examinable => Command.Inspect(p.Index),
                         _ => Command.Operate(p.Index),
                     };
-                    Assert.That(Autopilot.ClickPointFor(at, c, -1), Is.Not.Null, p.Id);
+                    var point = ClickSearch.PointFor(at, c, -1, ScreenRegion.Guaranteed);
+                    Assert.That(point, Is.Not.Null, p.Id);
+                    Assert.That(ScreenRegion.Guaranteed.Contains(point!.Value.X, point.Value.Y), Is.True, "見つけた点は範囲の中");
                 }
             }
 
-            Assert.That(Autopilot.ClickPointFor(w, Command.Operate(Part("desk.dial0")), -1), Is.Null, "壁の視点では部品を操作する点はない");
+            Assert.That(ClickSearch.PointFor(w, Command.Operate(Part("desk.dial0")), -1, ScreenRegion.Guaranteed), Is.Null, "壁の視点では部品を操作する点はない");
             Assert.That(CameraPose.HalfHeight, Is.EqualTo(1000));
+        }
+
+        // ---- レビュー P2-1：操縦役は命令が実際に実行されたことを確かめる ----
+
+        [Test]
+        public void Perform_Throws_WhenInputIsDroppedByFocusLoss()
+        {
+            var flow = NewGame();
+            Autopilot.Perform(flow, Command.Turn(1));
+            Assert.That(flow.LastOutcome.Accepted, Is.True, "前の命令は受け付けられている（古い結果が残る）");
+            Settle(flow);
+            flow.OnFocusChanged(false);
+            var e = Assert.Throws<InvalidOperationException>(() => Autopilot.Perform(flow, Command.Turn(1)));
+            Assert.That(e!.Message.Contains("実行されませんでした", StringComparison.Ordinal), Is.True, e.Message);
+            Assert.That(flow.View, Is.EqualTo(View("east")));
+        }
+
+        [Test]
+        public void Perform_Throws_WhenClickIsDroppedDuringCameraMove()
+        {
+            var flow = NewGame();
+            Autopilot.Perform(flow, Command.Focus(View("desk")));
+            Assert.That(flow.InTransition, Is.True);
+            var e = Assert.Throws<InvalidOperationException>(() => Autopilot.Perform(flow, Command.Operate(Part("desk.dial0"))));
+            Assert.That(e!.Message.Contains("実行されませんでした", StringComparison.Ordinal), Is.True, e.Message);
+        }
+
+        [Test]
+        public void Verify_Throws_WhenAnotherCommandWasExecuted()
+        {
+            var flow = NewGame();
+            GoTo(flow, View("desk"));
+            var before = flow.Executed;
+            var p = PointOf(flow, Command.Operate(Part("desk.dial1")));
+            flow.ClickWorld(p.X, p.Y);
+            flow.FlushIntents();
+            var e = Assert.Throws<InvalidOperationException>(() => Autopilot.Verify(flow, Command.Operate(Part("desk.dial0")), before));
+            Assert.That(e!.Message.Contains("として実行されました", StringComparison.Ordinal), Is.True, e.Message);
+            Assert.DoesNotThrow(() => Autopilot.Verify(flow, Command.Operate(Part("desk.dial1")), before));
+        }
+
+        // ---- レビュー P2-2：持ち物を選んだ途中の状態からでも操縦役で脱出できる ----
+
+        [Test]
+        public void Autopilot_FromMidGameWithItemSelected_Escapes([Values(1, 2)] int which)
+        {
+            var flow = NewGame(12);
+            DriveUntil(flow, f => f.PhaseOf(Mechanism("globe")) == Phase.Active);
+            DriveUntil(flow, f => f.Inventory.Count == 1);
+
+            // プレイヤーが持ち物（歯車）を選び、近景にいる途中の状態から任せる。
+            flow.Click(ClickTarget.Item, 0);
+            flow.FlushIntents();
+            Assert.That(flow.SelectedItem, Is.GreaterThanOrEqualTo(0));
+            if (which == 2)
+            {
+                flow.Press(IntentKind.Hint);
+                flow.FlushIntents();
+            }
+
+            new Autopilot().RunToResult(flow);
+            Assert.That(flow.Escaped, Is.True);
+        }
+
+        [Test]
+        public void Perform_DeselectsBeforeBack_SoBackReallyLeavesTheCloseUp()
+        {
+            var flow = NewGame(4);
+            DriveUntil(flow, f => f.Inventory.Count == 1);
+            flow.Click(ClickTarget.Item, 0);
+            flow.FlushIntents();
+            Assert.That(flow.View, Is.EqualTo(View("desk")));
+            Autopilot.Perform(flow, Command.Back);
+            Assert.That(flow.View, Is.EqualTo(View("north")), "選択を外すだけでは戻ったことにしない");
+            Assert.That(flow.SelectedItem, Is.EqualTo(-1));
+        }
+
+        // ---- レビュー P2-3：クリックが届く画面の範囲 ----
+
+        [Test]
+        public void ClickOutsideRegion_IsNotPassedToTheRoom()
+        {
+            var flow = NewGame();
+            GoTo(flow, View("desk"));
+            var dial = PointOf(flow, Command.Operate(Part("desk.dial0")));
+            var before = flow.Executed;
+            flow.SetRegion(new ScreenRegion(1600, dial.Y + 1));
+            flow.ClickWorld(dial.X, dial.Y);
+            flow.FlushIntents();
+            Assert.That(flow.Executed, Is.EqualTo(before), "HUD の帯の下（範囲の外）のクリックは部屋に届かない");
+            flow.SetRegion(new ScreenRegion(Math.Abs(dial.X) - 1, -700));
+            flow.ClickWorld(dial.X, dial.Y);
+            flow.FlushIntents();
+            Assert.That(flow.Executed, Is.EqualTo(before), "画面の横の外のクリックも届かない");
+            flow.SetRegion(ScreenRegion.Guaranteed);
+            flow.ClickWorld(dial.X, dial.Y);
+            flow.FlushIntents();
+            Assert.That(flow.Executed, Is.EqualTo(before + 1));
+        }
+
+        // ---- レビュー P2-4：ドラッグの寿命 ----
+
+        [Test]
+        public void Drag_ResidueIsDiscarded_WhenHeldObjectChanges()
+        {
+            var flow = NewGame();
+            GoTo(flow, View("desk"));
+            var p = PointOf(flow, Command.Inspect(Part("desk.cylinder")));
+            flow.ClickWorld(p.X, p.Y);
+            flow.FlushIntents();
+            flow.Drag(0, 100);
+            flow.FlushIntents();
+            flow.Press(IntentKind.Back);
+            flow.FlushIntents();
+            Assert.That(flow.Held, Is.EqualTo(-1));
+            flow.ClickWorld(p.X, p.Y);
+            flow.FlushIntents();
+            flow.Drag(0, 100);
+            flow.FlushIntents();
+            Assert.That(flow.Orientation.Pitch, Is.Zero, "置いた物のドラッグの端数を、次に手に取った物へ持ち越さない");
+        }
+
+        [Test]
+        public void Drag_StartedBeforePutDown_IsRejected()
+        {
+            var flow = NewGame();
+            GoTo(flow, View("desk"));
+            var p = PointOf(flow, Command.Inspect(Part("desk.cylinder")));
+            flow.ClickWorld(p.X, p.Y);
+            flow.FlushIntents();
+            var started = flow.Version;
+
+            // 左ボタンを押したまま右クリックで置き、もう一度手に取ってから、前のドラッグが届く。
+            flow.Press(IntentKind.Back);
+            flow.FlushIntents();
+            flow.ClickWorld(p.X, p.Y);
+            flow.FlushIntents();
+            flow.Enqueue(Intent.Drag(0, 400, started));
+            flow.FlushIntents();
+            Assert.That(flow.Held, Is.GreaterThanOrEqualTo(0));
+            Assert.That(flow.Orientation, Is.EqualTo(default(Orientation)), "前の物のドラッグは新しく手に取った物を回さない");
+            flow.Enqueue(Intent.Drag(0, 200, flow.Version));
+            flow.FlushIntents();
+            Assert.That(flow.Orientation.Pitch, Is.EqualTo(1));
         }
     }
 }

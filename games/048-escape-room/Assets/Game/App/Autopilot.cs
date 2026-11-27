@@ -1,26 +1,17 @@
 using System;
 using System.Collections.Generic;
-using Game.Core.Geometry;
 using Game.Core.Play;
-using Game.Core.Rooms;
 
 namespace Game.App
 {
     /// <summary>
     /// 操縦役：ヒントと同じ「次の一手」（今のシードの答え）を、遊ぶときと同じ入力（向き直りのキー・画面の点のクリック・持ち物の枠）で行う。
-    /// クリックする点は、部品の手前の面の中心を画面へ写し、そこが狙った命令にならなければ画面を刻んで探す。
+    /// クリックする点は <see cref="ClickSearch"/> で、Flow のクリックが届く範囲（<see cref="EscapeFlow.Region"/>）から探す。
+    /// 1 つの命令ごとに、入力が実際にその命令として当てはまり、受け付けられたことを Flow の実行の記録で確かめる。
     /// 撮影の台本・App のテスト・PlayMode のテストで共有する（002）。
     /// </summary>
     public sealed class Autopilot
     {
-        /// <summary>
-        /// クリックしてよい画面の下端（画面の整数座標）。これより下は HUD の持ち物の帯（1080 の 150）に隠れて部屋に届かないので、
-        /// 操縦役はここより上だけをクリックする（部品がこの上で押せることを App のテストで確かめる）。
-        /// </summary>
-        public const int MinClickY = -700;
-
-        private const int ScanStep = 20;
-
         private readonly Queue<Command> _plan = new();
 
         /// <summary>行った命令の数。</summary>
@@ -28,7 +19,7 @@ namespace Game.App
 
         /// <summary>
         /// 1 回分の判断。遊ぶ画面で次のクリックを受け付けるなら、計画の次の命令を入力にして当てはめる。
-        /// 命令を世界が受け付けなかったら、手順が規則と合っていないので例外にする。
+        /// 命令が当てはまらなければ（未実行・拒否・別の命令）、手順か入力の変換が規則と合っていないので例外にする。
         /// </summary>
         public void Drive(EscapeFlow flow)
         {
@@ -42,14 +33,28 @@ namespace Game.App
 
         /// <summary>
         /// 命令を 1 つ、遊ぶときと同じ入力（キー・画面の点のクリック・持ち物の枠・ドラッグ）にして当てはめる（撮影の台本も使う）。
-        /// 受け付けなければ例外。
+        /// 持ち物の選択は先に命令に合わせる（使う命令でなければ外す）。入力の後、Flow がちょうど 1 つの命令を実行し、
+        /// それが command で、受け付けられたことを確かめる。違えば例外。
         /// </summary>
         public static void Perform(EscapeFlow flow, Command command)
         {
             if (flow == null) { throw new ArgumentNullException(nameof(flow)); }
-            var w = flow.Snapshot() ?? throw new InvalidOperationException("遊ぶ画面ではありません");
-            Issue(flow, w, command);
+            if (flow.Snapshot() == null) { throw new InvalidOperationException("遊ぶ画面ではありません"); }
+            PrepareSelection(flow, command);
+            var before = flow.Executed;
+            Issue(flow, flow.Snapshot()!, command);
             flow.FlushIntents();
+            Verify(flow, command, before);
+        }
+
+        /// <summary>入力の後、Flow がちょうど 1 つの命令を実行し、それが command で、受け付けられたかを確かめる（PlayMode の入力でも使う）。</summary>
+        public static void Verify(EscapeFlow flow, Command command, long executedBefore)
+        {
+            if (flow == null) { throw new ArgumentNullException(nameof(flow)); }
+            var count = flow.Executed - executedBefore;
+            if (count == 0) { throw new InvalidOperationException($"{command} の入力が命令として実行されませんでした（入力が捨てられた）"); }
+            if (count != 1) { throw new InvalidOperationException($"{command} の入力で命令が {count} 個実行されました"); }
+            if (flow.LastCommand != command) { throw new InvalidOperationException($"{command} のつもりの入力が {flow.LastCommand} として実行されました"); }
             if (!flow.LastOutcome.Accepted) { throw new InvalidOperationException($"{command} を {flow.LastOutcome.Reason} で受け付けませんでした"); }
         }
 
@@ -69,32 +74,6 @@ namespace Game.App
             throw new InvalidOperationException($"{maxTicks} Tick で結果画面に届きません");
         }
 
-        /// <summary>
-        /// 世界の今の視点で、クリックすると狙った命令になる画面の点。部品の手前の面の中心を写した点から試し、
-        /// だめなら画面を刻んで探す。見つからなければ null。
-        /// </summary>
-        public static (int X, int Y)? ClickPointFor(World world, Command command, int selectedItem)
-        {
-            if (world == null) { throw new ArgumentNullException(nameof(world)); }
-            var def = world.Def;
-            var pose = def.Views[world.View].Pose;
-            foreach (var part in TargetParts(def, command))
-            {
-                if (!world.IsPresent(part.Index) || !pose.TryProject(part.Box.FrontCenter(pose.Wall), out var x, out var y) || y < MinClickY) { continue; }
-                if (world.CommandAt(x, y, selectedItem) == command) { return (x, y); }
-            }
-
-            for (int sy = MinClickY; sy < CameraPose.HalfHeight; sy += ScanStep)
-            {
-                for (int sx = -1760; sx <= 1760; sx += ScanStep)
-                {
-                    if (world.CommandAt(sx, sy, selectedItem) == command) { return (sx, sy); }
-                }
-            }
-
-            return null;
-        }
-
         private void Plan(World w)
         {
             _plan.Clear();
@@ -107,6 +86,30 @@ namespace Game.App
             }
 
             foreach (var c in step.Answer(at)) { _plan.Enqueue(c); }
+        }
+
+        /// <summary>
+        /// 持ち物の選択を命令に合わせる。使う命令なら目的の持ち物を選び、ほかの命令なら選択を外す
+        /// （選んだままのクリックは「使う」になり、右クリックは選択を外すだけになるため）。選択の操作は命令を実行しないので、ここで状態を確かめる。
+        /// 持ち物を手に取る命令は、枠を選んで同じ枠をもう一度クリックする入力なので、別の持ち物を選んでいれば外す。
+        /// </summary>
+        private static void PrepareSelection(EscapeFlow flow, Command command)
+        {
+            var want = command.Kind == CommandKind.UseItem ? command.A : -1;
+            var keep = command.Kind == CommandKind.InspectItem && flow.SelectedItem == command.A;
+            if (flow.SelectedItem != want && !keep && flow.SelectedItem >= 0)
+            {
+                flow.Press(IntentKind.Back);
+                flow.FlushIntents();
+                if (flow.SelectedItem >= 0) { throw new InvalidOperationException("持ち物の選択を外せません"); }
+            }
+
+            if (want >= 0 && flow.SelectedItem != want)
+            {
+                flow.Click(ClickTarget.Item, IndexOf(flow.Inventory, want));
+                flow.FlushIntents();
+                if (flow.SelectedItem != want) { throw new InvalidOperationException($"持ち物 {want} を選べません"); }
+            }
         }
 
         private static void Issue(EscapeFlow flow, World w, Command command)
@@ -132,53 +135,20 @@ namespace Game.App
 
                 case CommandKind.InspectItem:
                     {
+                        // 枠を選んでもう一度クリックすると手に取る。
                         var slot = IndexOf(w.Inventory, command.A);
                         if (flow.SelectedItem != command.A) { flow.Click(ClickTarget.Item, slot); }
                         flow.Click(ClickTarget.Item, slot);
                         return;
                     }
-                case CommandKind.UseItem:
+
+                default:
                     {
-                        // 持ち物の枠を選んでから部品をクリックする。
-                        var slot = IndexOf(w.Inventory, command.A);
-                        if (flow.SelectedItem != command.A) { flow.Click(ClickTarget.Item, slot); }
-                        Click(flow, w, command, command.A);
+                        var point = ClickSearch.PointFor(w, command, flow.SelectedItem, flow.Region)
+                            ?? throw new InvalidOperationException($"{command} になる画面の点が範囲 {flow.Region} にありません（視点 {w.Def.Views[w.View].Id}）");
+                        flow.ClickWorld(point.X, point.Y);
                         return;
                     }
-
-                default:
-                    Click(flow, w, command, -1);
-                    return;
-            }
-        }
-
-        private static void Click(EscapeFlow flow, World w, Command command, int selectedItem)
-        {
-            var point = ClickPointFor(w, command, selectedItem) ?? throw new InvalidOperationException($"{command} になる画面の点がありません（視点 {w.Def.Views[w.View].Id}）");
-            flow.ClickWorld(point.X, point.Y);
-        }
-
-        private static IEnumerable<PartDef> TargetParts(RoomDef def, Command command)
-        {
-            switch (command.Kind)
-            {
-                case CommandKind.Focus:
-                    foreach (var p in def.Parts)
-                    {
-                        if (p.View == command.A) { yield return p; }
-                    }
-
-                    break;
-                case CommandKind.UseItem:
-                    yield return def.Parts[command.B];
-                    break;
-                case CommandKind.Operate:
-                case CommandKind.Take:
-                case CommandKind.Inspect:
-                    yield return def.Parts[command.A];
-                    break;
-                default:
-                    break;
             }
         }
 

@@ -125,10 +125,30 @@ namespace Game.Core.Play
                         {
                             0 => mechanism.Direction,
                             1 => mechanism.Clue,
-                            _ => $"{mechanism.Name}の答えは {world.Room.Mechanisms[step.Mechanism].AnswerText}。",
+                            _ => $"{mechanism.Name}の答えは {world.Room.Mechanisms[step.Mechanism].AnswerText}。{Moves(world, step.Mechanism)}",
                         };
                     }
             }
+        }
+
+        /// <summary>
+        /// リングは名前でなく星座の印で出るので、答えの段階に「今の位置からあと何回クリックするか」を添える（試遊：名前と印を結び付けられない）。
+        /// ほかの仕掛けは画面の数字・針・色で答えを照らし合わせられるので添えない。
+        /// </summary>
+        private static string Moves(World world, int mechanism)
+        {
+            var def = world.Def;
+            if (def.Mechanisms[mechanism].Kind != MechanismKind.Rings) { return ""; }
+            var counts = new int[MechanismFactory.SlotsOf(MechanismKind.Rings)];
+            foreach (var slot in world.Room.Mechanisms[mechanism].SolutionFrom(world.ValuesOf(mechanism))) { counts[slot]++; }
+            var parts = new List<string>();
+            for (int i = 0; i < counts.Length; i++)
+            {
+                var name = def.Parts[def.SlotPart(mechanism, i)].Name;
+                parts.Add(counts[i] == 0 ? $"{name}はそのまま" : $"{name}をあと {counts[i]} 回");
+            }
+
+            return $"（今の位置から、{string.Join("・", parts)}クリック）";
         }
 
         private static HintStep Need(World world, int mechanism, int depth)

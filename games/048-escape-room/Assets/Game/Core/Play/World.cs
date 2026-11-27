@@ -94,8 +94,8 @@ namespace Game.Core.Play
         /// <summary>最後の <see cref="Apply"/> で起きた出来事（拒否なら空）。</summary>
         public IReadOnlyList<EscapeEvent> Events => _eventsView;
 
-        /// <summary>手に取った物の手がかりの面がこちらを向いているか（表示も判定もこれで決める）。</summary>
-        public bool ClueFacing => Held >= 0 && Orientation.Faces(_def.Examinables[Held].ClueFace);
+        /// <summary>手に取った物の手がかりの面がこちらを向いて正立しているか（表示も判定もこれで決める）。</summary>
+        public bool ClueFacing => Held >= 0 && Orientation.ShowsUpright(_def.Examinables[Held].ClueFace, _def.Examinables[Held].ClueUp);
 
         public Phase PhaseOf(int mechanism) => _phase[mechanism];
 

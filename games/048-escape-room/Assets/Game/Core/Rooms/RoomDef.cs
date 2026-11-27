@@ -78,12 +78,13 @@ namespace Game.Core.Rooms
 
     public sealed class ExaminableDef
     {
-        internal ExaminableDef(int index, string id, string name, Vec3i clueFace, int reveals)
+        internal ExaminableDef(int index, string id, string name, Vec3i clueFace, Vec3i clueUp, int reveals)
         {
             Index = index;
             Id = id;
             Name = name;
             ClueFace = clueFace;
+            ClueUp = clueUp;
             Reveals = reveals;
         }
 
@@ -93,6 +94,9 @@ namespace Game.Core.Rooms
 
         /// <summary>手がかりが書いてある面の法線（物の座標、軸に平行な単位ベクトル）。</summary>
         public Vec3i ClueFace { get; }
+
+        /// <summary>手がかりの「上」の向き（物の座標、軸に平行な単位ベクトル、面に平行）。手がかりは正立しているときだけ読める。</summary>
+        public Vec3i ClueUp { get; }
 
         /// <summary>手がかりが答えを示す仕掛けの番号。</summary>
         public int Reveals { get; }
@@ -347,6 +351,8 @@ namespace Game.Core.Rooms
             {
                 var n = e.ClueFace;
                 if (Math.Abs(n.X) + Math.Abs(n.Y) + Math.Abs(n.Z) != 1) { errors.Add($"手に取る物 {e.Id} の手がかりの面は軸に平行な単位ベクトルです"); }
+                var u = e.ClueUp;
+                if (Math.Abs(u.X) + Math.Abs(u.Y) + Math.Abs(u.Z) != 1 || Vec3i.Dot(n, u) != 0) { errors.Add($"手に取る物 {e.Id} の手がかりの上は、面に平行な軸の単位ベクトルです"); }
                 if (e.Reveals < 0 || e.Reveals >= Mechanisms.Count) { errors.Add($"手に取る物 {e.Id} の答えを示す仕掛けの番号が範囲外です"); }
             }
 
@@ -442,6 +448,9 @@ namespace Game.Core.Rooms
                 h.Mix(e.ClueFace.X);
                 h.Mix(e.ClueFace.Y);
                 h.Mix(e.ClueFace.Z);
+                h.Mix(e.ClueUp.X);
+                h.Mix(e.ClueUp.Y);
+                h.Mix(e.ClueUp.Z);
                 h.Mix(e.Reveals);
             }
 
@@ -515,9 +524,9 @@ namespace Game.Core.Rooms
             return _items.Count - 1;
         }
 
-        public int Examinable(string id, string name, Vec3i clueFace, int reveals)
+        public int Examinable(string id, string name, Vec3i clueFace, Vec3i clueUp, int reveals)
         {
-            _examinables.Add(new ExaminableDef(_examinables.Count, id, name, clueFace, reveals));
+            _examinables.Add(new ExaminableDef(_examinables.Count, id, name, clueFace, clueUp, reveals));
             return _examinables.Count - 1;
         }
 

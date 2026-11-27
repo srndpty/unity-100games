@@ -147,35 +147,36 @@ namespace Game.Unity
             await Shoot("10_globe_open", "リングを合わせると、ふたが外れて歯車");
 
             GoTo(View("bookshelf"));
+            await Shoot("11_bookshelf", "本棚の近景（棚板の上の本、飛び出した天文書）");
             Do(Command.Inspect(Part("shelf.astronomy")));
             for (int i = 0; i < 4; i++) { Do(Command.Rotate(1, 0)); }
             if (!flow.ClueFacing) { throw new InvalidOperationException("天文書の裏表紙が向きません"); }
-            await Shoot("11_book_clue", "天文書の裏表紙の時刻");
+            await Shoot("12_book_clue", "天文書の裏表紙の時刻");
             Do(Command.Back);
 
             DriveUntil(() => flow.PhaseOf(clock) == Phase.Solved);
-            await Shoot("12_clock_open", "針を合わせると振り子の扉が開き、金庫のハンドル");
+            await Shoot("13_clock_open", "針を合わせると振り子の扉が開き、金庫のハンドル");
 
             GoTo(View("telescope"));
             var cycle = (SequenceLock.GemCount * StudyStage.StarStepTicks) + StudyStage.StarRestTicks;
             for (int i = 0; i < cycle && flow.PlayTicks % cycle != StudyStage.StarStepTicks + 10; i++) { flow.StepTicks(1); }
-            await Shoot("13_telescope", "望遠鏡をのぞくと、星が宝石の色の順に瞬く（2 番目の星）");
+            await Shoot("14_telescope", "望遠鏡をのぞくと、星が宝石の色の順に瞬く（2 番目の星）");
 
             DriveUntil(() => flow.PhaseOf(safe) == Phase.Active);
             var order = flow.Room.Mechanisms[safe].Answer;
             Do(Command.Operate(Part($"safe.gem{order[0]}")));
             Do(Command.Operate(Part($"safe.gem{order[1]}")));
-            await Shoot("14_safe_gems", "ハンドルを差し、宝石を 2 つ正しく押した");
+            await Shoot("15_safe_gems", "ハンドルを差し、宝石を 2 つ正しく押した");
 
             for (int i = 0; i < 3; i++) { Do(Command.Hint); }
-            await Shoot("15_hint_answer", "H を 3 回：同じ一手のヒントが答えの段階まで進む");
+            await Shoot("16_hint_answer", "H を 3 回：同じ一手のヒントが答えの段階まで進む");
 
             DriveUntil(() => flow.Escaped);
-            await Shoot("16_escape", "出口の鍵で扉が開いた");
+            await Shoot("17_escape", "出口の鍵で扉が開いた");
             for (int i = 0; i < MaxTicks && flow.Screen != FlowScreen.Result; i++) { flow.StepTicks(1); }
             if (flow.Screen != FlowScreen.Result) { throw new InvalidOperationException($"結果画面になりません（{flow.Screen}）"); }
             capture.Record("finalHash", flow.WorldHash.ToString("X8", CultureInfo.InvariantCulture));
-            await Shoot("17_result", "結果（経過時間・操作の回数・ヒントの数）");
+            await Shoot("18_result", "結果（経過時間・操作の回数・ヒントの数）");
             Key(IntentKind.Confirm);
             if (flow.Screen != FlowScreen.Title) { throw new InvalidOperationException("タイトルに戻りません"); }
         }

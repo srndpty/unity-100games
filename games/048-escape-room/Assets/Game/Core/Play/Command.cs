@@ -237,16 +237,25 @@ namespace Game.Core.Play
 
         public Orientation Rotated(int yaw, int pitch) => new(Yaw + yaw, Pitch + pitch);
 
-        /// <summary>物の座標の面の法線（軸に平行な単位ベクトル）が、手前（-z、見ている人の方）を向いているか。</summary>
-        public bool Faces(Vec3i normal)
-        {
-            var horizontal = normal.X != 0 || normal.Z != 0;
+        /// <summary>物の座標の面の法線（軸に平行な単位ベクトル）が、手前（-z、見ている人の方）を向いているか（上下の向きは問わない）。</summary>
+        public bool Faces(Vec3i normal) => Apply(normal) == new Vec3i(0, 0, -1);
 
-            // 45° の段では水平な法線は斜めになり、どの軸とも一致しない。
-            if (horizontal && (Yaw & 1) == 1) { return false; }
-            var v = CameraPose.Yaw(normal, Yaw / 2);
-            for (int i = 0; i < Pitch; i++) { v = new Vec3i(v.X, -v.Z, v.Y); }
-            return v == new Vec3i(0, 0, -1);
+        /// <summary>
+        /// 面が手前を向き、しかも面の「上」が画面の上（+y）を向いて正立しているか。手がかりはこのときだけ読める
+        /// （上下を逆さにすると、文字盤は時刻を、円盤は星座の並びを逆に読めてしまうため）。
+        /// </summary>
+        public bool ShowsUpright(Vec3i normal, Vec3i up) => Faces(normal) && Apply(up) == new Vec3i(0, 1, 0);
+
+        /// <summary>物の座標の軸に平行な単位ベクトルを、手に取った空間へ写す。45° の段で斜めになる水平なベクトルは軸と一致しないので (0,0,0)。</summary>
+        public Vec3i Apply(Vec3i v)
+        {
+            var horizontal = v.X != 0 || v.Z != 0;
+
+            // 45° の段では水平なベクトルは斜めになり、どの軸とも一致しない。
+            if (horizontal && (Yaw & 1) == 1) { return Vec3i.Zero; }
+            var r = CameraPose.Yaw(v, Yaw / 2);
+            for (int i = 0; i < Pitch; i++) { r = new Vec3i(r.X, -r.Z, r.Y); }
+            return r;
         }
 
         public bool Equals(Orientation other) => Yaw == other.Yaw && Pitch == other.Pitch;

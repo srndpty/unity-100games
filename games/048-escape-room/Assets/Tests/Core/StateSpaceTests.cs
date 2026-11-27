@@ -49,7 +49,7 @@ namespace Game.Core.Tests
         [Test]
         public void Explore_DetectsDeadEnd_WhenKeyIsInsideItsOwnLock()
         {
-            var room = new Room(Broken(keyInsideOwnCabinet: true), 1);
+            var room = new Room(SmallRoom(Layout.KeyInsideOwnLock), 1);
             var report = StateSpace.Explore(room, 1000);
             Assert.That(report.Errors.Any(e => e.Contains("脱出に到達しません", StringComparison.Ordinal) || e.Contains("詰み", StringComparison.Ordinal)), Is.True, string.Join("\n", report.Errors));
         }
@@ -57,7 +57,44 @@ namespace Game.Core.Tests
         [Test]
         public void Explore_AcceptsTheSameSmallRoom_WhenKeyIsOutside()
         {
-            var report = StateSpace.Explore(new Room(Broken(keyInsideOwnCabinet: false), 1), 1000);
+            var report = StateSpace.Explore(new Room(SmallRoom(Layout.Ok), 1), 1000);
+            Assert.That(report.Errors, Is.Empty, string.Join("\n", report.Errors));
+        }
+
+        // ---- レビュー P1-1：論理的に受け付ける命令が、画面でクリックして作れること ----
+
+        [Test]
+        public void Explore_RejectsGeometricallyUnclickableRooms([Values(Layout.KeyOccluded, Layout.EntranceOccluded, Layout.KeyOffScreen, Layout.KeyUnderHud)] Layout layout)
+        {
+            var report = StateSpace.Explore(new Room(SmallRoom(layout), 1), 1000);
+            TestContext.WriteLine(string.Join("\n", report.Errors));
+            Assert.That(report.Errors.Any(e => e.StartsWith("クリックできない", StringComparison.Ordinal)), Is.True, string.Join("\n", report.Errors));
+            Assert.That(report.Errors.Any(e => e.Contains("脱出に到達しません", StringComparison.Ordinal)), Is.True, "クリックできない手を除くと脱出に届かない");
+
+            // 論理だけ（World.Check）なら、次の一手を命令で直接当てはめて脱出に届く：遮蔽を見逃していたのはこの差。
+            var w = new World(new Room(SmallRoom(layout), 1));
+            for (int i = 0; i < 20 && !w.Escaped; i++) { Lab.Advance(w); }
+            Assert.That(w.Escaped, Is.True);
+        }
+
+        [Test]
+        public void Explore_AcceptsPartThatBecomesClickableWhenPlateOpens()
+        {
+            var report = StateSpace.Explore(new Room(SmallRoom(Layout.KeyBehindPlate), 1), 1000);
+            Assert.That(report.Errors, Is.Empty, string.Join("\n", report.Errors));
+            var start = report.Worlds[0];
+            var w = start.Clone();
+            foreach (var c in Navigation.PathTo(w, 4)) { w.Apply(c); }
+            Assert.That(ClickSearch.PointFor(w, Command.Take(w.Def.PickupOf(0)), -1, ScreenRegion.Guaranteed), Is.Null, "閉じた前板の奥の鍵は（入れ物が開くまで）クリックできない");
+        }
+
+        [Test]
+        public void Explore_Study_IsClickableInGuaranteedRegion_AndTimed()
+        {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            var report = StateSpace.Explore(new Room(Lab.Study, 1), 10000, ScreenRegion.Guaranteed);
+            watch.Stop();
+            TestContext.WriteLine($"状態 {report.States}・遷移 {report.Transitions}・{watch.Elapsed.TotalMilliseconds:F1} ms");
             Assert.That(report.Errors, Is.Empty, string.Join("\n", report.Errors));
         }
 
@@ -185,7 +222,7 @@ namespace Game.Core.Tests
             Assert.That(a.Hash(), Is.EqualTo(b.Hash()));
             Assert.That(Lab.NewWorld(2).Hash(), Is.Not.EqualTo(Lab.NewWorld(1).Hash()), "シードが違えば答えが違い、ハッシュも違う");
             TestContext.WriteLine($"操作 {a.Actions}・ハッシュ 0x{a.Hash():X8}");
-            Assert.That(a.Hash(), Is.EqualTo(0x44E972DEu), "整数だけの規則なので、.NET と Mono で同じ値になる");
+            Assert.That(a.Hash(), Is.EqualTo(0x9EB22E21u), "整数だけの規則なので、.NET と Mono で同じ値になる");
         }
 
         private static Command RandomCommand(SeededRandom r, World w)
@@ -218,29 +255,62 @@ namespace Game.Core.Tests
             }
         }
 
-        /// <summary>小さな部屋：ダイヤルの引き出しの中の鍵でキャビネットを開けると、出口の鍵がある（keyInsideOwnCabinet なら出口の鍵が鍵ごとキャビネットの中で詰む）。</summary>
-        private static RoomDef Broken(bool keyInsideOwnCabinet)
+        public enum Layout
+        {
+            /// <summary>鍵は引き出し（ダイヤル）の中に見えている。</summary>
+            Ok,
+
+            /// <summary>鍵がその鍵で開くキャビネットの中（詰み）。</summary>
+            KeyInsideOwnLock,
+
+            /// <summary>鍵の手前に、いつもある箱（完全に遮る）。</summary>
+            KeyOccluded,
+
+            /// <summary>壁の視点で、近景へ寄る家具を別の近景の衝立が完全に遮る。</summary>
+            EntranceOccluded,
+
+            /// <summary>鍵が近景の画面の横の外。</summary>
+            KeyOffScreen,
+
+            /// <summary>鍵が HUD の帯の下にしか写らない。</summary>
+            KeyUnderHud,
+
+            /// <summary>鍵の手前に、ダイヤルが解けると消える前板（解ければ触れる）。</summary>
+            KeyBehindPlate,
+        }
+
+        /// <summary>
+        /// 小さな部屋：ダイヤルが解けると鍵が取れ、鍵でキャビネットを開けると出口の鍵がある。
+        /// 近景の部品は画面の中央の高さ（y 1550〜1650）に並べ、配置の変え方で幾何的に触れない部屋を作る。
+        /// </summary>
+        internal static RoomDef SmallRoom(Layout layout)
         {
             static Geometry.Box3 B(int x0, int y0, int z0, int x1, int y1, int z1) => new(new Geometry.Vec3i(x0, y0, z0), new Geometry.Vec3i(x1, y1, z1));
             var b = new RoomBuilder("テスト", B(-2000, 0, -2000, 2000, 2800, 2000));
-            var clue = b.Examinable("note", "メモ", new Geometry.Vec3i(0, 0, 1), 0);
+            var clue = b.Examinable("note", "メモ", new Geometry.Vec3i(0, 0, 1), new Geometry.Vec3i(0, 1, 0), 0);
             var key = b.Item("key", "鍵", "引き出し");
             var exitKey = b.Item("exit_key", "出口の鍵", "キャビネット");
             b.Mechanism("dial", "ダイヤル", MechanismKind.Dial, -1, "a", "b");
             b.Mechanism("cabinet", "キャビネット", MechanismKind.KeyLock, key, "a", "b");
             b.Mechanism("door", "扉", MechanismKind.KeyLock, exitKey, "a", "b");
-            var pose = new Geometry.CameraPose(new Geometry.Vec3i(0, 1600, 0), 0, 0, 1500);
-            b.WallView("n", "北", pose);
-            b.WallView("e", "東", new Geometry.CameraPose(new Geometry.Vec3i(0, 1600, 0), 1, 0, 1500));
-            b.WallView("s", "南", new Geometry.CameraPose(new Geometry.Vec3i(0, 1600, 0), 2, 0, 1500));
-            b.WallView("w", "西", new Geometry.CameraPose(new Geometry.Vec3i(0, 1600, 0), 3, 0, 1500));
+            for (int w = 0; w < 4; w++) { b.WallView("wall" + w, "壁", new Geometry.CameraPose(new Geometry.Vec3i(0, 1600, 0), w, 0, 1500)); }
             var near = b.CloseUp("near", "近く", new Geometry.CameraPose(new Geometry.Vec3i(0, 1600, 500), 0, 0, 1500));
-            b.Examine("note", "メモ", near, B(-900, 1000, 1500, -800, 1100, 1600), clue);
-            for (int i = 0; i < 3; i++) { b.Slot($"dial{i}", "桁", near, B(-600 + (i * 100), 1000, 1500, -520 + (i * 100), 1100, 1600), 0, i); }
-            b.Pickup("key", "鍵", near, B(0, 1000, 1500, 100, 1100, 1600), key, keyInsideOwnCabinet ? 1 : 0);
-            b.Keyhole("keyhole", "鍵穴", near, B(300, 1000, 1500, 400, 1100, 1600), 1);
-            b.Pickup("exit_key", "出口の鍵", near, B(500, 1000, 1500, 600, 1100, 1600), exitKey, 1);
-            b.Keyhole("door", "扉の鍵穴", near, B(700, 1000, 1500, 800, 1100, 1600), 2);
+            var screenView = layout == Layout.EntranceOccluded ? b.CloseUp("screen", "衝立", new Geometry.CameraPose(new Geometry.Vec3i(0, 1600, 100), 0, 0, 1500)) : -1;
+            b.Examine("note", "メモ", near, B(-900, 1550, 1500, -800, 1650, 1600), clue);
+            for (int i = 0; i < 3; i++) { b.Slot($"dial{i}", "桁", near, B(-600 + (i * 100), 1550, 1500, -520 + (i * 100), 1650, 1600), 0, i); }
+            var keyBox = layout switch
+            {
+                Layout.KeyOffScreen => B(1900, 1550, 1500, 1990, 1650, 1600),
+                Layout.KeyUnderHud => B(0, 960, 1500, 100, 1000, 1600),
+                _ => B(0, 1550, 1500, 100, 1650, 1600),
+            };
+            b.Pickup("key", "鍵", near, keyBox, key, layout == Layout.KeyInsideOwnLock ? 1 : 0);
+            if (layout == Layout.KeyOccluded) { b.Body("crate", "箱", near, B(-20, 1530, 1300, 120, 1670, 1320)); }
+            if (layout == Layout.KeyBehindPlate) { b.Body("plate", "前板", near, B(-20, 1530, 1300, 120, 1670, 1320), Presence.WhileClosed, 0); }
+            if (layout == Layout.EntranceOccluded) { b.Body("screen", "衝立", screenView, B(-1900, 10, 200, 1900, 2700, 220)); }
+            b.Keyhole("keyhole", "鍵穴", near, B(300, 1550, 1500, 400, 1650, 1600), 1);
+            b.Pickup("exit_key", "出口の鍵", near, B(500, 1550, 1500, 600, 1650, 1600), exitKey, 1);
+            b.Keyhole("door", "扉の鍵穴", near, B(700, 1550, 1500, 800, 1650, 1600), 2);
             return b.Build(2);
         }
     }

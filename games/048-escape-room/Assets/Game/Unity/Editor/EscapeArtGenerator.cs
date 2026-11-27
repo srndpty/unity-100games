@@ -34,6 +34,7 @@ namespace Game.Unity.Editor
         public const string Rug = "Rug";
         public const string Glass = "Glass";
         public const string StarDim = "StarDim";
+        public const string Dawn = "Dawn";
 
         public static readonly string[] BookColors = { "BookRed", "BookGreen", "BookBlue", "BookBrown", "BookPlum", "BookOchre" };
 
@@ -78,6 +79,7 @@ namespace Game.Unity.Editor
             Save(created, "Digits", 10 * 32, 48, DigitsPattern);
             Save(created, "Constellations", 8 * 64, 64, ConstellationPattern);
             Save(created, Rug, 64, 64, RugPattern);
+            Save(created, Dawn, 64, 128, DawnPattern);
             for (int i = 0; i < ItemIcons.Length; i++)
             {
                 var index = i;
@@ -96,7 +98,8 @@ namespace Game.Unity.Editor
             MaterialOf(Iron, new Color(.22f, .24f, .26f), Color.black, .45f, metallic: .6f);
             MaterialOf(Silver, new Color(.82f, .84f, .86f), Color.black, .75f, metallic: .9f);
             MaterialOf(Black, new Color(.03f, .03f, .03f), Color.black, .1f);
-            MaterialOf(Night, new Color(.01f, .015f, .04f), new Color(.035f, .06f, .16f), .15f);
+            UnlitOf(Night, new Color(.04f, .07f, .19f));
+            UnlitOf(Dawn, Color.white, AssetDatabase.LoadAssetAtPath<Texture2D>(ArtRoot + Dawn + ".png"));
             MaterialOf(Navy, new Color(.08f, .12f, .3f), Color.black, .4f);
             MaterialOf(Leather, new Color(.5f, .1f, .1f), Color.black, .3f);
             MaterialOf(Paper, new Color(.9f, .86f, .74f), Color.black, .05f);
@@ -150,6 +153,17 @@ namespace Game.Unity.Editor
                 material.SetColor("_EmissionColor", emission);
             }
 
+            AssetDatabase.CreateAsset(material, path);
+        }
+
+        /// <summary>光の影響を受けない単色（窓の夜空：部屋の明かりで茶色くならないように）。</summary>
+        private static void UnlitOf(string name, Color color, Texture2D? texture = null)
+        {
+            var path = ArtRoot + name + ".mat";
+            if (AssetDatabase.LoadAssetAtPath<Material>(path) != null) { return; }
+            var material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            if (texture != null) { material.SetTexture("_BaseMap", texture); }
+            material.SetColor("_BaseColor", color);
             AssetDatabase.CreateAsset(material, path);
         }
 
@@ -211,7 +225,7 @@ namespace Game.Unity.Editor
         /// <summary>深緑の壁紙に金の小さな菱形。</summary>
         private static Color32 WallPattern(int x, int y)
         {
-            var c = new Color32(46, 66, 56, 255);
+            var c = new Color32(72, 100, 84, 255);
             var dx = Math.Abs((x % 32) - 16);
             var dy = Math.Abs((y % 32) - 16);
             if (dx + dy == 6) { c = new Color32(150, 124, 70, 255); }
@@ -224,6 +238,19 @@ namespace Game.Unity.Editor
             var row = y / 16;
             var c = Grain(x + (row * 37), y, new Color32(96, 62, 38, 255));
             if (y % 16 == 0 || (x + (row * 40)) % 128 == 0) { c = new Color32(48, 30, 20, 255); }
+            return c;
+        }
+
+        /// <summary>扉の向こうの夜明け前の空：上は星の残る紺、下へ紫を経て地平線の橙。</summary>
+        private static Color32 DawnPattern(int x, int y)
+        {
+            var t = y / 127f;
+            Color low = new Color32(236, 150, 84, 255);
+            Color mid = new Color32(92, 64, 120, 255);
+            Color high = new Color32(14, 20, 58, 255);
+            var c = t < 0.35f ? Color.Lerp(low, mid, t / 0.35f) : Color.Lerp(mid, high, (t - 0.35f) / 0.65f);
+            if (y > 50 && ((x * 37) + (y * 91) + (x * y * 13)) % 97 == 0) { c = Color.Lerp(c, Color.white, 0.85f); }
+            if (y < 6) { c = new Color32(30, 24, 30, 255); }
             return c;
         }
 

@@ -53,8 +53,8 @@ dev capture 048  # 証跡を evidence/ に撮る（画像は captures/<画像世
 | 宝石の順番 | 答えの順に 1 回ずつ押す。間違えると最初から。ただし間違えた宝石が答えの最初なら、それを 1 つ目として数える（答えの順に 4 つ押せば、途中の状態に依らず必ず開く） |
 | 持ち物 | 拾う物は 1 試合に 1 回だけ。使うと手放す（鍵穴・差し込み口に残る）。入れ物（引き出し・キャビネット・天球儀・柱時計・金庫）の中の物は、その仕掛けが解けるまで拾えない |
 | 視点 | 4 面の壁（部屋の中央の目の高さ）と、家具ごとの近景 8 つ（机・望遠鏡・キャビネット・本棚・出口の扉・柱時計・天球儀・金庫）。壁の視点で家具をクリックすると、その壁の近景へ寄る（壁の端に見える隣の壁の家具には寄らない）。部品の操作は、その部品の近景でだけ受け付ける |
-| 手に取る | 筒・天文書・円盤（持ち物から、またははめた台座から）を手に取ると、回す・置く・ヒント以外を受け付けない。向きはヨー 45° × 8 段・ピッチ 90° × 4 段。**手がかりの面がこちらを向いているときだけ**手がかりが読める（Core が判定し、表示もこれで決める） |
-| ヒント | 出口から依存をさかのぼり、最初に満たしていない一手を案内する（操作できる仕掛けなら解く、Locked なら持ち物を使う、持っていなければ拾う、入れ物が閉じていれば入れ物の仕掛けへ）。同じ一手には 0 方向付け → 1 具体的な手がかり → 2 答え（今のシードの答えの文）と進み、一手が変わったら 0 から |
+| 手に取る | 筒・天文書・円盤（持ち物から、またははめた台座から）を手に取ると、回す・置く・ヒント以外を受け付けない。向きはヨー 45° × 8 段・ピッチ 90° × 4 段。**手がかりの面がこちらを向き、正立しているときだけ**手がかりが読める（32 通りの向きのうち 1 通り。Core が判定し、表示もこれで決める）。上下を逆さにすると文字盤の時刻・円盤の星座の並びを読み違えるため |
+| ヒント | 出口から依存をさかのぼり、最初に満たしていない一手を案内する（操作できる仕掛けなら解く、Locked なら持ち物を使う、持っていなければ拾う、入れ物が閉じていれば入れ物の仕掛けへ）。同じ一手には 0 方向付け → 1 具体的な手がかり → 2 答え（今のシードの答えの文）と進み、一手が変わったら 0 から。リングの答えは星座の名前が画面に出ないので「今の位置から、上のリングをあと N 回…」を添え、宝石には色を添える |
 | 操作の回数 | 部品の操作・持ち物を使う・拾う・手に取るを数える。視点の移動・回す・置く・ヒントは数えない |
 | 敗北 | ない（時間切れもない）。脱出したら結果画面（経過時間・操作の回数・ヒントの数）。脱出の後はリセット以外を拒否する |
 | リセット | 同じシードで最初から（視点・持ち物・仕掛け・ヒントの段階・操作の回数・経過時間が始めに戻る）。再戦は新しいシード |
@@ -80,8 +80,10 @@ dev capture 048  # 証跡を evidence/ に撮る（画像は captures/<画像世
 - 前提（入れ物が開いているか・持ち物が入っているか）の評価は `World.IsPresent`・`IsReachable` と遷移の表に置き、全ての仕掛けで共有する。
 - 作品名は **STARGAZER'S STUDY**（オリジナル）。素材はプリミティブと座標から決まる模様の生成テクスチャ（木目・壁紙・床板・文字盤・数字と星座の表・持ち物の絵）だけで作る。
 - 遊ぶときの当たりは Core のヒットテストだけで決める。Unity の BoxCollider は Core の箱と同じ位置・大きさの照合専用（PlayMode で `Physics.Raycast` と照合する）。
-- 画面の下の持ち物の帯（1080 のうち 150）に隠れる所は部屋に届かないので、近景は操作する部品が帯より上に来るように視点を置く（操縦役もその上だけをクリックし、App のテストで確かめる）。
-- 天井のランプは影を落とさない（点光源の影の継ぎ目が壁と床に線として出たため）。
+- **画面の契約**：対応する画面の比率は 16:10〜21:9（AGENTS.md の横長の範囲）。Unity はこれより狭い・広い画面に黒い帯を付けて描画の矩形を収め、部屋のクリックが届く範囲（`ScreenRegion`：横は描画の矩形の比率、下は HUD の持ち物の帯（1080 のうち 150）の上）を Flow に渡す。範囲の外のクリックは部屋に通さない。ビルド前の検証と操縦役は、対応する全ての画面で届く範囲（±1600・y≥-700、`ScreenRegion.Guaranteed`）だけを使う。
+- **論理とクリックの区別**：`World.Check` は論理的に受け付けるか（あって、入れ物が開いているか）だけを見る。画面で作れるかは `World.CommandAt`（Core のヒットテスト）で決まる。状態空間の探索は、近景へ寄る命令とクリックで出す命令ごとに、決めた範囲でその命令になる点を `ClickSearch` で探し、見つからなければ誤りにする（fail-closed）。探し方は部品の手前の面の 5 × 5 の点、次に範囲を 20 刻みで走査する十分条件で、完全な可視領域の判定ではない（刻みの間にしか見えない部品は、クリックできても拒否しうる）。
+- 操縦役は、命令ごとに Flow の実行の記録（通し番号・命令・結果）で「入力がちょうどその命令として実行され、受け付けられた」ことを確かめる。持ち物の選択は命令の前に合わせる。
+- 天井のランプは影を落とさない（点光源の影の継ぎ目が壁と床に線として出たため）。試遊で暗いとされたので、環境光・ランプ・月明かりを強め、壁紙を明るくした。窓の夜空は光の影響を受けない紺にした。
 - 試合のシードは、起動時の値と何試合目かから派生する（再戦は新しいシード、リセットは同じシード）。
 - 視点は命令の時点で切り替わり、カメラの移動は App の演出の進み具合（`TransitionProgress`）で Unity が補間して描く。演出の間のクリック・向き直り・戻るは受付で捨てる。視点・手に取った物・画面が変わると版が進むので、同じフレームの 2 回目のクリック（壁の視点で押した）は近景の部品を操作しない。
 - 状態空間の探索は 047 の方式（命令の候補を遊ぶときと同じ `World.Check` で絞る）を写した。抽象状態は「仕掛けの状態・持ち物・拾った物・脱出」で、仕掛けの値は「解けたか」に縮める。そのため 1 段ずつの操作に加えて「今の値から答えまで動かす」手（1 段ずつの操作の列そのもの）も加える。視点・手に取った物は鍵に含めず、探索の手は視点を移す命令を含めて当てはめる。迂回（前提が揃う前に動く・解けていないのに脱出・閉じた入れ物の中を拾う）・詰み・持ち物の違反を拒否する。書斎の状態は 15・遷移 63（シードに依らない）。
@@ -90,28 +92,31 @@ dev capture 048  # 証跡を evidence/ に撮る（画像は captures/<画像世
 
 | 種類 | 場所 | 実行 | 件数 |
 |---|---|---|---|
-| Core（.NET） | `Assets/Tests/Core/` | `dev test 048` | 58 |
-| App（.NET） | `Assets/Tests/App/` | `dev test 048` | 26 |
-| EditMode（Mono、共通パッケージと Editor を含む） | 上の 2 つ＋ `Assets/Tests/Editor/`＋ `packages/` | `dev test 048 -Unity` | 160 |
-| PlayMode（実シーン 10・証跡の公開 16） | `Assets/Tests/Unity/` | `dev test 048 -Unity -Mode PlayMode` | 26 |
+| Core（.NET） | `Assets/Tests/Core/` | `dev test 048` | 67 |
+| App（.NET） | `Assets/Tests/App/` | `dev test 048` | 35 |
+| EditMode（Mono、共通パッケージと Editor を含む） | 上の 2 つ＋ `Assets/Tests/Editor/`＋ `packages/` | `dev test 048 -Unity` | 179 |
+| PlayMode（実シーン 17・証跡の公開 16） | `Assets/Tests/Unity/` | `dev test 048 -Unity -Mode PlayMode` | 33 |
 
 | 観点 | 主なテスト |
 |---|---|
-| 未解除ロックを操作で迂回できない | `StateSpaceTests.Study_HasNoBypassDeadEndOrItemViolation`（全到達状態）、`WorldTests.Bypass_*`（鍵なしの鍵穴・ハンドルなしの宝石・歯車なしの針・円盤なしのリング・閉じた引き出しの鍵は前板に当たる・出口） |
+| 未解除ロックを操作で迂回できない | `StateSpaceTests.Study_HasNoBypassDeadEndOrItemViolation`（全到達状態）、`Explore_RejectsGeometricallyUnclickableRooms`（遮られた・画面の外・HUD の下の必須の部品は手にしない）、`WorldTests.Bypass_*`（鍵なしの鍵穴・ハンドルなしの宝石・歯車なしの針・円盤なしのリング・閉じた引き出しの鍵は前板に当たる・出口） |
 | ヒント表示と実状態が一致 | `StateSpaceTests.Hint_IsConsistent_InEveryReachableState`・`Hint_NeverPointsAtSolvedOrLockedBeyond_AlongWholePlaythrough`、`WorldTests.Hint_*`、`FlowTests.Hint_ShowsAnswerOfThisSeed_AtThirdPress`、`EscapeSceneTests.ArrowsAndAdTurn_HintKeyShowsHint` |
 | 同時操作で状態破綻なし | `FlowTests.SameFrame_*`（6 件）、`StateSpaceTests.RandomCommands_KeepInvariants` |
 | カメラとヒットテスト | `GeometryTests`（スラブ法と参照実装の照合・縁・角・基底）、`WorldTests.HitTest_NoUnreachablePartIsEverClicked_AndWallClicksStayOnWall`・`EveryPart_IsHitAtItsFrontCenter_InItsCloseUp_WhenReachable`、`EscapeSceneTests.CoreHitTest_MatchesPhysicsRaycast_InEveryView_AtStartAndAfterEscape`・`FocusZoomsCamera_AndRightClickReturnsToWall` |
 | 完了判定 | `WorldTests.Acceptance_*`、`FlowTests.Autopilot_EscapesInManySeeds_ByClicksAndKeysOnly`・`Reset_FromPause_RestoresInitialState`、`EscapeSceneTests.PlayByMouseAndKeyboardOnly_EscapesAndShowsResult`・`ResetFromPause_LooksLikeNewGame_AndTitleLooksLikeStartup` |
 | 状態遷移・負テスト | `FlowTests.ScreenFlow_TitleHowToPlayResultTitleRematch`（結果の後の入力を無視）、`WorldTests.Negative_*`（範囲外の番号・二重に拾う・使った物を使う）、`FlowTests.FocusLoss_DropsPendingAndLaterIntents`、`EscapeSceneTests.ClickRightAfterFocusRestoreIsIgnored` |
 | 再現性 | `StateSpaceTests.SameSeedAndCommands_GiveSameHash_AndFinalHashIsFixed`（`0x44E972DE`）、`FlowTests.Autopilot_FinalHash_IsFixed`（`0x8B6DBBC1`）。どちらも .NET と Mono で一致 |
-| ビルド前の検証 | `EditorChecksTests`（本番の部屋が通る・詰む部屋と不正な定義でビルドが止まる・Stage Prefab の照合が動かした部品を見つける） |
+| ビルド前の検証 | `EditorChecksTests`（本番の部屋が通る・詰む部屋・クリックできない部屋・不正な定義でビルドが止まる・Stage Prefab の照合が動かした部品を見つける） |
+| 操縦役と入力 | `FlowTests.Perform_*`・`Verify_*`（入力が捨てられた・別の命令になった場合を成功にしない、選択を外してから戻る）、`Autopilot_FromMidGameWithItemSelected_Escapes`、`ClickOutsideRegion_IsNotPassedToTheRoom`、`Drag_*`、`EscapeSceneTests.HeldLeftButtonAcrossPutDown_DoesNotRotateTheNextObject`・`ViewportKeepsSupportedAspect_AndRegionCoversGuaranteed` |
+| 手がかりの表示 | `EscapeSceneTests.CluesShowTheAnswersOfEachSeed`（筒の底・円盤・天文書の針・望遠鏡の星の順を、3 つのシードの答えと照合） |
 
 検証の記録と画面は [evidence/README.md](evidence/README.md)。
 
 ## 未解決事項
 
 - クリックの感触（近景へ寄る速さ `TransitionTicks`・ドラッグの重さ `DragStepUnits`・向き直りのキー）と謎の難しさ・音量は、人間の試遊で確かめる。値は `Assets/Game/Unity/EscapeSettings.asset` にある。
-- 星図の円盤と天文書の手がかりは、上下を逆さにして（ピッチ 180°）も「こちらを向いた」と判定する。文字盤は 12 時を赤い三角で示して逆さに読まないようにした。円盤の星座は上下逆さだと並びも逆に見える。
+- 攻略（デバッグ用）は [walkthrough.md](walkthrough.md)。
+- 手がかりを見ないと解けない、という条件は付けない（答えを知っていれば解ける）。手がかりの表示が答えと合うことは PlayMode で照合する（OCR はしない）。
 
 ## 未実装範囲
 

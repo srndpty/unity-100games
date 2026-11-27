@@ -143,6 +143,15 @@ namespace Game.App
         /// <summary>最後の命令の結果。</summary>
         public Outcome LastOutcome { get; private set; }
 
+        /// <summary>最後に実行した命令（入力から作って世界に当てはめた命令。拒否されたものも含む）。</summary>
+        public Command LastCommand { get; private set; }
+
+        /// <summary>実行した命令の通し番号（世界に当てはめるたびに 1 増える。入力が捨てられたら増えない）。操縦役が実行を確かめる。</summary>
+        public long Executed { get; private set; }
+
+        /// <summary>部屋のクリックが届く画面の範囲（Unity が画面の比率と HUD から渡す。既定は対応する全ての画面で届く範囲）。</summary>
+        public ScreenRegion Region { get; private set; } = ScreenRegion.Guaranteed;
+
         public bool Escaped => _world?.Escaped ?? false;
 
         /// <summary>遊んだ Tick（一時停止・脱出の後は数えない。リセットで 0 に戻る）。</summary>
@@ -181,7 +190,11 @@ namespace Game.App
 
         public void ClickWorld(int sx, int sy) => Enqueue(Intent.ClickWorld(sx, sy, Version));
 
-        public void Drag(int dx, int dy) => Enqueue(Intent.Drag(dx, dy));
+        /// <summary>今の画面の版でドラッグを送る（App のテスト・操縦役）。Unity はドラッグを始めた版を付けて <see cref="Enqueue"/> する。</summary>
+        public void Drag(int dx, int dy) => Enqueue(Intent.Drag(dx, dy, Version));
+
+        /// <summary>部屋のクリックが届く画面の範囲を決める（範囲の外のクリックは部屋に通さない）。</summary>
+        public void SetRegion(ScreenRegion region) => Region = region;
 
         public void UpdateFrame(double deltaSeconds)
         {
@@ -338,7 +351,8 @@ namespace Game.App
                     Execute(Command.Hint);
                     break;
                 case IntentKind.Drag:
-                    DragHeld(intent.X, intent.Y);
+                    // ドラッグを始めた後に手に取った物・視点・画面が変わっていたら、古い操作なので捨てる。
+                    if (intent.Version == Version) { DragHeld(intent.X, intent.Y); }
                     break;
                 case IntentKind.Click:
                     _dragX = 0;
@@ -354,7 +368,7 @@ namespace Game.App
         private void ClickWorld(World w, int sx, int sy)
         {
             // カメラの演出の間と手に取っている間のクリックは命令にしない（手に取っている間はドラッグの始まり）。
-            if (_transition > 0 || w.Held >= 0) { return; }
+            if (_transition > 0 || w.Held >= 0 || !Region.Contains(sx, sy)) { return; }
             var command = w.CommandAt(sx, sy, SelectedItem);
             if (command.IsNone) { return; }
             Execute(command);
@@ -415,6 +429,8 @@ namespace Game.App
             var held = w.Held;
             var o = w.Apply(command);
             LastOutcome = o;
+            LastCommand = command;
+            Executed++;
             if (!o.Accepted)
             {
                 Cues.Reject++;
@@ -429,9 +445,18 @@ namespace Game.App
                 _transition = _settings.TransitionTicks;
                 Cues.Move++;
                 Version++;
+                _dragX = 0;
+                _dragY = 0;
             }
 
-            if (w.Held != held) { Version++; }
+            if (w.Held != held)
+            {
+                // 手に取った物が変わったら、ドラッグの端数も前の物とともに捨てる。
+                Version++;
+                _dragX = 0;
+                _dragY = 0;
+            }
+
             if (SelectedItem >= 0 && !w.Has(SelectedItem)) { SelectedItem = -1; }
             Absorb(w);
             return true;
@@ -577,6 +602,8 @@ namespace Game.App
         {
             Screen = screen;
             Version++;
+            _dragX = 0;
+            _dragY = 0;
         }
     }
 }

@@ -173,6 +173,19 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void Inspect_UpsideDownClue_IsNotReadable()
+        {
+            var w = Lab.NewWorld();
+            Lab.GoTo(w, Lab.View("bookshelf"));
+            Lab.Do(w, Command.Inspect(Lab.Part("shelf.astronomy")));
+            Lab.Do(w, Command.Rotate(0, 1));
+            Lab.Do(w, Command.Rotate(0, 1));
+            Assert.That(w.Orientation.Faces(Lab.Study.Examinables[w.Held].ClueFace), Is.True, "裏表紙は手前を向いている");
+            Assert.That(w.ClueFacing, Is.False, "上下が逆さの文字盤は読めない（時刻を逆に読み違えないように）");
+            Assert.That(w.Events.Any(e => e.Kind == EventKind.ClueShown), Is.False);
+        }
+
+        [Test]
         public void Negative_OutOfRangeCommands()
         {
             var w = Lab.NewWorld();
@@ -306,6 +319,27 @@ namespace Game.Core.Tests
             Lab.Do(w, Command.Hint);
             Assert.That(w.Events.Single().Index, Is.Zero, "次の一手が変わったら方向付けから");
             Assert.That(w.NextStep()!.Value.Kind, Is.EqualTo(HintKind.Take));
+        }
+
+        /// <summary>リングの答えの段階は、今の位置からのクリックの回数を添える（星座の名前は画面に出ないため）。</summary>
+        [Test]
+        public void Hint_RingAnswer_TellsClicksFromCurrentPosition()
+        {
+            var w = Lab.NewWorld(7);
+            Lab.AdvanceUntil(w, x => Lab.Active(x, "globe"));
+            var globe = Lab.Mechanism("globe");
+            Lab.GoTo(w, Lab.View("globe"));
+            Lab.Do(w, Command.Operate(Lab.Part("globe.ring0")));
+            for (int i = 0; i < 3; i++) { Lab.Do(w, Command.Hint); }
+            var text = w.Events.Single().Text;
+            var answer = w.Room.Mechanisms[globe].Answer;
+            for (int ring = 0; ring < 3; ring++)
+            {
+                var name = Lab.Study.Parts[Lab.Part($"globe.ring{ring}")].Name;
+                var n = (((answer[ring] - w.ValueOf(globe, ring)) % 8) + 8) % 8;
+                var expected = n == 0 ? $"{name}はそのまま" : $"{name}をあと {n} 回";
+                Assert.That(text.Contains(expected, StringComparison.Ordinal), Is.True, $"{expected} / {text}");
+            }
         }
 
         [Test]

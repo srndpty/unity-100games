@@ -64,6 +64,15 @@ namespace Game.Unity
 
         public Renderer Gem(int gem) => _gems[gem];
 
+        /// <summary>手がかりの描画（テストが答えと照合する）：筒の底の桁・円盤の裏の星座・天文書の針。</summary>
+        public Renderer CylinderDigit(int i) => _cylinderDigits[i];
+
+        public Renderer DiscSymbol(int i) => _discSymbols[i];
+
+        public Transform BookHour => _bookHour!;
+
+        public Transform BookMinute => _bookMinute!;
+
         /// <summary>持ち物の絵（ID の順は Core の持ち物の番号）。</summary>
         public Sprite? Icon(int item) => item >= 0 && item < _icons.Length ? _icons[item] : null;
 

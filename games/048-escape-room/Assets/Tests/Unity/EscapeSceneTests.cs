@@ -158,14 +158,15 @@ namespace Game.Unity.Tests
         /// <summary>クリックすると狙った命令になる画面のピクセル（操縦役と同じ探し方を Core の座標で行い、ピクセルへ写す）。</summary>
         private Vector2 PixelFor(Command command, int selected = -1)
         {
-            var point = Autopilot.ClickPointFor(Flow.Snapshot()!, command, selected);
+            var point = ClickSearch.PointFor(Flow.Snapshot()!, command, selected, Flow.Region);
             Assert.That(point, Is.Not.Null, command.ToString());
-            return StageMath.ToPixel(new Vector2Int(point!.Value.X, point.Value.Y), Cam.pixelWidth, Cam.pixelHeight);
+            return _game.PixelPoint(new Vector2Int(point!.Value.X, point.Value.Y));
         }
 
         /// <summary>命令を、キー・右クリック・持ち物の枠・部屋のクリックだけで行う。</summary>
         private IEnumerator DoByInput(Command c)
         {
+            var before = Flow.Executed;
             switch (c.Kind)
             {
                 case CommandKind.Turn:
@@ -188,7 +189,8 @@ namespace Game.Unity.Tests
                     break;
             }
 
-            Assert.That(Flow.LastOutcome.Accepted, Is.True, $"{c}：{Flow.LastOutcome.Reason}");
+            // 入力が捨てられた・別の命令になった・拒否された、のどれも成功にしない（レビュー P2-1）。
+            Autopilot.Verify(Flow, c, before);
             yield return Settle();
         }
 
@@ -269,11 +271,11 @@ namespace Game.Unity.Tests
                 {
                     if (!w.IsPresent(part.Index)) { continue; }
                     var screen = Cam.WorldToScreenPoint(StageMath.ToWorld(part.Box.FrontCenter(view.Wall)));
-                    if (screen.z <= 0 || screen.x < 0 || screen.y < 0 || screen.x >= Cam.pixelWidth || screen.y >= Cam.pixelHeight) { continue; }
-                    var core = StageMath.ToCore(screen, Cam.pixelWidth, Cam.pixelHeight);
+                    if (screen.z <= 0 || !Cam.pixelRect.Contains(screen)) { continue; }
+                    var core = StageMath.ToCore(screen, Cam.pixelRect);
                     if (!view.Pose.TryRay(core.x, core.y, out var ray)) { continue; }
                     var coreHit = w.HitTest(ray);
-                    var physics = Physics.Raycast(Cam.ScreenPointToRay(StageMath.ToPixel(core, Cam.pixelWidth, Cam.pixelHeight)), out var hit, 20f)
+                    var physics = Physics.Raycast(Cam.ScreenPointToRay(StageMath.ToPixel(core, Cam.pixelRect)), out var hit, 20f)
                         ? hit.collider.gameObject.name
                         : "(なし)";
                     Assert.That(physics, Is.EqualTo(coreHit < 0 ? "(なし)" : Def.Parts[coreHit].Id), $"視点 {view.Id}・{part.Id} の手前の面の中心 ({core.x}, {core.y})");
@@ -432,6 +434,131 @@ namespace Game.Unity.Tests
             Assert.That(_game.Hud!.HintTextLabel.text, Is.EqualTo(Flow.HintText));
             Assert.That(Flow.HintsUsed, Is.EqualTo(1));
         }
+
+        // ---- レビュー P2-3：画面の比率と、クリックが届く範囲 ----
+
+        [UnityTest]
+        public IEnumerator ViewportKeepsSupportedAspect_AndRegionCoversGuaranteed()
+        {
+            yield return Start();
+            var rect = Cam.pixelRect;
+            var aspect = rect.width / rect.height;
+            Assert.That(aspect, Is.InRange(StageMath.MinAspect - 0.01f, StageMath.MaxAspect + 0.01f), $"画面 {Screen.width}×{Screen.height} の描画の矩形 {rect}");
+            Assert.That(Flow.Region.Covers(ScreenRegion.Guaranteed), Is.True, $"届く範囲 {Flow.Region}");
+            foreach (var (w, h) in new[] { (640, 480), (1280, 720), (1280, 800), (2560, 1080), (3440, 1080), (1920, 1200) })
+            {
+                var r = StageMath.Viewport(w, h);
+                var pixel = new Rect(r.x * w, r.y * h, r.width * w, r.height * h);
+                Assert.That(StageMath.Region(pixel, h).Covers(ScreenRegion.Guaranteed), Is.True, $"{w}×{h}");
+            }
+
+            // 描画の矩形の外（帯の上・画面の外）のクリックは部屋に届かない。
+            var before = Flow.Executed;
+            var outside = rect.yMin > 1f ? new Vector2(rect.center.x, rect.yMin - 1f) : new Vector2(rect.center.x, rect.yMax + 1f);
+            yield return Click(outside);
+            Assert.That(Flow.Executed, Is.EqualTo(before));
+        }
+
+        // ---- レビュー P2-4：ドラッグは、押した画面の版の間だけ ----
+
+        /// <summary>
+        /// 手に取った物の上で左ボタンを押したまま、右クリック・Esc で置く（またはフォーカスを失う）。左ボタンを離さないまま
+        /// 同じ物を手に取り直して（命令で）、押したままの左ボタンを大きく動かしても、前のドラッグは新しく手に取った物を回さない。
+        /// </summary>
+        [UnityTest]
+        public IEnumerator HeldLeftButtonAcrossPutDown_DoesNotRotateTheNextObject([Values(0, 1, 2)] int interrupt)
+        {
+            yield return Start();
+            yield return DoByInput(Command.Focus(View("desk")));
+            yield return DoByInput(Command.Inspect(Part("desk.cylinder")));
+            var from = new Vector2(Screen.width / 2f, Screen.height / 2f);
+            _mouse.Press(from);
+            yield return null;
+            switch (interrupt)
+            {
+                case 0:
+                    _mouse.PressBoth(from);
+                    yield return null;
+                    _mouse.Press(from);
+                    yield return null;
+                    break;
+                case 1:
+                    _keyboard.Hold(Key.Escape);
+                    yield return null;
+                    _keyboard.Hold();
+                    yield return null;
+                    break;
+                default:
+                    _game.SendMessage("OnApplicationFocus", false);
+                    _game.SendMessage("OnApplicationFocus", true);
+                    yield return null;
+                    break;
+            }
+
+            Flow.StepTicks(1);
+            if (interrupt < 2)
+            {
+                Assert.That(Flow.Held, Is.EqualTo(-1), "右クリック・Esc で置いた");
+                Autopilot.Perform(Flow, Command.Inspect(Part("desk.cylinder")));
+            }
+
+            Assert.That(Flow.Held, Is.GreaterThanOrEqualTo(0));
+            var executed = Flow.Executed;
+            _mouse.Press(from + new Vector2(0f, Screen.height * 0.3f));
+            yield return null;
+            yield return null;
+            Flow.StepTicks(1);
+            Assert.That(Flow.Orientation, Is.EqualTo(default(Orientation)), "前のドラッグは続かない");
+            Assert.That(Flow.Executed, Is.EqualTo(executed));
+            _mouse.Release(from);
+            yield return null;
+        }
+
+        // ---- レビュー P3-1：手がかりの表示がシードの答えと一致する ----
+
+        [UnityTest]
+        public IEnumerator CluesShowTheAnswersOfEachSeed([Values(1, 2, 3)] int baseSeed)
+        {
+            _game.Reinitialize(baseSeed);
+            yield return Start();
+            var answers = Flow.Room.Mechanisms;
+            var dial = answers[Mechanism(MechanismKind.Dial)].Answer;
+            var rings = answers[Mechanism(MechanismKind.Rings)].Answer;
+            var time = answers[Mechanism(MechanismKind.Clock)].Answer;
+            var order = answers[Mechanism(MechanismKind.Sequence)].Answer;
+            var stage = _game.Stage;
+            _game.Render();
+            for (int i = 0; i < DialLock.Digits; i++) { Assert.That(stage.CylinderDigit(i).sharedMaterial.name, Is.EqualTo("Digit" + dial[i]), $"筒の底の {i + 1} 桁目"); }
+            for (int i = 0; i < RingLock.RingCount; i++) { Assert.That(stage.DiscSymbol(i).sharedMaterial.name, Is.EqualTo("Symbol" + rings[i]), $"円盤の {i + 1} 番目の星座"); }
+            Assert.That(Mathf.DeltaAngle(stage.BookHour.localEulerAngles.z, -((time[0] * 30f) + (time[1] * 2.5f))), Is.EqualTo(0f).Within(0.01f), "天文書の短針");
+            Assert.That(Mathf.DeltaAngle(stage.BookMinute.localEulerAngles.z, -(time[1] * 30f)), Is.EqualTo(0f).Within(0.01f), "天文書の長針");
+
+            // 望遠鏡をのぞき、星が光り始める順を記録する。
+            foreach (var c in Navigation.PathTo(Flow.Snapshot()!, View("telescope"))) { yield return DoByInput(c); }
+            var cycle = (SequenceLock.GemCount * StudyStage.StarStepTicks) + StudyStage.StarRestTicks;
+            var seen = new List<int>();
+            var was = new bool[SequenceLock.GemCount];
+            for (int t = 0; t < cycle * 2 && seen.Count < SequenceLock.GemCount; t++)
+            {
+                Flow.StepTicks(1);
+                _game.Render();
+                for (int g = 0; g < SequenceLock.GemCount; g++)
+                {
+                    var lit = stage.Star(g).activeSelf;
+                    if (lit && !was[g] && !seen.Contains(g)) { seen.Add(g); }
+                    was[g] = lit;
+                }
+            }
+
+            // 記録の始まりが周期の途中なら、答えの最初の宝石から比べる。
+            var start = seen.IndexOf(order[0]);
+            Assert.That(start, Is.GreaterThanOrEqualTo(0));
+            var rotated = new List<int>();
+            for (int k = 0; k < seen.Count; k++) { rotated.Add(seen[(start + k) % seen.Count]); }
+            Assert.That(rotated, Is.EqualTo(order), "星が光る順は金庫の答えの順");
+            yield return null;
+        }
+
 
         [UnityTest]
         public IEnumerator QuitFromTitleByClick()

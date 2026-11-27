@@ -320,6 +320,7 @@ namespace Game.Core.Mechanisms
         public const int GemCount = 4;
 
         private static readonly ReadOnlyCollection<string> _gems = Array.AsReadOnly(new[] { "紅玉", "青玉", "翠玉", "黄玉" });
+        private static readonly string[] _colors = { "赤", "青", "緑", "黄" };
 
         private readonly int[] _answer;
 
@@ -346,7 +347,10 @@ namespace Game.Core.Mechanisms
         public int ValueCount => 1;
         public IReadOnlyList<int> Answer { get; }
 
-        public string AnswerText => $"{Gems[_answer[0]]} → {Gems[_answer[1]]} → {Gems[_answer[2]]} → {Gems[_answer[3]]}";
+        public string AnswerText => $"{Gem(_answer[0])} → {Gem(_answer[1])} → {Gem(_answer[2])} → {Gem(_answer[3])}";
+
+        /// <summary>宝石の名前と色（「紅玉（赤）」）。</summary>
+        public static string Gem(int gem) => $"{_gems[gem]}（{_colors[gem]}）";
 
         public void Reset(int[] values) => values[0] = 0;
 

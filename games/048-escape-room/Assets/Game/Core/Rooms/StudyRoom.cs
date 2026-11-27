@@ -24,9 +24,9 @@ namespace Game.Core.Rooms
             const int clock = 3;
             const int safe = 4;
             const int door = 5;
-            var cylinder = b.Examinable("cylinder", "真鍮の筒", new Vec3i(0, -1, 0), dial);
-            var discFace = b.Examinable("disc", "星図の円盤", new Vec3i(0, 0, 1), globe);
-            var book = b.Examinable("book", "古い天文書", new Vec3i(0, 0, 1), clock);
+            var cylinder = b.Examinable("cylinder", "真鍮の筒", new Vec3i(0, -1, 0), new Vec3i(0, 0, -1), dial);
+            var discFace = b.Examinable("disc", "星図の円盤", new Vec3i(0, 0, 1), new Vec3i(0, 1, 0), globe);
+            var book = b.Examinable("book", "古い天文書", new Vec3i(0, 0, 1), new Vec3i(0, 1, 0), clock);
             var brassKey = b.Item("brass_key", "真鍮の鍵", "開いた引き出しの中");
             var disc = b.Item("star_disc", "星図の円盤", "開いたキャビネットの中", discFace);
             var gear = b.Item("gear", "歯車", "開いた天球儀のふたの下");
@@ -64,7 +64,7 @@ namespace Game.Core.Rooms
             var shelfView = b.CloseUp("bookshelf", "本棚", new CameraPose(new Vec3i(900, 1300, -1000), 1, 0, 1500));
             var doorView = b.CloseUp("door", "出口の扉", new CameraPose(new Vec3i(700, 1300, -900), 2, 1, 1500));
             var clockView = b.CloseUp("clock", "柱時計", new CameraPose(new Vec3i(-450, 1500, -300), 2, 1, 1300));
-            var globeView = b.CloseUp("globe", "天球儀", new CameraPose(new Vec3i(-600, 1550, -900), 3, 3, 1500));
+            var globeView = b.CloseUp("globe", "天球儀", new CameraPose(new Vec3i(-600, 1350, -900), 3, 3, 1500));
             var safeView = b.CloseUp("safe", "金庫", new CameraPose(new Vec3i(-800, 1100, 900), 3, 4, 1500));
 
             // 北：机（空洞 x -1150〜-650・y 540〜700・z 1450〜1900 を本体で囲む）。
@@ -96,15 +96,33 @@ namespace Game.Core.Rooms
             b.Body("cabinet.door", "キャビネットの扉", cabinetView, B(1580, 800, 550, 1600, 1500, 1350), Presence.WhileClosed, cabinet);
             b.Body("cabinet.open", "開いた扉", cabinetView, B(780, 800, 530, 1580, 1500, 550), Presence.WhileOpen, cabinet);
             b.Keyhole("cabinet.keyhole", "鍵穴", cabinetView, B(1580, 700, 920, 1600, 780, 980), cabinet);
-            b.Body("shelf", "本棚", shelfView, B(1700, 0, -1500, 2000, 2000, -500));
-            for (int i = 0; i < 6; i++)
+            // 本棚：背板・側板・天板と 4 段の棚板で囲み（前面 x 1660）、本は棚板の上に置く。天文書だけが前へ飛び出している。
+            b.Body("shelf.back", "本棚の背板", shelfView, B(1960, 0, -1500, 2000, 2000, -500));
+            b.Body("shelf.side0", "本棚の側板", shelfView, B(1660, 0, -1500, 2000, 2000, -1460));
+            b.Body("shelf.side1", "本棚の側板", shelfView, B(1660, 0, -540, 2000, 2000, -500));
+            b.Body("shelf.top", "本棚の天板", shelfView, B(1660, 1960, -1460, 2000, 2000, -540));
+            var boards = new[] { 0, 620, 1040, 1500 };
+            var boardTop = new[] { 120, 660, 1080, 1540 };
+            for (int k = 0; k < boards.Length; k++)
             {
-                var z = -1440 + (i * 70);
-                if (z > -1100) { z += 260; }
-                b.Body($"shelf.book{i}", "本", shelfView, B(1660, 1080, z, 1700, 1320, z + 60));
+                b.Body($"shelf.board{k}", "本棚の棚板", shelfView, B(1660, boards[k], -1460, 1960, boardTop[k], -540));
             }
 
-            b.Examine("shelf.astronomy", "古い天文書", shelfView, B(1620, 1050, -1030, 1700, 1340, -970), book);
+            // 段ごとの本（並べ方は段ごとに変える）。中の段は天文書の場所を空ける。
+            for (int k = 1; k < boards.Length; k++)
+            {
+                var top = boardTop[k];
+                var height = k == 2 ? 240 : 220 + (k * 10);
+                for (int i = 0; i < 8; i++)
+                {
+                    var z = -1440 + (i * 70) + (k * 13);
+                    if (k == 2 && z > -1100) { z += 260; }
+                    if (z + 60 > -560) { break; }
+                    b.Body($"shelf.book{k}{i}", "本", shelfView, B(1700, top, z, 1940, top + height - ((i % 3) * 20), z + 60));
+                }
+            }
+
+            b.Examine("shelf.astronomy", "古い天文書", shelfView, B(1620, 1080, -1030, 1940, 1360, -970), book);
 
             // 南：出口の扉と柱時計（空洞 x -600〜-300・y 300〜1300・z -1950〜-1650）。
             b.Body("door.slab", "出口の扉", doorView, B(200, 0, -2000, 1200, 2100, -1960));

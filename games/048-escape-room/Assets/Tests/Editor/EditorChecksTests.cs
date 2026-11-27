@@ -21,16 +21,28 @@ namespace Game.Unity.EditorTests
         [Test]
         public void RealRoomPassesTheBuildCheck()
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
             Assert.That(RoomBuildCheck.Check(), Is.Null);
+            watch.Stop();
+            TestContext.WriteLine($"ビルド前の検証（部屋の定義・クリックできるかを含む状態空間の探索・Prefab の照合）{watch.Elapsed.TotalMilliseconds:F1} ms");
             Assert.DoesNotThrow(() => new RoomBuildCheck().OnPreprocessBuild(null!));
         }
 
         [Test]
         public void DeadEndRoomStopsTheBuild()
         {
-            RoomBuildCheck.RoomOverride = () => SmallRoom(keyInsideOwnLock: true);
+            RoomBuildCheck.RoomOverride = () => SmallRoom(keyInsideOwnLock: true, occludeKey: false);
             var e = Assert.Throws<BuildFailedException>(() => new RoomBuildCheck().OnPreprocessBuild(null!));
             Assert.That(e!.Message.Contains("脱出に到達しません", StringComparison.Ordinal), Is.True, e.Message);
+        }
+
+        [Test]
+        public void GeometricallyUnclickableRoomStopsTheBuild()
+        {
+            Assert.That(RoomBuildCheck.CheckRoom(SmallRoom(keyInsideOwnLock: false, occludeKey: false)), Is.Null, "遮らなければ通る");
+            RoomBuildCheck.RoomOverride = () => SmallRoom(keyInsideOwnLock: false, occludeKey: true);
+            var e = Assert.Throws<BuildFailedException>(() => new RoomBuildCheck().OnPreprocessBuild(null!));
+            Assert.That(e!.Message.Contains("クリックできない：near:take key", StringComparison.Ordinal), Is.True, e.Message);
         }
 
         [Test]
@@ -123,11 +135,11 @@ namespace Game.Unity.EditorTests
 
         private static Box3 B(int x0, int y0, int z0, int x1, int y1, int z1) => new(new Vec3i(x0, y0, z0), new Vec3i(x1, y1, z1));
 
-        /// <summary>小さな部屋：ダイヤルの中の鍵でキャビネットを開けると出口の鍵（keyInsideOwnLock なら鍵がキャビネットの中で詰む）。</summary>
-        private static RoomDef SmallRoom(bool keyInsideOwnLock)
+        /// <summary>小さな部屋：ダイヤルの中の鍵でキャビネットを開けると出口の鍵（keyInsideOwnLock なら鍵がキャビネットの中で詰む、occludeKey なら鍵の手前を箱が完全に遮る）。</summary>
+        private static RoomDef SmallRoom(bool keyInsideOwnLock, bool occludeKey)
         {
             var b = new RoomBuilder("テスト", B(-2000, 0, -2000, 2000, 2800, 2000));
-            var clue = b.Examinable("note", "メモ", new Vec3i(0, 0, 1), 0);
+            var clue = b.Examinable("note", "メモ", new Vec3i(0, 0, 1), new Vec3i(0, 1, 0), 0);
             var key = b.Item("key", "鍵", "引き出し");
             var exitKey = b.Item("exit_key", "出口の鍵", "キャビネット");
             b.Mechanism("dial", "ダイヤル", MechanismKind.Dial, -1, "a", "b");
@@ -135,12 +147,13 @@ namespace Game.Unity.EditorTests
             b.Mechanism("door", "扉", MechanismKind.KeyLock, exitKey, "a", "b");
             for (int w = 0; w < 4; w++) { b.WallView("wall" + w, "壁", new CameraPose(new Vec3i(0, 1600, 0), w, 0, 1500)); }
             var near = b.CloseUp("near", "近く", new CameraPose(new Vec3i(0, 1600, 500), 0, 0, 1500));
-            b.Examine("note", "メモ", near, B(-900, 1000, 1500, -800, 1100, 1600), clue);
-            for (int i = 0; i < 3; i++) { b.Slot($"dial{i}", "桁", near, B(-600 + (i * 100), 1000, 1500, -520 + (i * 100), 1100, 1600), 0, i); }
-            b.Pickup("key", "鍵", near, B(0, 1000, 1500, 100, 1100, 1600), key, keyInsideOwnLock ? 1 : 0);
-            b.Keyhole("keyhole", "鍵穴", near, B(300, 1000, 1500, 400, 1100, 1600), 1);
-            b.Pickup("exit_key", "出口の鍵", near, B(500, 1000, 1500, 600, 1100, 1600), exitKey, 1);
-            b.Keyhole("door", "扉の鍵穴", near, B(700, 1000, 1500, 800, 1100, 1600), 2);
+            b.Examine("note", "メモ", near, B(-900, 1550, 1500, -800, 1650, 1600), clue);
+            for (int i = 0; i < 3; i++) { b.Slot($"dial{i}", "桁", near, B(-600 + (i * 100), 1550, 1500, -520 + (i * 100), 1650, 1600), 0, i); }
+            b.Pickup("key", "鍵", near, B(0, 1550, 1500, 100, 1650, 1600), key, keyInsideOwnLock ? 1 : 0);
+            if (occludeKey) { b.Body("crate", "箱", near, B(-20, 1530, 1300, 120, 1670, 1320)); }
+            b.Keyhole("keyhole", "鍵穴", near, B(300, 1550, 1500, 400, 1650, 1600), 1);
+            b.Pickup("exit_key", "出口の鍵", near, B(500, 1550, 1500, 600, 1650, 1600), exitKey, 1);
+            b.Keyhole("door", "扉の鍵穴", near, B(700, 1550, 1500, 800, 1650, 1600), 2);
             return b.Build(2);
         }
     }
