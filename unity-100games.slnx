@@ -299,6 +299,12 @@
     <Project Path="games/051-tactical-rpg/dotnet/Core.Tests/G051.Core.Tests.csproj" />
     <Project Path="games/051-tactical-rpg/dotnet/Core/G051.Core.csproj" />
   </Folder>
+  <Folder Name="/052-tower-defense/">
+    <Project Path="games/052-tower-defense/dotnet/App.Tests/G052.App.Tests.csproj" />
+    <Project Path="games/052-tower-defense/dotnet/App/G052.App.csproj" />
+    <Project Path="games/052-tower-defense/dotnet/Core.Tests/G052.Core.Tests.csproj" />
+    <Project Path="games/052-tower-defense/dotnet/Core/G052.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />
