@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Game.Core.Data;
 using Game.Core.Play;
 using NUnit.Framework;
@@ -63,6 +65,16 @@ aoi:smile「よろしくね」
 ";
 
         private static SummerBook? _small;
+        private static SummerBook? _real;
+
+        /// <summary>本番の台本（Assets/Game/Data/Summer.txt）。</summary>
+        public static SummerBook RealBook => _real ??= Compile(DataText("Summer.txt"));
+
+        public static string DataText(string name, [CallerFilePath] string source = "")
+        {
+            var dir = Path.GetDirectoryName(source) ?? ".";
+            return File.ReadAllText(Path.GetFullPath(Path.Combine(dir, "..", "..", "Game", "Data", name)));
+        }
 
         public static SummerBook SmallBook => _small ??= Compile(Small);
 

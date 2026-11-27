@@ -1,0 +1,200 @@
+# 夏、流星群の夜まで — 本番の台本
+# 地方の高校の夏休み 30 日。天文部の先輩（澄）と、図書室の同級生（栞）。30 日目の夜は流星群。
+
+@calendar 30 mon
+
+@stat study 学力 0..100 = 10
+@stat body 体力 0..100 = 10
+@stat sense 感性 0..100 = 10
+@stat fatigue 疲労 0..100 = 0 cost
+@stat money お金 0..9999 = 200
+
+@char sumi 星野澄 #9fc8ff faces normal,smile,shy
+@char shiori 本田栞 #ffb7a0 faces normal,smile,shy
+@heart sumi 0..100 = 0
+@heart shiori 0..100 = 0
+
+@flag met_sumi
+@flag met_shiori
+@flag rooftop
+@flag reading_club
+@flag rain_shiori
+@flag festival_sumi
+@flag festival_shiori
+
+@bg room 自室
+@bg town 商店街
+@bg club 部室
+@bg library 図書室
+@bg roof 屋上
+@bg festival 夏祭り
+@bg meteor 流星群の夜
+
+# ---- 行動（1 日に 1 つ）----
+@action study 勉強 bg room : study += 3..5 ; fatigue += 10
+@action exercise 運動 bg town : body += 3..5 ; fatigue += 15
+@action create 創作 bg room : sense += 3..5 ; fatigue += 10
+@action work バイト week mon..sat bg town : money += 300..500 ; fatigue += 20
+@action rest 休む bg room : fatigue -= 40
+@action club 天文部へ bg club : sumi += 4..6 ; sense += 1..2 ; fatigue += 10
+@action library 図書室へ week mon..sat bg library : shiori += 4..6 ; study += 1..2 ; fatigue += 10
+
+# ---- 結果の段階（増やす効果の倍率。疲労には掛けない）----
+@outcome great 大成功 x150 weight 20
+@outcome good 成功 x100 weight 60
+@outcome bad 失敗 x50 weight 20
+@weight great 5 when fatigue >= 80
+@weight bad 60 when fatigue >= 80
+@forced rest when fatigue >= 100
+
+# ---- 始まり ----
+@event e_open slot night day 1 priority 1000 chance 100 once bg room
+夏休みが始まった。30 日後の夜には、流星群が来るらしい。
+宿題、部活、それから……。どんな夏にしよう。
+@end
+
+# ---- 澄（天文部の先輩）----
+@event e_sumi_first slot after day 1..30 priority 80 chance 100 once when action == club
+@bg club
+sumi「あ、来てくれたんだ。部員、わたしたち二人だけだよ」
+sumi:smile「最終日の流星群、一緒に観測しようね」
+- はい、ぜひ : sumi += 3 ; set met_sumi
+- 来られたら来ます : sumi += 1 ; set met_sumi
+@end
+
+@event e_sumi_talk slot after day 2..29 priority 20 chance 30 when action == club and met_sumi
+sumi「今夜は夏の大三角がよく見えるよ。ベガ、デネブ、アルタイル」
+@do sumi += 2
+@end
+
+@event e_sumi_telescope slot after day 6..28 priority 60 chance 40 once when action == club and sense >= 25
+sumi「望遠鏡の手入れ、手伝ってくれる？　レンズは息をかけちゃだめ」
+sumi:smile「うん、上手。星を見るのは、待つのが半分なんだ」
+@do sense += 3 ; sumi += 4
+@end
+
+@event e_sumi_roof slot night day 5..28 priority 50 chance 40 once when sumi >= 25 and met_sumi
+@bg roof
+sumi「今、屋上にいるんだ。月がすごくきれい。来られる？」
+- すぐ行きます : sumi += 6 ; sense += 2 ; set rooftop
+- 今日はもう眠いです : sumi += 1
+@end
+
+@event e_sumi_future slot night day 18..28 priority 60 chance 100 once when sumi >= 50 and rooftop
+@bg roof
+sumi「わたし、来年は遠くの大学に行くかもしれない」
+sumi:shy「……最後の夏だから、ちゃんと見ておきたいの。全部」
+- 一緒に見ましょう、全部 : sumi += 8
+- 寂しくなりますね : sumi += 3
+@end
+
+# ---- 栞（図書室の同級生）----
+@event e_shiori_first slot after day 1..30 priority 80 chance 100 once when action == library
+@bg library
+shiori「……あ、同じクラスの。夏休みにも図書室、来るんだ」
+shiori:smile「ここ、静かでいいよね。わたし、ほとんど毎日いるよ」
+- また来るよ : shiori += 3 ; set met_shiori
+- たまたまだよ : shiori += 1 ; set met_shiori
+@end
+
+@event e_shiori_talk slot after day 2..29 priority 20 chance 30 when action == library and met_shiori
+shiori「この本、星座の神話の話なんだ。こと座は竪琴なんだって」
+@do shiori += 2
+@end
+
+@event e_reading slot after day 8..25 priority 70 chance 100 when action == library and shiori >= 20 and not reading_club
+@bg library
+shiori「司書の先生と、小さな読書会をやってるの。……来る？」
+- 参加する : shiori += 6 ; study += 3 ; set reading_club
+- 考えておく : shiori += 1
+@end
+
+@event e_shiori_rain slot after day 6..27 priority 50 chance 40 once when action == library and shiori >= 25
+@bg library
+夕立が来た。帰れなくなって、窓の外を二人で眺めた。
+shiori:shy「……傘、一本しかないんだけど」
+- 一緒に入っていく : shiori += 6 ; set rain_shiori
+- 止むまで待とう : shiori += 2 ; study += 1
+@end
+
+@event e_shiori_letter slot night day 18..28 priority 60 chance 100 once when shiori >= 50 and reading_club
+@bg room
+借りた本に、栞が一枚はさまっていた。小さな字で何か書いてある。
+shiori「流星群の夜、晴れるといいね」
+- 返事を書く : shiori += 8
+- そっと本を閉じる : shiori += 3
+@end
+
+# 夜の誘いは同じ日に重ならない（枠が違っても）。
+@exclusive e_sumi_roof e_shiori_rain
+
+# ---- 夏祭り（20 日目）----
+@event e_festival_sumi slot night day 20 priority 900 chance 100 when sumi >= 40 and sumi >= shiori and money >= 300
+@bg festival
+sumi「夏祭り、一緒に行かない？　浴衣、着てみたんだ」
+- 一緒に行く : sumi += 10 ; money -= 300 ; set festival_sumi
+- 今年はやめておく : sumi -= 5
+@end
+
+@event e_festival_shiori slot night day 20 priority 890 chance 100 when shiori >= 40 and shiori > sumi and money >= 300
+@bg festival
+shiori「お祭り、人が多いのは苦手だけど……一緒なら、行ってみたい」
+- 一緒に行く : shiori += 10 ; money -= 300 ; set festival_shiori
+- 今年はやめておく : shiori -= 5
+@end
+
+@exclusive e_festival_sumi e_festival_shiori
+
+@event e_festival_alone slot night day 20 priority 800 chance 100
+@bg festival
+遠くで太鼓の音がする。一人で夜店を少しだけ回った。
+@do sense += 2
+@end
+
+# ---- ふだんの出来事 ----
+@event e_tired slot night day 1..29 priority 40 chance 100 when fatigue >= 80
+体が重い。少し無理をしすぎたかもしれない。
+@end
+
+@event e_study_good slot after day 1..29 priority 10 chance 25 when action == study
+難しい問題がすっと解けた。
+@do study += 2
+@end
+
+@event e_create_good slot after day 1..29 priority 10 chance 25 when action == create
+星空の絵が、思ったよりうまく描けた。
+@do sense += 2
+@end
+
+@event e_exercise_rain slot after day 1..29 priority 10 chance 20 when action == exercise
+走っていたら夕立に降られた。
+@do fatigue += 5 ; body += 1
+@end
+
+@event e_work_bonus slot after day 1..29 priority 10 chance 25 when action == work
+店長「よく働くね。これ、少ないけど」
+@do money += 100
+@end
+
+# ---- 流星群（30 日目の夜）----
+@event e_meteor slot night day 30 priority 1000 chance 100 bg meteor
+最終日の夜。空いっぱいに、星が流れはじめた。
+@end
+
+# ---- エンディング（優先度の高い順に、最初に成り立つもの）----
+@ending sumi 先輩と星を数えた夏 priority 30 bg meteor when sumi >= 70 and sense >= 50 and festival_sumi
+屋上で、先輩と並んで流れ星を数えた。
+sumi:shy「来年も、その先も。一緒に見てくれる？」
+答える代わりに、大きな流れ星がひとつ落ちた。
+@end
+
+@ending shiori 栞のはさまった夏 priority 20 bg meteor when shiori >= 70 and study >= 50 and reading_club
+図書室の窓から、栞と流れ星を見上げた。
+shiori:smile「願いごと、三回言えた？　……わたしは言えたよ」
+夏休みは、まだ少しだけ残っている。
+@end
+
+@ending summer 天文部の夏 default bg meteor
+部室の屋上で、ひとりで流星群を見上げた。
+来年の夏は、もう少しだれかと近づけるだろうか。
+@end

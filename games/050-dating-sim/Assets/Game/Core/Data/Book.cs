@@ -377,18 +377,27 @@ namespace Game.Core.Data
 
         public int EventIndex(string id) => IndexOf(Events, e => e.Id == id, id);
 
+        /// <summary>行動の番号（なければ -1）。</summary>
+        public int FindAction(string id) => Find(Actions, a => a.Id == id);
+
+        /// <summary>イベントの番号（なければ -1）。</summary>
+        public int FindEvent(string id) => Find(Events, e => e.Id == id);
+
         public int EndingIndex(string id) => IndexOf(Endings, e => e.Id == id, id);
 
         public int CharacterIndex(string id) => IndexOf(Characters, c => c.Id == id, id);
 
-        private static int IndexOf<T>(IReadOnlyList<T> list, Func<T, bool> match, string id)
+        private static int IndexOf<T>(IReadOnlyList<T> list, Func<T, bool> match, string id) =>
+            Find(list, match) is var i && i >= 0 ? i : throw new ArgumentException($"{id} がありません");
+
+        private static int Find<T>(IReadOnlyList<T> list, Func<T, bool> match)
         {
             for (int i = 0; i < list.Count; i++)
             {
                 if (match(list[i])) { return i; }
             }
 
-            throw new ArgumentException($"{id} がありません");
+            return -1;
         }
     }
 }

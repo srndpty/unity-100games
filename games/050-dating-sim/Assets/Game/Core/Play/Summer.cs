@@ -381,6 +381,13 @@ namespace Game.Core.Play
                 if (e.Day < 1 || e.Day >= snapshot.Day) { return "記録の日が範囲外です"; }
                 var count = e.Kind == LogKind.Action ? book.Actions.Count : book.Events.Count;
                 if (e.Index < 0 || e.Index >= count) { return "記録の番号が範囲外です"; }
+                var values = e.Kind switch
+                {
+                    LogKind.Action => book.Outcomes.Count,
+                    LogKind.Choice => book.Events[e.Index].Choices.Count,
+                    _ => 1,
+                };
+                if (e.Value < 0 || e.Value >= values) { return "記録の値が範囲外です"; }
             }
 
             return null;
