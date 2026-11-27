@@ -1,0 +1,94 @@
+#hud {
+    flex-grow: 1;
+    background-size: cover;
+    background-position: center;
+    color: #f4ead5;
+    font-size: 19px;
+}
+.landing {
+    flex-grow: 1;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 54px;
+}
+.landing .heading { font-size: 44px; }
+.landing .copy { width: 520px; flex-shrink: 0; }
+.landing Button { min-width: 210px; }
+.case {
+    flex-grow: 1;
+    padding: 24px 30px;
+    background-color: rgba(10, 17, 29, 0.86);
+}
+.row { flex-direction: row; align-items: center; }
+.row > .heading { flex-grow: 1; }
+.columns { align-items: stretch; flex-grow: 1; min-height: 0; }
+.copy { white-space: normal; margin: 0 0 12px; }
+.heading { font-size: 25px; -unity-font-style: bold; margin-bottom: 12px; }
+.paper {
+    width: 24%;
+    flex-shrink: 0;
+    padding: 16px;
+    margin-right: 8px;
+    margin-left: 8px;
+    background-color: #f4ead5;
+    color: #182132;
+    border-top-color: #ba9457;
+    border-top-width: 3px;
+}
+.paper.detail {
+    flex-grow: 1;
+    flex-basis: 0;
+    min-width: 0;
+    width: auto;
+}
+.testimony-text { height: 64px; flex-shrink: 0; }
+.evidence-detail { flex-grow: 1; flex-basis: 0; min-height: 0; margin-top: 12px; }
+.notice, .wrong {
+    min-height: 45px;
+    padding: 8px 14px;
+    background-color: #242e40;
+    border-left-width: 4px;
+    border-left-color: #c5a366;
+}
+.wrong { border-left-color: #e88778; }
+Button {
+    color: #fff4df;
+    background-color: #253247;
+    border-color: #9f8050;
+    min-height: 34px;
+    margin: 2px 0 5px;
+    padding: 4px 10px;
+    white-space: normal;
+    font-size: 17px;
+}
+Button:hover { background-color: #34455e; }
+Button.selected { color: #172132; background-color: #e2c48a; }
+Button:disabled { opacity: 0.48; }
+.sketch {
+    align-self: flex-start;
+    margin-bottom: 10px;
+    background-color: #e5d5b4;
+    padding: 6px 12px;
+}
+.sketch .copy { margin: 0 9px; color: #733a34; -unity-font-style: bold; }
+.result-copy { background-color: rgba(10, 17, 29, 0.92); padding: 10px 14px; }
+
+.sketch .seal-left, .sketch .seal-right {
+    width: 35px;
+    margin: 0;
+    padding: 4px;
+    -unity-text-align: middle-center;
+    border-width: 2px;
+    border-color: #8d423b;
+    background-color: #f4d4bc;
+}
+.sketch .seal-left { rotate: -6deg; }
+.sketch .seal-right { rotate: 8deg; margin-left: 5px; }
+.sketch .replica-mark {
+    margin-left: 20px;
+    padding: 4px 8px;
+    color: #ffebc2;
+    background-color: #795b37;
+    border-radius: 10px;
+    -unity-text-align: middle-center;
+}

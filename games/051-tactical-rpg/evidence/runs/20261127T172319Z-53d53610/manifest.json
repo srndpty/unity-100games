@@ -1,0 +1,51 @@
+{
+    "Product": "Mist Fort",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "20dd9c65f3b34b5b982e9b6d07007c06",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-27T17:23:18.4304928Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01_title.jpg",
+            "Sha256": "361000b1bd6e098d4980b5cacc3893627d7eb7577cae85640a9e5887ae54c0b1",
+            "Note": "タイトル (tick=0)"
+        },
+        {
+            "File": "02_help.jpg",
+            "Sha256": "5d5abe8aa1db868ae2e53ac6d9e6f99d8747671218dbfc39205a5a7426c0c43f",
+            "Note": "操作説明 (tick=0)"
+        },
+        {
+            "File": "03_movement.jpg",
+            "Sha256": "e2c327101eed345f38874d7216662457411d9bc2942d3fb1f35e7603088b7b6d",
+            "Note": "前衛の移動候補 (tick=1)"
+        },
+        {
+            "File": "05_enemy.jpg",
+            "Sha256": "8a3d8270f47821e2a05388057cead9e9b9169b8f39fe116ea9631ad4f20d8925",
+            "Note": "敵の手番 (tick=5)"
+        },
+        {
+            "File": "04_attack.jpg",
+            "Sha256": "c2873166e09da06c3b3dcf630d7704a22be4727f564f9983f68caf953e95e14f",
+            "Note": "味方の攻撃結果 (tick=12)"
+        },
+        {
+            "File": "06_won.jpg",
+            "Sha256": "2da2b225d895fd78da3059f4c404d1fbcb2a7544f14120776059f23259bfb723",
+            "Note": "敵指揮官を撃破 (tick=42)"
+        },
+        {
+            "File": "07_lost.jpg",
+            "Sha256": "008bc6fc213be4a6359f98e6f6121af3018b5f2e0282cfac403a051e00fc61a0",
+            "Note": "部隊全滅 (tick=79)"
+        }
+    ]
+}

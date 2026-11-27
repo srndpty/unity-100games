@@ -1,0 +1,30 @@
+#hud { color: #f6ecd4; background-color: #111f26; font-size: 18px; }
+.landing { flex-grow: 1; justify-content: center; align-items: flex-start; padding-left: 140px; }
+.landing .title { font-size: 72px; margin-bottom: 22px; }
+.landing .body { font-size: 22px; margin-bottom: 24px; }
+.landing Button { width: 240px; }
+.battle { flex-grow: 1; flex-direction: row; justify-content: center; align-items: center; }
+.board { padding: 10px; background-color: #24383b; border-radius: 8px; }
+.row { flex-direction: row; }
+Button { background-color: #304954; color: #f6ecd4; border-color: #75949a; min-height: 36px; margin: 3px 0; font-size: 17px; }
+Button:hover { background-color: #416476; }
+Button:disabled { opacity: 0.48; }
+Button.tile { width: 72px; height: 72px; flex-shrink: 0; margin: 1px; padding: 0; border-width: 3px; border-color: #00000000; white-space: normal; }
+Button.plain { background-color: #536054; }
+Button.woods { background-color: #2f5142; }
+Button.rock { background-color: #393e46; }
+Button.reachable { border-color: #64c5e8; background-color: #355d6a; }
+Button.path { border-color: #e0c978; }
+Button.ally { background-color: #265e81; }
+Button.enemy { background-color: #763e40; }
+Button.spent { color: #bac1be; }
+Button.selected { border-color: #f6d384; }
+Button.target { border-color: #ff9e8a; }
+.info { width: 345px; height: 612px; flex-shrink: 0; margin-left: 24px; padding: 22px; background-color: #27383b; border-radius: 8px; }
+.title { font-size: 34px; -unity-font-style: bold; }
+.phase { color: #e7bf72; font-size: 24px; margin-bottom: 18px; }
+.body, .unit, .notice, .preview { white-space: normal; }
+.body { margin-bottom: 12px; }
+.unit { margin-top: 14px; height: 105px; }
+.preview { color: #a3d5e6; height: 44px; }
+.notice { height: 70px; color: #f0d499; }
