@@ -754,6 +754,7 @@ namespace Game.App
             _choosing = false;
             DetailOpen = false;
             _background = -1;
+            Notice = "";
             RefreshTitle();
             MenuCursor = TitleNew;
             SetScreen(FlowScreen.Title);

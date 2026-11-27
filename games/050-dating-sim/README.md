@@ -142,8 +142,12 @@ dev capture 050  # 証跡を evidence/ に撮る（画像は captures/<画像世
 | Core `Play/` | 1 周の夏休み（`Summer`）：命令（行動・送る・選ぶ）・イベントの選択・効果と飽和・ED・記録・出来事・`Clone`・`Hash`・朝の写し（`Snapshot`・`Restore`） |
 | Core `Save/` | 朝のセーブの直列化（`SummerSaveCodec`・`SaveText`） |
 | App | 画面の流れ（`SummerFlow`：タイトル・操作説明・朝・結果・イベント・ED・一時停止・結果画面、意図の列・画面の版・文字送り・自動セーブ・経過時間）、操縦役（`Autopilot`：先輩・同級生・成り行きの 3 方針） |
+| Unity | 進行役（`SummerGame`：台本のコンパイル・物理キーごとの押下・マウスの押下をパネルの座標で項目と照合）、Stage（`SummerStage`：背景と立ち絵 1 枠、台本の素材の表と照合）、HUD（`SummerHud`：UI Toolkit）、効果音（`SummerAudio`）、設定（`SummerSettings`）、セーブ（`FileSaveStore`：一時ファイルから原子的に置き換え）、撮影台本（`SummerCaptureScenario`） |
+| Editor | 素材の生成（`SummerArtGenerator`：背景 7・立ち絵 2 人 × 3 表情のドット絵）、シーンの生成（`SummerSceneBuilder`）、ビルド前の検証（`SummerBuildCheck`） |
 
 - 操縦役の規則：強制の朝はその行動、疲労 70 以上は休む、夏祭りの前にお金 300 がなければバイト、3 日に 1 度は ED の能力値（先輩は感性・同級生は学力）を伸ばし、ほかの日は相手のいる場所へ。選択肢は効果の点数が最大のもの。成り行きはシード付きの乱択。
+- シーンは `unity run games/050-dating-sim -- -executeMethod Game.Unity.Editor.SummerSceneBuilder.Build` で作る。既にある絵・Prefab・設定アセットは、台本の素材の表と合う限り上書きしない。
+- ビルドの直前に本番の台本を同じ規則でコンパイルし、誤りがあれば行番号付きでビルドを止める（`SummerBuildCheck`）。
 - 乱数は int-geometry の `RandomSeries.Derive`（シード・日・用途）、ハッシュは tile-motion の `StateHash`。
 - ハッシュにはデータの指紋・シード・日・段・能力値・フラグ・1 回だけの済み・今日出たイベント・イベントの乱数の状態・記録まで混ぜる。
 
