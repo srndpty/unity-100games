@@ -293,6 +293,12 @@
     <Project Path="games/049-deduction/dotnet/Core.Tests/G049.Core.Tests.csproj" />
     <Project Path="games/049-deduction/dotnet/Core/G049.Core.csproj" />
   </Folder>
+  <Folder Name="/051-tactical-rpg/">
+    <Project Path="games/051-tactical-rpg/dotnet/App.Tests/G051.App.Tests.csproj" />
+    <Project Path="games/051-tactical-rpg/dotnet/App/G051.App.csproj" />
+    <Project Path="games/051-tactical-rpg/dotnet/Core.Tests/G051.Core.Tests.csproj" />
+    <Project Path="games/051-tactical-rpg/dotnet/Core/G051.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />

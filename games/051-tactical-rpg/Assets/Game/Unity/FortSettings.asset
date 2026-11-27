@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abb466c57a3a9384584e5023fde56f3b, type: 3}
+  m_Name: FortSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.FortSettings
+  Units:
+  - Hp: 12
+    Move: 4
+    Power: 5
+    Accuracy: 90
+    Range: 1
+  - Hp: 15
+    Move: 3
+    Power: 4
+    Accuracy: 90
+    Range: 1
+  - Hp: 10
+    Move: 5
+    Power: 4
+    Accuracy: 95
+    Range: 1
+  - Hp: 9
+    Move: 4
+    Power: 4
+    Accuracy: 85
+    Range: 2
+  - Hp: 13
+    Move: 2
+    Power: 4
+    Accuracy: 85
+    Range: 1
+  - Hp: 8
+    Move: 3
+    Power: 3
+    Accuracy: 80
+    Range: 1
+  - Hp: 8
+    Move: 3
+    Power: 3
+    Accuracy: 80
+    Range: 1
+  - Hp: 7
+    Move: 3
+    Power: 3
+    Accuracy: 80
+    Range: 2
+  - Hp: 8
+    Move: 3
+    Power: 3
+    Accuracy: 80
+    Range: 1
+  EnemyInterval: 0.35
