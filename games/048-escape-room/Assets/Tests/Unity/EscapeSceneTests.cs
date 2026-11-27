@@ -405,16 +405,46 @@ namespace Game.Unity.Tests
         // ---- 入力の受け付け ----
 
         [UnityTest]
-        public IEnumerator ClickRightAfterFocusRestoreIsIgnored()
+        public IEnumerator FocusLossPauses_RestoreClickIsIgnored_ThenManualResume()
         {
             yield return Start();
             var p = PixelFor(Command.Focus(View("desk")));
             _game.SendMessage("OnApplicationFocus", false);
+            Assert.That(Flow.Screen, Is.EqualTo(FlowScreen.Paused), "フォーカスを失うと一時停止");
             _game.SendMessage("OnApplicationFocus", true);
+            _game.Render();
+            yield return null;
+            Assert.That(Visible("pause"), Is.True, "戻っても一時停止のまま");
+            var resume = ScreenPointIn(_game.Hud!.MenuRow(FlowScreen.Paused, EscapeFlow.PauseResume));
+            _game.SendMessage("OnApplicationFocus", false);
+            _game.SendMessage("OnApplicationFocus", true);
+            yield return Click(resume);
+            Assert.That(Flow.Screen, Is.EqualTo(FlowScreen.Paused), "ウィンドウを選び直したクリックでは再開しない");
+            yield return Click(resume);
+            Assert.That(Flow.Screen, Is.EqualTo(FlowScreen.Playing), "明示的に「つづける」で再開する");
             yield return Click(p);
-            Assert.That(Flow.View, Is.EqualTo(View("north")), "ウィンドウを選び直したクリックでは寄らない");
-            yield return Click(p);
+            yield return Settle();
             Assert.That(Flow.View, Is.EqualTo(View("desk")));
+        }
+
+        /// <summary>最後の移動と解放が 1 つの MouseState で届いても、解放した位置までのドラッグで回す（PR レビュー、033 の知見）。</summary>
+        [UnityTest]
+        public IEnumerator DragWhoseLastMoveArrivesWithRelease_StillRotates()
+        {
+            yield return Start();
+            yield return DoByInput(Command.Focus(View("desk")));
+            yield return DoByInput(Command.Inspect(Part("desk.cylinder")));
+            var from = new Vector2(Screen.width / 2f, Screen.height / 2f);
+            _mouse.Press(from);
+            yield return null;
+
+            // 押下の後の途中の押した状態を送らず、離した位置と解放を 1 つの更新で送る。
+            var to = from + new Vector2(0f, Screen.height * Flow.DragStepUnits * 1.4f / (2f * CameraPose.HalfHeight));
+            _mouse.Release(to);
+            yield return null;
+            Flow.StepTicks(1);
+            Assert.That(Flow.Orientation.Pitch, Is.EqualTo(1), "離した位置までの移動で 1 段回る");
+            Assert.That(Flow.ClueFacing, Is.True);
         }
 
         [UnityTest]

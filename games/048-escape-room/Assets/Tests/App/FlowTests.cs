@@ -171,7 +171,8 @@ namespace Game.App.Tests
             flow.FlushIntents();
             Assert.That(flow.Screen, Is.EqualTo(FlowScreen.Playing));
             Assert.That(flow.WorldHash, Is.EqualTo(fresh.WorldHash), "仕掛け・持ち物・視点・ヒントの段階・操作の回数が始めに戻る");
-            Assert.That(flow.PlayTicks, Is.Zero, "経過時間も戻る");
+            Assert.That(flow.PlayTicks, Is.Zero, "演出の時計も戻る");
+            Assert.That(flow.PlaySeconds, Is.Zero, "経過時間も戻る");
             Assert.That(flow.HintText, Is.Empty);
             Assert.That(flow.SelectedItem, Is.EqualTo(-1));
             Assert.That(flow.Seed, Is.EqualTo(fresh.Seed), "リセットは同じシード");
@@ -393,9 +394,74 @@ namespace Game.App.Tests
             flow.FlushIntents();
             Assert.That(flow.View, Is.EqualTo(View("north")), "喪失の前の保留も、喪失の後に届いた入力も当てはめない");
             flow.OnFocusChanged(true);
+            Assert.That(flow.Screen, Is.EqualTo(FlowScreen.Paused), "戻っても一時停止のまま");
             flow.Press(IntentKind.Turn, 1);
             flow.FlushIntents();
-            Assert.That(flow.View, Is.EqualTo(View("east")));
+            Assert.That(flow.View, Is.EqualTo(View("north")), "一時停止の間は向き直らない");
+            flow.Press(IntentKind.Pause);
+            flow.FlushIntents();
+            flow.Press(IntentKind.Turn, 1);
+            flow.FlushIntents();
+            Assert.That(flow.View, Is.EqualTo(View("east")), "明示的に再開してから受け付ける");
+        }
+
+        // ---- PR レビュー：フォーカス喪失で一時停止し、時計と演出を止め、手動で再開する ----
+
+        [Test]
+        public void FocusLoss_PausesClockAndEffects_UntilManualResume([Values(true, false)] bool pauseKeyBeforeLoss)
+        {
+            var flow = NewGame();
+            flow.Press(IntentKind.Hint);
+            flow.FlushIntents();
+            flow.StepTicks(10);
+            var ticks = flow.PlayTicks;
+            var seconds = flow.PlaySeconds;
+            Assert.That(flow.HintText, Is.Not.Empty);
+
+            // 停止キー（Esc）とフォーカス喪失の順序を入れ替えても、停止の切り替えで再開してしまわない。
+            if (pauseKeyBeforeLoss)
+            {
+                flow.Press(IntentKind.Pause);
+                flow.OnFocusChanged(false);
+            }
+            else
+            {
+                flow.OnFocusChanged(false);
+                flow.Press(IntentKind.Pause);
+            }
+
+            flow.FlushIntents();
+            Assert.That(flow.Screen, Is.EqualTo(FlowScreen.Paused));
+            flow.UpdateFrame(30);
+            flow.StepTicks(new FlowSettings().HintTicks + 10);
+            Assert.That(flow.PlayTicks, Is.EqualTo(ticks), "不在の間は演出の時計が進まない");
+            Assert.That(flow.PlaySeconds, Is.EqualTo(seconds), "不在の間は経過時間も進まない");
+            Assert.That(flow.HintText, Is.Not.Empty, "不在の間にヒントが消えない");
+
+            flow.OnFocusChanged(true);
+            flow.UpdateFrame(1);
+            Assert.That(flow.Screen, Is.EqualTo(FlowScreen.Paused), "戻っても自動で再開しない");
+            Assert.That(flow.PlaySeconds, Is.EqualTo(seconds));
+            flow.Press(IntentKind.Pause);
+            flow.FlushIntents();
+            Assert.That(flow.Screen, Is.EqualTo(FlowScreen.Playing));
+        }
+
+        // ---- PR レビュー：経過時間はフレームの Tick 上限から切り離す ----
+
+        [Test]
+        public void PlaySeconds_CountsRealTime_EvenWhenTicksAreCappedPerFrame()
+        {
+            var flow = NewGame();
+            flow.UpdateFrame(1.0);
+            Assert.That(flow.PlayTicks, Is.EqualTo(new FlowSettings().MaxTicksPerFrame), "演出の Tick は 1 フレームの上限まで");
+            Assert.That(flow.PlaySeconds, Is.EqualTo(1.0).Within(1e-9), "経過時間は渡された実時間をそのまま数える");
+            flow.UpdateFrame(0.25);
+            Assert.That(flow.PlaySeconds, Is.EqualTo(1.25).Within(1e-9));
+            flow.StepTicks(60);
+            Assert.That(flow.PlaySeconds, Is.EqualTo(2.25).Within(1e-9), "Tick を直接進めるときは Tick の秒");
+            flow.UpdateFrame(EscapeFlow.MaxPlaySeconds * 2);
+            Assert.That(flow.PlaySeconds, Is.EqualTo(EscapeFlow.MaxPlaySeconds), "上限で飽和する");
         }
 
         [Test]

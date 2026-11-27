@@ -154,10 +154,17 @@ namespace Game.App
 
         public bool Escaped => _world?.Escaped ?? false;
 
-        /// <summary>遊んだ Tick（一時停止・脱出の後は数えない。リセットで 0 に戻る）。</summary>
+        /// <summary>経過時間の上限（秒）。これを超えたら飽和させる。</summary>
+        public const double MaxPlaySeconds = 359999;
+
+        /// <summary>遊んだ Tick（演出の時計。一時停止・脱出の後は数えない。リセットで 0 に戻る）。処理落ちのフレームの上限で捨てた Tick は含まない。</summary>
         public long PlayTicks { get; private set; }
 
-        public double PlaySeconds => (double)PlayTicks / _settings.TickRate;
+        /// <summary>
+        /// 経過時間（秒）。ロジックの 1 フレームの Tick 上限から切り離し、<see cref="UpdateFrame"/> に渡された実時間（Tick を進めるときは Tick の秒）で数える（017）。
+        /// 遊ぶ画面で脱出の前だけ数え、一時停止・結果・フォーカスのない間は数えない。リセットで 0 に戻る。
+        /// </summary>
+        public double PlaySeconds { get; private set; }
 
         public int Actions => Shown.Actions;
 
@@ -199,6 +206,7 @@ namespace Game.App
         public void UpdateFrame(double deltaSeconds)
         {
             FlushIntents();
+            CountPlayTime(Math.Max(0, deltaSeconds));
             _accumulator += Math.Max(0, deltaSeconds) * _settings.TickRate;
             var ticks = (int)Math.Floor(_accumulator);
             _accumulator -= ticks;
@@ -214,7 +222,11 @@ namespace Game.App
         public void StepTicks(int ticks)
         {
             FlushIntents();
-            for (int i = 0; i < ticks; i++) { TickOnce(); }
+            for (int i = 0; i < ticks; i++)
+            {
+                CountPlayTime(1.0 / _settings.TickRate);
+                TickOnce();
+            }
         }
 
         public void FlushIntents()
@@ -222,7 +234,10 @@ namespace Game.App
             while (_intents.Count > 0) { Apply(_intents.Dequeue()); }
         }
 
-        /// <summary>フォーカスを失ったら保留中の入力とドラッグの途中を捨て、戻るまで入力を当てはめない（046）。</summary>
+        /// <summary>
+        /// フォーカスを失ったら、遊ぶ画面なら一時停止にし（時計・演出・知らせの時間を止める）、保留中の入力とドラッグの途中を捨て、
+        /// 戻るまで入力を当てはめない（046）。戻っても一時停止のままにし、プレイヤーが明示的に再開する。
+        /// </summary>
         public void OnFocusChanged(bool hasFocus)
         {
             HasFocus = hasFocus;
@@ -230,6 +245,11 @@ namespace Game.App
             _intents.Clear();
             _dragX = 0;
             _dragY = 0;
+            if (Screen == FlowScreen.Playing)
+            {
+                MenuCursor = PauseResume;
+                SetScreen(FlowScreen.Paused);
+            }
         }
 
         // ---- 内部 ----
@@ -538,6 +558,12 @@ namespace Game.App
             _messageTicks = _settings.MessageTicks;
         }
 
+        private void CountPlayTime(double seconds)
+        {
+            if (Screen != FlowScreen.Playing || _world == null || _world.Escaped || !HasFocus) { return; }
+            PlaySeconds = Math.Min(MaxPlaySeconds, PlaySeconds + seconds);
+        }
+
         private void TickOnce()
         {
             // 一時停止・結果の間は時計も止める（044）。
@@ -574,6 +600,7 @@ namespace Game.App
         private void ClearPlayState()
         {
             PlayTicks = 0;
+            PlaySeconds = 0;
             SelectedItem = -1;
             Message = "";
             HintText = "";

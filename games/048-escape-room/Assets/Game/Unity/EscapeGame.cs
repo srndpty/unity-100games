@@ -219,7 +219,8 @@ namespace Game.Unity
             var justFocused = Time.frameCount <= _focusRestoredFrame + 1;
 
             // ドラッグは左ボタンを押した画面の版の間だけ続ける（物を置く・寄る・画面が変わると終わる）。
-            if (_dragging && (!mouse.leftButton.isPressed || Flow.Version != _dragVersion)) { _dragging = false; }
+            // 版が有効なら、離したフレームでも離した位置までの移動を反映してから終える（最後の移動と解放が同じ更新で届いても取りこぼさない、033）。
+            if (_dragging && Flow.Version != _dragVersion) { _dragging = false; }
             if (_dragging && screen != _dragFrom)
             {
                 var a = CorePoint(_dragFrom);
@@ -227,6 +228,8 @@ namespace Game.Unity
                 if (b != a) { Flow.Enqueue(Intent.Drag(b.x - a.x, b.y - a.y, _dragVersion)); }
                 _dragFrom = screen;
             }
+
+            if (_dragging && !mouse.leftButton.isPressed) { _dragging = false; }
 
             if (mouse.rightButton.wasPressedThisFrame && !justFocused) { Flow.Press(IntentKind.Back); }
             if (!mouse.leftButton.wasPressedThisFrame || justFocused) { return; }
