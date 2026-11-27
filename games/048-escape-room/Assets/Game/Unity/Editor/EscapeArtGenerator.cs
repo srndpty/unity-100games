@@ -96,7 +96,7 @@ namespace Game.Unity.Editor
             MaterialOf(Iron, new Color(.22f, .24f, .26f), Color.black, .45f, metallic: .6f);
             MaterialOf(Silver, new Color(.82f, .84f, .86f), Color.black, .75f, metallic: .9f);
             MaterialOf(Black, new Color(.03f, .03f, .03f), Color.black, .1f);
-            MaterialOf(Night, new Color(.03f, .05f, .12f), new Color(.02f, .04f, .1f), .15f);
+            MaterialOf(Night, new Color(.01f, .015f, .04f), new Color(.035f, .06f, .16f), .15f);
             MaterialOf(Navy, new Color(.08f, .12f, .3f), Color.black, .4f);
             MaterialOf(Leather, new Color(.5f, .1f, .1f), Color.black, .3f);
             MaterialOf(Paper, new Color(.9f, .86f, .74f), Color.black, .05f);

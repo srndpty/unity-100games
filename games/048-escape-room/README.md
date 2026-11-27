@@ -92,9 +92,26 @@ dev capture 048  # 証跡を evidence/ に撮る（画像は captures/<画像世
 |---|---|---|---|
 | Core（.NET） | `Assets/Tests/Core/` | `dev test 048` | 58 |
 | App（.NET） | `Assets/Tests/App/` | `dev test 048` | 26 |
-| EditMode（Mono、共通パッケージを含む） | 上の 2 つ＋ `packages/` | `dev test 048 -Unity` | 154 |
+| EditMode（Mono、共通パッケージと Editor を含む） | 上の 2 つ＋ `Assets/Tests/Editor/`＋ `packages/` | `dev test 048 -Unity` | 160 |
+| PlayMode（実シーン 10・証跡の公開 16） | `Assets/Tests/Unity/` | `dev test 048 -Unity -Mode PlayMode` | 26 |
 
-（セッション 4 で全体の表にする）
+| 観点 | 主なテスト |
+|---|---|
+| 未解除ロックを操作で迂回できない | `StateSpaceTests.Study_HasNoBypassDeadEndOrItemViolation`（全到達状態）、`WorldTests.Bypass_*`（鍵なしの鍵穴・ハンドルなしの宝石・歯車なしの針・円盤なしのリング・閉じた引き出しの鍵は前板に当たる・出口） |
+| ヒント表示と実状態が一致 | `StateSpaceTests.Hint_IsConsistent_InEveryReachableState`・`Hint_NeverPointsAtSolvedOrLockedBeyond_AlongWholePlaythrough`、`WorldTests.Hint_*`、`FlowTests.Hint_ShowsAnswerOfThisSeed_AtThirdPress`、`EscapeSceneTests.ArrowsAndAdTurn_HintKeyShowsHint` |
+| 同時操作で状態破綻なし | `FlowTests.SameFrame_*`（6 件）、`StateSpaceTests.RandomCommands_KeepInvariants` |
+| カメラとヒットテスト | `GeometryTests`（スラブ法と参照実装の照合・縁・角・基底）、`WorldTests.HitTest_NoUnreachablePartIsEverClicked_AndWallClicksStayOnWall`・`EveryPart_IsHitAtItsFrontCenter_InItsCloseUp_WhenReachable`、`EscapeSceneTests.CoreHitTest_MatchesPhysicsRaycast_InEveryView_AtStartAndAfterEscape`・`FocusZoomsCamera_AndRightClickReturnsToWall` |
+| 完了判定 | `WorldTests.Acceptance_*`、`FlowTests.Autopilot_EscapesInManySeeds_ByClicksAndKeysOnly`・`Reset_FromPause_RestoresInitialState`、`EscapeSceneTests.PlayByMouseAndKeyboardOnly_EscapesAndShowsResult`・`ResetFromPause_LooksLikeNewGame_AndTitleLooksLikeStartup` |
+| 状態遷移・負テスト | `FlowTests.ScreenFlow_TitleHowToPlayResultTitleRematch`（結果の後の入力を無視）、`WorldTests.Negative_*`（範囲外の番号・二重に拾う・使った物を使う）、`FlowTests.FocusLoss_DropsPendingAndLaterIntents`、`EscapeSceneTests.ClickRightAfterFocusRestoreIsIgnored` |
+| 再現性 | `StateSpaceTests.SameSeedAndCommands_GiveSameHash_AndFinalHashIsFixed`（`0x44E972DE`）、`FlowTests.Autopilot_FinalHash_IsFixed`（`0x8B6DBBC1`）。どちらも .NET と Mono で一致 |
+| ビルド前の検証 | `EditorChecksTests`（本番の部屋が通る・詰む部屋と不正な定義でビルドが止まる・Stage Prefab の照合が動かした部品を見つける） |
+
+検証の記録と画面は [evidence/README.md](evidence/README.md)。
+
+## 未解決事項
+
+- クリックの感触（近景へ寄る速さ `TransitionTicks`・ドラッグの重さ `DragStepUnits`・向き直りのキー）と謎の難しさ・音量は、人間の試遊で確かめる。値は `Assets/Game/Unity/EscapeSettings.asset` にある。
+- 星図の円盤と天文書の手がかりは、上下を逆さにして（ピッチ 180°）も「こちらを向いた」と判定する。文字盤は 12 時を赤い三角で示して逆さに読まないようにした。円盤の星座は上下逆さだと並びも逆に見える。
 
 ## 未実装範囲
 
