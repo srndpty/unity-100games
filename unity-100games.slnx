@@ -311,6 +311,12 @@
     <Project Path="games/052-tower-defense/dotnet/Core.Tests/G052.Core.Tests.csproj" />
     <Project Path="games/052-tower-defense/dotnet/Core/G052.Core.csproj" />
   </Folder>
+  <Folder Name="/054-riichi-mahjong/">
+    <Project Path="games/054-riichi-mahjong/dotnet/App.Tests/G054.App.Tests.csproj" />
+    <Project Path="games/054-riichi-mahjong/dotnet/App/G054.App.csproj" />
+    <Project Path="games/054-riichi-mahjong/dotnet/Core.Tests/G054.Core.Tests.csproj" />
+    <Project Path="games/054-riichi-mahjong/dotnet/Core/G054.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />
