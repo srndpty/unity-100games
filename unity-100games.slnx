@@ -281,6 +281,12 @@
     <Project Path="games/047-point-click/dotnet/Core.Tests/G047.Core.Tests.csproj" />
     <Project Path="games/047-point-click/dotnet/Core/G047.Core.csproj" />
   </Folder>
+  <Folder Name="/049-deduction/">
+    <Project Path="games/049-deduction/dotnet/App.Tests/G049.App.Tests.csproj" />
+    <Project Path="games/049-deduction/dotnet/App/G049.App.csproj" />
+    <Project Path="games/049-deduction/dotnet/Core.Tests/G049.Core.Tests.csproj" />
+    <Project Path="games/049-deduction/dotnet/Core/G049.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />
