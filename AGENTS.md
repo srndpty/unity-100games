@@ -45,8 +45,8 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - 共通コードは、3題以上で再利用価値が明確になってから `packages/` にローカル UPM パッケージとして抽出する。
   - 作品からは `Packages/manifest.json` に `"file:../../../packages/<名前>"` と `testables` を書き、`dev test NNN -Unity` でパッケージのテストも Mono で流す。dotnet 側は作品の Core の csproj から `ProjectReference` する。
   - パッケージも Core と同じく Unity API に依存しない（`noEngineReferences`）。中身を変えると全作品が検査対象になる（`dev lint/check -Staged`）。
-  - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う（033・034 は `StateHash` だけ、035・036・037・038 は `StateHash` を使う、042 は `Box`・`BodyMotion`・`StateHash` を使う、043・044・045・046 は `StateHash` だけ）。
-  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）、状態を保存できる乱数系列と試合シード・番号・用途からの派生（`RandomSeries`、041・043・044 の GameRng から 045 の着手時に抽出）。025〜027 の実装から抽出し、028 から使う（032 は `SeededRandom` だけ、033 は `Vec2i`・`IntMath`・`Sweep`、035・036 は `Vec2i`・`IntMath`・`Sweep`・`Trig`・`SeededRandom` を使う、037 は `Vec2i`・`IntMath`・`Sweep`・`Trig` を使う、038 は `IntMath`・`Trig`・`SeededRandom` を使う、042 は `Vec2i`・`IntMath`・`Sweep`・`SeededRandom` を使う、043 は `Vec2i`・`SeededRandom` を使う、041・043・044 は `SeededRandom`・`RandomSeries`、045 は `SeededRandom`（`RandomSeries` の撹拌）・`RandomSeries` を使う）。
+  - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う（033・034 は `StateHash` だけ、035・036・037・038 は `StateHash` を使う、042 は `Box`・`BodyMotion`・`StateHash` を使う、043・044・045・046・047 は `StateHash` だけ）。
+  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）、状態を保存できる乱数系列と試合シード・番号・用途からの派生（`RandomSeries`、041・043・044 の GameRng から 045 の着手時に抽出）。025〜027 の実装から抽出し、028 から使う（032 は `SeededRandom` だけ、033 は `Vec2i`・`IntMath`・`Sweep`、035・036 は `Vec2i`・`IntMath`・`Sweep`・`Trig`・`SeededRandom` を使う、037 は `Vec2i`・`IntMath`・`Sweep`・`Trig` を使う、038 は `IntMath`・`Trig`・`SeededRandom` を使う、042 は `Vec2i`・`IntMath`・`Sweep`・`SeededRandom` を使う、043 は `Vec2i`・`SeededRandom` を使う、041・043・044 は `SeededRandom`・`RandomSeries`、045 は `SeededRandom`（`RandomSeries` の撹拌）・`RandomSeries` を使う、047 は `Vec2i`・`Rect` を使う）。
 
 ## 技術スタック
 
@@ -293,6 +293,9 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - **同じ値を受け取る場所は全て同じ検証を通す。** 代入の数値は ±9999 を検証して、条件の数値だけ検証していなかった（046）。
 - **エージェントが Windows の Python でファイルを書き換えるときは `newline=''` を指定する。** 既定では LF が CRLF になり、`
 ` を含む文字列の照合が失敗したり、ファイル全体の改行が変わったりする（046）。
+- **状態空間の探索の手は、命令の全ての候補を実際の受付（`Check`）で絞って作る。** 探索用に手を別に列挙すると、遊ぶときに命じられる手（出口への「取る」「話す」）が漏れて使われないルールと誤り、手前の物に覆われてクリックできない物を探索だけが扱う。探索の手と受け付ける命令が全ての到達状態で一致することをテストする（047 の `StateSpace.Moves`）。
+- **終わった後の Tick でも出来事の記録を消す。** 脱出の後の `Step` が出来事を消さずに戻り、画面が毎 Tick 同じ台詞と効果音を読み直して先へ進めなかった。毎 Tick 台詞を送る操縦役の通しでは見えないので、「入力せずに待つ」テストを別に置く（047）。
+- **画面の枠の数で決まる上限（同時に並ぶ選択肢など）は、HUD とデータの検証で同じ定数を使い、探索の全ての到達状態で確かめる。** 総数だけを数えると、時期がずれて出る話題まで拒否するか、同時に並ぶ数を見逃す（047 の `BookLimits.MaxTopicChoices`）。
 
 ## 注意点
 

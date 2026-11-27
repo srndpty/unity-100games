@@ -1,0 +1,93 @@
+{
+    "Product": "TIDEWATCH",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "ee5dd39711f7444e8f74a7e41b361dc7",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-26T22:57:08.9923234Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "fingerprint",
+            "Value": "76455E02"
+        },
+        {
+            "Key": "walkSpeed",
+            "Value": "10"
+        },
+        {
+            "Key": "finalHash",
+            "Value": "62B934D2"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01_title.jpg",
+            "Sha256": "0ff14657469c862c064df37bfd9b65bda0131e2c6662779bb12766cfbe949522",
+            "Note": "タイトル (tick=0, hash=0x00000000, solved=0)"
+        },
+        {
+            "File": "02_howto.jpg",
+            "Sha256": "fee2b7489d2254d92ceee53d5d7aa68a9c3beb5fc4aca31acd4888f9471b6f37",
+            "Note": "操作説明 (tick=0, hash=0x00000000, solved=0)"
+        },
+        {
+            "File": "03_cottage_verb.jpg",
+            "Sha256": "a2a656e42a8ff8087f35f8fc70499f0f3f0fb490793bbffca985a078d511a0b8",
+            "Note": "灯台守小屋：動詞「取る」を選び、包丁の上（命令文） (tick=2, hash=0x59A497FA, solved=0)"
+        },
+        {
+            "File": "04_take_knife.jpg",
+            "Sha256": "ddf4d139928370937e7702e475f4a5d95556b2e444d953d9185012f4d5948e4a",
+            "Note": "包丁を拾った（台詞と持ち物の枠） (tick=75, hash=0xEBDBA88F, solved=0)"
+        },
+        {
+            "File": "05_use_sentence.jpg",
+            "Sha256": "75c94516527c61382a9346896073b576b87739876e891f38ee9c8afb79e39e4f",
+            "Note": "持ち物のカップを選び、ストーブの上（使う カップ → ストーブ） (tick=145, hash=0x0C27F99F, solved=0)"
+        },
+        {
+            "File": "06_combine.jpg",
+            "Sha256": "bf2c241f481c8cc28bf4b412779cf7ac4f2bed07154a6ec4cce2bab739561572",
+            "Note": "茶葉とお湯のカップを組み合わせた (tick=162, hash=0x64FCA7EE, solved=0)"
+        },
+        {
+            "File": "07_dock_net.jpg",
+            "Sha256": "62369036e634326995f1d1a9d80b5ce4e3eeaa924e96dc9b97bc5ea03411d273",
+            "Note": "船着き場：漁網を見る (tick=213, hash=0xCE4F0394, solved=0)"
+        },
+        {
+            "File": "08_topics.jpg",
+            "Sha256": "d789a2b951e7922c06905d7d5d3472b2c6300e2ef4cbc02ca17b121afa31a282",
+            "Note": "船頭との会話の話題 (tick=269, hash=0x5296B5E0, solved=2)"
+        },
+        {
+            "File": "09_captain_line.jpg",
+            "Sha256": "b2e07bc4369b3b85536703cb98c87b21afc70846069614c498fb0a5991b1a9c0",
+            "Note": "船頭の返事 (tick=270, hash=0x71A6386B, solved=2)"
+        },
+        {
+            "File": "10_door_open.jpg",
+            "Sha256": "94a0ee0898bef84f54ef13b5e80fa4cede2a7067a31159c2fd326d47f6070496",
+            "Note": "錆びた鍵で灯台への扉が開いた (tick=515, hash=0x61707AF3, solved=4)"
+        },
+        {
+            "File": "11_lamp_room.jpg",
+            "Sha256": "4f5e80827b9b32adf33e9e016e587889ada0b36445525b40ae17af9fb3bcb3eb",
+            "Note": "灯室 (tick=516, hash=0xB89D8D7F, solved=4)"
+        },
+        {
+            "File": "12_lamp_lit.jpg",
+            "Sha256": "065cf41f2205a9d7984587d66a409b2da6b8bc8fb0910b276d7617b56994da4e",
+            "Note": "灯がともった（脱出） (tick=591, hash=0x62B934D2, solved=5)"
+        },
+        {
+            "File": "13_result.jpg",
+            "Sha256": "0d724e100e8a52e639b27c14ad7a8ced66300d0a4ea29fbf6d0d2491ac6d8913",
+            "Note": "結果（謎 5/5・行動の数・時間） (tick=591, hash=0x62B934D2, solved=5)"
+        }
+    ]
+}
