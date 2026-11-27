@@ -20,8 +20,8 @@ Windows x64、Unity 6000.6.9f1。撮影モードで起動し、初期設定の�
 | 検証 | 結果 |
 |---|---|
 | dev lint 049 / dev check 049 | 成功 |
-| dev test 049 | Core 10/10、App 3/3 |
-| dev test 049 -Unity | EditMode 13/13 |
+| dev test 049 | Core 10/10、App 7/7 |
+| dev test 049 -Unity | EditMode 17/17 |
 | dev test 049 -Unity -Mode PlayMode | PlayMode 19/19。仮想マウスの勝敗・再戦と、証言・証拠を切り替えても操作ボタンの位置・大きさが変わらないことを確認 |
 | dev build 049 / dev capture 049 | Windowsビルド、起動、撮影成功 |
 | 画面確認 | 1280×720（16:9）と1152×720（16:10）。操作説明、封印図、8件を取得した資料一覧、提示ボタンが画面内に収まる |

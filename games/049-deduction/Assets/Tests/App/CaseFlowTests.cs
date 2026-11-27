@@ -14,6 +14,7 @@ namespace Game.App.Tests
             flow.Enqueue(Operation.Start);
             Assert.That(flow.Flush(), Is.False);
             flow.Focus(true);
+            flow.PointerIdle();
             Assert.That(flow.Flush(), Is.False);
             flow.Enqueue(Operation.Start);
             flow.Flush();
@@ -50,6 +51,28 @@ namespace Game.App.Tests
             flow.Flush();
             Assert.That(flow.Case.Attempts, Is.EqualTo(1));
             Assert.That(flow.Case.Target, Is.Zero);
+        }
+
+        [TestCase(true, Operation.Present)]
+        [TestCase(false, Operation.Present)]
+        [TestCase(true, Operation.Title)]
+        [TestCase(false, Operation.Title)]
+        public void FocusRestorationClickIsDiscarded(bool focusFirst, Operation operation)
+        {
+            var flow = new CaseFlow(CaseFile.Museum, 3);
+            flow.Enqueue(Operation.Start);
+            flow.Flush();
+            flow.Focus(false);
+            if (focusFirst) { flow.Focus(true); }
+            flow.Enqueue(operation);
+            if (!focusFirst) { flow.Focus(true); }
+            Assert.That(flow.Flush(), Is.False);
+            Assert.That(flow.Screen, Is.EqualTo(Screen.Case));
+            Assert.That(flow.Case.Attempts, Is.EqualTo(3));
+
+            flow.PointerIdle();
+            flow.Enqueue(operation);
+            Assert.That(flow.Flush(), Is.True);
         }
 
         [Test]

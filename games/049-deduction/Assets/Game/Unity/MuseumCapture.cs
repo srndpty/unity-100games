@@ -16,6 +16,7 @@ namespace Game.Unity
             var flow = game.Flow;
             await capture.WaitUntilAsync(() => game.Root != null, 10f);
             flow.Focus(true);
+            flow.PointerIdle();
 
             var tick = 0;
             void Act(Operation operation, int id = -1)

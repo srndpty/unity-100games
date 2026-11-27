@@ -30,6 +30,7 @@ namespace Game.Unity.Tests
             }
 
             _game.Flow.Focus(true);
+            _game.Flow.PointerIdle();
         }
 
         [UnityTest]

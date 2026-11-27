@@ -13,6 +13,7 @@ namespace Game.App
         private readonly int _attempts;
         private readonly Queue<(Operation Kind, int Id, int Version)> _pending = new();
         private bool _focused = true;
+        private bool _waitingForPointerIdle;
 
         public CaseFlow(CaseFile file, int attempts)
         {
@@ -33,12 +34,18 @@ namespace Game.App
         public void Focus(bool focused)
         {
             _focused = focused;
-            if (!focused) { _pending.Clear(); }
+            _waitingForPointerIdle = true;
+            _pending.Clear();
+        }
+
+        public void PointerIdle()
+        {
+            if (_focused) { _waitingForPointerIdle = false; }
         }
 
         public void Enqueue(Operation operation, int id = -1, int? viewVersion = null)
         {
-            if (_focused) { _pending.Enqueue((operation, id, viewVersion ?? ViewVersion)); }
+            if (_focused && !_waitingForPointerIdle) { _pending.Enqueue((operation, id, viewVersion ?? ViewVersion)); }
         }
 
         public bool Flush()

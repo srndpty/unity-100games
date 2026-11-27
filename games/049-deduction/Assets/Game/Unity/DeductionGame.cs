@@ -4,6 +4,7 @@ using Game.App;
 using Game.Core;
 using Game.Unity.Evidence;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
 namespace Game.Unity
@@ -15,6 +16,7 @@ namespace Game.Unity
         [SerializeField] private Texture2D _museum = null!;
         [SerializeField] private StyleSheet _style = null!;
         private VisualElement? _root;
+        private int _focusChangedFrame = -1;
         private AudioSource _audio = null!;
         private Font? _font;
         private AudioClip? _correct;
@@ -46,11 +48,24 @@ namespace Game.Unity
             Render();
         }
 
-        private void OnApplicationFocus(bool focused) => Flow?.Focus(focused);
+        private void OnApplicationFocus(bool focused)
+        {
+            if (EvidenceCapture.IsRunning || Flow == null) { return; }
+            _focusChangedFrame = Time.frameCount;
+            Flow.Focus(focused);
+        }
 
         private void Update()
         {
-            if (!EvidenceCapture.IsRunning) { Flush(); }
+            if (EvidenceCapture.IsRunning) { return; }
+            Flush();
+            // 通知と入力イベントの順序に依存せず、復帰クリックの解放まで待つ。
+            var left = Mouse.current?.leftButton;
+            if (Time.frameCount > _focusChangedFrame && (left == null ||
+                (!left.isPressed && !left.wasPressedThisFrame && !left.wasReleasedThisFrame)))
+            {
+                Flow.PointerIdle();
+            }
         }
 
         private void OnDestroy()
