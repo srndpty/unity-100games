@@ -305,6 +305,12 @@
     <Project Path="games/051-tactical-rpg/dotnet/Core.Tests/G051.Core.Tests.csproj" />
     <Project Path="games/051-tactical-rpg/dotnet/Core/G051.Core.csproj" />
   </Folder>
+  <Folder Name="/052-tower-defense/">
+    <Project Path="games/052-tower-defense/dotnet/App.Tests/G052.App.Tests.csproj" />
+    <Project Path="games/052-tower-defense/dotnet/App/G052.App.csproj" />
+    <Project Path="games/052-tower-defense/dotnet/Core.Tests/G052.Core.Tests.csproj" />
+    <Project Path="games/052-tower-defense/dotnet/Core/G052.Core.csproj" />
+  </Folder>
   <Folder Name="/053-soccer/">
     <Project Path="games/053-soccer/dotnet/App.Tests/G053.App.Tests.csproj" />
     <Project Path="games/053-soccer/dotnet/App/G053.App.csproj" />
