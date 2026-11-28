@@ -53,8 +53,8 @@ namespace Game.App.Tests
             var flow = new TableFlow(54, 0.3f);
             flow.Push(Intent.Start);
             flow.Step(0f);
-            var match = flow.Match!;
-            var discard = match.LegalActions(0).First(m => m.Kind == MoveKind.Discard);
+            var match = flow.View!;
+            var discard = match.LegalActions.First(m => m.Kind == MoveKind.Discard);
             flow.Push(Intent.Move, match.Revision, discard, flow.Generation);
             flow.Focus(false);
             flow.Step(1f);
@@ -69,7 +69,7 @@ namespace Game.App.Tests
             flow.Push(Intent.Title);
             flow.Step(0f);
             Assert.That(flow.Screen, Is.EqualTo(TableScreen.Title));
-            Assert.That(flow.Match, Is.Null);
+            Assert.That(flow.View, Is.Null);
         }
 
         [TestCase("random")]
@@ -98,7 +98,7 @@ namespace Game.App.Tests
                         _ => false,
                     }).ToArray();
                     var move = candidates.Length > 0 ? candidates[random.Next(candidates.Length)] :
-                        policy is "calls" or "kans" or "random" ? legal[random.Next(legal.Count)] : Cpu.Choose(match, seat, legal);
+                        policy is "calls" or "kans" or "random" ? legal[random.Next(legal.Count)] : Cpu.Choose(match.ViewFor(seat));
                     if (move.Kind == MoveKind.Pass && legal.Any(candidate => candidate.Kind == MoveKind.Ron)) { skippedRon++; }
 
                     moves[(int)move.Kind]++;
@@ -129,7 +129,7 @@ namespace Game.App.Tests
             flow.Push(Intent.Start);
             flow.Push(Intent.Move, 0, move, flow.Generation);
             flow.Step(0f);
-            var match = flow.Match!;
+            var match = flow.View!;
             Assert.That(match.Seats[0].Discards, Is.Empty);
 
             var old = flow.Generation;
@@ -172,9 +172,11 @@ namespace Game.App.Tests
             var discardFour = new Move(MoveKind.Riichi, wall[52]);
             var choices = new[] { discardFive, discardFour };
             Assert.That(choices.All(match.LegalActions(0).Contains), Is.True);
-            Assert.That(Cpu.Choose(match, 0, choices), Is.EqualTo(discardFour));
-            Assert.That(Cpu.Choose(match, 0, choices.Reverse().ToArray()), Is.EqualTo(discardFour));
-            Assert.That(Cpu.RecommendDiscard(match, 0, choices, MoveKind.Riichi), Is.EqualTo(discardFour.Value));
+            var view = match.ViewFor(0);
+            var chosen = Cpu.Choose(view);
+            Assert.That(chosen.Kind, Is.EqualTo(MoveKind.Riichi));
+            Assert.That(Tiles.Type(chosen.Value), Is.EqualTo(Tiles.Type(discardFour.Value)));
+            Assert.That(Cpu.RecommendDiscard(view, MoveKind.Riichi), Is.EqualTo(chosen.Value));
         }
 
     }

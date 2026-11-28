@@ -10,10 +10,11 @@ namespace Game.App
 
     public static class Cpu
     {
-        public static Move Choose(Match match, int seat, IReadOnlyList<Move> legal)
+        public static Move Choose(SeatView view)
         {
-            var hand = match.Hand(seat);
-            var seatWind = 27 + ((seat - match.Dealer + 4) % 4);
+            var hand = view.Hand;
+            var legal = view.LegalActions;
+            var seatWind = 27 + ((view.Seat - view.Dealer + 4) % 4);
             foreach (var kind in new[] { MoveKind.Tsumo, MoveKind.Ron })
             {
                 foreach (var move in legal)
@@ -22,7 +23,7 @@ namespace Game.App
                 }
             }
 
-            var riichi = RecommendDiscard(match, seat, legal, MoveKind.Riichi);
+            var riichi = RecommendDiscard(view, MoveKind.Riichi);
             if (riichi.HasValue) { return new Move(MoveKind.Riichi, riichi.Value); }
 
             foreach (var move in legal)
@@ -44,18 +45,18 @@ namespace Game.App
                 .ThenBy(m => m.Value).First();
         }
 
-        public static int? RecommendDiscard(Match match, int seat, IReadOnlyList<Move> legal, MoveKind kind)
+        public static int? RecommendDiscard(SeatView view, MoveKind kind)
         {
-            var options = legal.Where(move => move.Kind == kind).ToArray();
+            var options = view.LegalActions.Where(move => move.Kind == kind).ToArray();
             if (options.Length == 0) { return null; }
 
-            var hand = match.Hand(seat);
+            var hand = view.Hand;
             var counts = Tiles.Counts(hand.Select(Tiles.Type));
-            var visible = kind == MoveKind.Riichi ? Tiles.Counts(hand.Concat(match.DoraIndicators)
-                .Concat(match.Seats.SelectMany(p => p.Discards.Where(d => !d.Called).Select(d => d.Id)))
-                .Concat(match.Seats.SelectMany(p => p.Calls.SelectMany(m => m.Ids)))
+            var visible = kind == MoveKind.Riichi ? Tiles.Counts(hand.Concat(view.DoraIndicators)
+                .Concat(view.Seats.SelectMany(p => p.Discards.Where(d => !d.Called).Select(d => d.Id)))
+                .Concat(view.Seats.SelectMany(p => p.Calls.SelectMany(m => m.Ids)))
                 .Distinct().Select(Tiles.Type)) : counts;
-            var melds = match.Seats[seat].Calls.Select(m => m.Group).ToArray();
+            var melds = view.Seats[view.Seat].Calls.Select(m => m.Group).ToArray();
             return options.OrderByDescending(move => kind == MoveKind.Riichi
                     ? Scoring.Waits(hand.Where(id => id != move.Value).Select(Tiles.Type), melds).Sum(t => 4 - visible[t]) : 0)
                 .ThenBy(move => KeepValue(Tiles.Type(move.Value), counts))
@@ -94,7 +95,8 @@ namespace Game.App
             => (_seed, _delay, _wall) = (seed, delay, wall);
 
         public TableScreen Screen { get; private set; }
-        public Match? Match { get; private set; }
+        private Match? _match;
+        public SeatView? View => _match?.ViewFor(0);
         public bool Paused { get; private set; }
         public long Generation { get; private set; }
 
@@ -127,8 +129,8 @@ namespace Game.App
 
                 switch (entry.Intent)
                 {
-                    case Intent.Start when Screen != TableScreen.Table || Match?.Phase == Phase.MatchResult:
-                        Match = new Match(_seed, _wall);
+                    case Intent.Start when Screen != TableScreen.Table || _match?.Phase == Phase.MatchResult:
+                        _match = new Match(_seed, _wall);
                         _seed = unchecked(_seed + 1);
                         Screen = TableScreen.Table;
                         ChangeGeneration();
@@ -140,22 +142,22 @@ namespace Game.App
                         break;
                     case Intent.Title:
                         Screen = TableScreen.Title;
-                        Match = null;
+                        _match = null;
                         ChangeGeneration();
                         break;
-                    case Intent.Move when entry.Generation == Generation && Match?.Apply(0, entry.Revision, entry.Move) == true:
+                    case Intent.Move when entry.Generation == Generation && _match?.Apply(0, entry.Revision, entry.Move) == true:
                         _elapsed = 0;
                         break;
                 }
             }
 
-            if (!_focused || Paused || Match == null || Match.LegalActions(0).Count > 0) { return; }
+            if (!_focused || Paused || _match == null || _match.ViewFor(0).LegalActions.Count > 0) { return; }
 
             _elapsed += seconds;
             if (_elapsed < _delay) { return; }
 
             _elapsed = 0;
-            PlayCpu(Match, 1);
+            PlayCpu(_match, 1);
         }
 
         private void ChangeGeneration()
@@ -164,14 +166,17 @@ namespace Game.App
             _queue.Clear();
         }
 
-        public static bool PlayCpu(Match match, int firstSeat)
+        public bool StepDemonstration() => _match != null && PlayCpu(_match, 0);
+
+        internal static bool PlayCpu(Match match, int firstSeat)
         {
             for (var seat = firstSeat; seat < 4; seat++)
             {
-                var legal = match.LegalActions(seat);
+                var view = match.ViewFor(seat);
+                var legal = view.LegalActions;
                 if (legal.Count == 0) { continue; }
 
-                var move = legal[0].Kind == MoveKind.Next ? legal[0] : Cpu.Choose(match, seat, legal);
+                var move = legal[0].Kind == MoveKind.Next ? legal[0] : Cpu.Choose(view);
                 return match.Apply(seat, match.Revision, move);
             }
 

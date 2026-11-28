@@ -397,5 +397,44 @@ namespace Game.Core.Tests
             Assert.That(match.Seats[0].Calls.Count, Is.EqualTo(4));
         }
 
+
+        [Test]
+        public void SeatViewKeepsOtherHandsDrawsAndLegalActionsPrivate()
+        {
+            var match = new Match(54);
+            var east = match.ViewFor(0);
+            var south = match.ViewFor(1);
+            Assert.That(east, Is.SameAs(match.ViewFor(0)));
+            Assert.That(east.Seats, Is.SameAs(south.Seats));
+            Assert.That(east.Hand.Intersect(south.Hand), Is.Empty);
+            Assert.That(east.Hand.Contains(east.Drawn), Is.True);
+            Assert.That(south.Drawn, Is.EqualTo(-1));
+            Assert.That(south.LegalActions, Is.Empty);
+            Assert.That(south.Seats[0].HandCount, Is.EqualTo(14));
+            Assert.That(south.Result, Is.Null);
+            Assert.That(east.Target, Is.EqualTo(-1));
+
+            Assert.That(match.Apply(0, east.Revision, new Move(MoveKind.Discard, east.Drawn)), Is.True);
+            PassAll(match);
+
+            Assert.That(south.Current, Is.EqualTo(1));
+            Assert.That(south.Hand.Contains(south.Drawn), Is.True);
+            Assert.That(east.Drawn, Is.EqualTo(-1));
+            Assert.That(east.LegalActions, Is.Empty);
+            Assert.That(east.Seats[1].HandCount, Is.EqualTo(14));
+            Assert.That(east.Result, Is.Null);
+        }
+
+        [Test]
+        public void FullStateQueriesAreOutsideThePublicApi()
+        {
+            Assert.That(typeof(Match).GetMethod(nameof(Match.Hand)), Is.Null);
+            Assert.That(typeof(Match).GetMethod(nameof(Match.PhysicalTiles)), Is.Null);
+            Assert.That(typeof(Match).GetMethod(nameof(Match.LegalActions)), Is.Null);
+            Assert.That(typeof(Match).GetProperty(nameof(Match.Drawn)), Is.Null);
+            Assert.That(typeof(SeatView).GetMethod(nameof(Match.ViewFor)), Is.Null);
+            Assert.That(typeof(PublicSeat).GetMember(nameof(Seat.Hand)), Is.Empty);
+        }
+
     }
 }

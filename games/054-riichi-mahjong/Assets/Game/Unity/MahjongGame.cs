@@ -24,7 +24,7 @@ namespace Game.Unity
         private AudioClip? _click;
         private AudioSource _audio = null!;
         private TableFlow? _renderedFlow;
-        private Match? _renderedMatch;
+        private SeatView? _renderedView;
         private bool _renderedPause;
         private int _revision;
         private int _options;
@@ -109,20 +109,20 @@ namespace Game.Unity
             var root = Root;
             if (root == null) { return; }
 
-            var match = Flow.Match;
+            var match = Flow.View;
             var revision = match?.Revision ?? -1;
-            var options = match?.LegalActions(0).Count ?? 0;
-            if (_renderedFlow == Flow && _renderedMatch == match && _screen == Flow.Screen &&
+            var options = match?.LegalActions.Count ?? 0;
+            if (_renderedFlow == Flow && _renderedView == match && _screen == Flow.Screen &&
                 _revision == revision && _options == options && _renderedPause == Flow.Paused) { return; }
 
-            if (_renderedMatch == match && _revision != revision && _click != null && !AudioPolicy.ShouldMute)
+            if (_renderedView == match && _revision != revision && _click != null && !AudioPolicy.ShouldMute)
             {
                 _audio.pitch = match?.Phase == Phase.HandResult ? 0.8f : 1f;
                 _audio.PlayOneShot(_click);
             }
 
             _renderedFlow = Flow;
-            _renderedMatch = match;
+            _renderedView = match;
             _screen = Flow.Screen;
             _revision = revision;
             _options = options;
@@ -173,7 +173,7 @@ namespace Game.Unity
             Control(banner, "title", "タイトルへ", () => Push(Intent.Title));
         }
 
-        private void Table(VisualElement root, Match match)
+        private void Table(VisualElement root, SeatView match)
         {
             var body = Row(root);
             body.style.flexGrow = 1;
@@ -227,7 +227,7 @@ namespace Game.Unity
             _actions = Box(side, Panel);
             DrawActions(match);
             Control(side, "title", "対局を終了", () => Push(Intent.Title));
-            if (match.LegalActions(0).Contains(new Move(MoveKind.Pass)))
+            if (match.LegalActions.Contains(new Move(MoveKind.Pass)))
             {
                 Box(side, Panel).style.flexGrow = 1;
                 Control(side, "pass-bottom", "見送り", BindMove(new Move(MoveKind.Pass)));
@@ -242,7 +242,7 @@ namespace Game.Unity
             for (var seat = 1; seat < 4; seat++) { DrawConcealedHand(board, match, seat); }
         }
 
-        private void SeatPanel(VisualElement parent, Match match, int seat)
+        private void SeatPanel(VisualElement parent, SeatView match, int seat)
         {
             var player = match.Seats[seat];
             var container = Box(parent, match.Current == seat ? new Color(0.19f, 0.36f, 0.29f) : Felt);
@@ -320,11 +320,11 @@ namespace Game.Unity
             }
         }
 
-        private void DrawActions(Match match)
+        private void DrawActions(SeatView match)
         {
             var target = _actions!;
             target.Clear();
-            var legal = match.LegalActions(0);
+            var legal = match.LegalActions;
             if (_mode == MoveKind.Riichi)
             {
                 Label(target, "リーチする打牌を選択", 16);
@@ -355,11 +355,11 @@ namespace Game.Unity
             }
         }
 
-        private void SetMode(Match match, MoveKind mode)
+        private void SetMode(SeatView match, MoveKind mode)
         {
             _mode = mode;
             DrawActions(match);
-            var legal = match.LegalActions(0);
+            var legal = match.LegalActions;
             UpdateRecommendation(match);
             foreach (var button in Root!.Query<Button>(className: "hand-tile").ToList())
             {
@@ -367,7 +367,7 @@ namespace Game.Unity
             }
         }
 
-        private void DrawConcealedHand(VisualElement board, Match match, int seat)
+        private void DrawConcealedHand(VisualElement board, SeatView match, int seat)
         {
             var far = seat == 2;
             var rack = Row(board);
@@ -416,17 +416,17 @@ namespace Game.Unity
             }
         }
 
-        private void DrawHand(VisualElement board, Match match)
+        private void DrawHand(VisualElement board, SeatView match)
         {
             var row = Row(board);
             row.style.height = 73;
             row.style.justifyContent = Justify.Center;
             row.style.alignItems = Align.Center;
             var drawn = match.Current == 0 && match.Phase == Phase.Drawn ? match.Drawn : -1;
-            System.Collections.Generic.IEnumerable<int> hand = match.Hand(0).Where(id => id != drawn).OrderBy(id => id);
+            System.Collections.Generic.IEnumerable<int> hand = match.Hand.Where(id => id != drawn).OrderBy(id => id);
             if (drawn >= 0) { hand = hand.Append(drawn); }
 
-            var legal = match.LegalActions(0);
+            var legal = match.LegalActions;
             foreach (var id in hand)
             {
                 var t = Tiles.Type(id);
@@ -443,9 +443,9 @@ namespace Game.Unity
             UpdateRecommendation(match);
         }
 
-        private void UpdateRecommendation(Match match)
+        private void UpdateRecommendation(SeatView match)
         {
-            var recommended = Cpu.RecommendDiscard(match, 0, match.LegalActions(0), _mode);
+            var recommended = Cpu.RecommendDiscard(match, _mode);
             Root!.Q<Label>("discard-tip").text = recommended.HasValue
                 ? "打牌のおすすめ　" + TileName(Tiles.Type(recommended.Value)) : string.Empty;
             foreach (var button in Root.Query<Button>(className: "hand-tile").ToList())
@@ -458,7 +458,7 @@ namespace Game.Unity
             }
         }
 
-        private void Results(VisualElement root, Match match)
+        private void Results(VisualElement root, SeatView match)
         {
             var page = Box(root, Felt);
             page.style.flexGrow = 1;

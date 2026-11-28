@@ -38,7 +38,7 @@ namespace Game.Unity.Tests
                 game.UseDemonstration(flow);
                 yield return null;
                 yield return Click(game, mouse, "start");
-                var match = flow.Match!;
+                var match = flow.View!;
                 for (var seat = 1; seat < 4; seat++)
                 {
                     var rack = game.Root!.Q("cpu-rack-" + seat);
@@ -67,7 +67,7 @@ namespace Game.Unity.Tests
                         yield return null;
                         yield return Click(game, mouse, "next");
                     }
-                    else if (!sawCall && match.Phase == Phase.DiscardReaction && match.LegalActions(0).Any(
+                    else if (!sawCall && match.Phase == Phase.DiscardReaction && match.LegalActions.Any(
                         m => m.Kind is MoveKind.Chi or MoveKind.Pon or MoveKind.OpenKan))
                     {
                         sawCall = true;
@@ -77,9 +77,9 @@ namespace Game.Unity.Tests
                         Assert.That(game.Root!.Q<Button>("pass-bottom").worldBound.center.y,
                             Is.GreaterThan(game.Root.Q<Button>("Pass--1").worldBound.center.y));
                         yield return Click(game, mouse, "pass-bottom");
-                        Assert.That(match.Revision != revision || !match.LegalActions(0).Contains(new Move(MoveKind.Pass)), Is.True);
+                        Assert.That(match.Revision != revision || !match.LegalActions.Contains(new Move(MoveKind.Pass)), Is.True);
                     }
-                    else { Assert.That(TableFlow.PlayCpu(match, 0), Is.True); }
+                    else { Assert.That(flow.StepDemonstration(), Is.True); }
                 }
 
                 Assert.That(sawResult, Is.True);
@@ -88,8 +88,8 @@ namespace Game.Unity.Tests
                 game.Render();
                 yield return null;
                 yield return Click(game, mouse, "restart");
-                Assert.That(flow.Match, Is.Not.SameAs(match));
-                Assert.That(flow.Match!.Round, Is.EqualTo(1));
+                Assert.That(flow.View, Is.Not.SameAs(match));
+                Assert.That(flow.View!.Round, Is.EqualTo(1));
             }
             finally { InputSystem.RemoveDevice(mouse); }
         }

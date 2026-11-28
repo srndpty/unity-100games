@@ -39,7 +39,7 @@ namespace Game.Core
         public int CalledId { get; }
     }
 
-    public sealed class Seat
+    internal sealed class Seat
     {
         internal readonly List<int> Hand = new();
         internal readonly List<Discard> River = new();
@@ -92,6 +92,7 @@ namespace Game.Core
         private const int SeatsCount = 4;
         private const int DeadSize = 14;
         private readonly Seat[] _seats = { new(), new(), new(), new() };
+        private readonly SeatView[] _views = new SeatView[SeatsCount];
         private readonly Move?[] _answers = new Move?[SeatsCount];
         private readonly IReadOnlyList<Move>[] _responses = new IReadOnlyList<Move>[SeatsCount];
         private readonly HashSet<int> _forbidden = new();
@@ -116,10 +117,15 @@ namespace Game.Core
             _seed = seed;
             _wallForHand = wallForHand;
             Seats = Array.AsReadOnly(_seats);
+            var publicSeats = Array.AsReadOnly(_seats.Select(seat => new PublicSeat(seat)).ToArray());
+            for (var seat = 0; seat < SeatsCount; seat++)
+            {
+                _views[seat] = new SeatView(this, seat, publicSeats);
+            }
             StartHand();
         }
 
-        public IReadOnlyList<Seat> Seats { get; }
+        internal IReadOnlyList<Seat> Seats { get; }
         public Phase Phase { get; private set; }
         public int Revision { get; private set; }
         public int Current { get; private set; }
@@ -129,14 +135,16 @@ namespace Game.Core
         public int Honba { get; private set; }
         public int Sticks { get; private set; }
         public int Remaining => _end - _next;
-        public int Drawn => _draw;
+        internal int Drawn => _draw;
         public int Target => _target;
         public Settlement? Result { get; private set; }
         public IReadOnlyList<int> Ranking => Array.AsReadOnly(Enumerable.Range(0, SeatsCount).OrderByDescending(s => _seats[s].Points).ToArray());
         public IReadOnlyList<int> DoraIndicators => Array.AsReadOnly(Indicators(false));
-        public IReadOnlyList<int> Hand(int seat) => _seats[seat].Hand.AsReadOnly();
+        internal IReadOnlyList<int> Hand(int seat) => _seats[seat].Hand.AsReadOnly();
 
-        public IReadOnlyList<Move> LegalActions(int seat)
+        public SeatView ViewFor(int seat) => _views[seat];
+
+        internal IReadOnlyList<Move> LegalActions(int seat)
         {
             if (seat is < 0 or >= SeatsCount) { return Array.Empty<Move>(); }
 
@@ -238,7 +246,7 @@ namespace Game.Core
             return true;
         }
 
-        public IReadOnlyList<int> PhysicalTiles()
+        internal IReadOnlyList<int> PhysicalTiles()
         {
             var result = new List<int>(Tiles.Total);
             result.AddRange(_wall.Skip(_next).Take(_end - _next));

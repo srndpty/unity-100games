@@ -22,7 +22,7 @@ namespace Game.Unity
                 if (!seen.Add(name)) { return; }
 
                 game.Render();
-                var match = game.Flow.Match;
+                var match = game.Flow.View;
                 var position = match == null ? "タイトル" : $"局通番={match.Serial}, 操作番号={match.Revision}";
                 await capture.ShootAsync(name, $"{description} (seed={activeSeed}, {position})");
             }
@@ -35,11 +35,11 @@ namespace Game.Unity
                 flow.Push(Intent.Start);
                 flow.Step(0f);
                 game.UseDemonstration(flow);
-                var match = flow.Match!;
+                var match = flow.View!;
                 await Shot("02_table", "東1局の配牌");
                 for (var step = 0; step < 10000 && match.Phase != Phase.MatchResult; step++)
                 {
-                    var legal = match.LegalActions(0);
+                    var legal = match.LegalActions;
                     if (legal.Any(m => m.Kind is MoveKind.Chi or MoveKind.Pon or MoveKind.OpenKan))
                     {
                         await Shot("03_call", "打牌への応答と鳴き候補");
@@ -56,7 +56,7 @@ namespace Game.Unity
                         await Shot(won ? "05_win" : "06_draw", won ? "和了の符翻と点数移動" : "流局の聴牌と点数移動");
                     }
 
-                    if (!TableFlow.PlayCpu(match, 0)) { throw new InvalidOperationException("台本が進行できません。"); }
+                    if (!flow.StepDemonstration()) { throw new InvalidOperationException("台本が進行できません。"); }
                 }
 
                 if (match.Phase != Phase.MatchResult) { throw new InvalidOperationException("台本が終局しません。"); }
