@@ -1,0 +1,55 @@
+{
+    "Product": "Riichi Mahjong",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "41e85ecbcd4740329255502e3e8e89bf",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-28T13:19:23.3722188Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "rules",
+            "Value": "東風戦・赤牌なし・25,000点"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01_title.jpg",
+            "Sha256": "39e74a1bcf78d2c4ed249319d604b741ec2444ace7521f0d8150c705ec20cb35",
+            "Note": "タイトル (seed=1, タイトル)"
+        },
+        {
+            "File": "02_table.jpg",
+            "Sha256": "f9d16edc75dd23ef536ffdc20d080694db6e00203201fae790888da021b9c45b",
+            "Note": "東1局の配牌 (seed=1, 局通番=1, 操作番号=0)"
+        },
+        {
+            "File": "03_call.jpg",
+            "Sha256": "a63611080340b8668ccffaad3863b42117acfc73417e71491f10add62f2b5a3a",
+            "Note": "打牌への応答と鳴き候補 (seed=1, 局通番=1, 操作番号=20)"
+        },
+        {
+            "File": "06_draw.jpg",
+            "Sha256": "d6d031c6aaf1119803914ab0aefce247c2489d29515c262e2f86a8f47a488466",
+            "Note": "流局の聴牌と点数移動 (seed=1, 局通番=1, 操作番号=90)"
+        },
+        {
+            "File": "05_win.jpg",
+            "Sha256": "d36d8eb675cac5f1767ed0f024f92ce3c048c9a8010fd7b3f829c083a8cae541",
+            "Note": "和了の符翻と点数移動 (seed=1, 局通番=2, 操作番号=128)"
+        },
+        {
+            "File": "07_ranking.jpg",
+            "Sha256": "8d01fa7e7c5cb75fd5f5085b9342530ceca5b9806aedff35ee75a76dc8746f9c",
+            "Note": "東風戦の最終順位 (seed=1, 局通番=5, 操作番号=330)"
+        },
+        {
+            "File": "04_riichi.jpg",
+            "Sha256": "b35dddde7116f6ce27e4758ff926834cbca0e8e06a13027e7a29d325fdd6ad88",
+            "Note": "リーチ成立後の卓 (seed=5, 局通番=3, 操作番号=167)"
+        }
+    ]
+}
