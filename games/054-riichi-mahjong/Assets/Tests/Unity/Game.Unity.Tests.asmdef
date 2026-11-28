@@ -3,6 +3,7 @@
   "rootNamespace": "Game.Unity.Tests",
   "references": [
     "Game.Core",
+    "IntGeometry",
     "Game.App",
     "Game.Unity",
     "Unity.InputSystem",

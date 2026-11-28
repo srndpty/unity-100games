@@ -1,7 +1,7 @@
 {
   "name": "Game.Core",
   "rootNamespace": "Game.Core",
-  "references": [],
+  "references": ["IntGeometry"],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
