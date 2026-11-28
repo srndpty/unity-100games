@@ -17,7 +17,7 @@ namespace Game.App
         public static int ChooseMove(GoGame game, MctsConfig config, int playouts, int matchSeed)
         {
             if (game == null) { throw new ArgumentNullException(nameof(game)); }
-            var search = new Mcts(game, config, playouts, RandomSeries.Derive(matchSeed, game.MoveCount, RandomPurpose), Ownership.Series(matchSeed, game.MoveCount + 1));
+            var search = new Mcts(game, config, playouts, RandomSeries.Derive(matchSeed, game.MoveCount, RandomPurpose), matchSeed);
             while (!search.IsDone) { search.Run(playouts); }
             return search.BestMove;
         }

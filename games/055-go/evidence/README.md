@@ -8,8 +8,8 @@
 |---|---|
 | dev lint | 成功 |
 | dev check | 成功（警告 0） |
-| dev test | 成功。Core 125/125、App 24/24（.NET 9） |
-| Unity EditMode | 221/221（パッケージ int-geometry 60・tile-motion 10・Core 125・App 24・Editor 2。Mono） |
+| dev test | 成功。Core 126/126、App 24/24（.NET 9） |
+| Unity EditMode | 222/222（パッケージ int-geometry 60・tile-motion 10・Core 126・App 24・Editor 2。Mono） |
 | Unity PlayMode | 28/28（実シーン 12、共通の証跡公開 16） |
 | Windows ビルド | 成功、StandaloneWindows64。ビルドの前の検証フック（`SekiteiBuildCheck`）が設定アセットを対局と同じ規則で検証して通過 |
 | 壊した設定のビルド | 設定アセットの `StrongPlayouts` を 0 にすると、`dev build 055` が `設定の検証に失敗しました（Assets/Game/Unity/SekiteiSettings.asset）` `StrongPlayouts は 1〜100000（0）` で止まる。確かめてから戻した。Editor のテストでコミ・回数・1 Tick の回数・考える時間（NaN）・音量（無限大）も拒否する |

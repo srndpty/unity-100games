@@ -15,8 +15,8 @@ namespace Game.Core
     /// <item>終局：2 連続パスか、対局の手数の上限（<see cref="GoConfig.MoveLimit"/>、パスも数える）に届いた節点は展開もプレイアウトもせず、そのまま面積で数える。
     /// プレイアウトも上限までの残りの手数で打ち切る（対局で起きない先の局面で評価しない）。</item>
     /// <item>評価：<see cref="Playout"/> の勝敗（勝ち 2・引き分け 1・負け 0 を足す）。</item>
-    /// <item>相手がパスした後の根のパス（すぐ終局する）は、終局後と同じ死石の推定（<see cref="OwnershipSearch"/>、系列を渡したとき）で死石を除いて数える。
-    /// 推定は <see cref="Run"/> の回数の中で木より先に少しずつ回す。</item>
+    /// <item>根ですぐ終局する手（相手がパスした後のパス、手数の上限まで残り 1 手ならどの手も）は、終局後と同じ死石の推定
+    /// （<see cref="OwnershipSearch"/>、試合シードを渡したとき）で死石を除いて数える。推定は <see cref="Run"/> の回数の中で木より先に少しずつ回す。</item>
     /// </list>
     /// <see cref="Run"/> を何回に分けて呼んでも、総数が同じなら同じ木（同じ手）になる。
     /// </summary>
@@ -31,12 +31,14 @@ namespace Game.Core
         private readonly List<int> _sequence = new();
         private readonly List<(Node Node, int Start)> _path = new();
         private readonly Stone[] _first = new Stone[Points.Count];
-        private readonly OwnershipSearch? _passEstimate;
-        private readonly GoGame? _afterPass;
-        private Stone? _passWinner;
+        private readonly List<EndCase> _ends = new();
+        private readonly Dictionary<int, Stone> _endWinners = new();
 
-        /// <param name="passEstimate">相手がパスした後に根でパスして終局したときの死石の推定の系列（終局後の推定と同じ系列を渡す）。null なら死石を除かずに数える。</param>
-        public Mcts(GoGame game, MctsConfig config, int playouts, RandomSeries random, RandomSeries? passEstimate = null)
+        /// <param name="endSeed">
+        /// 試合シード。渡すと、根ですぐ終局する手を、終局後と同じ系列（<see cref="Ownership.Series"/>）の死石の推定で死石を除いて数える。
+        /// null なら盤のまま数える。
+        /// </param>
+        public Mcts(GoGame game, MctsConfig config, int playouts, RandomSeries random, int? endSeed = null)
         {
             if (game == null) { throw new ArgumentNullException(nameof(game)); }
             if (config == null) { throw new ArgumentNullException(nameof(config)); }
@@ -50,12 +52,7 @@ namespace Game.Core
             Target = playouts;
             Side = game.ToMove;
             _rootNode = new Node(Points.Pass, Side.Opponent(), null);
-            if (passEstimate != null && _root.ConsecutivePasses > 0)
-            {
-                _afterPass = _root.Clone();
-                if (_afterPass.TryPass(Side) != MoveVerdict.Ok || !_afterPass.IsOver) { throw new InvalidOperationException("相手のパスの後のパスで終局しません。"); }
-                _passEstimate = new OwnershipSearch(_afterPass, _config.OwnershipPlayouts, _config.PlayoutMoveLimit, passEstimate);
-            }
+            if (endSeed.HasValue) { PrepareEnds(endSeed.Value); }
         }
 
         /// <summary>探索する側（根の手番）。</summary>
@@ -67,10 +64,21 @@ namespace Game.Core
         /// <summary>回し終えたプレイアウトの数。</summary>
         public int Done { get; private set; }
 
-        public bool IsDone => Done >= Target && (_passEstimate == null || _passEstimate.IsDone);
+        public bool IsDone => Done >= Target && _endWinners.Count == _ends.Count;
 
-        /// <summary>根のパスで終局したときの死石の推定（推定しないなら null）。</summary>
-        public OwnershipSearch? PassEstimate => _passEstimate;
+        /// <summary>根ですぐ終局する手の数（死石の推定で数える手）。</summary>
+        public int EndMoveCount => _ends.Count;
+
+        /// <summary>根の手 <paramref name="move"/> で終局したときの死石の推定（推定しない手なら null）。</summary>
+        public OwnershipSearch? EndEstimateOf(int move)
+        {
+            foreach (var e in _ends)
+            {
+                if (e.Move == move) { return e.Search; }
+            }
+
+            return null;
+        }
 
         /// <summary>最多訪問の手（同数なら点の番号の小さい方、パスは最後）。まだ 1 回も回していなければ例外。</summary>
         public int BestMove => Best().Move;
@@ -102,12 +110,13 @@ namespace Game.Core
         {
             if (maxPlayouts < 0) { throw new ArgumentOutOfRangeException(nameof(maxPlayouts)); }
             var used = 0;
-            if (_passEstimate != null && !_passEstimate.IsDone)
+            foreach (var e in _ends)
             {
-                used = _passEstimate.Run(maxPlayouts);
-                if (!_passEstimate.IsDone) { return used; }
-                var dead = _passEstimate.EstimateDead(_config.DeadPercent);
-                _passWinner = AreaScore.Compute(_afterPass!.CopyBoard(), dead, _root.Komi).Winner;
+                if (_endWinners.ContainsKey(e.Move)) { continue; }
+                used += e.Search.Run(maxPlayouts - used);
+                if (!e.Search.IsDone) { return used; }
+                var dead = e.Search.EstimateDead(_config.DeadPercent);
+                _endWinners.Add(e.Move, AreaScore.Compute(e.After.CopyBoard(), dead, _root.Komi).Winner);
             }
 
             var count = Math.Min(maxPlayouts - used, Target - Done);
@@ -235,11 +244,11 @@ namespace Game.Core
                 _path.Add((node, _sequence.Count));
             }
 
-            // 評価。根のパスで終局したなら、死石を除いた計点（推定は Run が先に済ませている）。
+            // 評価。根の手ですぐ終局したなら、死石を除いた計点（推定は Run が先に済ませている）。
             Stone winner;
-            if (_passWinner.HasValue && _path.Count == 2 && _path[1].Node.Move == Points.Pass)
+            if (_path.Count == 2 && _endWinners.TryGetValue(_path[1].Node.Move, out var endWinner))
             {
-                winner = _passWinner.Value;
+                winner = endWinner;
             }
             else
             {
@@ -261,6 +270,26 @@ namespace Game.Core
                     c.AmafVisits++;
                     c.AmafWins2 += Reward(winner, c.Mover);
                 }
+            }
+        }
+
+        /// <summary>
+        /// 根ですぐ終局する手を挙げ、それぞれの終局の局面で死石の推定を用意する（展開と同じ手：候補とパスの規則）。
+        /// 系列は終局後の Flow と同じ（試合シード × 終局の手数 × 推定）なので、同じ死石になる。
+        /// </summary>
+        private void PrepareEnds(int seed)
+        {
+            var lastMove = _root.MoveCount + 1 >= _root.Config.MoveLimit;
+            if (!lastMove && _root.ConsecutivePasses == 0) { return; }
+            var moves = new List<int>();
+            if (lastMove) { moves.AddRange(CandidatePoints(_root, _root.CopyBoard(), Side, new List<ulong>(), new List<Stone[]>())); }
+            if (_root.ConsecutivePasses > 0 || moves.Count == 0) { moves.Add(Points.Pass); }
+            foreach (var move in moves)
+            {
+                var after = _root.Clone();
+                var verdict = move == Points.Pass ? after.TryPass(Side) : after.TryPlay(Side, move);
+                if (verdict != MoveVerdict.Ok || !after.IsOver) { throw new InvalidOperationException($"{Points.Name(move)} で終局しません（{verdict}）。"); }
+                _ends.Add(new EndCase(move, after, new OwnershipSearch(after, _config.OwnershipPlayouts, _config.PlayoutMoveLimit, Ownership.Series(seed, after.MoveCount))));
             }
         }
 
@@ -316,6 +345,22 @@ namespace Game.Core
             }
 
             return best!;
+        }
+
+        private sealed class EndCase
+        {
+            public EndCase(int move, GoGame after, OwnershipSearch search)
+            {
+                Move = move;
+                After = after;
+                Search = search;
+            }
+
+            public int Move { get; }
+
+            public GoGame After { get; }
+
+            public OwnershipSearch Search { get; }
         }
 
         private sealed class Node

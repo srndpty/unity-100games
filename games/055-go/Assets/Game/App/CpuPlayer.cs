@@ -16,7 +16,7 @@ namespace Game.App
     /// CPU の打ち手。手番が来た最初の Tick に <see cref="Mcts"/> を作り、Tick ごとに決まった数だけ回す（テスト・撮影）。
     /// Unity の対局では Tick は考える間だけを数え、探索はフレームの時間の予算で <see cref="Think"/> から回す（<c>runSearch: false</c>）。
     /// 総数を回し終え、考える間（最小の Tick）も過ぎたら、プレイヤーと同じ <see cref="GoGame.TryPlay"/> で打つ（パス・投了も同じ口）。
-    /// 乱数は（試合シード × 手数 × 探索）の系列で、手ごとに作り直す。相手がパスした後は、終局後と同じ系列で死石を推定してからパスを評価する。
+    /// 乱数は（試合シード × 手数 × 探索）の系列で、手ごとに作り直す。すぐ終局する手（相手のパスの後のパス、手数の上限の最後の手）は、終局後と同じ系列で死石を推定してから評価する。
     /// </summary>
     public sealed class CpuPlayer
     {
@@ -108,7 +108,7 @@ namespace Game.App
         private void Ensure(GoGame game)
         {
             if (Search != null && ReferenceEquals(_searchGame, game) && _searchMove == game.MoveCount) { return; }
-            Search = new Mcts(game, _config, _playouts, RandomSeries.Derive(_matchSeed, game.MoveCount, RandomPurpose), Ownership.Series(_matchSeed, game.MoveCount + 1));
+            Search = new Mcts(game, _config, _playouts, RandomSeries.Derive(_matchSeed, game.MoveCount, RandomPurpose), _matchSeed);
             _searchGame = game;
             _searchMove = game.MoveCount;
             _ticks = 0;

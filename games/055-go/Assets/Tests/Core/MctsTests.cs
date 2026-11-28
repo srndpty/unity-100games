@@ -195,7 +195,8 @@ namespace Game.Core.Tests
             Assert.That(Search(game, 400, config: config).BestMove, Is.EqualTo(Points.Pass));
 
             // 終局後と同じ推定で死石を除くと、パスは負け。
-            var search = new Mcts(game, config, 400, new RandomSeries(1), Ownership.Series(9, game.MoveCount + 1));
+            var search = new Mcts(game, config, 400, new RandomSeries(1), 9);
+            Assert.That(search.EndMoveCount, Is.EqualTo(1), "推定するのはパスだけ");
             Assert.That(search.Run(150), Is.EqualTo(150));
             Assert.That(search.Done, Is.EqualTo(0), "推定を先に回す");
             Assert.That(search.IsDone, Is.False);
@@ -209,7 +210,7 @@ namespace Game.Core.Tests
             // 推定は終局後の Flow と同じ系列なので、同じ死石になる。
             var after = game.Clone();
             after.TryPass(Stone.White);
-            Assert.That(search.PassEstimate!.EstimateDead(config.DeadPercent), Is.EqualTo(Ownership.EstimateDead(after, config, 9)));
+            Assert.That(search.EndEstimateOf(Points.Pass)!.EstimateDead(config.DeadPercent), Is.EqualTo(Ownership.EstimateDead(after, config, 9)));
         }
 
         [Test]
@@ -218,7 +219,7 @@ namespace Game.Core.Tests
             var game = Lab.Game(Invaded);
             game.TryPass(Stone.Black);
             var config = new MctsConfig { OwnershipPlayouts = 120 };
-            Mcts Make() => new(game, config, 300, new RandomSeries(4), Ownership.Series(3, game.MoveCount + 1));
+            Mcts Make() => new(game, config, 300, new RandomSeries(4), 3);
             var whole = Make();
             whole.Run(10_000);
             Assert.That(whole.IsDone, Is.True);
@@ -228,6 +229,38 @@ namespace Game.Core.Tests
                 while (!split.IsDone) { split.Run(chunk); }
                 Assert.That(split.RootChildren(), Is.EqualTo(whole.RootChildren()), $"{chunk} ずつ");
             }
+        }
+
+        [Test]
+        public void OnTheLastMoveBeforeTheLimit_EveryRootMove_IsScoredLikeTheRealEnd()
+        {
+            // 手数の上限まで残り 1 手（白）。盤のまま数えると白の勝ち、死石（B2・H8）を除くと黒の勝ち。
+            var game = new GoGame(new GoConfig { MoveLimit = 2 }, BoardText.Parse(Invaded), Stone.Black);
+            Lab.Play(game, "A9");
+            Assert.That(game.IsOver, Is.False);
+            var config = new MctsConfig { OwnershipPlayouts = 40 };
+            var search = new Mcts(game, config, 300, new RandomSeries(2), 5);
+            Assert.That(search.EndMoveCount, Is.EqualTo(Mcts.CandidatePoints(game, game.CopyBoard(), Stone.White, null, null).Count), "根の全ての候補（パスは相手がパスしていないので含めない）");
+            while (!search.IsDone) { search.Run(53); }
+
+            // 根の子の評価は、その手の後で Flow が行う推定と計点の勝敗と一致する。
+            var children = search.RootChildren();
+            Assert.That(children.Count, Is.EqualTo(search.EndMoveCount));
+            var blackWins = 0;
+            foreach (var (move, visits, wins2) in children)
+            {
+                var after = game.Clone();
+                Assert.That(after.TryPlay(Stone.White, move), Is.EqualTo(MoveVerdict.Ok));
+                Assert.That(after.End, Is.EqualTo(GameEnd.MoveLimit));
+                var dead = Ownership.EstimateDead(after, config, 5);
+                var winner = AreaScore.Compute(after.CopyBoard(), dead, after.Komi).Winner;
+                var expected = winner == Stone.White ? 2L : winner == Stone.Empty ? 1L : 0L;
+                Assert.That(wins2, Is.EqualTo(expected * visits), Points.Name(move));
+                if (winner == Stone.Black) { blackWins++; }
+            }
+
+            Assert.That(blackWins, Is.GreaterThan(children.Count / 2), "死石を除くと多くの手で黒の勝ち（盤のままなら白の勝ち）");
+            Assert.That(Search(game, 300, config: config).RootChildren().All(c => c.Wins2 == 2L * c.Visits), Is.True, "推定しなければ全て白の勝ちに見える");
         }
 
         [TestCase(1)]
