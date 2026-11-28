@@ -1,0 +1,73 @@
+{
+    "Product": "Sekitei",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "48d7c086debe49b39a0782853c55bf06",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-28T07:48:27.2782319Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "pilot",
+            "Value": "プレイヤー（黒）は操縦役（300 回の MCTS をキー入力に変える）"
+        },
+        {
+            "Key": "playoutsPerTick",
+            "Value": "20"
+        },
+        {
+            "Key": "cpu",
+            "Value": "弱い（500 回）"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01_title.jpg",
+            "Sha256": "eda0c5c0f9c78077e68e9e952dc43a726293fce697968f281017159067a1273b",
+            "Note": "タイトル"
+        },
+        {
+            "File": "02_level.jpg",
+            "Sha256": "54ae1ee9b66fe1bfc4b1c11583f96932b4f555a6a52207657620e20e03138ddf",
+            "Note": "CPU の強さを選ぶ（弱い。撮影の時間を短くするため）"
+        },
+        {
+            "File": "03_howto.jpg",
+            "Sha256": "5313184b202a0b88bfa4404024f4a2e5984eb0811c106edde88052f0e0460df7",
+            "Note": "遊び方"
+        },
+        {
+            "File": "04_playing.jpg",
+            "Sha256": "36c2dd6293ecd2e34239f95bd17f622e00dc9241aff966870ae95ec8f27ecf1b",
+            "Note": "対局中（矢印キーのカーソル・最後の手の印） (moves=16, hash=0x3127589E)"
+        },
+        {
+            "File": "05_cpu_thinking.jpg",
+            "Sha256": "5b45aa723466eab1159748fc897870b9bf3432d84ae30f4be60069b3d9198ce8",
+            "Note": "CPU の考え中（回した数と見込みの勝率） (moves=17, hash=0xA23E746F)"
+        },
+        {
+            "File": "06_pause.jpg",
+            "Sha256": "0257326224fb25021177f7c702548f206183a18ab22cf495ce2b184f0581bf2e",
+            "Note": "一時停止（再開・投了・タイトルへ） (moves=17, hash=0xA23E746F)"
+        },
+        {
+            "File": "07_scoring.jpg",
+            "Sha256": "c2eb2a5fd618cb44d2aa5c4ec19b5e03dc180546c463a986494b6bbab3de002a",
+            "Note": "死石の確定（推定した死石を薄く、地を小さな四角で表示） (moves=92, hash=0x5A92EA7D)"
+        },
+        {
+            "File": "08_result.jpg",
+            "Sha256": "9e2a65c87f605cb565e1ab9f22977d9ab6a41798a7775b36ea6e9bb8f559ddba",
+            "Note": "結果（面積の内訳） (moves=92, hash=0x5A92EA7D)"
+        },
+        {
+            "File": "09_ko.jpg",
+            "Sha256": "031be01e6d446ca4d410dddd70f90c93048273dc165a03e659efb425b1c9484d",
+            "Note": "コウ：取られた直後の 1 子の取り返しは打てない (moves=1, hash=0x56F668BE)"
+        }
+    ]
+}
