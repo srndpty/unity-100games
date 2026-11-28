@@ -109,7 +109,7 @@ namespace Game.Core
         }
 
         /// <summary>各交点の持ち主（石の色か、その色だけに接する空点の色。どちらでもなければ Empty）。死石の推定で数える。</summary>
-        internal static void Owners(Stone[] cells, Stone[] owners)
+        public static void Owners(Stone[] cells, Stone[] owners)
         {
             var visited = new bool[Points.Count];
             var stack = new int[Points.Count];

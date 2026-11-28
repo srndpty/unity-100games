@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 144db7bbdf2930d47bbc8635d5e81ad8, type: 3}
+  m_Name: SekiteiSettings
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.SekiteiSettings
+  Komi: 7
+  MoveLimit: 300
+  WeakPlayouts: 500
+  NormalPlayouts: 2000
+  StrongPlayouts: 8000
+  CpuThinkTicks: 30
+  PlayoutsPerTick: 20
+  ThinkMillisecondsPerFrame: 8
+  ResignPermille: 100
+  OwnershipPlayouts: 600
+  Volume: 0.05

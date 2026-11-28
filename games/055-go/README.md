@@ -1,14 +1,14 @@
-# 055. 囲碁
+# 055. 囲碁 — 石庭（SEKITEI）
 
 仕様書：[plan/games/055-go.md](../../plan/games/055-go.md)／実装計画：[plan/games/055-go-implementation.md](../../plan/games/055-go-implementation.md)
 
-9 路盤で CPU と打つ囲碁。CPU は回数で止める小規模な MCTS。参考作品からはメカニクスだけを採用する。
+9 路盤で CPU と打つ囲碁。CPU は回数で止める小規模な MCTS（UCT＋RAVE）。参考作品からはメカニクスだけを採用し、盤・石・音は実行時やエディタのスクリプトで作っている。
 
 ## 環境
 
 - Unity：6000.6.9f1（Universal 2D、C# 9.0）
 - 対象プラットフォーム：Windows (StandaloneWindows64)
-- 入力方式：Input System のマウスとキーボード（セッション 3 で確定）
+- 入力方式：Input System のマウスとキーボード。HUD は PanelRenderer / UI Toolkit。日本語は Windows の Yu Gothic で表示する
 
 ## 起動手順
 
@@ -21,7 +21,20 @@ dev capture 055  # 証跡を evidence/ に撮る（画像は captures/<画像世
 
 ## 操作
 
-（セッション 3 で記入）
+シーンは `Assets/Scenes/Sekitei.unity`。
+
+| 入力 | タイトル・一時停止・結果 | 対局中 | 死石の確定 |
+|---|---|---|---|
+| 左クリック | 項目を選ぶ | 交点に打つ（打てない点は理由を右の板に出す）。「パス」「一時停止」のボタン | 連の生死を切り替える。「確定」のボタン |
+| マウスを交点に重ねる | — | 打てる点なら置く前の影を出す | — |
+| ↑↓ / WS | 項目を選ぶ | カーソルを動かす（キーを使うまで出さない） | カーソルを動かす |
+| ←→ / AD | CPU の強さ・あなたの石を切り替える | カーソルを動かす | カーソルを動かす |
+| Enter / Space | 決定 | カーソルの点に打つ | カーソルの連を切り替える |
+| P | — | パス | — |
+| Esc | 一時停止から戻る | 一時停止（再開・投了・タイトルへ） | 確定して計点する |
+
+- 石を置いた演出の間（12 Tick）と CPU の手番の着手・パスは捨てる（先行入力しない）。カーソルは動かせる。
+- フォーカスを失うと一時停止し、戻っても手で再開する。ウィンドウを選び直したクリックは捨てる。
 
 ## 採用ルール
 
@@ -68,6 +81,7 @@ dev capture 055  # 証跡を evidence/ に撮る（画像は captures/<画像世
 |---|---|
 | Core | `Points`（交点の番号と表記・隣の表）、`PointSet`（81 点の 128 ビット集合）、`Board`（色・連の番号・連ごとの石と呼吸点の集合を差分で更新、Zobrist ハッシュ）、`Zobrist`、`GoGame`（手番・パス・投了・終局・同型反復の履歴・アゲハマ・状態ハッシュ）、`AreaScore`、`GoConfig`、`BoardText`、`Playout`、`Mcts`、`Ownership`（死石の推定）、`MctsConfig` |
 | App | `GoFlow`（タイトル・遊び方・対局・一時停止・死石の確定・結果、意図の列、画面の版、フォーカス喪失、再戦のシード）、`CpuPlayer`、`BoardCursor`、`Pilot`（操縦役：小さい MCTS の手を矢印キーと決定に変える）、`FlowSettings` |
+| Unity | `SekiteiGame`（入力を意図に、フレームの残り時間で CPU の探索、描画の反映）、`SekiteiStage`（Prefab：盤・81 の石・81 の地の印・最後の手・カーソル・置く前の影）、`BoardProjection`（交点と世界の座標、クリックの交点）、`SekiteiHud`（UI Toolkit。コードで組む）、`SekiteiAudio`（効果音を実行時に作る）、`SekiteiSettings`（設定アセット）、`SekiteiCaptureScenario`、Editor の `SekiteiArtGenerator`・`SekiteiSceneBuilder`・`SekiteiBuildCheck` |
 
 - 連の石と呼吸点は 128 ビットの集合で持ち、着手のたびに「つないだ連の和」「取った跡を隣の連の呼吸点に足す」で差分更新する。テストで、毎手の全ての連を塗りつぶしの数え直しと照合する。
 - 盤の書き換え（`Board.Play`）は Core の内部だけ。画面とテストは `GoGame` の `TryPlay`／`TryPass`／`TryResign` を通す。
@@ -84,6 +98,10 @@ dev capture 055  # 証跡を evidence/ に撮る（画像は captures/<画像世
 | .NET 9（dotnet test、同じ機械） | 約 10,000 回 | — |
 
 空の盤からの探索（最も手数の長いプレイアウト）で測った（`SpeedTests`）。強い（8,000 回）でもエディタで約 1.7 秒ぶんの計算。
+
+## 素材
+
+盤（木目・線・星）・石・印は `SekiteiArtGenerator` が PNG を描いて取り込む（盤の線は `BoardProjection` と同じ間隔）。効果音は `SekiteiAudio` が実行時に作る（矩形波・短いノイズ、音量は控えめ）。
 
 ## テスト
 

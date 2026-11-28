@@ -47,8 +47,8 @@ namespace Game.Core
         {
         }
 
-        /// <summary>局面を直接作る（テストと死石の推定）。履歴はこの盤面から始まる。</summary>
-        internal GoGame(GoConfig config, Board board, Stone toMove)
+        /// <summary>局面を直接作る（テスト・撮影の決まった局面）。履歴はこの盤面から始まる。</summary>
+        public GoGame(GoConfig config, Board board, Stone toMove)
         {
             if (config == null) { throw new ArgumentNullException(nameof(config)); }
             var errors = config.Validate();
