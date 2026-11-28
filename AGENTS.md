@@ -45,8 +45,8 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - 共通コードは、3題以上で再利用価値が明確になってから `packages/` にローカル UPM パッケージとして抽出する。
   - 作品からは `Packages/manifest.json` に `"file:../../../packages/<名前>"` と `testables` を書き、`dev test NNN -Unity` でパッケージのテストも Mono で流す。dotnet 側は作品の Core の csproj から `ProjectReference` する。
   - パッケージも Core と同じく Unity API に依存しない（`noEngineReferences`）。中身を変えると全作品が検査対象になる（`dev lint/check -Staged`）。
-  - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う（033・034 は `StateHash` だけ、035・036・037・038 は `StateHash` を使う、042 は `Box`・`BodyMotion`・`StateHash` を使う、043・044・045・046・047 は `StateHash` だけ、048・050 は `StateHash` を使う）。
-  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）、状態を保存できる乱数系列と試合シード・番号・用途からの派生（`RandomSeries`、041・043・044 の GameRng から 045 の着手時に抽出）。025〜027 の実装から抽出し、028 から使う（032 は `SeededRandom` だけ、033 は `Vec2i`・`IntMath`・`Sweep`、035・036 は `Vec2i`・`IntMath`・`Sweep`・`Trig`・`SeededRandom` を使う、037 は `Vec2i`・`IntMath`・`Sweep`・`Trig` を使う、038 は `IntMath`・`Trig`・`SeededRandom` を使う、042 は `Vec2i`・`IntMath`・`Sweep`・`SeededRandom` を使う、043 は `Vec2i`・`SeededRandom` を使う、041・043・044 は `SeededRandom`・`RandomSeries`、045 は `SeededRandom`（`RandomSeries` の撹拌）・`RandomSeries` を使う、047 は `Vec2i`・`Rect` を使う、048 は `IntMath`・`Vec2i`・`SeededRandom`・`RandomSeries` を使う、050 は `SeededRandom`・`RandomSeries` を使う）。
+  - `com.games100.tile-motion`：整数の箱（`Box`・`Units`）、タイルとの衝突解決（`ISolidGrid`・`BodyMotion`・`GroundProbe`）、残り Tick の猶予（`Countdown`）、状態ハッシュ（`StateHash`）。021・022 の実装から抽出し、023 から使う（033・034 は `StateHash` だけ、035・036・037・038 は `StateHash` を使う、042 は `Box`・`BodyMotion`・`StateHash` を使う、043・044・045・046・047 は `StateHash` だけ、048・050・053 は `StateHash` を使う）。
+  - `com.games100.int-geometry`：整数の 2 次元ベクトルと計算（`Vec2i`・`IntMath`・`Rect`）、動く 2 つの円の掃引（`Sweep.First` は最初に触れた時刻、近い組の値が `Sweep.FirstLimit` を超えたら例外。`Sweep.Touches` は大きさに依らず厳密な有無）、整数の角度表（`Trig`）、シード付き乱数（`SeededRandom`）、状態を保存できる乱数系列と試合シード・番号・用途からの派生（`RandomSeries`、041・043・044 の GameRng から 045 の着手時に抽出）。025〜027 の実装から抽出し、028 から使う（032 は `SeededRandom` だけ、033 は `Vec2i`・`IntMath`・`Sweep`、035・036 は `Vec2i`・`IntMath`・`Sweep`・`Trig`・`SeededRandom` を使う、037 は `Vec2i`・`IntMath`・`Sweep`・`Trig` を使う、038 は `IntMath`・`Trig`・`SeededRandom` を使う、042 は `Vec2i`・`IntMath`・`Sweep`・`SeededRandom` を使う、043 は `Vec2i`・`SeededRandom` を使う、041・043・044 は `SeededRandom`・`RandomSeries`、045 は `SeededRandom`（`RandomSeries` の撹拌）・`RandomSeries` を使う、047 は `Vec2i`・`Rect` を使う、048 は `IntMath`・`Vec2i`・`SeededRandom`・`RandomSeries` を使う、050 は `SeededRandom`・`RandomSeries` を使う、053 は `Vec2i`・`IntMath`・`Sweep`・`SeededRandom`・`RandomSeries` を使う）。
 
 ## 技術スタック
 
@@ -310,6 +310,8 @@ Unity ゲーム制作100本ノックのリポジトリ。1題材＝1 Unity プ�
 - **乱数を用途ごとの系列（シード・日・用途）にしたセーブは、記録の再生で整合を確かめる。** 範囲の検査だけでは「25 日目なのに行動の記録がない」「記録にないフラグ」が通る。シードと記録の入力（行動・選択）だけを 1 日目から再生し、再生した状態がセーブと全て一致するときだけ読む。遊んだ時間のような App の値もセーブに入れて戻す（050）。
 - **重ねて開く画面（詳細など）はモーダルにし、開閉で画面の版を進める。** パネルの座標で項目を照合する方式では、上に重なった窓を見ないので、詳細を読みながらのクリックが背後の会話を送った。開いている間は閉じる操作だけを受け付け、Esc も一時停止ではなく閉じるにする（050）。
 - **DSL の検証は、宣言ごとの検査に加えて暦（日ごと）の検査をする。** 行動ごとに選べる曜日があっても、全ての行動が月〜土なら日曜に進めなくなる（050）。
+- **反射する壁を足したら、Tick の中の移動を折れ線の区間に分け、接触の判定を区間ごとに行う。** 始めと終わりを結ぶ直線の掃引では、壁際の選手が止められず、球が通っていない直線の上の選手が止める。速さの判定も区間の速度で行う。開口部（ゴールの口）を通すかは、Tick の終わりではなく壁に触れた時刻の位置と高さで、有理数の交差乗算で決める（053 の `Ball.Segment`・`TickTime`）。
+- **CPU を遅くするなら、速さを命令で抑えず規則（試合の設定）に置き、到着の予測にも同じ速さを使う。** 命令だけ抑えると、弱い CPU は自分を速く見積もり、相手の CPU も遅い相手を速く見積もる。ただし CPU どうしでは遅い側が勝ち越すことがあり（053）、人間にとっての強さは実際の入力経路を通す人間役（053 の `KeyPilot`）で条件を 1 つずつ変えて比べる。
 
 ## 注意点
 
