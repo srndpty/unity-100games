@@ -2,6 +2,8 @@
 
 仕様書：[plan/games/055-go.md](../../plan/games/055-go.md)／実装計画：[plan/games/055-go-implementation.md](../../plan/games/055-go-implementation.md)
 
+状態：完了（2026-11-28 人間の動作承認）。[検証記録](evidence/README.md)、[振り返り](retrospective.md)。
+
 9 路盤で CPU と打つ囲碁。CPU は回数で止める小規模な MCTS（UCT＋RAVE）。参考作品からはメカニクスだけを採用し、盤・石・音は実行時やエディタのスクリプトで作っている。
 
 ## 環境
