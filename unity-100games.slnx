@@ -323,6 +323,12 @@
     <Project Path="games/054-riichi-mahjong/dotnet/Core.Tests/G054.Core.Tests.csproj" />
     <Project Path="games/054-riichi-mahjong/dotnet/Core/G054.Core.csproj" />
   </Folder>
+  <Folder Name="/055-go/">
+    <Project Path="games/055-go/dotnet/App.Tests/G055.App.Tests.csproj" />
+    <Project Path="games/055-go/dotnet/App/G055.App.csproj" />
+    <Project Path="games/055-go/dotnet/Core.Tests/G055.Core.Tests.csproj" />
+    <Project Path="games/055-go/dotnet/Core/G055.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />
