@@ -15,13 +15,12 @@ namespace Game.Core.Tests
         {
             var m = Lab.Open();
             m.PlaceBall(new Vec2i(Pitch.HalfLength - 3000, 300), new Vec2i(300, 0));
-            m.SetLastTouch(Team.Blue);
             var events = Lab.Run(m, 60);
             Assert.That(Lab.Count(events, MatchEventKind.Goal), Is.EqualTo(1));
             Assert.That(m.Score(Team.Blue), Is.EqualTo(1));
             Assert.That(m.Phase, Is.EqualTo(MatchPhase.Goal));
             Assert.That(m.Ball.Position.X, Is.LessThanOrEqualTo(Pitch.HalfLength + Pitch.GoalDepth), "ネットの奥で止まる");
-            Assert.That(Lab.Count(events, MatchEventKind.Out), Is.EqualTo(0), "得点の Tick にライン外は重ならない");
+            Assert.That(Lab.Count(events, MatchEventKind.Wall), Is.EqualTo(0), "ゴールの口では跳ね返らない");
         }
 
         [Test]
@@ -39,23 +38,23 @@ namespace Game.Core.Tests
         }
 
         [Test]
-        public void OverTheBar_OrOutsideThePosts_IsNotAGoal()
+        public void OverTheBar_OrOutsideThePosts_IsNotAGoal_TheWallBouncesItBack()
         {
             var high = Lab.Open();
             high.PlaceBall(new Vec2i(Pitch.HalfLength - 1000, 0), new Vec2i(300, 0), Pitch.CrossbarHeight + 300, 0);
-            high.SetLastTouch(Team.Blue);
             var e1 = Lab.Run(high, 20);
             Assert.That(Lab.Count(e1, MatchEventKind.Goal), Is.EqualTo(0));
-            Assert.That(e1.Single(e => e.Kind == MatchEventKind.Out).Value, Is.EqualTo((int)RestartKind.GoalKick), "攻めた側が最後に触れた");
+            Assert.That(Lab.Count(e1, MatchEventKind.Wall), Is.EqualTo(1), "クロスバーの上は壁");
+            Assert.That(high.Ball.Velocity.X, Is.LessThan(0), "跳ね返る");
+            Assert.That(high.Phase, Is.EqualTo(MatchPhase.Play), "試合は止まらない");
 
             var wide = Lab.Open();
             wide.PlaceBall(new Vec2i(Pitch.HalfLength - 1000, Pitch.GoalHalfWidth + 400), new Vec2i(300, 0));
-            wide.SetLastTouch(Team.Red);
             var e2 = Lab.Run(wide, 20);
             Assert.That(Lab.Count(e2, MatchEventKind.Goal), Is.EqualTo(0));
-            var corner = e2.Single(e => e.Kind == MatchEventKind.Out);
-            Assert.That(corner.Value, Is.EqualTo((int)RestartKind.Corner), "守った側が最後に触れた");
-            Assert.That(corner.Team, Is.EqualTo(Team.Blue));
+            Assert.That(Lab.Count(e2, MatchEventKind.Wall), Is.EqualTo(1));
+            Assert.That(wide.Ball.Velocity.X, Is.LessThan(0));
+            Assert.That(wide.Ball.Position.X + Lab.Exact.BallRadius, Is.LessThanOrEqualTo(Pitch.HalfLength), "コートの中に残る");
         }
 
         [Test]
@@ -85,9 +84,9 @@ namespace Game.Core.Tests
             Assert.That(m.Score(Team.Blue), Is.EqualTo(1));
 
             var after = Lab.Run(m, config.RestartDelayTicks + 3);
-            var setPiece = after.Single(e => e.Kind == MatchEventKind.SetPiece);
-            Assert.That(setPiece.Value, Is.EqualTo((int)RestartKind.Kickoff));
-            Assert.That(setPiece.Team, Is.EqualTo(Team.Red), "失点した側のキックオフ");
+            var kickoff = after.Single(e => e.Kind == MatchEventKind.Kickoff);
+            Assert.That(kickoff.Team, Is.EqualTo(Team.Red), "失点した側のキックオフ");
+            Assert.That(m.Phase, Is.EqualTo(MatchPhase.Kickoff));
             Assert.That(m.Ball.Position, Is.EqualTo(Vec2i.Zero));
         }
 
@@ -96,7 +95,6 @@ namespace Game.Core.Tests
         {
             var m = Lab.Open();
             m.PlaceBall(new Vec2i(-Pitch.HalfLength + 2500, -200), new Vec2i(-300, 0));
-            m.SetLastTouch(Team.Blue);
             Lab.Run(m, 30);
             Assert.That(m.Score(Team.Red), Is.EqualTo(1));
             Assert.That(m.Score(Team.Blue), Is.EqualTo(0));

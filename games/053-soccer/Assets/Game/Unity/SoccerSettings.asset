@@ -17,7 +17,10 @@ MonoBehaviour:
   TrapSpeed: 420
   ShotSpeed: 430
   PassArriveSpeed: 70
-  KeeperSpeed: 70
-  KeeperReactionTicks: 12
+  WallRestitutionPercent: 70
+  CpuSpeedPercent: 75
+  CpuRoleTicks: 30
+  CpuDecisionTicks: 8
+  CpuTackleMargin: 300
   AutoSwitchOnDefense: 1
   Volume: 0.05

@@ -8,11 +8,11 @@ namespace Game.Core
 {
     public enum MatchPhase
     {
-        /// <summary>得点・ライン外の後、再開の位置へ戻るまで（球は止まっている）。</summary>
+        /// <summary>得点の後、キックオフの並びへ戻る間（球は止まっている）。</summary>
         Stopped,
 
-        /// <summary>再開（キックオフ・スローイン・ゴールキック・コーナー）：蹴る人だけが蹴れる。相手は球から離れる。</summary>
-        SetPiece,
+        /// <summary>キックオフ：蹴る人だけが蹴れる。相手はセンターの円に入れない。</summary>
+        Kickoff,
 
         Play,
 
@@ -21,14 +21,6 @@ namespace Game.Core
 
         /// <summary>試合終了。命令を受け付けない。</summary>
         Ended,
-    }
-
-    public enum RestartKind
-    {
-        Kickoff,
-        ThrowIn,
-        GoalKick,
-        Corner,
     }
 
     public enum MatchEventKind
@@ -48,14 +40,14 @@ namespace Game.Core
         /// <summary>球がポストに当たった。</summary>
         Post,
 
+        /// <summary>球が壁で跳ね返った。</summary>
+        Wall,
+
         /// <summary>得点（Team が得点したチーム）。</summary>
         Goal,
 
-        /// <summary>球がライン外に出た（Team が再開するチーム、Value は <see cref="RestartKind"/>）。</summary>
-        Out,
-
-        /// <summary>再開の準備ができた（Team・Value は <see cref="RestartKind"/>、Player は蹴る人）。</summary>
-        SetPiece,
+        /// <summary>キックオフの準備ができた（Team・Player は蹴る人）。</summary>
+        Kickoff,
 
         /// <summary>試合終了。</summary>
         Whistle,
@@ -80,16 +72,20 @@ namespace Game.Core
     }
 
     /// <summary>
-    /// 3 対 3（各チーム GK 1・フィールド 2）の 1 試合（1 試合 = 1 シード）。命令（各選手の移動・行動）を受けて 1 Tick ずつ進める。
+    /// 3 対 3（GK なし、各チーム 3 人とも自由に動く）の 1 試合（1 試合 = 1 シード）。コートは壁で囲まれ、球はゴールの口以外で跳ね返る（ライン外はない）。
+    /// 命令（各選手の移動・行動）を受けて 1 Tick ずつ進める。
     /// <para>
-    /// 1 Tick の順序：時計 → 段（得点の間・再開の待ち）の進行 → 残り Tick の減少 → 行動（蹴る・タックル。GK は自動）→ 移動（加速と最高速）→
-    /// 押し合い・再開の距離 → 球（持っていれば足元へ、そうでなければ Step と保持の判定）→ 得点・ライン外 → 試合終了。
+    /// 1 Tick の順序：時計 → 段（得点の間・キックオフの待ち）の進行 → 残り Tick の減少 → 行動（蹴る・タックル）→ 移動（加速と最高速）→
+    /// 押し合い・キックオフの距離 → 球（持っていれば足元へ、そうでなければ Step と保持の判定）→ 得点 → 試合終了。
     /// </para>
-    /// 選手の番号：0 青 GK・1, 2 青フィールド・3 赤 GK・4, 5 赤フィールド。GK の命令は無視する（Core が自動で動かす）。
+    /// 選手の番号：0〜2 が青、3〜5 が赤。
     /// </summary>
     public sealed class Match
     {
         public const int PlayerCount = 6;
+
+        /// <summary>1 チームの人数。</summary>
+        public const int TeamSize = 3;
 
         /// <summary>乱数の用途（キックのぶれ）。</summary>
         public const int KickPurpose = 1;
@@ -114,15 +110,10 @@ namespace Game.Core
             Passes = new PassTable(_config);
             Seed = seed;
             _players = new Footballer[PlayerCount];
-            for (int i = 0; i < PlayerCount; i++)
-            {
-                var team = i < 3 ? Team.Blue : Team.Red;
-                _players[i] = new Footballer(i, team, i % 3 == 0);
-            }
-
+            for (int i = 0; i < PlayerCount; i++) { _players[i] = new Footballer(i, TeamOf(i)); }
             _playersView = Array.AsReadOnly(_players);
             _eventsView = _events.AsReadOnly();
-            BeginRestart(RestartKind.Kickoff, Team.Blue, Vec2i.Zero, immediate: true);
+            BeginKickoff(Team.Blue, immediate: true);
         }
 
         private Match(Match other)
@@ -141,13 +132,9 @@ namespace Game.Core
             PhaseTicks = other.PhaseTicks;
             Owner = other.Owner;
             LastTouch = other.LastTouch;
-            Restart = other.Restart;
-            RestartTeam = other.RestartTeam;
-            RestartSpot = other.RestartSpot;
+            KickoffTeam = other.KickoffTeam;
             Taker = other.Taker;
             KickCount = other.KickCount;
-            KeeperHold = other.KeeperHold;
-            TicksSinceKick = other.TicksSinceKick;
             _lastGoalTeam = other._lastGoalTeam;
         }
 
@@ -166,7 +153,7 @@ namespace Game.Core
 
         public MatchPhase Phase { get; private set; }
 
-        /// <summary>今の段（得点の間・再開の待ち・再開）に入ってからの Tick。</summary>
+        /// <summary>今の段（得点の間・キックオフの待ち・キックオフ）に入ってからの Tick。</summary>
         public int PhaseTicks { get; private set; }
 
         public IReadOnlyList<Footballer> Players => _playersView;
@@ -176,26 +163,17 @@ namespace Game.Core
         /// <summary>球を持っている選手（いなければ -1）。</summary>
         public int Owner { get; private set; } = -1;
 
-        /// <summary>最後に球に触れたチーム（ライン外の再開を決める）。</summary>
+        /// <summary>最後に球に触れたチーム。</summary>
         public Team LastTouch { get; private set; }
 
-        public RestartKind Restart { get; private set; }
+        /// <summary>今の（直前の）キックオフのチーム。</summary>
+        public Team KickoffTeam { get; private set; }
 
-        public Team RestartTeam { get; private set; }
-
-        public Vec2i RestartSpot { get; private set; }
-
-        /// <summary>再開で蹴る人（再開でなければ -1）。</summary>
+        /// <summary>キックオフで蹴る人（キックオフでなければ -1）。</summary>
         public int Taker { get; private set; } = -1;
 
         /// <summary>これまでに蹴った回数（キックのぶれの乱数の番号）。</summary>
         public int KickCount { get; private set; }
-
-        /// <summary>GK が球を持ってからの Tick。</summary>
-        public int KeeperHold { get; private set; }
-
-        /// <summary>最後に蹴られてからの Tick（GK の反応の遅れに使う）。</summary>
-        public int TicksSinceKick { get; private set; }
 
         public int Score(Team team) => _score[(int)team];
 
@@ -204,16 +182,13 @@ namespace Game.Core
 
         public Match Clone() => new(this);
 
-        public Footballer Keeper(Team team) => _players[team == Team.Blue ? 0 : 3];
+        /// <summary>チームの選手の番号（<paramref name="slot"/> は 0〜2）。</summary>
+        public static int PlayerOf(Team team, int slot) => (team == Team.Blue ? 0 : TeamSize) + slot;
 
-        /// <summary>チームのフィールドの選手 2 人の番号。</summary>
-        public static int FieldPlayer(Team team, int slot) => (team == Team.Blue ? 1 : 4) + slot;
-
-        /// <summary>チームの選手か（GK を含む）。</summary>
-        public static Team TeamOf(int player) => player < 3 ? Team.Blue : Team.Red;
+        public static Team TeamOf(int player) => player < TeamSize ? Team.Blue : Team.Red;
 
         /// <summary>
-        /// 1 Tick 進める。<paramref name="commands"/> は選手の番号順に 6 つ（GK の分は無視する）。終わった試合では何もしない。
+        /// 1 Tick 進める。<paramref name="commands"/> は選手の番号順に 6 つ。終わった試合では何もしない。
         /// </summary>
         public void Step(IReadOnlyList<PlayerCommand> commands)
         {
@@ -231,9 +206,6 @@ namespace Game.Core
                 if (p.KickCooldown > 0) { p.KickCooldown--; }
             }
 
-            if (Owner >= 0 && _players[Owner].IsKeeper) { KeeperHold++; }
-            TicksSinceKick++;
-
             Act(commands);
             var starts = new Vec2i[PlayerCount];
             for (int i = 0; i < PlayerCount; i++) { starts[i] = _players[i].Position; }
@@ -250,7 +222,7 @@ namespace Game.Core
             }
         }
 
-        /// <summary>状態のハッシュ（時計・段・得点・球・選手・保持・再開・キックの回数）。</summary>
+        /// <summary>状態のハッシュ（時計・段・得点・球・選手・保持・キックオフ・キックの回数）。</summary>
         public uint Hash()
         {
             var h = StateHash.Start();
@@ -280,21 +252,16 @@ namespace Game.Core
 
             h.Mix(Owner);
             h.Mix((int)LastTouch);
-            h.Mix((int)Restart);
-            h.Mix((int)RestartTeam);
-            h.Mix(RestartSpot.X);
-            h.Mix(RestartSpot.Y);
+            h.Mix((int)KickoffTeam);
             h.Mix(Taker);
             h.Mix(KickCount);
-            h.Mix(KeeperHold);
-            h.Mix(TicksSinceKick);
             h.Mix((int)_lastGoalTeam);
             return h.Value;
         }
 
         // ---- 場面を作る口（テスト・撮影） ----
 
-        /// <summary>インプレーの場面にする（再開の制約を外す）。</summary>
+        /// <summary>インプレーの場面にする（キックオフの制約を外す）。</summary>
         internal void ForcePlay()
         {
             Phase = MatchPhase.Play;
@@ -319,13 +286,10 @@ namespace Game.Core
         {
             Owner = index;
             LastTouch = _players[index].Team;
-            KeeperHold = 0;
             CarryBall();
         }
 
         internal void SetClock(int clock) => Clock = clock;
-
-        internal void SetLastTouch(Team team) => LastTouch = team;
 
         // ---- 段 ----
 
@@ -335,92 +299,65 @@ namespace Game.Core
             {
                 case MatchPhase.Goal when PhaseTicks >= _config.GoalCelebrationTicks:
                     // 失点した側のキックオフ。
-                    var conceded = _lastGoalTeam == Team.Blue ? Team.Red : Team.Blue;
-                    BeginRestart(RestartKind.Kickoff, conceded, Vec2i.Zero, immediate: false);
+                    BeginKickoff(Pitch.Opponent(_lastGoalTeam), immediate: false);
                     break;
                 case MatchPhase.Stopped when PhaseTicks >= _config.RestartDelayTicks:
-                    SetUpSetPiece();
+                    SetUpKickoff();
                     break;
-                case MatchPhase.SetPiece when PhaseTicks >= _config.SetPieceTimeoutTicks && Taker >= 0 && Owner == Taker:
+                case MatchPhase.Kickoff when PhaseTicks >= _config.KickoffTimeoutTicks && Taker >= 0 && Owner == Taker:
                     // 蹴る人が蹴らなければ、いちばん近い味方へ出す（試合が止まり続けない）。
-                    var mate = NearestTeammate(Taker);
-                    Kick(Taker, PlayerAction.Pass, _players[mate].Position);
+                    Kick(Taker, PlayerAction.Pass, _players[NearestTeammate(Taker)].Position);
                     break;
                 default:
                     break;
             }
         }
 
-        private void BeginRestart(RestartKind kind, Team team, Vec2i spot, bool immediate)
+        private void BeginKickoff(Team team, bool immediate)
         {
-            Restart = kind;
-            RestartTeam = team;
-            RestartSpot = spot;
+            KickoffTeam = team;
             Owner = -1;
             Taker = -1;
-            _ball.Place(spot);
-            if (kind == RestartKind.Kickoff) { PlaceFormation(); }
+            _ball.Place(Vec2i.Zero);
+            PlaceFormation();
             Phase = MatchPhase.Stopped;
             PhaseTicks = 0;
-            if (immediate) { SetUpSetPiece(); }
+            if (immediate) { SetUpKickoff(); }
         }
 
-        /// <summary>再開の準備：蹴る人を選び、球の後ろに置いて球を持たせる。</summary>
-        private void SetUpSetPiece()
+        /// <summary>キックオフの準備：真ん中の選手（スロット 1）を球の後ろに置いて球を持たせる。</summary>
+        private void SetUpKickoff()
         {
-            var team = RestartTeam;
-            int taker;
-            if (Restart == RestartKind.GoalKick)
-            {
-                taker = Keeper(team).Index;
-            }
-            else
-            {
-                var a = FieldPlayer(team, 0);
-                var b = FieldPlayer(team, 1);
-                taker = Vec2i.DistanceSquared(_players[b].Position, RestartSpot) < Vec2i.DistanceSquared(_players[a].Position, RestartSpot) ? b : a;
-            }
-
+            var team = KickoffTeam;
+            var taker = PlayerOf(team, 1);
             var p = _players[taker];
-            var toward = RestartTowardField(team);
+            var toward = new Vec2i(Pitch.Direction(team) * Footballer.FacingLength, 0);
             p.Facing = toward;
-            p.Position = RestartSpot - IntMath.Scale(toward, _config.DribbleOffset);
+            p.Position = Vec2i.Zero - IntMath.Scale(toward, _config.DribbleOffset);
             p.Velocity = Vec2i.Zero;
             p.Recover = 0;
             Taker = taker;
             Owner = taker;
-            KeeperHold = 0;
             LastTouch = team;
-            _ball.Place(RestartSpot);
-            Phase = MatchPhase.SetPiece;
+            _ball.Place(Vec2i.Zero);
+            Phase = MatchPhase.Kickoff;
             PhaseTicks = 0;
-            _events.Add(new MatchEvent(MatchEventKind.SetPiece, taker, team, (int)Restart));
+            _events.Add(new MatchEvent(MatchEventKind.Kickoff, taker, team));
         }
 
-        /// <summary>再開で蹴る人が向く向き：キックオフは攻める向き、ほかはコートの中心へ。</summary>
-        private Vec2i RestartTowardField(Team team)
-        {
-            if (Restart == RestartKind.Kickoff) { return new Vec2i(Pitch.Direction(team) * Footballer.FacingLength, 0); }
-            var d = Vec2i.Zero - RestartSpot;
-            return d.IsZero ? new Vec2i(Pitch.Direction(team) * Footballer.FacingLength, 0) : IntMath.Scale(d, Footballer.FacingLength);
-        }
-
-        /// <summary>キックオフの並び：GK はゴール前、フィールドは自陣の左右。</summary>
+        /// <summary>キックオフの並び：自陣の後ろ・左・右。</summary>
         private void PlaceFormation()
         {
             foreach (var p in _players)
             {
                 var dir = Pitch.Direction(p.Team);
-                if (p.IsKeeper)
+                var slot = p.Index - PlayerOf(p.Team, 0);
+                p.Position = slot switch
                 {
-                    p.Position = new Vec2i(Pitch.OwnGoalX(p.Team) + (dir * 800), 0);
-                }
-                else
-                {
-                    var slot = p.Index - FieldPlayer(p.Team, 0);
-                    p.Position = new Vec2i(-dir * 4000, slot == 0 ? -3000 : 3000);
-                }
-
+                    0 => new Vec2i(-dir * 4000, -4000),
+                    1 => new Vec2i(-dir * 9000, 0),
+                    _ => new Vec2i(-dir * 4000, 4000),
+                };
                 p.Velocity = Vec2i.Zero;
                 p.Facing = new Vec2i(dir * Footballer.FacingLength, 0);
                 p.Recover = 0;
@@ -432,35 +369,11 @@ namespace Game.Core
 
         private void Act(IReadOnlyList<PlayerCommand> commands)
         {
-            if (Phase is not (MatchPhase.Play or MatchPhase.SetPiece)) { return; }
-            if (Owner >= 0 && _players[Owner].IsKeeper && KeeperHold >= _config.KeeperHoldTicks)
-            {
-                // GK の配球：安全なパス、なければ一番点数の高いループ（パス候補評価）。
-                var k = Owner;
-                var option = PassEvaluator.Best(this, k, safeOnly: true) ?? PassEvaluator.Best(this, k, safeOnly: false, kind: PlayerAction.Lob);
-                if (option.HasValue) { Kick(k, option.Value.Kind, option.Value.Target); }
-                else { Kick(k, PlayerAction.Pass, _players[NearestTeammate(k)].Position); }
-            }
-
-            // GK は自分の範囲の中で、届く距離に来た相手の球を取る（ドリブルでゴールへ運び込ませない）。
-            if (Phase == MatchPhase.Play && Owner >= 0 && !_players[Owner].IsKeeper)
-            {
-                var keeper = Keeper(Pitch.Opponent(_players[Owner].Team));
-                if (Vec2i.DistanceSquared(keeper.Position, _ball.Position) < (long)_config.KeeperReach * _config.KeeperReach)
-                {
-                    var victim = _players[Owner];
-                    victim.KickCooldown = _config.KickCooldownTicks;
-                    Owner = keeper.Index;
-                    LastTouch = keeper.Team;
-                    KeeperHold = 0;
-                    _events.Add(new MatchEvent(MatchEventKind.Capture, keeper.Index, keeper.Team));
-                }
-            }
-
+            if (Phase is not (MatchPhase.Play or MatchPhase.Kickoff)) { return; }
             for (int i = 0; i < PlayerCount; i++)
             {
                 var p = _players[i];
-                if (p.IsKeeper || !p.CanAct) { continue; }
+                if (!p.CanAct) { continue; }
                 var c = commands[i];
                 switch (c.Action)
                 {
@@ -468,7 +381,7 @@ namespace Game.Core
                     case PlayerAction.Lob:
                     case PlayerAction.Shoot:
                         if (Owner != i || p.KickCooldown > 0) { break; }
-                        if (Phase == MatchPhase.SetPiece && (Taker != i || (Restart == RestartKind.ThrowIn && c.Action == PlayerAction.Shoot))) { break; }
+                        if (Phase == MatchPhase.Kickoff && Taker != i) { break; }
                         Kick(i, c.Action, c.Target);
                         break;
                     case PlayerAction.Tackle:
@@ -486,7 +399,6 @@ namespace Game.Core
             var from = _ball.Position;
             var rng = RandomSeries.Derive(Seed, KickCount, KickPurpose);
             KickCount++;
-            TicksSinceKick = 0;
             var spread = action == PlayerAction.Shoot ? _config.ShotSpread : _config.PassSpread;
             var aim = target - from;
             if (aim.IsZero) { aim = p.Facing; }
@@ -499,10 +411,14 @@ namespace Game.Core
             _ball.Launch(velocity, vertical);
             Owner = -1;
             Taker = -1;
-            KeeperHold = 0;
             LastTouch = p.Team;
             p.KickCooldown = _config.KickCooldownTicks;
-            if (Phase == MatchPhase.SetPiece) { Phase = MatchPhase.Play; PhaseTicks = 0; }
+            if (Phase == MatchPhase.Kickoff)
+            {
+                Phase = MatchPhase.Play;
+                PhaseTicks = 0;
+            }
+
             _events.Add(new MatchEvent(MatchEventKind.Kick, kicker, p.Team, (int)action));
         }
 
@@ -515,11 +431,8 @@ namespace Game.Core
             switch (action)
             {
                 case PlayerAction.Pass:
-                    {
-                        // 受け手の位置で PassArriveSpeed が残るいちばん遅い速さ（本番と同じ減り方で作った表から）。
-                        return (IntMath.Scale(d, Passes.SpeedFor(distance)), 0);
-                    }
-
+                    // 受け手の位置で PassArriveSpeed が残るいちばん遅い速さ（本番と同じ減り方で作った表から）。
+                    return (IntMath.Scale(d, Passes.SpeedFor(distance)), 0);
                 case PlayerAction.Lob:
                     {
                         var flight = FlightTicks(c.LobVerticalSpeed, c.Gravity);
@@ -551,14 +464,8 @@ namespace Game.Core
         private void Tackle(int tackler)
         {
             var t = _players[tackler];
-            if (Owner < 0 || _players[Owner].Team == t.Team || _players[Owner].IsKeeper)
-            {
-                t.Recover = _config.TackleMissRecoverTicks;
-                _events.Add(new MatchEvent(MatchEventKind.TackleMiss, tackler, t.Team));
-                return;
-            }
-
-            if (Vec2i.DistanceSquared(t.Position, _ball.Position) > (long)_config.TackleRadius * _config.TackleRadius)
+            if (Owner < 0 || _players[Owner].Team == t.Team
+                || Vec2i.DistanceSquared(t.Position, _ball.Position) > (long)_config.TackleRadius * _config.TackleRadius)
             {
                 t.Recover = _config.TackleMissRecoverTicks;
                 _events.Add(new MatchEvent(MatchEventKind.TackleMiss, tackler, t.Team));
@@ -586,100 +493,45 @@ namespace Game.Core
                 Vec2i desired;
                 var max = _config.PlayerMaxSpeed;
                 if (Owner == p.Index) { max = max * _config.DribbleSpeedPercent / 100; }
-                if (p.IsKeeper)
-                {
-                    desired = Toward(p.Position, KeeperTarget(p), _config.KeeperSpeed);
-                }
-                else if (!p.CanAct || (Phase == MatchPhase.SetPiece && Taker == p.Index) || Phase == MatchPhase.Ended)
+                if (!p.CanAct || (Phase == MatchPhase.Kickoff && Taker == p.Index) || Phase is MatchPhase.Ended or MatchPhase.Stopped or MatchPhase.Goal)
                 {
                     desired = Vec2i.Zero;
                 }
                 else
                 {
                     var move = commands[p.Index].Move;
+
                     // 移動の長さが最高速以下なら、その分だけ動く（目標の点に止まれる）。長ければ最高速。
                     desired = move.LengthSquared <= (long)max * max ? move : IntMath.Scale(move, max);
                     if (!move.IsZero) { p.Facing = IntMath.Scale(move, Footballer.FacingLength); }
                 }
 
                 var dv = desired - p.Velocity;
-                var accel = p.IsKeeper ? _config.KeeperSpeed : _config.PlayerAcceleration;
+                var accel = _config.PlayerAcceleration;
                 if (dv.LengthSquared > (long)accel * accel) { dv = IntMath.Scale(dv, accel); }
                 p.Velocity += dv;
                 p.Position += p.Velocity;
-                if (p.IsKeeper && !p.Velocity.IsZero) { p.Facing = IntMath.Scale(p.Velocity, Footballer.FacingLength); }
                 Clamp(p);
             }
         }
 
-        /// <summary>目標の点へ向かう速度（近ければ減速して止まる）。</summary>
-        internal static Vec2i Toward(Vec2i from, Vec2i to, int speed)
+        /// <summary>選手はコートの中（壁の内側に体が収まる）。</summary>
+        private void Clamp(Footballer p)
         {
-            var d = to - from;
-            if (d.IsZero) { return Vec2i.Zero; }
-            var distance = IntMath.Sqrt(d.LengthSquared);
-            return distance <= speed ? d : IntMath.Scale(d, speed);
-        }
-
-        private static void Clamp(Footballer p)
-        {
-            var x = IntMath.Clamp(p.Position.X, -Pitch.HalfLength - Pitch.RunOffMargin, Pitch.HalfLength + Pitch.RunOffMargin);
-            var y = IntMath.Clamp(p.Position.Y, -Pitch.HalfWidth - Pitch.RunOffMargin, Pitch.HalfWidth + Pitch.RunOffMargin);
+            var r = _config.PlayerRadius;
+            var x = IntMath.Clamp(p.Position.X, -Pitch.HalfLength + r, Pitch.HalfLength - r);
+            var y = IntMath.Clamp(p.Position.Y, -Pitch.HalfWidth + r, Pitch.HalfWidth - r);
             var pos = new Vec2i(x, y);
-            if (p.IsKeeper)
-            {
-                // GK はゴールの中心からの半円の中（コートの内側）。
-                var goal = new Vec2i(Pitch.OwnGoalX(p.Team), 0);
-                var dir = Pitch.Direction(p.Team);
-                if ((pos.X - goal.X) * dir < 0) { pos = new Vec2i(goal.X, pos.Y); }
-                var d = pos - goal;
-                if (d.LengthSquared > (long)Pitch.KeeperAreaRadius * Pitch.KeeperAreaRadius) { pos = goal + IntMath.Scale(d, Pitch.KeeperAreaRadius); }
-            }
-
             if (pos != p.Position)
             {
+                // 壁に当たった向きの速さだけ 0 にする（壁沿いには走れる）。
+                var v = p.Velocity;
+                p.Velocity = new Vec2i(x != p.Position.X ? 0 : v.X, y != p.Position.Y ? 0 : v.Y);
                 p.Position = pos;
-                p.Velocity = Vec2i.Zero;
             }
         }
 
-        /// <summary>GK の目標：シュートがゴールラインを越える位置、球が自分の範囲で転がっていれば球、それ以外はゴールと球を結ぶ線の上。</summary>
-        private Vec2i KeeperTarget(Footballer k)
-        {
-            var goal = new Vec2i(Pitch.OwnGoalX(k.Team), 0);
-            var dir = Pitch.Direction(k.Team);
-            if (Owner == k.Index) { return k.Position; }
-            if (Owner < 0 && Phase == MatchPhase.Play)
-            {
-                // 蹴られてから反応の遅れの間は、シュートの越える位置へ動かない。
-                var crossing = TicksSinceKick > _config.KeeperReactionTicks ? GoalCrossing(k.Team) : null;
-                if (crossing.HasValue) { return new Vec2i(goal.X + (dir * 400), crossing.Value); }
-                if (Vec2i.DistanceSquared(_ball.Position, goal) < (long)Pitch.KeeperAreaRadius * Pitch.KeeperAreaRadius) { return _ball.Position; }
-            }
-
-            var toBall = _ball.Position - goal;
-            if (toBall.IsZero) { return goal + new Vec2i(dir * 1000, 0); }
-            var guard = goal + IntMath.Scale(toBall, 1200);
-            return new Vec2i(guard.X, IntMath.Clamp(guard.Y, -Pitch.GoalHalfWidth - 300, Pitch.GoalHalfWidth + 300));
-        }
-
-        /// <summary>このまま誰も触らなければ、球が自陣のゴールの口（ポストの間・クロスバーの下）を越える横の位置。越えなければ null。</summary>
-        private int? GoalCrossing(Team defending)
-        {
-            var goalX = Pitch.OwnGoalX(defending);
-            var dir = Pitch.Direction(defending);
-            if (_ball.Velocity.X * dir >= 0) { return null; }
-            foreach (var s in BallPredictor.Trajectory(_ball, _config, 120))
-            {
-                if ((s.Position.X - goalX) * dir > 0) { continue; }
-                if (Math.Abs(s.Position.Y) < Pitch.GoalHalfWidth + 400 && s.Height < Pitch.CrossbarHeight) { return IntMath.Clamp(s.Position.Y, -Pitch.GoalHalfWidth, Pitch.GoalHalfWidth); }
-                return null;
-            }
-
-            return null;
-        }
-
-        /// <summary>重なった選手を押し離す（番号の順）。再開では、相手を球から離す。</summary>
+        /// <summary>重なった選手を押し離す（番号の順）。キックオフでは、相手をセンターの円から出す。</summary>
         private void Separate()
         {
             var min = 2 * _config.PlayerRadius;
@@ -703,27 +555,14 @@ namespace Game.Core
                 }
             }
 
-            if (Phase is MatchPhase.SetPiece or MatchPhase.Stopped)
-            {
-                KeepAway(RestartTeam, RestartSpot);
-            }
-            else if (Phase == MatchPhase.Play && Owner >= 0 && _players[Owner].IsKeeper)
-            {
-                // GK が持っている間も、相手は球から離れる（GK の配球をすぐ奪えない）。
-                KeepAway(_players[Owner].Team, _ball.Position);
-            }
-        }
-
-        /// <summary><paramref name="team"/> の相手のフィールドの選手を、<paramref name="spot"/> から入れない距離の外へ出す。</summary>
-        private void KeepAway(Team team, Vec2i spot)
-        {
+            if (Phase is not (MatchPhase.Kickoff or MatchPhase.Stopped)) { return; }
             foreach (var p in _players)
             {
-                if (p.Team == team || p.IsKeeper) { continue; }
-                var d = p.Position - spot;
+                if (p.Team == KickoffTeam) { continue; }
+                var d = p.Position;
                 if (d.LengthSquared >= (long)Pitch.ExclusionRadius * Pitch.ExclusionRadius) { continue; }
-                var n = d.IsZero ? new Vec2i(-Pitch.Direction(team), 0) : d;
-                p.Position = spot + IntMath.Scale(n, Pitch.ExclusionRadius);
+                var n = d.IsZero ? new Vec2i(-Pitch.Direction(KickoffTeam), 0) : d;
+                p.Position = IntMath.Scale(n, Pitch.ExclusionRadius);
                 p.Velocity = Vec2i.Zero;
             }
         }
@@ -743,18 +582,25 @@ namespace Game.Core
             var before = _ball.Velocity;
             var hit = _ball.Step(_config);
             if ((hit & BallHit.Post) != 0) { _events.Add(new MatchEvent(MatchEventKind.Post)); }
+            if ((hit & BallHit.Wall) != 0) { _events.Add(new MatchEvent(MatchEventKind.Wall)); }
             Capture(starts, from, before);
         }
 
         private void CarryBall()
         {
             var o = _players[Owner];
-            _ball.Carry(o.Position + IntMath.Scale(o.Facing, o.IsKeeper ? 0 : _config.DribbleOffset), o.Velocity);
+            var at = o.Position + IntMath.Scale(o.Facing, _config.DribbleOffset);
+
+            // 足元の球も壁の内側に置く（ゴールの口だけは越えられる）。
+            var r = _config.BallRadius;
+            var y = IntMath.Clamp(at.Y, -(Pitch.HalfWidth - r), Pitch.HalfWidth - r);
+            var x = Math.Abs(y) < Pitch.GoalHalfWidth ? at.X : IntMath.Clamp(at.X, -(Pitch.HalfLength - r), Pitch.HalfLength - r);
+            _ball.Carry(new Vec2i(x, y), o.Velocity);
         }
 
         /// <summary>
-        /// 球を止める選手を決める。Tick の中の選手と球の軌跡どうしが「届く距離」より近づき、高さが上限以下で、相対速度が止められる速さ以下の選手のうち、
-        /// 終わりの位置で球に最も近い選手（同じなら番号の小さい方）。GK は届く距離・高さが大きく、速さを問わない。
+        /// 球を止める選手を決める。Tick の中の選手と球の軌跡どうしが「届く距離」より近づき、高さが膝以下で、相対速度が止められる速さ以下の選手のうち、
+        /// 終わりの位置で球に最も近い選手（同じなら番号の小さい方）。
         /// </summary>
         private void Capture(Vec2i[] starts, Vec2i ballFrom, Vec2i ballVelocity)
         {
@@ -764,11 +610,9 @@ namespace Game.Core
             {
                 var p = _players[i];
                 if (!p.CanAct || p.KickCooldown > 0) { continue; }
-                var reach = p.IsKeeper ? _config.KeeperReach : _config.ControlRadius;
-                var height = p.IsKeeper ? _config.KeeperReachHeight : _config.KneeHeight;
-                if (_ball.Height > height) { continue; }
-                if (!p.IsKeeper && (ballVelocity - p.Velocity).LengthSquared > (long)_config.TrapSpeed * _config.TrapSpeed) { continue; }
-                if (!Sweep.Touches(ballFrom, _ball.Position, starts[i], p.Position, reach)) { continue; }
+                if (_ball.Height > _config.KneeHeight) { continue; }
+                if ((ballVelocity - p.Velocity).LengthSquared > (long)_config.TrapSpeed * _config.TrapSpeed) { continue; }
+                if (!Sweep.Touches(ballFrom, _ball.Position, starts[i], p.Position, _config.ControlRadius)) { continue; }
                 var dist = Vec2i.DistanceSquared(p.Position, _ball.Position);
                 if (dist < bestDistance)
                 {
@@ -780,52 +624,25 @@ namespace Game.Core
             if (best < 0) { return; }
             Owner = best;
             LastTouch = _players[best].Team;
-            KeeperHold = 0;
             var o = _players[best];
             var toBall = _ball.Position - o.Position;
-            if (!o.IsKeeper && !toBall.IsZero) { o.Facing = IntMath.Scale(toBall, Footballer.FacingLength); }
+            if (!toBall.IsZero) { o.Facing = IntMath.Scale(toBall, Footballer.FacingLength); }
             CarryBall();
             _events.Add(new MatchEvent(MatchEventKind.Capture, best, o.Team));
         }
 
-        // ---- 得点・ライン外 ----
+        // ---- 得点 ----
 
         /// <summary>
-        /// 球の全体がラインを越えたかを判定する。ゴールの口（ポストの間・クロスバーの下）を越えたら得点（得点の間に入り、以後は判定しない）、
-        /// それ以外のゴールラインはゴールキックかコーナー、タッチラインはスローイン。再開は最後に触れた側の相手。
+        /// 球の全体がゴールの口（ポストの間・クロスバーの下）からゴールラインを越えたら得点（得点の間に入り、以後は判定しない）。
+        /// ゴールの口の外は壁なので、球はそれ以外でラインを越えない（<see cref="Ball.Step"/>）。
         /// </summary>
         private void Judge()
         {
             var b = _ball.Position;
-            var r = _config.BallRadius;
-            if (Math.Abs(b.X) - r > Pitch.HalfLength)
-            {
-                var goalX = Math.Sign(b.X) * Pitch.HalfLength;
-                var attacking = Pitch.AttackGoalX(Team.Blue) == goalX ? Team.Blue : Team.Red;
-                var defending = Pitch.Opponent(attacking);
-                if (Math.Abs(b.Y) < Pitch.GoalHalfWidth && _ball.Height + (2 * r) <= Pitch.CrossbarHeight)
-                {
-                    ScoreGoal(attacking);
-                    return;
-                }
-
-                if (LastTouch == attacking)
-                {
-                    Out(RestartKind.GoalKick, defending, new Vec2i(Pitch.OwnGoalX(defending) + (Pitch.Direction(defending) * 2500), 0));
-                }
-                else
-                {
-                    Out(RestartKind.Corner, attacking, new Vec2i(goalX, Math.Sign(b.Y == 0 ? 1 : b.Y) * Pitch.HalfWidth));
-                }
-
-                return;
-            }
-
-            if (Math.Abs(b.Y) - r > Pitch.HalfWidth)
-            {
-                var spot = new Vec2i(IntMath.Clamp(b.X, -Pitch.HalfLength, Pitch.HalfLength), Math.Sign(b.Y) * Pitch.HalfWidth);
-                Out(RestartKind.ThrowIn, Pitch.Opponent(LastTouch), spot);
-            }
+            if (Math.Abs(b.X) - _config.BallRadius <= Pitch.HalfLength) { return; }
+            var goalX = Math.Sign(b.X) * Pitch.HalfLength;
+            ScoreGoal(Pitch.AttackGoalX(Team.Blue) == goalX ? Team.Blue : Team.Red);
         }
 
         private void ScoreGoal(Team team)
@@ -842,21 +659,14 @@ namespace Game.Core
             _events.Add(new MatchEvent(MatchEventKind.Goal, -1, team));
         }
 
-        private void Out(RestartKind kind, Team team, Vec2i spot)
-        {
-            Owner = -1;
-            _events.Add(new MatchEvent(MatchEventKind.Out, -1, team, (int)kind));
-            BeginRestart(kind, team, spot, immediate: false);
-        }
-
         private int NearestTeammate(int player)
         {
             var p = _players[player];
             var best = -1;
             var bestDistance = long.MaxValue;
-            for (int slot = 0; slot < 2; slot++)
+            for (int slot = 0; slot < TeamSize; slot++)
             {
-                var m = FieldPlayer(p.Team, slot);
+                var m = PlayerOf(p.Team, slot);
                 if (m == player) { continue; }
                 var d = Vec2i.DistanceSquared(_players[m].Position, p.Position);
                 if (d < bestDistance)

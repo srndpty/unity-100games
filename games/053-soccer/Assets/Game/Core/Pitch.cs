@@ -12,7 +12,7 @@ namespace Game.Core
     }
 
     /// <summary>
-    /// コートの寸法（1 m = 1000 単位）。中心が原点、x が縦（ゴールは x = ±HalfLength）、y が横（タッチラインは y = ±HalfWidth）。
+    /// コートの寸法（1 m = 1000 単位）。中心が原点、x が縦（ゴールは x = ±HalfLength）、y が横（壁は y = ±HalfWidth）。コートは壁で囲まれている。
     /// 寸法は試合のルールそのものなので設定にしない（画面の配置とテストの場面が同じ値を使う）。
     /// </summary>
     public static class Pitch
@@ -34,14 +34,8 @@ namespace Game.Core
 
         public const int PostRadius = 60;
 
-        /// <summary>GK が動ける、ゴールの中心からの半円の半径。</summary>
-        public const int KeeperAreaRadius = 5000;
-
-        /// <summary>キックオフ・再開の間、相手が入れない球からの距離。</summary>
+        /// <summary>キックオフの間、相手が入れないセンターの円の半径。</summary>
         public const int ExclusionRadius = 3000;
-
-        /// <summary>選手がコートの外へ出られる余白（スローインの位置まで歩ける）。</summary>
-        public const int RunOffMargin = 1500;
 
         /// <summary>チームが攻めるゴールの x（青は +、赤は -）。</summary>
         public static int AttackGoalX(Team team) => team == Team.Blue ? HalfLength : -HalfLength;

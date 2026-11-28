@@ -33,7 +33,6 @@ namespace Game.Unity
         private readonly Label _restart;
         private readonly Label _banner;
         private readonly Label _hint;
-        private readonly Label _release;
         private readonly Label[] _roles = new Label[Match.PlayerCount];
         private readonly VisualElement _pause;
         private readonly Row[] _pauseRows = new Row[2];
@@ -102,8 +101,9 @@ namespace Game.Unity
                 "K：シュート（W で左の隅、S で右の隅）\n" +
                 "L：ループパス（相手の上を越える）\n" +
                 "Space：操作する選手の切替　Esc：一時停止　F1：役割の表示\n\n" +
-                "3 対 3・5 分。あなたは青のフィールドの 1 人を操作する。もう 1 人と GK は自動で動く。\n" +
-                "切り替えた直後は、押していた移動キーをいったん離すと新しい選手が動く。\n\n" +
+                "3 対 3・5 分。GK はいない。あなたは青の 1 人を操作し、ほかの 2 人は自動で動く。\n" +
+                "コートは壁で囲まれていて、球は跳ね返る（ゴールの口だけが開いている）。\n" +
+                "切り替えると、押している移動キーがそのまま新しい選手に効く。\n\n" +
                 "クリックか Enter でタイトルへ";
             _howTo.Add(how);
 
@@ -150,15 +150,6 @@ namespace Game.Unity
             _hint.style.paddingLeft = 12;
             _hint.style.paddingRight = 12;
             root.Add(_hint);
-            _release = Text("release", 26, Accent);
-            _release.text = "移動キーを離すと、切り替えた選手を動かせます";
-            _release.style.position = Position.Absolute;
-            _release.style.bottom = 52;
-            _release.style.alignSelf = Align.Center;
-            _release.style.backgroundColor = WindowBg;
-            _release.style.paddingLeft = 12;
-            _release.style.paddingRight = 12;
-            root.Add(_release);
 
             for (int i = 0; i < _roles.Length; i++)
             {
@@ -228,7 +219,6 @@ namespace Game.Unity
             Show(_result, screen == FlowScreen.Result);
             Show(_board, inMatch);
             Show(_hint, inMatch && !flow.Autopilot);
-            Show(_release, inMatch && flow.WaitingForRelease && !flow.Autopilot);
 
             if (screen == FlowScreen.Title)
             {
@@ -247,7 +237,7 @@ namespace Game.Unity
             {
                 _score.text = $"青 {m!.Score(Team.Blue)} − {m.Score(Team.Red)} 赤";
                 _clock.text = Clock(m.RemainingTicks);
-                if (m.Phase is MatchPhase.Stopped or MatchPhase.SetPiece) { restart = RestartName(m.Restart) + "（" + (m.RestartTeam == Team.Blue ? "青" : "赤") + "）"; }
+                if (m.Phase is MatchPhase.Stopped or MatchPhase.Kickoff) { restart = "キックオフ（" + (m.KickoffTeam == Team.Blue ? "青" : "赤") + "）"; }
                 if (m.Phase == MatchPhase.Goal) { banner = "ゴール！"; }
                 if (m.Phase == MatchPhase.Ended) { banner = "試合終了"; }
             }
@@ -287,20 +277,13 @@ namespace Game.Unity
             return -1;
         }
 
-        public static string RestartName(RestartKind kind) => kind switch
-        {
-            RestartKind.Kickoff => "キックオフ",
-            RestartKind.ThrowIn => "スローイン",
-            RestartKind.GoalKick => "ゴールキック",
-            _ => "コーナーキック",
-        };
-
         public static string RoleName(Role role) => role switch
         {
             Role.Support => "支援",
             Role.Runner => "抜け出し",
             Role.Press => "寄せ",
             Role.Cover => "カバー",
+            Role.Guard => "ゴール前",
             Role.Chase => "回収",
             Role.Hold => "待機",
             _ => "",

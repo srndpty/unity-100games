@@ -15,15 +15,13 @@ namespace Game.Unity
     public sealed class SoccerStage : MonoBehaviour
     {
         public static readonly Color Blue = new(0.25f, 0.55f, 1f, 1f);
-        public static readonly Color BlueKeeper = new(0.35f, 0.9f, 0.95f, 1f);
         public static readonly Color Red = new(1f, 0.32f, 0.28f, 1f);
-        public static readonly Color RedKeeper = new(1f, 0.75f, 0.25f, 1f);
 
         /// <summary>タイトル・操作説明で選手を並べる位置（試合の外の飾り）。</summary>
         private static readonly Vec2i[] _idle =
         {
-            new(-14000, 0), new(-6000, -4000), new(-6000, 4000),
-            new(14000, 0), new(6000, -4000), new(6000, 4000),
+            new(-4000, -4000), new(-9000, 0), new(-4000, 4000),
+            new(4000, -4000), new(9000, 0), new(4000, 4000),
         };
 
         [SerializeField] private SpriteRenderer? _pitch;
@@ -49,9 +47,7 @@ namespace Game.Unity
         /// <summary>役割の目標の印を出すか（F1 で切り替え・撮影で使う）。</summary>
         public bool ShowRoles { get; set; }
 
-        public static Color ColorOf(int player) => Match.TeamOf(player) == Team.Blue
-            ? player % 3 == 0 ? BlueKeeper : Blue
-            : player % 3 == 0 ? RedKeeper : Red;
+        public static Color ColorOf(int player) => Match.TeamOf(player) == Team.Blue ? Blue : Red;
 
         public void Show(SoccerFlow flow)
         {
@@ -81,7 +77,7 @@ namespace Game.Unity
             for (int i = 0; i < _targets.Length; i++)
             {
                 var ai = Match.TeamOf(i) == Team.Blue ? flow.BlueAi : flow.RedAi;
-                var show = ShowRoles && playing && ai != null && !m!.Players[i].IsKeeper && ai.RoleOf(i) is not (Role.None or Role.Carrier);
+                var show = ShowRoles && playing && ai != null && ai.RoleOf(i) is not (Role.None or Role.Carrier);
                 _targets[i].enabled = show;
                 if (!show) { continue; }
                 _targets[i].transform.localPosition = PitchProjection.Ground(ai!.TargetOf(i));

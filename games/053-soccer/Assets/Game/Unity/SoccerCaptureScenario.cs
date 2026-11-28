@@ -68,20 +68,19 @@ namespace Game.Unity
             await Shoot("04_kickoff", "キックオフ");
 
             game.Stage.ShowRoles = true;
-            Until(m => m.Phase == MatchPhase.Play && m.Owner >= 0 && Match.TeamOf(m.Owner) == Team.Blue && !m.Players[m.Owner].IsKeeper && m.Clock > 400
-                && flow.BlueAi!.RoleOf(Match.FieldPlayer(Team.Blue, 0) + Match.FieldPlayer(Team.Blue, 1) - m.Owner) == Role.Support
-                && m.PhaseTicks > 60, "青の保持と支援");
+            Until(m => m.Phase == MatchPhase.Play && m.Owner >= 0 && Match.TeamOf(m.Owner) == Team.Blue && m.Clock > 400
+                && HasRole(flow.BlueAi!, Role.Support) && m.PhaseTicks > 60, "青の保持と支援");
             await Shoot("05_attack_roles", "青の攻撃：保持者以外の味方が支援の点へ（役割の表示）");
-            Until(m => m.Phase == MatchPhase.Play && m.Owner >= 0 && Match.TeamOf(m.Owner) == Team.Red && !m.Players[m.Owner].IsKeeper
-                && flow.BlueAi!.RoleOf(1) is Role.Press or Role.Cover && flow.BlueAi.RoleOf(2) is Role.Press or Role.Cover, "赤の保持と寄せ・カバー");
-            await Shoot("06_defense_roles", "青の守備：寄せとカバー（役割の表示）");
+            Until(m => m.Phase == MatchPhase.Play && m.Owner >= 0 && Match.TeamOf(m.Owner) == Team.Red
+                && HasRole(flow.BlueAi!, Role.Press) && (HasRole(flow.BlueAi!, Role.Guard) || HasRole(flow.BlueAi!, Role.Cover)), "赤の保持と寄せ・カバー");
+            await Shoot("06_defense_roles", "青の守備：寄せ・ゴール前・カバー（役割の表示）");
             game.Stage.ShowRoles = false;
-            Until(m => m.Phase == MatchPhase.Play && m.Ball.Height > 1500 && AwayFromPlayers(m, 2500), "浮き球");
-            await Shoot("07_lob", "浮き球（影と高さ）");
             Until(m => m.Phase == MatchPhase.Goal, "ゴール");
-            await Shoot("08_goal", "ゴール");
-            Until(m => m.Phase == MatchPhase.SetPiece && m.Restart == RestartKind.ThrowIn, "スローイン");
-            await Shoot("09_throw_in", "スローイン（相手は 3 m 離れる）");
+            await Shoot("07_goal", "ゴール");
+            Until(m => m.Phase == MatchPhase.Play && m.Ball.Height > 1000 && AwayFromPlayers(m, 2000), "浮き球");
+            await Shoot("08_lob", "浮き球（影と高さ）");
+            Until(m => m.Phase == MatchPhase.Play && HasWall(m) && m.Ball.Height == 0 && Math.Abs(m.Ball.Position.Y) > Pitch.HalfWidth - 1500, "壁の反射");
+            await Shoot("09_wall", "壁で跳ね返る球（ライン外はない）");
             Tap(InputButton.Cancel);
             await Shoot("10_pause", "一時停止");
             Tap(InputButton.Cancel);
@@ -89,6 +88,26 @@ namespace Game.Unity
             await Shoot("11_full_time", "試合終了");
             for (int i = 0; i < MaxTicks && flow.Screen != FlowScreen.Result; i++) { flow.StepTicks(1); }
             await Shoot("12_result", "結果");
+        }
+
+        private static bool HasRole(TeamAi ai, Role role)
+        {
+            for (int slot = 0; slot < Match.TeamSize; slot++)
+            {
+                if (ai.RoleOf(Match.PlayerOf(ai.Team, slot)) == role) { return true; }
+            }
+
+            return false;
+        }
+
+        private static bool HasWall(Match m)
+        {
+            foreach (var e in m.Events)
+            {
+                if (e.Kind == MatchEventKind.Wall) { return true; }
+            }
+
+            return false;
         }
 
         private static bool AwayFromPlayers(Match m, int distance)

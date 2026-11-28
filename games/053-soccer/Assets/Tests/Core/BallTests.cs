@@ -63,8 +63,16 @@ namespace Game.Core.Tests
             Assert.That(low.Velocity.X, Is.LessThan(0), "ポストで跳ね返る");
 
             var high = Rolling(post - new Vec2i(2000, 0), new Vec2i(300, 0), Pitch.CrossbarHeight + 500, 0);
-            for (int i = 0; i < 20; i++) { Assert.That(high.Step(C) & BallHit.Post, Is.EqualTo(BallHit.None)); }
-            Assert.That(high.Position.X, Is.GreaterThan(post.X));
+            var wall = false;
+            for (int i = 0; i < 20; i++)
+            {
+                var hit = high.Step(C);
+                Assert.That(hit & BallHit.Post, Is.EqualTo(BallHit.None));
+                wall |= (hit & BallHit.Wall) != 0;
+            }
+
+            Assert.That(wall, Is.True, "クロスバーの上は壁で跳ね返る");
+            Assert.That(high.Velocity.X, Is.LessThan(0));
         }
 
         [Test]

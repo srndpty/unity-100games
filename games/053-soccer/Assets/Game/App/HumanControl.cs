@@ -5,20 +5,21 @@ using IntGeometry;
 namespace Game.App
 {
     /// <summary>
-    /// 人間の操作（青チームのフィールドの 1 人）。押しているキーと、押した行動を、操作している選手の命令にする。
+    /// 人間の操作（青の 3 人のうち 1 人）。押しているキーと、押した行動を、操作している選手の命令にする。
     /// <para>
     /// 切替（手動のキー・自動）は、その Tick の命令を作って試合を進めた<b>後</b>に効く。だから同じ Tick に押した行動は切替の前の選手から出る（どちらの選手か一意）。
-    /// 切り替えた後、切替の時点で押していた移動キーは、全て離すまで新しい選手に効かない（入力が混線しない）。押した行動は 1 回の命令で使い切る。
+    /// 押している移動キーは、切り替えた次の Tick から新しい選手にそのまま効く（離し直さなくてよい）。前の選手はその Tick から CPU が動かす。
+    /// 押した行動は 1 回の命令で使い切り、切り替えたら捨てる（前の選手の行動が新しい選手に移らない）。
     /// </para>
-    /// 自動の切替：自分のパスの受け手へ／味方（CPU）が球を止めたらその選手へ／相手が球を取ったら球に近い方へ／青の再開なら蹴る人へ。
+    /// 手動の切替は、操作していない 2 人のうち球に近い方へ。自動の切替：自分のパスの受け手へ／味方（CPU）が球を止めたらその選手へ／
+    /// 相手が球を取ったら球に一番近い選手へ／青のキックオフなら蹴る人へ。
     /// </summary>
     public sealed class HumanControl
     {
         private int _held;
-        private bool _suppressMove;
         private PlayerAction _pending;
         private int _pendingFor = -1;
-        private int _switchTo = -1;
+        private bool _switchRequested;
         private int _passReceiver = -1;
 
         public HumanControl(bool autoSwitchOnDefense = true)
@@ -26,13 +27,10 @@ namespace Game.App
             AutoSwitchOnDefense = autoSwitchOnDefense;
         }
 
-        /// <summary>操作している選手（青のフィールド：1 か 2）。</summary>
-        public int Controlled { get; private set; } = Match.FieldPlayer(Team.Blue, 0);
+        /// <summary>操作している選手（青：0〜2）。</summary>
+        public int Controlled { get; private set; } = Match.PlayerOf(Team.Blue, 1);
 
         public bool AutoSwitchOnDefense { get; }
-
-        /// <summary>切替の後、移動キーを離すまで待っているか。</summary>
-        public bool WaitingForRelease => _suppressMove;
 
         /// <summary>切り替えた回数（効果音）。</summary>
         public int Switches { get; private set; }
@@ -47,7 +45,6 @@ namespace Game.App
             if (bit != 0)
             {
                 _held = pressed ? _held | bit : _held & ~bit;
-                if (_held == 0) { _suppressMove = false; }
                 return;
             }
 
@@ -64,7 +61,7 @@ namespace Game.App
                     Queue(PlayerAction.Lob);
                     break;
                 case InputButton.Switch:
-                    _switchTo = Other(Controlled);
+                    _switchRequested = true;
                     break;
                 default:
                     break;
@@ -75,17 +72,16 @@ namespace Game.App
         public void ReleaseAll()
         {
             _held = 0;
-            _suppressMove = false;
             _pending = PlayerAction.None;
             _pendingFor = -1;
-            _switchTo = -1;
+            _switchRequested = false;
         }
 
         /// <summary>操作している選手の、この Tick の命令。押した行動はここで使い切る。</summary>
         public PlayerCommand Command(Match match)
         {
             if (match == null) { throw new ArgumentNullException(nameof(match)); }
-            var move = _suppressMove ? Vec2i.Zero : MoveVector();
+            var move = MoveVector();
             var action = _pendingFor == Controlled ? _pending : PlayerAction.None;
             _pending = PlayerAction.None;
             _pendingFor = -1;
@@ -123,15 +119,15 @@ namespace Game.App
         public void Begin(Match match)
         {
             if (match == null) { throw new ArgumentNullException(nameof(match)); }
-            if (match.Taker >= 0 && match.Players[match.Taker].Team == Team.Blue && !match.Players[match.Taker].IsKeeper) { Controlled = match.Taker; }
+            if (match.Taker >= 0 && match.Players[match.Taker].Team == Team.Blue) { Controlled = match.Taker; }
         }
 
         /// <summary>試合を 1 Tick 進めた後に呼ぶ。手動・自動の切替をここで当てる。</summary>
         public void AfterStep(Match match)
         {
             if (match == null) { throw new ArgumentNullException(nameof(match)); }
-            var next = _switchTo;
-            _switchTo = -1;
+            var next = _switchRequested ? NearestToBall(match, Controlled) : -1;
+            _switchRequested = false;
             foreach (var e in match.Events)
             {
                 switch (e.Kind)
@@ -139,14 +135,14 @@ namespace Game.App
                     case MatchEventKind.Kick when e.Player == Controlled && _passReceiver >= 0:
                         next = _passReceiver;
                         break;
-                    case MatchEventKind.Capture when e.Team == Team.Blue && !match.Players[e.Player].IsKeeper:
+                    case MatchEventKind.Capture when e.Team == Team.Blue:
                         next = e.Player;
                         break;
                     case MatchEventKind.Capture when e.Team == Team.Red && AutoSwitchOnDefense:
                     case MatchEventKind.Tackle when e.Team == Team.Red && AutoSwitchOnDefense:
-                        next = NearestToBall(match);
+                        next = NearestToBall(match, -1);
                         break;
-                    case MatchEventKind.SetPiece when e.Team == Team.Blue && !match.Players[e.Player].IsKeeper:
+                    case MatchEventKind.Kickoff when e.Team == Team.Blue:
                         next = e.Player;
                         break;
                     default:
@@ -162,8 +158,7 @@ namespace Game.App
             Controlled = player;
             Switches++;
 
-            // 切替の時点で押している移動キーは、全て離すまで新しい選手に効かない。押した行動も前の選手のもの。
-            _suppressMove = _held != 0;
+            // 押している移動キーは新しい選手にそのまま効く。押した行動は前の選手のものなので捨てる。
             _pending = PlayerAction.None;
             _pendingFor = -1;
         }
@@ -188,13 +183,24 @@ namespace Game.App
         private static int MoveBit(InputButton button, int slot) =>
             button is InputButton.Up or InputButton.Down or InputButton.Left or InputButton.Right ? 1 << (((int)button * 4) + (slot & 3)) : 0;
 
-        private static int Other(int player) => player == Match.FieldPlayer(Team.Blue, 0) ? Match.FieldPlayer(Team.Blue, 1) : Match.FieldPlayer(Team.Blue, 0);
-
-        private static int NearestToBall(Match m)
+        /// <summary>青の選手のうち球に一番近い選手（<paramref name="except"/> を除く。同じなら番号の小さい方）。</summary>
+        private static int NearestToBall(Match m, int except)
         {
-            var a = Match.FieldPlayer(Team.Blue, 0);
-            var b = Match.FieldPlayer(Team.Blue, 1);
-            return Vec2i.DistanceSquared(m.Players[b].Position, m.Ball.Position) < Vec2i.DistanceSquared(m.Players[a].Position, m.Ball.Position) ? b : a;
+            var best = -1;
+            var bestDistance = long.MaxValue;
+            for (int slot = 0; slot < Match.TeamSize; slot++)
+            {
+                var i = Match.PlayerOf(Team.Blue, slot);
+                if (i == except) { continue; }
+                var d = Vec2i.DistanceSquared(m.Players[i].Position, m.Ball.Position);
+                if (d < bestDistance)
+                {
+                    best = i;
+                    bestDistance = d;
+                }
+            }
+
+            return best;
         }
     }
 }

@@ -165,46 +165,15 @@ namespace Game.Core.Tests
         }
 
         [Test]
-        public void Tackle_CannotTakeTheBallFromTheKeeper_OrATeammate()
+        public void Tackle_CannotTakeTheBallFromATeammate()
         {
             var m = Lab.Open();
-            m.PlacePlayer(0, new Vec2i(-Pitch.HalfLength + 2000, 0));
-            m.GiveBall(0);
-            m.PlacePlayer(4, new Vec2i(-Pitch.HalfLength + 2300, 0));
-            m.PlacePlayer(2, new Vec2i(-Pitch.HalfLength + 2000, 400));
-            var e = Lab.Run(m, 1, (x, i) => i is 4 or 2 ? new PlayerCommand(Vec2i.Zero, PlayerAction.Tackle) : PlayerCommand.Idle);
-            Assert.That(Lab.Count(e, MatchEventKind.Tackle), Is.EqualTo(0));
-            Assert.That(m.Owner, Is.EqualTo(0));
-        }
-
-        // ---- GK ----
-
-        [Test]
-        public void Keeper_CatchesAShotInReach_AndDistributesAfterHolding()
-        {
-            var c = Lab.Exact;
-            var m = Lab.Open();
-            m.PlacePlayer(3, new Vec2i(Pitch.HalfLength - 600, 0));
-            m.PlacePlayer(1, new Vec2i(Pitch.HalfLength - 6000, 0));
+            m.PlacePlayer(1, new Vec2i(-6000, 0));
             m.GiveBall(1);
-            var e = Lab.Run(m, 40, (x, i) => i == 1 && x.Clock == 1 ? new PlayerCommand(Vec2i.Zero, PlayerAction.Shoot, new Vec2i(Pitch.HalfLength, 0)) : PlayerCommand.Idle);
-            Assert.That(e.Single(x => x.Kind == MatchEventKind.Capture).Player, Is.EqualTo(3), "正面のシュートは GK が止める");
-            Assert.That(m.Score(Team.Blue), Is.EqualTo(0));
-            var d = Lab.Run(m, c.KeeperHoldTicks + 2);
-            Assert.That(d.Single(x => x.Kind == MatchEventKind.Kick).Player, Is.EqualTo(3), "持ってから出す");
-        }
-
-        [Test]
-        public void Keeper_StaysInTheArea()
-        {
-            var m = Lab.Open();
-            m.PlaceBall(new Vec2i(0, 9000), Vec2i.Zero);
-            Lab.Run(m, 600);
-            foreach (var k in new[] { m.Keeper(Team.Blue), m.Keeper(Team.Red) })
-            {
-                var goal = new Vec2i(Pitch.OwnGoalX(k.Team), 0);
-                Assert.That(Vec2i.DistanceSquared(k.Position, goal), Is.LessThanOrEqualTo((long)Pitch.KeeperAreaRadius * Pitch.KeeperAreaRadius));
-            }
+            m.PlacePlayer(2, new Vec2i(-6000, 400));
+            var e = Lab.Run(m, 1, (x, i) => i == 2 ? new PlayerCommand(Vec2i.Zero, PlayerAction.Tackle) : PlayerCommand.Idle);
+            Assert.That(Lab.Count(e, MatchEventKind.Tackle), Is.EqualTo(0));
+            Assert.That(m.Owner, Is.EqualTo(1));
         }
 
         // ---- 時計・終了 ----
@@ -259,8 +228,8 @@ namespace Game.Core.Tests
             var m = new Match(new SoccerConfig(), 2);
             Lab.Run(m, 2000, (x, i) =>
             {
-                Assert.That(Math.Abs(x.Players[i].Position.X), Is.LessThanOrEqualTo(Pitch.HalfLength + Pitch.RunOffMargin));
-                Assert.That(Math.Abs(x.Players[i].Position.Y), Is.LessThanOrEqualTo(Pitch.HalfWidth + Pitch.RunOffMargin));
+                Assert.That(Math.Abs(x.Players[i].Position.X), Is.LessThanOrEqualTo(Pitch.HalfLength));
+                Assert.That(Math.Abs(x.Players[i].Position.Y), Is.LessThanOrEqualTo(Pitch.HalfWidth));
                 return new PlayerCommand(x.Ball.Position - x.Players[i].Position, PlayerAction.Tackle);
             });
         }
@@ -272,7 +241,7 @@ namespace Game.Core.Tests
             var m = new Match(new SoccerConfig(), 2026);
             Lab.Run(m, 6000, Lab.Random(77));
             TestContext.WriteLine($"hash 0x{m.Hash():X8} score {m.Score(Team.Blue)}-{m.Score(Team.Red)} kicks {m.KickCount}");
-            Assert.That(m.Hash(), Is.EqualTo(0x19B63D66u));
+            Assert.That(m.Hash(), Is.EqualTo(0xED833FCDu));
         }
 
         // ---- 設定 ----
@@ -284,6 +253,7 @@ namespace Game.Core.Tests
             Assert.That(new SoccerConfig { MatchTicks = 10 }.Validate(), Has.Some.Contains("MatchTicks"));
             Assert.That(new SoccerConfig { MaxPassSpeed = 50, MinPassSpeed = 100 }.Validate(), Has.Some.Contains("MaxPassSpeed"));
             Assert.That(new SoccerConfig { DribbleOffset = 500, ControlRadius = 450 }.Validate(), Has.Some.Contains("DribbleOffset"));
+            Assert.That(new SoccerConfig { WallRestitutionPercent = 101 }.Validate(), Has.Some.Contains("WallRestitutionPercent"));
             Assert.Throws<ArgumentException>(() => _ = new Match(new SoccerConfig { Gravity = 0 }, 1));
         }
 

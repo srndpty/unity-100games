@@ -119,74 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1001 &150630881
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 2500477456562324775, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
-      propertyPath: m_Name
-      value: SoccerStage
-      objectReference: {fileID: 0}
-    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
---- !u!114 &150630882 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7055574382949249699, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
-  m_PrefabInstance: {fileID: 150630881}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dcbc25db059e2fe4c95b429569bb03ee, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Game.Unity::Game.Unity.SoccerStage
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -428,7 +360,75 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1573046806
+--- !u!1001 &819869040
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2500477456562324775, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
+      propertyPath: m_Name
+      value: SoccerStage
+      objectReference: {fileID: 0}
+    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5817514434913338095, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
+--- !u!114 &819869041 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7055574382949249699, guid: 6d307141ed1d55345a2ef6805233e5c1, type: 3}
+  m_PrefabInstance: {fileID: 819869040}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcbc25db059e2fe4c95b429569bb03ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Unity::Game.Unity.SoccerStage
+--- !u!1 &1701830635
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -436,10 +436,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1573046810}
-  - component: {fileID: 1573046809}
-  - component: {fileID: 1573046808}
-  - component: {fileID: 1573046807}
+  - component: {fileID: 1701830639}
+  - component: {fileID: 1701830638}
+  - component: {fileID: 1701830637}
+  - component: {fileID: 1701830636}
   m_Layer: 0
   m_Name: SoccerGame
   m_TagString: Untagged
@@ -447,41 +447,41 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1573046807
+--- !u!114 &1701830636
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1573046806}
+  m_GameObject: {fileID: 1701830635}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5c05522abd387864ebc2063591519717, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Unity::Game.Unity.SoccerCaptureScenario
---- !u!114 &1573046808
+--- !u!114 &1701830637
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1573046806}
+  m_GameObject: {fileID: 1701830635}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9b3f637eba1c18843a796d158fc77f90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Unity::Game.Unity.SoccerGame
   _settings: {fileID: 11400000, guid: fe71e37a1fbf8aa418c69009af5fd17d, type: 2}
-  _hudRenderer: {fileID: 1573046809}
+  _hudRenderer: {fileID: 1701830638}
   _camera: {fileID: 519420031}
-  _stage: {fileID: 150630882}
---- !u!1931382934 &1573046809
+  _stage: {fileID: 819869041}
+--- !u!1931382934 &1701830638
 PanelRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1573046806}
+  m_GameObject: {fileID: 1701830635}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -533,13 +533,13 @@ PanelRenderer:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_Position: 0
---- !u!4 &1573046810
+--- !u!4 &1701830639
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1573046806}
+  m_GameObject: {fileID: 1701830635}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -554,5 +554,5 @@ SceneRoots:
   m_Roots:
   - {fileID: 519420032}
   - {fileID: 619394802}
-  - {fileID: 150630881}
-  - {fileID: 1573046810}
+  - {fileID: 819869040}
+  - {fileID: 1701830639}

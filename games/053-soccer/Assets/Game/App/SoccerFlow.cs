@@ -126,7 +126,6 @@ namespace Game.App
         public int Controlled => _human.Controlled;
 
         /// <summary>切替の後、移動キーを離すのを待っているか（HUD の案内）。</summary>
-        public bool WaitingForRelease => _human.WaitingForRelease;
 
         public TeamAi? BlueAi => _blueAi;
 
@@ -316,7 +315,7 @@ namespace Game.App
             _nextSeed = unchecked((_nextSeed * 1103515245) + 12345);
             _match = new Match(_config, seed);
             _blueAi = new TeamAi(Team.Blue, Tactics.Balanced);
-            _redAi = new TeamAi(Team.Red, Opponent);
+            _redAi = new TeamAi(Team.Red, Opponent, _settings.Cpu);
             _human = new HumanControl(_settings.AutoSwitchOnDefense);
             _stats = new MatchStats();
             _endTicks = 0;

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Game.Core;
 
 namespace Game.App
 {
@@ -14,13 +15,23 @@ namespace Game.App
         /// <summary>試合終了の笛から結果画面までの Tick。</summary>
         public int EndBannerTicks { get; set; } = 120;
 
-        public FlowSettings Copy() => (FlowSettings)MemberwiseClone();
+        /// <summary>相手（赤）の CPU の強さ。既定は弱め（<see cref="AiSkill.Weak"/>）。</summary>
+        public AiSkill Cpu { get; set; } = AiSkill.Weak;
+
+        public FlowSettings Copy()
+        {
+            var c = (FlowSettings)MemberwiseClone();
+            c.Cpu = Cpu.Copy();
+            return c;
+        }
 
         public IReadOnlyList<string> Validate()
         {
             var e = new List<string>();
             if (MaxTicksPerFrame < 1 || MaxTicksPerFrame > 60) { e.Add($"MaxTicksPerFrame は 1〜60（{MaxTicksPerFrame}）"); }
             if (EndBannerTicks < 1 || EndBannerTicks > 600) { e.Add($"EndBannerTicks は 1〜600（{EndBannerTicks}）"); }
+            if (Cpu == null) { e.Add("Cpu がない"); }
+            else { e.AddRange(Cpu.Validate()); }
             return e;
         }
     }

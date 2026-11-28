@@ -36,7 +36,8 @@ namespace Game.Unity.Editor
         {
             Directory.CreateDirectory(ArtDir);
             var created = false;
-            created |= Write(PitchFile, FieldMetersX * PixelsPerUnit, FieldMetersY * PixelsPerUnit, PaintPitch);
+            // コートの絵は Pitch の寸法から決まるので毎回描き直す（同じ寸法なら同じバイト列）。
+            created |= Write(PitchFile, FieldMetersX * PixelsPerUnit, FieldMetersY * PixelsPerUnit, PaintPitch, overwrite: true);
             created |= Write(PlayerFile, 16, 16, t => Disc(t, 8f, 8f, 7.5f, White, new Color32(30, 30, 30, 255)));
             created |= Write(FacingFile, 6, 6, t =>
             {
@@ -71,18 +72,20 @@ namespace Game.Unity.Editor
             }
         }
 
-        private static bool Write(string file, int w, int h, Action<Texture2D> paint)
+        private static bool Write(string file, int w, int h, Action<Texture2D> paint, bool overwrite = false)
         {
             var path = ArtDir + file;
-            if (File.Exists(path)) { return false; }
+            if (File.Exists(path) && !overwrite) { return false; }
             var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
             var pixels = new Color32[w * h];
             for (int i = 0; i < pixels.Length; i++) { pixels[i] = Clear; }
             tex.SetPixels32(pixels);
             paint(tex);
             tex.Apply();
-            File.WriteAllBytes(path, tex.EncodeToPNG());
+            var bytes = tex.EncodeToPNG();
             Object.DestroyImmediate(tex);
+            if (File.Exists(path) && File.ReadAllBytes(path).AsSpan().SequenceEqual(bytes)) { return false; }
+            File.WriteAllBytes(path, bytes);
             return true;
         }
 
@@ -121,6 +124,11 @@ namespace Game.Unity.Editor
                         var stripe = ((int)Math.Floor((mx + hl) / 2f)) % 2 == 0;
                         c = stripe ? new Color32(56, 140, 64, 255) : new Color32(66, 152, 72, 255);
                     }
+                    else if (Math.Abs(mx) <= hl + 0.5f && Math.Abs(my) <= hw + 0.5f && !(Math.Abs(mx) > hl && Math.Abs(my) < Pitch.GoalHalfWidth / 1000f))
+                    {
+                        // 壁（外周 0.5 m の帯。ゴールの口は開けておく）。
+                        c = new Color32(196, 190, 170, 255);
+                    }
                     else
                     {
                         c = new Color32(40, 92, 52, 255);
@@ -139,21 +147,12 @@ namespace Game.Unity.Editor
             Circle(t, 0f, 0f, Pitch.ExclusionRadius / 1000f);
             Disc(t, Px(0f, FieldMetersX), Px(0f, FieldMetersY), 3f, White, White);
 
-            // GK の範囲（ゴールの中心からの半円）とゴール（ネットの奥行き・ポスト）。
-            var area = Pitch.KeeperAreaRadius / 1000f;
+            // ゴール（ネットの奥行き・ポスト）。外周の線は壁。
             var gw = Pitch.GoalHalfWidth / 1000f;
             var depth = Pitch.GoalDepth / 1000f;
             foreach (var side in new[] { -1, 1 })
             {
                 var gx = side * hl;
-                for (int i = 0; i <= 360; i++)
-                {
-                    var a = i * Mathf.Deg2Rad / 2f - (Mathf.PI / 2f);
-                    var px = gx - (side * Mathf.Cos(a) * area);
-                    var py = Mathf.Sin(a) * area;
-                    Dot(t, px, py);
-                }
-
                 for (int y = Px(-gw, FieldMetersY); y <= Px(gw, FieldMetersY); y++)
                 {
                     for (int x = Px(Math.Min(gx, gx + (side * depth)), FieldMetersX); x <= Px(Math.Max(gx, gx + (side * depth)), FieldMetersX); x++)

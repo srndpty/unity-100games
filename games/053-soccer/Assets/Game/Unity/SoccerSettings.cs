@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Game.Unity
 {
-    /// <summary>遊んで決める値（試合の長さ・選手と球の速さ・GK・切替・音量）。ほかの値は <see cref="SoccerConfig"/> の既定値を使う。</summary>
+    /// <summary>遊んで決める値（試合の長さ・選手と球の速さ・壁・相手の CPU の強さ・切替・音量）。ほかの値は <see cref="SoccerConfig"/> の既定値を使う。</summary>
     [CreateAssetMenu(menuName = "Soccer/Settings", fileName = "SoccerSettings")]
     public sealed class SoccerSettings : ScriptableObject
     {
@@ -25,11 +25,20 @@ namespace Game.Unity
         [Tooltip("パスが受け手の位置で残す速さ")]
         public int PassArriveSpeed = 70;
 
-        [Tooltip("GK の速さ")]
-        public int KeeperSpeed = 70;
+        [Tooltip("壁で跳ね返るときに残す速さ（%）")]
+        public int WallRestitutionPercent = 70;
 
-        [Tooltip("GK がシュートへ動き出すまでの Tick")]
-        public int KeeperReactionTicks = 12;
+        [Tooltip("相手の CPU の走る速さ（最高速の %）。小さいほど弱い")]
+        public int CpuSpeedPercent = 75;
+
+        [Tooltip("相手の CPU が役割を決め直す間隔（Tick）。大きいほど弱い")]
+        public int CpuRoleTicks = 30;
+
+        [Tooltip("相手の CPU の保持者が判断する間隔（Tick）")]
+        public int CpuDecisionTicks = 8;
+
+        [Tooltip("相手の CPU がタックルを始める距離を縮める量（単位）。大きいほど慎重")]
+        public int CpuTackleMargin = 300;
 
         [Tooltip("守備で相手が球を取ったら、球に近い方へ自動で切り替える")]
         public bool AutoSwitchOnDefense = true;
@@ -44,11 +53,14 @@ namespace Game.Unity
             TrapSpeed = TrapSpeed,
             ShotSpeed = ShotSpeed,
             PassArriveSpeed = PassArriveSpeed,
-            KeeperSpeed = KeeperSpeed,
-            KeeperReactionTicks = KeeperReactionTicks,
+            WallRestitutionPercent = WallRestitutionPercent,
         };
 
-        public FlowSettings ToFlowSettings() => new() { AutoSwitchOnDefense = AutoSwitchOnDefense };
+        public FlowSettings ToFlowSettings() => new()
+        {
+            AutoSwitchOnDefense = AutoSwitchOnDefense,
+            Cpu = new AiSkill { SpeedPercent = CpuSpeedPercent, RoleTicks = CpuRoleTicks, DecisionTicks = CpuDecisionTicks, TackleMargin = CpuTackleMargin },
+        };
 
         public void Validate()
         {

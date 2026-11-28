@@ -22,7 +22,7 @@ namespace Game.Unity.Tests
     {
         private const string SceneName = "MiniPitch";
 
-        private static readonly string[] _roleNames = { "支援", "抜け出し", "寄せ", "カバー", "回収", "待機", "あなた" };
+        private static readonly string[] _roleNames = { "支援", "抜け出し", "寄せ", "カバー", "回収", "待機", "ゴール前", "あなた" };
 
         private TestKeyboard _keyboard = null!;
         private TestMouse _mouse = null!;
@@ -189,7 +189,7 @@ namespace Game.Unity.Tests
         }
 
         [UnityTest]
-        public IEnumerator Switch_WithAHeldKey_TheNewPlayerWaitsForRelease()
+        public IEnumerator Switch_WithAHeldKey_TheNewPlayerMovesAtOnce()
         {
             yield return Press(Key.Enter);
             yield return Hold(_settings.ToConfig().RestartDelayTicks + 5);
@@ -197,24 +197,26 @@ namespace Game.Unity.Tests
             yield return Hold(30);
             var before = Flow.Controlled;
 
-            // 右を押したまま Space。
+            // 右を押したまま Space。離さずに新しい選手が右へ走り出す。
             _keyboard.Hold(Key.D, Key.Space);
             yield return null;
             Flow.StepTicks(1);
             _keyboard.Hold(Key.D);
             yield return null;
+            var next = Flow.Controlled;
+            Assert.That(next, Is.Not.EqualTo(before));
+            var v0 = Flow.Match!.Players[next].Velocity.X;
             Flow.StepTicks(10);
             _game.Render();
             yield return null;
-            Assert.That(Flow.Controlled, Is.Not.EqualTo(before));
-            Assert.That(Flow.WaitingForRelease, Is.True);
-            Assert.That(Visible("release"), Is.True, "離すまでの案内");
-            var p = Flow.Match!.Players[Flow.Controlled];
+            Assert.That(Flow.Controlled, Is.EqualTo(next));
+            // 走っていた向きから加速の上限で右へ向きを変える（離し直しを待たない）。
+            var v1 = Flow.Match.Players[next].Velocity.X;
+            Assert.That(v1 > v0 || v1 >= 90, Is.True, $"押している移動キーがすぐ新しい選手に効く（{v0} → {v1}）");
+            var p = Flow.Match.Players[Flow.Controlled];
             Assert.That(_game.Stage.Marker.transform.localPosition.x, Is.EqualTo(PitchProjection.Ground(p.Position).x).Within(1e-4), "輪が新しい選手へ");
-
-            yield return Hold(2);
-            Assert.That(Flow.WaitingForRelease, Is.False);
-            Assert.That(Visible("release"), Is.False);
+            _keyboard.Hold();
+            yield return null;
         }
 
         [UnityTest]
@@ -291,7 +293,7 @@ namespace Game.Unity.Tests
             Assert.That(_game.Stage.Marker.enabled, Is.False);
             Assert.That(_game.Stage.Shadow.enabled, Is.False);
             foreach (var t in _game.Stage.Targets) { Assert.That(t.enabled, Is.False); }
-            foreach (var name in new[] { "board", "restart", "banner", "hint", "release", "pause", "result", "role-0", "role-1" })
+            foreach (var name in new[] { "board", "restart", "banner", "hint", "pause", "result", "role-0", "role-1" })
             {
                 Assert.That(Visible(name), Is.False, name);
             }

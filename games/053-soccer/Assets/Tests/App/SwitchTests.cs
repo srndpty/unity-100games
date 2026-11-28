@@ -36,7 +36,7 @@ namespace Game.App.Tests
         }
 
         [Test]
-        public void HeldMoveKey_DoesNotCarryOverToTheNewPlayer_UntilReleased()
+        public void HeldMoveKey_MovesTheNewPlayerAtOnce_WithoutReleasing()
         {
             var m = Scene();
             var h = new HumanControl(autoSwitchOnDefense: false);
@@ -49,23 +49,14 @@ namespace Game.App.Tests
             h.Apply(InputButton.Switch, 0, true, m);
             Tick(m, h, blue);
             Assert.That(h.Controlled, Is.EqualTo(2), "切替は Tick の後に効く");
-            Assert.That(h.WaitingForRelease, Is.True);
 
-            // 右を押したまま：新しい選手は人間の移動で動かない（命令の移動が 0）。古い選手は CPU（役割を持つ）。
-            for (int i = 0; i < 10; i++)
-            {
-                Assert.That(h.Command(m).Move, Is.EqualTo(Vec2i.Zero));
-                Tick(m, h, blue);
-            }
-
+            // 右を押したまま：次の Tick から新しい選手が右へ動く（離し直さなくてよい）。古い選手は CPU（役割を持つ）。
+            Assert.That(h.Command(m).Move.X, Is.GreaterThan(0), "押している移動キーがすぐ効く");
+            var x0 = m.Players[2].Position.X;
+            for (int i = 0; i < 10; i++) { Tick(m, h, blue); }
+            Assert.That(m.Players[2].Position.X, Is.GreaterThan(x0), "新しい選手が動く");
             Assert.That(blue.RoleOf(1), Is.Not.EqualTo(Role.None), "前の選手は CPU が動かす（役割を持つ）");
             Assert.That(blue.RoleOf(2), Is.EqualTo(Role.None), "新しい選手は人間");
-
-            // 離して押し直すと動く。
-            h.Apply(InputButton.Right, 0, false, m);
-            Assert.That(h.WaitingForRelease, Is.False);
-            h.Apply(InputButton.Up, 1, true, m);
-            Assert.That(h.Command(m).Move.Y, Is.GreaterThan(0));
         }
 
         [Test]
@@ -112,7 +103,7 @@ namespace Game.App.Tests
             Tick(m, h, blue);
             Assert.That(m.Events.Any(e => e.Kind == MatchEventKind.Kick && e.Player == 1), Is.True);
             Assert.That(h.Controlled, Is.EqualTo(2), "受け手へ");
-            Assert.That(h.WaitingForRelease, Is.True, "押していた上キーは受け手に効かない");
+            Assert.That(h.Command(m).Move.Y, Is.GreaterThan(0), "押していた上キーは受け手にそのまま効く");
         }
 
         [Test]

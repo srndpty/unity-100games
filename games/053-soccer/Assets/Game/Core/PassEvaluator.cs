@@ -61,7 +61,7 @@ namespace Game.Core
 
     /// <summary>
     /// パス候補評価（重点）。受け手ごとに足元・前・斜め前の点 × 地を這う／ループの軌道を作り、本番と同じ Step で軌跡を予測して、
-    /// 受け手と相手（GK を含む）が軌跡に届く最初の Tick を比べる。相手が先に届く候補は安全でない。
+    /// 受け手と相手が軌跡に届く最初の Tick を比べる。相手が先に届く候補は安全でない。
     /// 点数は「受け手が相手より何 Tick 早いか（上限あり）」と「前進量」。シュートは、ゴールの口を越える前に相手が届かない余裕で点数を付ける。
     /// </summary>
     public static class PassEvaluator
@@ -84,7 +84,7 @@ namespace Game.Core
             var dir = Pitch.Direction(p.Team);
             foreach (var r in match.Players)
             {
-                if (r.Team != p.Team || r.Index == carrier || r.IsKeeper) { continue; }
+                if (r.Team != p.Team || r.Index == carrier) { continue; }
                 var spots = new[]
                 {
                     r.Position,
@@ -189,7 +189,7 @@ namespace Game.Core
             return new ShotOption(target, cross, opponent, score);
         }
 
-        /// <summary>チーム <paramref name="team"/> の誰か（GK は届く距離・高さ・速さが違う）が軌跡に届く最初の Tick（届かなければ -1）。</summary>
+        /// <summary>チーム <paramref name="team"/> の誰かが軌跡に届く最初の Tick（届かなければ -1）。</summary>
         public static int OpponentArrival(Match match, Team team, IReadOnlyList<BallSample> trajectory, int horizon)
         {
             if (match == null) { throw new ArgumentNullException(nameof(match)); }
@@ -198,9 +198,7 @@ namespace Game.Core
             foreach (var o in match.Players)
             {
                 if (o.Team != team) { continue; }
-                var t = o.IsKeeper
-                    ? BallPredictor.ArrivalTick(trajectory, o.Position, c.KeeperSpeed, c.KeeperSpeed, c.KeeperReach, c.KeeperReachHeight, horizon, c.KeeperReactionTicks)
-                    : BallPredictor.ArrivalTick(trajectory, o.Position, c.PlayerMaxSpeed, c.PlayerAcceleration, c.ControlRadius, c.KneeHeight, horizon);
+                var t = BallPredictor.ArrivalTick(trajectory, o.Position, c.PlayerMaxSpeed, c.PlayerAcceleration, c.ControlRadius, c.KneeHeight, horizon);
                 if (t >= 0 && (best < 0 || t < best)) { best = t; }
             }
 

@@ -84,8 +84,7 @@ namespace Game.Core
                         t.Goals++;
                         _pendingPass = -1;
                         break;
-                    case MatchEventKind.Out:
-                    case MatchEventKind.SetPiece:
+                    case MatchEventKind.Kickoff:
                         _pendingPass = -1;
                         _possession = (int)e.Team;
                         break;

@@ -74,6 +74,7 @@ namespace Game.Core.Tests
             ai.Decide(m, -1, Lab.Idle());
             Assert.That(ai.RoleOf(2), Is.EqualTo(Role.Press), "保持者に近い方が寄せる");
             Assert.That(ai.RoleOf(1), Is.EqualTo(Role.Cover));
+            Assert.That(ai.RoleOf(0), Is.EqualTo(Role.Guard), "自陣の奥の選手がゴール前を守る（GK はいない）");
 
             // 入れ替えると役割も入れ替わる（移動 Tick の和が最小の割当）。
             m.PlacePlayer(1, new Vec2i(-2500, 0));
@@ -107,8 +108,8 @@ namespace Game.Core.Tests
             var sit = new TeamAi(Team.Blue, new Tactics(DefenseStyle.SitBack, AttackStyle.Possession));
             press.Decide(m, -1, Lab.Idle());
             sit.Decide(m, -1, Lab.Idle());
-            var pressing = Enumerable.Range(1, 2).First(i => press.RoleOf(i) == Role.Press);
-            var sitting = Enumerable.Range(1, 2).First(i => sit.RoleOf(i) == Role.Press);
+            var pressing = Enumerable.Range(0, 3).First(i => press.RoleOf(i) == Role.Press);
+            var sitting = Enumerable.Range(0, 3).First(i => sit.RoleOf(i) == Role.Press);
             Assert.That(press.TargetOf(pressing).X, Is.GreaterThan(6000), "前から奪う：保持者の近く");
             Assert.That(sit.TargetOf(sitting).X, Is.LessThan(0), "引いて守る：自陣で待つ");
         }
@@ -124,6 +125,9 @@ namespace Game.Core.Tests
             // 受け手は遠く、相手は間のパスコースの上（ループの着地点へは走っても間に合わない）。
             m.PlacePlayer(2, new Vec2i(9000, 0));
             m.PlacePlayer(4, new Vec2i(-2000, 0));
+
+            // もう 1 人の味方も受け手の隣（同じパスコースの先）に置く。
+            m.PlacePlayer(0, new Vec2i(9500, 800));
             var ground = PassEvaluator.Evaluate(m, 1, 2, PlayerAction.Pass, m.Players[2].Position);
             Assert.That(ground.IsSafe, Is.False, "間の相手が先に届く");
             Assert.That(ground.OpponentTick, Is.LessThan(ground.ReceiverTick));
@@ -161,53 +165,86 @@ namespace Game.Core.Tests
         }
 
         [Test]
-        public void ShotEvaluation_OpenCornerIsClear_ShotAtTheKeeperIsNot()
+        public void ShotEvaluation_OpenCornerIsClear_ShotAtTheDefenderIsNot()
         {
             var m = Lab.Open();
             m.PlacePlayer(1, new Vec2i(Pitch.HalfLength - 6000, 0));
             m.GiveBall(1);
             m.PlacePlayer(3, new Vec2i(Pitch.HalfLength - 800, -900));
             var corner = PassEvaluator.EvaluateShot(m, Team.Blue, new Vec2i(Pitch.HalfLength, Pitch.GoalHalfWidth - 400));
-            var atKeeper = PassEvaluator.EvaluateShot(m, Team.Blue, new Vec2i(Pitch.HalfLength, -900));
+            var atDefender = PassEvaluator.EvaluateShot(m, Team.Blue, new Vec2i(Pitch.HalfLength, -900));
             Assert.That(corner.IsClear, Is.True);
-            Assert.That(atKeeper.IsClear, Is.False);
-            Assert.That(PassEvaluator.BestShot(m, 1).Target.Y, Is.GreaterThan(0), "GK のいない側を狙う");
+            Assert.That(atDefender.IsClear, Is.False);
+            Assert.That(PassEvaluator.BestShot(m, 1).Target.Y, Is.GreaterThan(0), "守る選手のいない側を狙う");
         }
 
-        // ---- GK ----
+        // ---- ゴール前の守り・CPU の強さ ----
 
         [Test]
-        public void Keeper_CannotReachACloseCornerShot_ButSavesALongOne()
-        {
-            int Goals(int distance)
-            {
-                var m = Lab.Open();
-                m.PlacePlayer(3, new Vec2i(Pitch.HalfLength - 800, 0));
-                m.PlacePlayer(1, new Vec2i(Pitch.HalfLength - distance, 0));
-                m.GiveBall(1);
-                Lab.Run(m, 60, (x, i) => i == 1 && x.Clock == 1 ? new PlayerCommand(Vec2i.Zero, PlayerAction.Shoot, new Vec2i(Pitch.HalfLength, Pitch.GoalHalfWidth - 400)) : PlayerCommand.Idle);
-                return m.Score(Team.Blue);
-            }
-
-            Assert.That(Goals(7000), Is.EqualTo(1), "反応の遅れで近い隅には届かない");
-            Assert.That(Goals(15000), Is.EqualTo(0), "遠いシュートは止める");
-        }
-
-        [Test]
-        public void Keeper_TakesTheBallFromADribbler_AndOpponentsBackOff()
+        public void WhenTheOpponentAttacks_SomeoneGuardsTheGoalMouth()
         {
             var m = Lab.Open();
-            m.PlacePlayer(3, new Vec2i(Pitch.HalfLength - 1000, 0));
-            m.PlacePlayer(1, new Vec2i(Pitch.HalfLength - 3000, 0));
-            m.GiveBall(1);
-            var e = Lab.Run(m, 40, (x, i) => i == 1 ? new PlayerCommand(new Vec2i(1000, 0)) : PlayerCommand.Idle);
-            Assert.That(e.Any(x => x.Kind == MatchEventKind.Capture && x.Player == 3), Is.True);
-            Assert.That(m.Score(Team.Blue), Is.EqualTo(0), "ドリブルで運び込めない");
-            Lab.Run(m, 5, (x, i) => i == 1 ? new PlayerCommand(x.Ball.Position - x.Players[i].Position) : PlayerCommand.Idle);
-            if (m.Owner == 3)
+            m.PlacePlayer(4, new Vec2i(-6000, 3000));
+            m.GiveBall(4);
+            m.PlacePlayer(0, new Vec2i(-3000, -6000));
+            m.PlacePlayer(1, new Vec2i(2000, 6000));
+            m.PlacePlayer(2, new Vec2i(0, 0));
+            var ai = new TeamAi(Team.Blue, _possession);
+            var c = Lab.Idle();
+            for (int t = 0; t < 120; t++)
             {
-                Assert.That(Vec2i.DistanceSquared(m.Players[1].Position, m.Ball.Position), Is.GreaterThanOrEqualTo((long)(Pitch.ExclusionRadius - 2) * (Pitch.ExclusionRadius - 2)), "GK が持つ間は離れる");
+                ai.Decide(m, -1, c);
+                for (int i = 3; i < Match.PlayerCount; i++) { c[i] = PlayerCommand.Idle; }
+                m.Step(c);
             }
+
+            var guard = Enumerable.Range(0, 3).Single(i => ai.RoleOf(i) == Role.Guard);
+            var goal = new Vec2i(-Pitch.HalfLength, 0);
+            Assert.That(Vec2i.DistanceSquared(m.Players[guard].Position, goal), Is.LessThan(5000L * 5000), "ゴールの前にいる");
+        }
+
+        [Test]
+        public void WeakSkill_RunsSlower_AndIsEasierForAHuman()
+        {
+            var m = new Match(Lab.Exact, 1);
+            m.ForcePlay();
+            var weak = new TeamAi(Team.Red, Tactics.Balanced, AiSkill.Weak);
+            var c = Lab.Idle();
+            var max = new SoccerConfig().PlayerMaxSpeed * AiSkill.Weak.SpeedPercent / 100;
+            for (int t = 0; t < 60; t++)
+            {
+                weak.Decide(m, -1, c);
+                for (int i = 3; i < Match.PlayerCount; i++)
+                {
+                    if (m.Owner == i) { continue; }
+                    Assert.That(IntMath.Sqrt(c[i].Move.LengthSquared), Is.LessThanOrEqualTo(max), "最高速の一部しか出さない（丸めの誤差だけ）");
+                }
+
+                m.Step(c);
+            }
+
+            Assert.Throws<System.ArgumentException>(() => _ = new TeamAi(Team.Red, Tactics.Balanced, new AiSkill { SpeedPercent = 10 }));
+
+            // 素朴な人間役との試合：Weak が相手なら人間役の得点が多く、失点が少ない。
+            var config = new SoccerConfig { MatchTicks = 3 * 60 * Pitch.TickRate };
+            (int Blue, int Red) Total(AiSkill skill)
+            {
+                int b = 0, r = 0;
+                for (int seed = 0; seed < 3; seed++)
+                {
+                    var (gb, gr) = Lab.NaiveHumanMatch(new Match(config, seed + 60), skill);
+                    b += gb;
+                    r += gr;
+                }
+
+                return (b, r);
+            }
+
+            var full = Total(AiSkill.Full);
+            var weakResult = Total(AiSkill.Weak);
+            TestContext.WriteLine($"vs Full {full.Blue}-{full.Red}  vs Weak {weakResult.Blue}-{weakResult.Red}");
+            Assert.That(weakResult.Blue - weakResult.Red, Is.GreaterThan(full.Blue - full.Red), "Weak の方が人間に易しい");
+            Assert.That(weakResult.Blue, Is.GreaterThan(weakResult.Red), "Weak には素朴な操作でも勝ち越せる");
         }
 
         // ---- CPU の試合と戦術差 ----
@@ -263,7 +300,7 @@ namespace Game.Core.Tests
             var m = new Match(new SoccerConfig { MatchTicks = 2 * 60 * Pitch.TickRate }, 2026);
             var stats = Lab.CpuMatch(m, Tactics.Balanced, new Tactics(DefenseStyle.SitBack, AttackStyle.Direct));
             TestContext.WriteLine($"hash 0x{m.Hash():X8} score {m.Score(Team.Blue)}-{m.Score(Team.Red)} passes {stats.Of(Team.Blue).Passes}");
-            Assert.That(m.Hash(), Is.EqualTo(0x6B88B074u));
+            Assert.That(m.Hash(), Is.EqualTo(0x1EAE48A3u));
         }
     }
 }

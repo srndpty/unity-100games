@@ -55,17 +55,15 @@ namespace Game.Core
     {
         public const int FacingLength = 1000;
 
-        internal Footballer(int index, Team team, bool isKeeper)
+        internal Footballer(int index, Team team)
         {
             Index = index;
             Team = team;
-            IsKeeper = isKeeper;
             Facing = new Vec2i(Pitch.Direction(team) * FacingLength, 0);
         }
 
         public int Index { get; }
         public Team Team { get; }
-        public bool IsKeeper { get; }
 
         public Vec2i Position { get; internal set; }
         public Vec2i Velocity { get; internal set; }

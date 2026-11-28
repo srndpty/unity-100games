@@ -13,11 +13,11 @@ namespace Game.Core
         /// <summary>試合時間（Tick）。既定は 5 分。</summary>
         public int MatchTicks = 5 * 60 * Pitch.TickRate;
 
-        /// <summary>得点・ライン外の後、再開の位置へ戻るまでの Tick。</summary>
+        /// <summary>得点の間の後、キックオフで蹴れるようになるまでの Tick。</summary>
         public int RestartDelayTicks = 60;
 
-        /// <summary>再開で蹴る人がこの Tick 蹴らなければ、いちばん近い味方へ自動で出す。</summary>
-        public int SetPieceTimeoutTicks = 300;
+        /// <summary>キックオフで蹴る人がこの Tick 蹴らなければ、いちばん近い味方へ自動で出す。</summary>
+        public int KickoffTimeoutTicks = 300;
 
         /// <summary>得点の後の間（Tick）。</summary>
         public int GoalCelebrationTicks = 120;
@@ -46,6 +46,9 @@ namespace Game.Core
 
         /// <summary>ポストに当たったときに残る速さ（%）。</summary>
         public int PostRestitutionPercent = 70;
+
+        /// <summary>壁で跳ね返ったときに残る、壁に垂直な速さ（%）。</summary>
+        public int WallRestitutionPercent = 70;
 
         // ---- 選手 ----
 
@@ -105,22 +108,6 @@ namespace Game.Core
         /// <summary>パスの狙いのぶれ（受け手の位置で ± この単位）。</summary>
         public int PassSpread = 250;
 
-        // ---- GK ----
-
-        public int KeeperSpeed = 70;
-
-        /// <summary>GK が球に届く距離（中心どうし）。</summary>
-        public int KeeperReach = 600;
-
-        /// <summary>GK が届く球の高さ（下端）の上限。</summary>
-        public int KeeperReachHeight = 2200;
-
-        /// <summary>GK が球を持ってから出すまでの Tick。</summary>
-        public int KeeperHoldTicks = 75;
-
-        /// <summary>蹴られてから GK がシュートの越える位置へ動き出すまでの Tick（反応の遅れ）。</summary>
-        public int KeeperReactionTicks = 12;
-
         public SoccerConfig Copy() => (SoccerConfig)MemberwiseClone();
 
         /// <summary>範囲の外の値を全て挙げる（空なら有効）。</summary>
@@ -134,7 +121,7 @@ namespace Game.Core
 
             Range(nameof(MatchTicks), MatchTicks, 60 * Pitch.TickRate, 20 * 60 * Pitch.TickRate);
             Range(nameof(RestartDelayTicks), RestartDelayTicks, 1, 600);
-            Range(nameof(SetPieceTimeoutTicks), SetPieceTimeoutTicks, 30, 1800);
+            Range(nameof(KickoffTimeoutTicks), KickoffTimeoutTicks, 30, 1800);
             Range(nameof(GoalCelebrationTicks), GoalCelebrationTicks, 1, 600);
             Range(nameof(BallRadius), BallRadius, 50, 200);
             Range(nameof(Gravity), Gravity, 1, 20);
@@ -144,6 +131,7 @@ namespace Game.Core
             Range(nameof(BounceFrictionPercent), BounceFrictionPercent, 0, 100);
             Range(nameof(MinBounceSpeed), MinBounceSpeed, 1, 100);
             Range(nameof(PostRestitutionPercent), PostRestitutionPercent, 0, 100);
+            Range(nameof(WallRestitutionPercent), WallRestitutionPercent, 0, 100);
             Range(nameof(PlayerRadius), PlayerRadius, 100, 600);
             Range(nameof(PlayerMaxSpeed), PlayerMaxSpeed, 20, 300);
             Range(nameof(PlayerAcceleration), PlayerAcceleration, 1, 300);
@@ -167,11 +155,6 @@ namespace Game.Core
             Range(nameof(ShotVerticalSpeed), ShotVerticalSpeed, 0, 200);
             Range(nameof(ShotSpread), ShotSpread, 0, 3000);
             Range(nameof(PassSpread), PassSpread, 0, 3000);
-            Range(nameof(KeeperSpeed), KeeperSpeed, 10, 300);
-            Range(nameof(KeeperReach), KeeperReach, 100, 2000);
-            Range(nameof(KeeperReachHeight), KeeperReachHeight, 0, 4000);
-            Range(nameof(KeeperHoldTicks), KeeperHoldTicks, 1, 600);
-            Range(nameof(KeeperReactionTicks), KeeperReactionTicks, 0, 120);
 
             // 1 Tick の球の移動は、ポストとの掃引（int-geometry の Sweep.First）の上限に収める（上限を超えた設定は例外ではなく検証で拒否）。
             // 速さの上限：パス・ロブ・シュート・弾いた球の最大。縦の速さは横に効かない。

@@ -16,6 +16,9 @@ namespace Game.Core
 
         /// <summary>弾みが小さくなり、転がりに変わった。</summary>
         Landed = 4,
+
+        /// <summary>壁で跳ね返った。</summary>
+        Wall = 8,
     }
 
     /// <summary>
@@ -24,6 +27,8 @@ namespace Game.Core
     /// 1 Tick：高さ 0 で縦の速さ 0 なら転がる（横の速さを ‰ で減らし、遅くなったら止まる）。それ以外は空中（縦の速さから重力を引く）。
     /// 位置に速さを足し、高さが 0 以下になったら弾む（縦は反転して反発の割合、横は摩擦の割合。弾みが小さければ転がりへ）。
     /// 動いた線分がクロスバーより下でポストに触れたら、触れた位置で止めて速さを法線に対して反射する（Tick の残りは捨てる）。
+    /// コートは壁で囲まれている：タッチラインと、ゴールの口（ポストの間・クロスバーの下）以外のゴールラインで、球の端が越えた分だけ折り返し、
+    /// 壁に垂直な速さを反転して割合を掛ける。
     /// </para>
     /// 予測（<see cref="BallPredictor"/>）も同じ <see cref="Step"/> を使うので、予測と本番の軌跡は Tick 単位で一致する（誰も触らなければ）。
     /// </summary>
@@ -129,8 +134,29 @@ namespace Game.Core
                 z1 = 0;
             }
 
+            var height = Math.Max(0, z1);
+            var r = config.BallRadius;
+            var wallY = Pitch.HalfWidth - r;
+            if (Math.Abs(p1.Y) > wallY)
+            {
+                var side = Math.Sign(p1.Y);
+                p1 = new Vec2i(p1.X, (side * 2 * wallY) - p1.Y);
+                v = new Vec2i(v.X, -v.Y * config.WallRestitutionPercent / 100);
+                hit |= BallHit.Wall;
+            }
+
+            var wallX = Pitch.HalfLength - r;
+            var mouth = Math.Abs(p1.Y) < Pitch.GoalHalfWidth && height + (2 * r) <= Pitch.CrossbarHeight;
+            if (Math.Abs(p1.X) > wallX && !mouth)
+            {
+                var side = Math.Sign(p1.X);
+                p1 = new Vec2i((side * 2 * wallX) - p1.X, p1.Y);
+                v = new Vec2i(-v.X * config.WallRestitutionPercent / 100, v.Y);
+                hit |= BallHit.Wall;
+            }
+
             Position = p1;
-            Height = Math.Max(0, z1);
+            Height = height;
             Velocity = v;
             VerticalSpeed = vz;
             return hit;
