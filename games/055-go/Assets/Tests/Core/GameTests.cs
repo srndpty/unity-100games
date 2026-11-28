@@ -107,6 +107,14 @@ namespace Game.Core.Tests
         }
 
         [Test]
+        public void StateHash_IncludesTheKomiAndTheMoveLimit()
+        {
+            var plain = new GoGame(Lab.Config).StateHash();
+            Assert.That(new GoGame(new GoConfig { Komi = 6 }).StateHash(), Is.Not.EqualTo(plain));
+            Assert.That(new GoGame(new GoConfig { MoveLimit = 299 }).StateHash(), Is.Not.EqualTo(plain));
+        }
+
+        [Test]
         public void StateHash_DiffersWhenOnlyTheHistoryDiffers()
         {
             // 同じ盤・同じ手番でも、通った盤面が違えば以後の同型反復が変わるので別の値。
@@ -142,7 +150,7 @@ namespace Game.Core.Tests
         {
             // 整数だけの規則なので、.NET と Mono（Unity）で同じ値になる。
             var game = Lab.RandomGame(2026, 300);
-            Assert.That(game.StateHash(), Is.EqualTo(0x09A00C4Cu), $"最終ハッシュ 0x{game.StateHash():X8}（{game.MoveCount} 手、{game.End}）");
+            Assert.That(game.StateHash(), Is.EqualTo(0xDA1BDA78u), $"最終ハッシュ 0x{game.StateHash():X8}（{game.MoveCount} 手、{game.End}）");
         }
     }
 }

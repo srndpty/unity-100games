@@ -82,14 +82,14 @@ namespace Game.Core.Tests
         [Test]
         public void CandidatePoints_MatchTheGameRules_OnEveryPosition()
         {
-            // 探索が展開する手 = 対局が受け付ける手から、自分の眼を埋める手を除いたもの（047）。
+            // 探索が展開する手 = 対局が受け付ける手から、別々の連をつながない自分の眼埋めを除いたもの（047）。
             foreach (var seed in new[] { 1, 2, 3, 4 })
             {
                 Lab.RandomGame(seed, 200, game =>
                 {
                     if (game.IsOver) { return; }
                     var board = game.CopyBoard();
-                    var expected = game.LegalPoints().Where(p => !board.IsOwnEye(p, game.ToMove)).ToList();
+                    var expected = game.LegalPoints().Where(p => !board.IsOwnEye(p, game.ToMove) || board.JoinsChains(p)).ToList();
                     Assert.That(Mcts.CandidatePoints(game, board, game.ToMove, null, null), Is.EqualTo(expected), $"seed {seed} の {game.MoveCount} 手目");
                 });
             }
@@ -170,6 +170,100 @@ namespace Game.Core.Tests
                 . . . . X O . . .", Stone.White);
             Assert.That(game.TryPass(Stone.White), Is.EqualTo(MoveVerdict.Ok));
             Assert.That(Search(game, 500).BestMove, Is.EqualTo(Points.Pass));
+        }
+
+        // 黒の地の中に白 B2、白の地の中に黒 H8。盤のまま数えると黒 10・白 10 ＋ コミで白の勝ち、死石を除くと黒 45・白 36 ＋ 7 で黒の 2 目勝ち。
+        private const string Invaded = @"
+            . . . . X O . . .
+            . . . . X O . X .
+            . . . . X O . . .
+            . . . . X O . . .
+            . . . . X O . . .
+            . . . . X O . . .
+            . . . . X O . . .
+            . O . . X O . . .
+            . . . . X O . . .";
+
+        [Test]
+        public void AfterTheOpponentPasses_ThePassIsScoredWithTheDeadStoneEstimate()
+        {
+            var game = Lab.Game(Invaded);
+            Assert.That(game.TryPass(Stone.Black), Is.EqualTo(MoveVerdict.Ok));
+            var config = new MctsConfig { OwnershipPlayouts = 200 };
+
+            // 盤のまま数えると、白はパスで全勝に見えてパスする（推定の系列を渡さないとき）。
+            Assert.That(Search(game, 400, config: config).BestMove, Is.EqualTo(Points.Pass));
+
+            // 終局後と同じ推定で死石を除くと、パスは負け。
+            var search = new Mcts(game, config, 400, new RandomSeries(1), Ownership.Series(9, game.MoveCount + 1));
+            Assert.That(search.Run(150), Is.EqualTo(150));
+            Assert.That(search.Done, Is.EqualTo(0), "推定を先に回す");
+            Assert.That(search.IsDone, Is.False);
+            while (!search.IsDone) { search.Run(97); }
+            Assert.That(search.Done, Is.EqualTo(400));
+            var pass = search.RootChildren().Single(c => c.Move == Points.Pass);
+            Assert.That(pass.Visits, Is.GreaterThan(0));
+            Assert.That(pass.Wins2, Is.EqualTo(0), "死石を除くと黒の勝ち");
+            Assert.That(search.BestMove, Is.Not.EqualTo(Points.Pass));
+
+            // 推定は終局後の Flow と同じ系列なので、同じ死石になる。
+            var after = game.Clone();
+            after.TryPass(Stone.White);
+            Assert.That(search.PassEstimate!.EstimateDead(config.DeadPercent), Is.EqualTo(Ownership.EstimateDead(after, config, 9)));
+        }
+
+        [Test]
+        public void PassEstimate_DoesNotDependOnHowTheRunsAreSplit()
+        {
+            var game = Lab.Game(Invaded);
+            game.TryPass(Stone.Black);
+            var config = new MctsConfig { OwnershipPlayouts = 120 };
+            Mcts Make() => new(game, config, 300, new RandomSeries(4), Ownership.Series(3, game.MoveCount + 1));
+            var whole = Make();
+            whole.Run(10_000);
+            Assert.That(whole.IsDone, Is.True);
+            foreach (var chunk in new[] { 1, 7, 119, 421 })
+            {
+                var split = Make();
+                while (!split.IsDone) { split.Run(chunk); }
+                Assert.That(split.RootChildren(), Is.EqualTo(whole.RootChildren()), $"{chunk} ずつ");
+            }
+        }
+
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        public void NearTheMoveLimit_TheTreeDoesNotGoPastTheEnd(int left)
+        {
+            // 対局の手数の上限まで残り left 手。木はそれより深く展開せず、展開した全ての経路が対局で打てる。
+            var start = new GoGame(new GoConfig { MoveLimit = 24 + left });
+            var game = Lab.RandomGame(left, 24, null, start);
+            Assert.That(game.IsOver, Is.False);
+            var search = Search(game, 800, left);
+            var paths = search.ExpandedPaths();
+            Assert.That(paths.Max(p => p.Length), Is.InRange(1, left));
+            AssertPathsLegal(game, search);
+        }
+
+        [Test]
+        public void EyeFillsThatJoinChains_StayCandidates()
+        {
+            // B2 は黒の眼の形だが、4 つの別々の石をつなぐ手なので候補に残す。
+            var game = Lab.Game(@"
+                . . . . . . . . .
+                . . . . . . . . .
+                . . . . . . . . .
+                . . . . . . . . .
+                . . . . . . . O .
+                . . . . . . . . .
+                . X . . . . . . .
+                X . X . . . . . .
+                . X . . . . . . .");
+            var board = game.CopyBoard();
+            var b2 = Points.Parse("B2");
+            Assert.That(board.IsOwnEye(b2, Stone.Black), Is.True);
+            Assert.That(board.JoinsChains(b2), Is.True);
+            Assert.That(Mcts.CandidatePoints(game, board, Stone.Black, null, null), Has.Member(b2));
         }
 
         [Test]

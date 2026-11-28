@@ -50,6 +50,47 @@ namespace Game.Core.Tests
             Assert.That(white[Points.Parse("J1")], Is.GreaterThan(25), "白の地の隅（過半）");
         }
 
+        // 白の地（E 列の壁の右）の隅に二眼（H2・J1）で生きた黒、白の地の中に眼のない黒の 2 子（H6・H7）。
+        private const string TwoEyesAndADeadPair = @"
+            . . . X O . . . .
+            . . . X O . . . .
+            . . . X O . . X .
+            . . . X O . . X .
+            . . . X O . . . .
+            . . . X O O O O O
+            . . . X O . X X X
+            . . . X O . X . X
+            . . . X O . X X .";
+
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        public void TwoEyedGroup_IsAlive_AndTheSurroundedPair_IsDeadAsAWholeChain(int seed)
+        {
+            var game = Lab.Game(TwoEyesAndADeadPair, Stone.White);
+            var dead = Lab.ToSet(Ownership.EstimateDead(game, new MctsConfig(), seed));
+            Assert.That(dead, Is.EquivalentTo(new[] { Points.Parse("H6"), Points.Parse("H7") }), $"seed {seed}");
+        }
+
+        [Test]
+        public void TheSearch_DoesNotDependOnHowTheRunsAreSplit()
+        {
+            var game = Lab.Game(Invaded);
+            var whole = new OwnershipSearch(game, 90, Points.Count * 3, new RandomSeries(6));
+            Assert.That(whole.Run(1000), Is.EqualTo(90));
+            Assert.That(whole.IsDone, Is.True);
+            foreach (var chunk in new[] { 1, 7, 89 })
+            {
+                var split = new OwnershipSearch(game, 90, Points.Count * 3, new RandomSeries(6));
+                Assert.That(() => split.EstimateDead(50), Throws.InvalidOperationException, "回し終える前");
+                while (!split.IsDone) { split.Run(chunk); }
+                Assert.That(split.BlackCounts(), Is.EqualTo(whole.BlackCounts()), $"{chunk} ずつ");
+                Assert.That(split.WhiteCounts(), Is.EqualTo(whole.WhiteCounts()), $"{chunk} ずつ");
+                Assert.That(split.EstimateDead(50), Is.EqualTo(whole.EstimateDead(50)));
+            }
+        }
+
         [Test]
         public void DeadStonesScoreAsTheOpponentsArea()
         {

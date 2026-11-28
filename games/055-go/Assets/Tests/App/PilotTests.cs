@@ -28,6 +28,7 @@ namespace Game.App.Tests
             Assert.That(flow.Screen == FlowScreen.Scoring || flow.Screen == FlowScreen.Result, Is.True, $"終局しない（{flow.Screen}）");
             if (flow.Screen == FlowScreen.Scoring)
             {
+                AppLab.FinishEstimate(flow);
                 flow.Press(InputButton.Cancel);
                 flow.FlushIntents();
             }
@@ -52,7 +53,7 @@ namespace Game.App.Tests
             var a = PlayOut(2026);
             var b = PlayOut(2026);
             Assert.That(b.Game!.StateHash(), Is.EqualTo(a.Game!.StateHash()));
-            Assert.That(a.Game.StateHash(), Is.EqualTo(0x15B11646u), $"最終ハッシュ 0x{a.Game.StateHash():X8}（{a.Game.MoveCount} 手、{a.Game.End}、{a.Outcome}）");
+            Assert.That(a.Game.StateHash(), Is.EqualTo(0x05A9D459u), $"最終ハッシュ 0x{a.Game.StateHash():X8}（{a.Game.MoveCount} 手、{a.Game.End}、{a.Outcome}）");
         }
 
         [Test]

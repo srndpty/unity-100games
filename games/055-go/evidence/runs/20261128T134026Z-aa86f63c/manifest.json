@@ -2,9 +2,9 @@
     "Product": "Sekitei",
     "Version": "1.0",
     "UnityVersion": "6000.6.9f1",
-    "BuildGuid": "48d7c086debe49b39a0782853c55bf06",
+    "BuildGuid": "2d265bdd8eb648e3abcb14261702e3ad",
     "Seed": 1,
-    "CapturedAtUtc": "2026-11-28T07:48:41.2056345Z",
+    "CapturedAtUtc": "2026-11-28T13:40:24.1768499Z",
     "Info": [
         {
             "Key": "imageEncoding",
@@ -41,33 +41,33 @@
         },
         {
             "File": "04_playing.jpg",
-            "Sha256": "36c2dd6293ecd2e34239f95bd17f622e00dc9241aff966870ae95ec8f27ecf1b",
-            "Note": "対局中（矢印キーのカーソル・最後の手の印） (moves=16, hash=0x3127589E)"
+            "Sha256": "f59ddd10048e53e5bc10744d8bbe55eecf49d9f5dd65dea6956d4dbb6ba1fc7c",
+            "Note": "対局中（矢印キーのカーソル・最後の手の印） (moves=16, hash=0x150CBD37)"
         },
         {
             "File": "05_cpu_thinking.jpg",
-            "Sha256": "5b45aa723466eab1159748fc897870b9bf3432d84ae30f4be60069b3d9198ce8",
-            "Note": "CPU の考え中（回した数と見込みの勝率） (moves=17, hash=0xA23E746F)"
+            "Sha256": "8258940d3f6bb3773de521baedbe22c7873e798b60f425d684d855c8ed7f31ca",
+            "Note": "CPU の考え中（回した数と見込みの勝率） (moves=17, hash=0xA56D717D)"
         },
         {
             "File": "06_pause.jpg",
-            "Sha256": "0257326224fb25021177f7c702548f206183a18ab22cf495ce2b184f0581bf2e",
-            "Note": "一時停止（再開・投了・タイトルへ） (moves=17, hash=0xA23E746F)"
+            "Sha256": "648bf693d76cda5db5dfffde4004169128dcf2ccf5e2a28046606eb5d5af3a23",
+            "Note": "一時停止（再開・投了・タイトルへ） (moves=17, hash=0xA56D717D)"
         },
         {
             "File": "07_scoring.jpg",
-            "Sha256": "c2eb2a5fd618cb44d2aa5c4ec19b5e03dc180546c463a986494b6bbab3de002a",
-            "Note": "死石の確定（推定した死石を薄く、地を小さな四角で表示） (moves=92, hash=0x5A92EA7D)"
+            "Sha256": "722e31313ad6170dd732609ae167c2da2bcd48c4d9e0956d51ee9f75c1375550",
+            "Note": "死石の確定（推定した死石を薄く、地を小さな四角で表示） (moves=116, hash=0xEBE4A95E)"
         },
         {
             "File": "08_result.jpg",
-            "Sha256": "9e2a65c87f605cb565e1ab9f22977d9ab6a41798a7775b36ea6e9bb8f559ddba",
-            "Note": "結果（面積の内訳） (moves=92, hash=0x5A92EA7D)"
+            "Sha256": "a5847e4c014cc82d71a5f42ab4897cdbeef31c2f4a31614123bb916459677db5",
+            "Note": "結果（面積の内訳） (moves=116, hash=0xEBE4A95E)"
         },
         {
             "File": "09_ko.jpg",
             "Sha256": "031be01e6d446ca4d410dddd70f90c93048273dc165a03e659efb425b1c9484d",
-            "Note": "コウ：取られた直後の 1 子の取り返しは打てない (moves=1, hash=0x56F668BE)"
+            "Note": "コウ：取られた直後の 1 子の取り返しは打てない (moves=1, hash=0x27F072FB)"
         }
     ]
 }

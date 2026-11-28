@@ -54,6 +54,13 @@ namespace Game.App.Tests
             Assert.That(flow.Screen, Is.EqualTo(FlowScreen.Playing));
         }
 
+        /// <summary>死石の推定を Tick で回し終える。</summary>
+        public static void FinishEstimate(GoFlow flow, int limit = 10_000)
+        {
+            for (var i = 0; i < limit && flow.IsEstimating; i++) { flow.StepTicks(1); }
+            Assert.That(flow.IsEstimating, Is.False, "推定が終わらない");
+        }
+
         /// <summary>CPU が打つ（またはプレイヤーの手番になる・対局が終わる）まで Tick を進める。</summary>
         public static void UntilPlayerTurn(GoFlow flow, int limit = 2000)
         {

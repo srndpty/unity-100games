@@ -202,6 +202,16 @@ namespace Game.App.Tests
             for (var i = 0; i < 500 && flow.Screen == FlowScreen.Playing; i++) { flow.StepTicks(1); }
             Assert.That(flow.Screen, Is.EqualTo(FlowScreen.Scoring));
             Assert.That(flow.Game!.End, Is.EqualTo(GameEnd.TwoPasses));
+
+            // 推定を回し終えるまでは、切り替えも確定も受け付けない。
+            Assert.That(flow.IsEstimating, Is.True);
+            flow.Press(InputButton.Cancel);
+            flow.Click(Points.Parse("E5"));
+            flow.FlushIntents();
+            Assert.That(flow.Screen, Is.EqualTo(FlowScreen.Scoring));
+            Assert.That(flow.DeadStones.IsEmpty, Is.True);
+            AppLab.FinishEstimate(flow);
+            Assert.That(flow.DeadStones, Is.EqualTo(Ownership.EstimateDead(flow.Game, AppLab.FastMcts(), flow.MatchSeed)), "一度に回した推定と同じ");
             Assert.That(flow.DeadStones.IsEmpty, Is.True, "壁はどちらも生き");
             Assert.That(flow.ScorePreview.Margin, Is.EqualTo(-1));
 
@@ -307,6 +317,127 @@ namespace Game.App.Tests
         }
 
         [Test]
+        public void WithoutTickSearch_OnlyThinkRunsTheSearch_AndTheMoveIsTheSame()
+        {
+            int CpuReply(bool inTicks, int thinkPerFrame)
+            {
+                var flow = AppLab.Flow(seed: 7);
+                flow.SearchInTicks = inTicks;
+                AppLab.Start(flow);
+                flow.Click(Points.Parse("C3"));
+                flow.FlushIntents();
+                for (var i = 0; i < 1000 && !flow.IsPlayerTurn; i++)
+                {
+                    flow.Think(thinkPerFrame);
+                    flow.StepTicks(1);
+                }
+
+                Assert.That(flow.IsPlayerTurn, Is.True, "CPU が打たない");
+                return flow.Game!.Move(1);
+            }
+
+            Assert.That(CpuReply(false, 9), Is.EqualTo(CpuReply(true, 0)));
+
+            // Tick だけでは探索が進まず、打たない（考える間は数える）。
+            var idle = AppLab.Flow(seed: 7);
+            idle.SearchInTicks = false;
+            AppLab.Start(idle);
+            idle.Click(Points.Parse("C3"));
+            idle.FlushIntents();
+            idle.StepTicks(500);
+            Assert.That(idle.IsCpuThinking, Is.True);
+            Assert.That(idle.Cpu!.Search!.Done, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void WithoutTickSearch_TheDeadStoneEstimateRunsOnlyInThink()
+        {
+            var flow = AppLab.FromText(AppLab.Walls, new GoConfig { Komi = 10 });
+            flow.SearchInTicks = false;
+            AppLab.Start(flow);
+            flow.Press(InputButton.Pass);
+            flow.FlushIntents();
+            for (var i = 0; i < 2000 && flow.Screen == FlowScreen.Playing; i++)
+            {
+                flow.Think(13);
+                flow.StepTicks(1);
+            }
+
+            Assert.That(flow.IsEstimating, Is.True);
+            flow.StepTicks(100);
+            Assert.That(flow.Estimate!.Done, Is.EqualTo(0), "Tick では回さない");
+            while (flow.IsEstimating) { Assert.That(flow.Think(13), Is.GreaterThan(0)); }
+            Assert.That(flow.DeadStones, Is.EqualTo(Ownership.EstimateDead(flow.Game!, AppLab.FastMcts(), flow.MatchSeed)));
+            Assert.That(flow.Think(13), Is.EqualTo(0), "回し終えたら何もしない");
+        }
+
+        [Test]
+        public void KeysLeftAfterAScreenChange_AreDiscarded()
+        {
+            // タイトルの Enter と同じフレームの Space（決定）が、始まった対局の初手にならない。
+            var flow = AppLab.Flow();
+            flow.Press(InputButton.Confirm);
+            flow.Press(InputButton.Confirm);
+            flow.FlushIntents();
+            Assert.That(flow.Screen, Is.EqualTo(FlowScreen.Playing));
+            Assert.That(flow.Game!.MoveCount, Is.EqualTo(0));
+
+            // 一時停止の再開と同じフレームのパスも捨てる。
+            flow.Press(InputButton.Cancel);
+            flow.FlushIntents();
+            flow.Press(InputButton.Cancel);
+            flow.Press(InputButton.Pass);
+            flow.FlushIntents();
+            Assert.That(flow.Screen, Is.EqualTo(FlowScreen.Playing));
+            Assert.That(flow.Game.MoveCount, Is.EqualTo(0));
+
+            // 同じ画面の中のカーソル移動と決定は、まとめて積んでも全て効く（操縦役と同じ）。
+            flow.Press(InputButton.Right);
+            flow.Press(InputButton.Right);
+            flow.Press(InputButton.Up);
+            flow.Press(InputButton.Confirm);
+            flow.FlushIntents();
+            Assert.That(flow.Game.MoveCount, Is.EqualTo(1));
+            Assert.That(flow.Game.Move(0), Is.EqualTo(Points.Parse("G6")));
+        }
+
+        [Test]
+        public void ARejectionNotice_IsClearedByTheNextGoodMove_ButAPassNoticeIsNot()
+        {
+            var flow = AppLab.Flow();
+            AppLab.Start(flow);
+            flow.Click(Points.Parse("C3"));
+            flow.FlushIntents();
+            AppLab.UntilPlayerTurn(flow);
+            flow.Click(Points.Parse("C3"));
+            flow.FlushIntents();
+            Assert.That(flow.Notice, Is.EqualTo(GoFlow.RejectionText(MoveVerdict.Occupied)));
+            var free = flow.Game!.LegalPoints()[0];
+            flow.Click(free);
+            flow.FlushIntents();
+            Assert.That(flow.Notice, Is.Null, "打てたら理由を消す");
+            Assert.That(flow.LastRejection, Is.Null);
+
+            AppLab.UntilPlayerTurn(flow);
+            flow.Press(InputButton.Pass);
+            flow.FlushIntents();
+            Assert.That(flow.Notice, Does.Contain("パス"));
+        }
+
+        [Test]
+        public void CpuPlayer_StartsANewSearch_ForAnotherGameWithTheSameMoveCount()
+        {
+            var cpu = new CpuPlayer(Stone.Black, AppLab.FastMcts(), 80, 5, 1, 3);
+            var a = new GoGame(new GoConfig());
+            var b = new GoGame(new GoConfig { Komi = 0 });
+            cpu.Think(a, 30);
+            Assert.That(cpu.Search!.Done, Is.EqualTo(30));
+            cpu.Think(b, 10);
+            Assert.That(cpu.Search!.Done, Is.EqualTo(10), "別の対局は別の探索");
+            Assert.That(() => new CpuPlayer(Stone.Black, AppLab.FastMcts(), 80, 0, 1, 3), Throws.TypeOf<ArgumentOutOfRangeException>(), "Tick だけでも打てるよう 1 以上");
+        }
+
+        [Test]
         public void InvalidSettings_AreRejected()
         {
             Assert.That(() => AppLab.Flow(settings: new FlowSettings { PlayoutsPerTick = 0 }), Throws.TypeOf<ArgumentException>());
@@ -317,6 +448,7 @@ namespace Game.App.Tests
         private static void Resign(GoFlow flow)
         {
             flow.Press(InputButton.Cancel);
+            flow.FlushIntents(); // 画面が変わると同じフレームの残りの入力は捨てる
             flow.Press(InputButton.Down);
             flow.Press(InputButton.Confirm);
             flow.FlushIntents();

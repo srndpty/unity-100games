@@ -335,7 +335,12 @@ namespace Game.Unity
             _notice.text = flow.Notice ?? "";
             _pass.SetEnabled(flow.IsPlayerTurn);
 
-            if (flow.Screen == FlowScreen.Scoring)
+            if (flow.IsEstimating)
+            {
+                _scoreText.text = $"死石を推定中… {flow.Estimate!.Done} / {flow.Estimate.Target}";
+                _hint.text = "推定が終わると、死石の印を直せます";
+            }
+            else if (flow.Screen == FlowScreen.Scoring)
             {
                 var s = flow.ScorePreview;
                 _scoreText.text =

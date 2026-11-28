@@ -88,6 +88,8 @@ namespace Game.Unity
             }
 
             if (flow.Screen != FlowScreen.Scoring) { throw new InvalidOperationException($"死石の確定に着きません（{flow.Screen}、{flow.Game!.End}）"); }
+            for (var i = 0; i < MaxTicks && flow.IsEstimating; i++) { flow.StepTicks(1); }
+            if (flow.IsEstimating) { throw new InvalidOperationException("死石の推定が終わりません"); }
             await Shoot("07_scoring", "死石の確定（推定した死石を薄く、地を小さな四角で表示）");
             Press(InputButton.Cancel);
             await Shoot("08_result", "結果（面積の内訳）");

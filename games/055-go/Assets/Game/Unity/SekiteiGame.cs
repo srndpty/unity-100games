@@ -12,11 +12,13 @@ namespace Game.Unity
 {
     /// <summary>
     /// シーンの進行役。設定から <see cref="GoFlow"/> を作り、キーの押下とマウスの押下を <see cref="Intent"/> にして渡す。
-    /// フレームの残り時間で CPU の探索を進める（<see cref="GoFlow.Think"/>、撮影中は Tick の分だけ）。Stage・HUD・効果音はその Tick の状態を写すだけ。
+    /// 探索（CPU・死石の推定）は 1 フレームの予算（入力と Tick を含めて <see cref="SekiteiSettings.ThinkMillisecondsPerFrame"/>）の残りで回す（<see cref="GoFlow.Think"/>）。
+    /// Tick では回さないので、処理落ちで Tick がたまっても探索の量は増えない。撮影中だけは Tick の分だけで回す（<see cref="GoFlow.SearchInTicks"/>）。
+    /// Stage・HUD・効果音はその Tick の状態を写すだけ。
     /// </summary>
     public sealed class SekiteiGame : MonoBehaviour
     {
-        /// <summary>フレームの残り時間で 1 回に回すプレイアウトの数（時間を見る間隔）。</summary>
+        /// <summary>フレームの予算の残りで 1 回に回すプレイアウトの数（時間を見る間隔）。</summary>
         public const int ThinkChunk = 8;
 
         private static int? _seedOverride;
@@ -61,7 +63,7 @@ namespace Game.Unity
         /// <summary>最初のシードを差し替えて Flow を作り直す（撮影・テスト）。</summary>
         public void Reinitialize(int firstSeed)
         {
-            Flow = new GoFlow(Settings.ToConfig(), Settings.ToMcts(), firstSeed, Settings.ToFlowSettings());
+            Flow = new GoFlow(Settings.ToConfig(), Settings.ToMcts(), firstSeed, Settings.ToFlowSettings()) { SearchInTicks = EvidenceCapture.IsRunning };
             _audio?.SyncBaseline(Flow.Cues);
             Render();
         }
@@ -97,7 +99,7 @@ namespace Game.Unity
 
             // 撮影中は固定のシード。ふだんは起動時の値から試合ごとに進める（010）。
             var seed = EvidenceCapture.IsRunning ? EvidenceCapture.Seed : _seedOverride ?? Environment.TickCount;
-            Flow = new GoFlow(Settings.ToConfig(), Settings.ToMcts(), seed, Settings.ToFlowSettings());
+            Flow = new GoFlow(Settings.ToConfig(), Settings.ToMcts(), seed, Settings.ToFlowSettings()) { SearchInTicks = EvidenceCapture.IsRunning };
 
             var source = GetComponent<AudioSource>();
             if (source == null) { source = gameObject.AddComponent<AudioSource>(); }
@@ -143,6 +145,7 @@ namespace Game.Unity
         {
             if (!EvidenceCapture.IsRunning)
             {
+                _thinkWatch.Restart();
                 ReadMouse();
                 Flow.UpdateFrame(Time.timeScale > 0f ? Time.unscaledDeltaTime : 0);
                 Think();
@@ -169,16 +172,18 @@ namespace Game.Unity
             _audio?.PlayNew(Flow.Cues, Settings.Volume);
         }
 
-        /// <summary>フレームの残り時間で CPU の探索を進める。手は総数だけで決まるので、時間で切っても結果は変わらない。</summary>
+        /// <summary>
+        /// フレームの予算の残りで探索を進める（入力と Tick にかかった時間も予算に含める）。手と推定は総数だけで決まるので、時間で切っても結果は変わらない。
+        /// 進み続けるよう、1 フレームに少なくとも 1 回（<see cref="ThinkChunk"/>）は回す。
+        /// </summary>
         private void Think()
         {
             var budget = Settings.ThinkMillisecondsPerFrame;
-            if (budget <= 0f || !Flow.IsCpuThinking) { return; }
-            _thinkWatch.Restart();
-            while (_thinkWatch.Elapsed.TotalMilliseconds < budget)
+            do
             {
                 if (Flow.Think(ThinkChunk) == 0) { break; }
             }
+            while (_thinkWatch.Elapsed.TotalMilliseconds < budget);
         }
 
         /// <summary>

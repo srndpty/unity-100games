@@ -32,6 +32,16 @@ namespace Game.Core.Tests
             Assert.That(config.Validate().Count == 0, Is.EqualTo(valid));
         }
 
+        [TestCase(500, 2000, 8000, true)]
+        [TestCase(500, 500, 500, true)]
+        [TestCase(2001, 2000, 8000, false)]
+        [TestCase(500, 8001, 8000, false)]
+        public void Playouts_GrowWithTheLevel(int weak, int normal, int strong, bool valid)
+        {
+            var config = new MctsConfig { WeakPlayouts = weak, NormalPlayouts = normal, StrongPlayouts = strong };
+            Assert.That(config.Validate().Count == 0, Is.EqualTo(valid));
+        }
+
         [Test]
         public void InvalidConfig_IsRejectedByTheGame()
         {

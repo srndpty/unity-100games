@@ -69,6 +69,10 @@ namespace Game.Core
             Range(nameof(ResignPermille), ResignPermille, 0, 500);
             Range(nameof(OwnershipPlayouts), OwnershipPlayouts, 1, 100_000);
             Range(nameof(DeadPercent), DeadPercent, 1, 99);
+            if (WeakPlayouts > NormalPlayouts || NormalPlayouts > StrongPlayouts)
+            {
+                e.Add($"回数は {nameof(WeakPlayouts)} ≤ {nameof(NormalPlayouts)} ≤ {nameof(StrongPlayouts)}（{WeakPlayouts}・{NormalPlayouts}・{StrongPlayouts}）");
+            }
             return e;
         }
     }

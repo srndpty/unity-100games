@@ -259,6 +259,21 @@ namespace Game.Core
             return diagonals.Length == 4 ? bad <= 1 : bad == 0;
         }
 
+        /// <summary>その点に接する石が 2 つ以上の別々の連に属する（打てばつながる）。</summary>
+        public bool JoinsChains(int point)
+        {
+            var first = -1;
+            foreach (var n in Points.Neighbors(point))
+            {
+                var id = _chainOf[n];
+                if (id < 0) { continue; }
+                if (first < 0) { first = id; }
+                else if (id != first) { return true; }
+            }
+
+            return false;
+        }
+
         /// <summary>その点を含む連を塗りつぶしで求め直し、番号をその点にする（盤を組むときだけ使う）。</summary>
         private void Rebuild(int start)
         {

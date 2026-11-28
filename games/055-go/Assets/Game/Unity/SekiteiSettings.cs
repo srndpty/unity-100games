@@ -28,10 +28,10 @@ namespace Game.Unity
         [Tooltip("CPU が手番を受けてから打つまでの最小の Tick（60 Tick/秒）")]
         public int CpuThinkTicks = 30;
 
-        [Tooltip("CPU が 1 Tick に必ず回すプレイアウトの数（撮影はこれだけで進む）")]
+        [Tooltip("撮影（とテスト）で 1 Tick に回すプレイアウトの数。ふつうの対局では Tick では回さず、フレームの予算で回す")]
         public int PlayoutsPerTick = 20;
 
-        [Tooltip("CPU が 1 フレームに追加で考えてよい時間（ミリ秒）。0 なら Tick の分だけ")]
+        [Tooltip("1 フレームの処理（入力・Tick・CPU の探索・死石の推定）の予算（ミリ秒）。探索はこの残りで回す")]
         public float ThinkMillisecondsPerFrame = 8f;
 
         [Tooltip("CPU が投了する勝率（‰）。0 なら投了しない")]
@@ -62,7 +62,7 @@ namespace Game.Unity
             errors.AddRange(ToConfig().Validate());
             errors.AddRange(ToMcts().Validate());
             errors.AddRange(ToFlowSettings().Validate());
-            if (!float.IsFinite(ThinkMillisecondsPerFrame) || ThinkMillisecondsPerFrame < 0f || ThinkMillisecondsPerFrame > 30f) { errors.Add($"ThinkMillisecondsPerFrame は 0〜30（{ThinkMillisecondsPerFrame}）"); }
+            if (!float.IsFinite(ThinkMillisecondsPerFrame) || ThinkMillisecondsPerFrame < 1f || ThinkMillisecondsPerFrame > 30f) { errors.Add($"ThinkMillisecondsPerFrame は 1〜30（{ThinkMillisecondsPerFrame}）"); }
             if (!float.IsFinite(Volume) || Volume < 0f || Volume > 1f) { errors.Add($"Volume は 0〜1（{Volume}）"); }
             if (errors.Count > 0) { throw new InvalidOperationException(string.Join("\n", errors)); }
         }

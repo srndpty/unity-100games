@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Game.App;
 using Game.Core;
@@ -16,6 +17,7 @@ namespace Game.Unity.Tests
 {
     /// <summary>
     /// 実シーンの PlayMode テスト。<c>Time.timeScale = 0</c> で実時間を止め、Tick はテストから進める（015）。
+    /// 探索も Tick で回す（<see cref="GoFlow.SearchInTicks"/>）。ふつうの対局と同じフレームの予算だけで回す経路は、考える時間のテストで確かめる。
     /// 入力は仮想キーボードと仮想マウスから送り、確かめたい処理をテスト側から呼ばない（013）。最初のシードと探索の回数（少なめ）は固定にする。
     /// </summary>
     public sealed class SekiteiSceneTests
@@ -50,7 +52,7 @@ namespace Game.Unity.Tests
             _settings.OwnershipPlayouts = 150;
             _settings.CpuThinkTicks = 2;
             _settings.PlayoutsPerTick = 50;
-            _settings.ThinkMillisecondsPerFrame = 0f;
+            _settings.ThinkMillisecondsPerFrame = 1f;
             SekiteiGame.SetOverridesForTests(3, _settings);
             _quits = 0;
             SekiteiGame.QuitHandler = () => _quits++;
@@ -80,6 +82,8 @@ namespace Game.Unity.Tests
             for (var i = 0; i < 60 && _game.Hud == null; i++) { yield return null; }
             Assert.That(_game.Hud, Is.Not.Null, "HUD が読み込まれる");
             Time.timeScale = 0f;
+            Assert.That(_game.Flow.SearchInTicks, Is.False, "ふつうの対局は Tick で探索しない");
+            _game.Flow.SearchInTicks = true;
             _game.Render();
             yield return null;
         }
@@ -239,6 +243,7 @@ namespace Game.Unity.Tests
             if (Flow.Screen == FlowScreen.Scoring)
             {
                 Assert.That(Visible("scoring"), Is.True);
+                for (var i = 0; i < 400 && Flow.IsEstimating; i++) { Flow.StepTicks(1); }
                 yield return Press(Key.Escape);
             }
 
@@ -308,6 +313,7 @@ namespace Game.Unity.Tests
             // コミ 10 で白の 1 目勝ちの局面。黒がパスすると白（CPU）もパスして終局する。
             _settings.Komi = 10;
             _game.Reinitialize(3);
+            Flow.SearchInTicks = true;
             var config = _settings.ToConfig();
             yield return StartFrom(_ => new GoGame(config, BoardText.Parse(Walls), Stone.Black));
             yield return Click(ScreenPointIn(Hud.Q("pass")));
@@ -316,6 +322,12 @@ namespace Game.Unity.Tests
             _game.Render();
             yield return null;
             Assert.That(Flow.Screen, Is.EqualTo(FlowScreen.Scoring));
+            Assert.That(Flow.IsEstimating, Is.True);
+            Assert.That(Text("score-text"), Does.Contain("死石を推定中"));
+            for (var i = 0; i < 400 && Flow.IsEstimating; i++) { Flow.StepTicks(1); }
+            _game.Render();
+            yield return null;
+            Assert.That(Flow.IsEstimating, Is.False);
             Assert.That(Visible("scoring"), Is.True);
             Assert.That(Visible("play-buttons"), Is.False);
             Assert.That(_game.Stage.Marks[Points.Parse("A1")].enabled, Is.True, "地の印");
@@ -407,8 +419,9 @@ namespace Game.Unity.Tests
         [UnityTest]
         public IEnumerator CpuThinking_UsesTheFrameBudget_WithoutStallingFrames()
         {
-            // 実時間は止めたまま（Tick は進まない）。探索はフレームの残り時間（8 ms）だけで進む。
+            // 実時間は止めたまま（Tick は進まない）。探索はフレームの予算（8 ms）だけで進む。
             _settings.ThinkMillisecondsPerFrame = 8f;
+            Flow.SearchInTicks = false;
             yield return Press(Key.DownArrow);
             yield return Press(Key.RightArrow); // 強い（3,000 回）
             yield return Press(Key.UpArrow);
@@ -432,6 +445,44 @@ namespace Game.Unity.Tests
             Assert.That(after, Is.LessThan(3000), "1 フレームで全部は回さない");
             Assert.That(worst, Is.LessThan(100.0), $"1 フレームの最長 {worst:F1} ms");
             TestContext.WriteLine($"30 フレームで {after - done} 回、1 フレームの最長 {worst:F1} ms");
+        }
+
+        [UnityTest]
+        public IEnumerator StrongCpu_InRealTime_FinishesItsSearch_WithinTheFrameBudget()
+        {
+            // ふつうの対局と同じ：実時間で Tick が進み、探索は Tick では回さず、入力と Tick を含めた 1 フレームの予算（8 ms）の残りだけで回す。
+            _settings.StrongPlayouts = 8000;
+            _settings.ThinkMillisecondsPerFrame = 8f;
+            Flow.SearchInTicks = false;
+            yield return Press(Key.DownArrow);
+            yield return Press(Key.RightArrow); // 強い（8,000 回）
+            yield return Press(Key.DownArrow);
+            yield return Press(Key.RightArrow); // 白（CPU が黒で先に打つ）
+            yield return Press(Key.UpArrow);
+            yield return Press(Key.UpArrow);
+            yield return Press(Key.Enter);
+            Assert.That(Flow.IsCpuThinking, Is.True);
+            Assert.That(Flow.MatchLevel, Is.EqualTo(CpuLevel.Strong));
+
+            Time.timeScale = 1f;
+            var frames = new List<double>();
+            var watch = new Stopwatch();
+            var total = Stopwatch.StartNew();
+            while (Flow.Game!.MoveCount == 0 && total.Elapsed.TotalSeconds < 60)
+            {
+                watch.Restart();
+                yield return null;
+                frames.Add(watch.Elapsed.TotalMilliseconds);
+            }
+
+            Time.timeScale = 0f;
+            Assert.That(Flow.Game.MoveCount, Is.EqualTo(1), "60 秒以内に打つ");
+            frames.Sort();
+            var worst = frames[frames.Count - 1];
+            var p95 = frames[(int)(frames.Count * 0.95)];
+            TestContext.WriteLine($"強い（8,000 回）：{total.Elapsed.TotalSeconds:F2} 秒・{frames.Count} フレーム、1 フレームの p50 {frames[frames.Count / 2]:F1} ms・p95 {p95:F1} ms・最長 {worst:F1} ms");
+            Assert.That(p95, Is.LessThan(25.0), "ふつうのフレームは予算の近くに収まる");
+            Assert.That(worst, Is.LessThan(100.0), $"1 フレームの最長 {worst:F1} ms");
         }
 
         private void AssertBoardIsEmpty()

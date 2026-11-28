@@ -10,8 +10,13 @@ namespace Game.Core
     /// <item>選択：(1 − β) × 勝率 + β × AMAF の勝率 + 係数 × √(親の訪問) ÷ (1 + 子の訪問)。β = √(k ÷ (3n + k))（RAVE、n は子の訪問、k は等価の回数）。
     /// AMAF は「その節点より後（木とプレイアウト）で、その手を同じ側が最初に打った」回の勝敗。全て整数で計算する（Mono と .NET で同じ手になる）。
     /// 訪問も AMAF もない子は、展開時に乱数で並べた順に先に選ぶ。</item>
-    /// <item>展開：同型反復まで判定した合法手から自分の眼を埋める手を除いたものとパス。根のパスは「相手が直前にパスした」か「ほかに手がない」ときだけ。</item>
-    /// <item>評価：<see cref="Playout"/> の勝敗（勝ち 2・引き分け 1・負け 0 を足す）。2 連続パスの局面はそのまま面積で数える。</item>
+    /// <item>展開：同型反復まで判定した合法手から自分の眼を埋める手を除いたものとパス。ただし眼を埋めると別々の連がつながる手は残す。
+    /// 根のパスは「相手が直前にパスした」か「ほかに手がない」ときだけ。</item>
+    /// <item>終局：2 連続パスか、対局の手数の上限（<see cref="GoConfig.MoveLimit"/>、パスも数える）に届いた節点は展開もプレイアウトもせず、そのまま面積で数える。
+    /// プレイアウトも上限までの残りの手数で打ち切る（対局で起きない先の局面で評価しない）。</item>
+    /// <item>評価：<see cref="Playout"/> の勝敗（勝ち 2・引き分け 1・負け 0 を足す）。</item>
+    /// <item>相手がパスした後の根のパス（すぐ終局する）は、終局後と同じ死石の推定（<see cref="OwnershipSearch"/>、系列を渡したとき）で死石を除いて数える。
+    /// 推定は <see cref="Run"/> の回数の中で木より先に少しずつ回す。</item>
     /// </list>
     /// <see cref="Run"/> を何回に分けて呼んでも、総数が同じなら同じ木（同じ手）になる。
     /// </summary>
@@ -26,8 +31,12 @@ namespace Game.Core
         private readonly List<int> _sequence = new();
         private readonly List<(Node Node, int Start)> _path = new();
         private readonly Stone[] _first = new Stone[Points.Count];
+        private readonly OwnershipSearch? _passEstimate;
+        private readonly GoGame? _afterPass;
+        private Stone? _passWinner;
 
-        public Mcts(GoGame game, MctsConfig config, int playouts, RandomSeries random)
+        /// <param name="passEstimate">相手がパスした後に根でパスして終局したときの死石の推定の系列（終局後の推定と同じ系列を渡す）。null なら死石を除かずに数える。</param>
+        public Mcts(GoGame game, MctsConfig config, int playouts, RandomSeries random, RandomSeries? passEstimate = null)
         {
             if (game == null) { throw new ArgumentNullException(nameof(game)); }
             if (config == null) { throw new ArgumentNullException(nameof(config)); }
@@ -41,6 +50,12 @@ namespace Game.Core
             Target = playouts;
             Side = game.ToMove;
             _rootNode = new Node(Points.Pass, Side.Opponent(), null);
+            if (passEstimate != null && _root.ConsecutivePasses > 0)
+            {
+                _afterPass = _root.Clone();
+                if (_afterPass.TryPass(Side) != MoveVerdict.Ok || !_afterPass.IsOver) { throw new InvalidOperationException("相手のパスの後のパスで終局しません。"); }
+                _passEstimate = new OwnershipSearch(_afterPass, _config.OwnershipPlayouts, _config.PlayoutMoveLimit, passEstimate);
+            }
         }
 
         /// <summary>探索する側（根の手番）。</summary>
@@ -52,7 +67,10 @@ namespace Game.Core
         /// <summary>回し終えたプレイアウトの数。</summary>
         public int Done { get; private set; }
 
-        public bool IsDone => Done >= Target;
+        public bool IsDone => Done >= Target && (_passEstimate == null || _passEstimate.IsDone);
+
+        /// <summary>根のパスで終局したときの死石の推定（推定しないなら null）。</summary>
+        public OwnershipSearch? PassEstimate => _passEstimate;
 
         /// <summary>最多訪問の手（同数なら点の番号の小さい方、パスは最後）。まだ 1 回も回していなければ例外。</summary>
         public int BestMove => Best().Move;
@@ -76,14 +94,26 @@ namespace Game.Core
             return list;
         }
 
-        /// <summary>最大 <paramref name="maxPlayouts"/> 回（残りがそれより少なければ残りだけ）回す。戻り値は回した数。</summary>
+        /// <summary>
+        /// 最大 <paramref name="maxPlayouts"/> 回（残りがそれより少なければ残りだけ）回す。戻り値は回した数（死石の推定のプレイアウトを含む）。
+        /// 死石の推定があれば、それを先に回し終えてから木を回す。
+        /// </summary>
         public int Run(int maxPlayouts)
         {
             if (maxPlayouts < 0) { throw new ArgumentOutOfRangeException(nameof(maxPlayouts)); }
-            var count = Math.Min(maxPlayouts, Target - Done);
+            var used = 0;
+            if (_passEstimate != null && !_passEstimate.IsDone)
+            {
+                used = _passEstimate.Run(maxPlayouts);
+                if (!_passEstimate.IsDone) { return used; }
+                var dead = _passEstimate.EstimateDead(_config.DeadPercent);
+                _passWinner = AreaScore.Compute(_afterPass!.CopyBoard(), dead, _root.Komi).Winner;
+            }
+
+            var count = Math.Min(maxPlayouts - used, Target - Done);
             for (var i = 0; i < count; i++) { Iterate(); }
             Done += count;
-            return count;
+            return used + count;
         }
 
         /// <summary>展開した全ての節点への手の列（テストで全ての手が合法かを確かめる）。</summary>
@@ -107,13 +137,13 @@ namespace Game.Core
             return result;
         }
 
-        /// <summary>探索の局面で展開する手（同型反復まで判定、眼埋めを除く）。パスは含めない。</summary>
+        /// <summary>探索の局面で展開する手（同型反復まで判定、別々の連をつながない眼埋めを除く）。パスは含めない。</summary>
         internal static List<int> CandidatePoints(GoGame root, Board board, Stone toMove, List<ulong>? pathHashes, List<Stone[]>? pathCells)
         {
             var list = new List<int>();
             for (var p = 0; p < Points.Count; p++)
             {
-                if (board[p] != Stone.Empty || board.IsOwnEye(p, toMove)) { continue; }
+                if (board[p] != Stone.Empty || (board.IsOwnEye(p, toMove) && !board.JoinsChains(p))) { continue; }
                 var preview = board.Preview(p, toMove);
                 if (!preview.IsOk) { continue; }
                 if (root.Repeats(board, p, toMove, preview, pathHashes, pathCells)) { continue; }
@@ -153,6 +183,8 @@ namespace Game.Core
             var board = _root.CopyBoard();
             var toMove = _root.ToMove;
             var passes = _root.ConsecutivePasses;
+            var moveCount = _root.MoveCount;
+            var moveLimit = _root.Config.MoveLimit;
             var koPoint = Points.Pass;
             var lastMove = _root.LastMove ?? Points.Pass;
             var pathHashes = new List<ulong>();
@@ -162,9 +194,12 @@ namespace Game.Core
             _path.Clear();
             _path.Add((_rootNode, 0));
 
+            bool IsTerminal() => passes >= 2 || moveCount >= moveLimit;
+
             void Apply(int move)
             {
                 lastMove = move;
+                moveCount++;
                 if (move != Points.Pass) { _sequence.Add((move << 2) | (int)toMove); }
                 if (move == Points.Pass)
                 {
@@ -184,7 +219,7 @@ namespace Game.Core
             }
 
             // 選択：展開済みの節点を下る。
-            while (node.Children != null && node.Children.Length > 0 && passes < 2)
+            while (node.Children != null && node.Children.Length > 0 && !IsTerminal())
             {
                 node = Select(node);
                 Apply(node.Move);
@@ -192,7 +227,7 @@ namespace Game.Core
             }
 
             // 展開：根か、一度評価した葉を展開して最初の子へ進む。
-            if (passes < 2 && node.Children == null && (node == _rootNode || node.Visits > 0))
+            if (!IsTerminal() && node.Children == null && (node == _rootNode || node.Visits > 0))
             {
                 Expand(node, board, toMove, pathHashes, pathCells);
                 node = node.Children![0];
@@ -200,9 +235,17 @@ namespace Game.Core
                 _path.Add((node, _sequence.Count));
             }
 
-            // 評価。
-            if (passes < 2) { Playout.Run(board, toMove, passes, koPoint, lastMove, _random, _config.PlayoutMoveLimit, _sequence); }
-            var winner = Playout.Winner(board, _root.Komi);
+            // 評価。根のパスで終局したなら、死石を除いた計点（推定は Run が先に済ませている）。
+            Stone winner;
+            if (_passWinner.HasValue && _path.Count == 2 && _path[1].Node.Move == Points.Pass)
+            {
+                winner = _passWinner.Value;
+            }
+            else
+            {
+                if (!IsTerminal()) { Playout.Run(board, toMove, passes, koPoint, lastMove, _random, Math.Min(_config.PlayoutMoveLimit, moveLimit - moveCount), _sequence); }
+                winner = Playout.Winner(board, _root.Komi);
+            }
 
             // 逆伝播：各節点の手を打った側から見た勝ち点。子の AMAF は、その節点より後に同じ側が最初に打った手。
             foreach (var (n, start) in _path)

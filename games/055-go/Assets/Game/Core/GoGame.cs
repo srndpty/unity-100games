@@ -218,10 +218,12 @@ namespace Game.Core
             return false;
         }
 
-        /// <summary>状態のハッシュ（盤・手番・パス・終局・アゲハマ・同型反復の履歴）。今の盤が同じでも履歴が違えば値が変わる。</summary>
+        /// <summary>状態のハッシュ（コミ・手数の上限・盤・手番・パス・終局・アゲハマ・同型反復の履歴・手の列）。今の盤が同じでも履歴が違えば値が変わる。</summary>
         public uint StateHash()
         {
             var h = TileMotion.StateHash.Start();
+            h.Mix(Config.Komi);
+            h.Mix(Config.MoveLimit);
             for (var p = 0; p < Points.Count; p++) { h.Mix((int)_board[p]); }
             h.Mix((int)ToMove);
             h.Mix(ConsecutivePasses);
@@ -231,6 +233,8 @@ namespace Game.Core
             h.Mix(_captures[2]);
             h.Mix(_hashes.Count);
             foreach (var x in _hashes) { h.Mix(unchecked((long)x)); }
+            h.Mix(_moves.Count);
+            foreach (var m in _moves) { h.Mix(m); }
             return h.Value;
         }
 

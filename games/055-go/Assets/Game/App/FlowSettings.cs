@@ -21,8 +21,8 @@ namespace Game.App
         public int CpuThinkTicks { get; set; } = 30;
 
         /// <summary>
-        /// CPU が 1 Tick に必ず回すプレイアウトの数。Unity はこれに加えてフレームの残り時間で回す（<see cref="GoFlow.Think"/>）。
-        /// 撮影とテストはこの数だけで進むので、同じ Tick に同じ表示になる。
+        /// 探索を Tick で回すとき（<see cref="GoFlow.SearchInTicks"/>、撮影とテスト）に、1 Tick に回すプレイアウトの数（CPU の探索・死石の推定）。
+        /// この数だけで進むので、同じ Tick に同じ表示になる。Unity の対局では Tick では回さず、フレームの時間の予算で回す（<see cref="GoFlow.Think"/>）。
         /// </summary>
         public int PlayoutsPerTick { get; set; } = 20;
 

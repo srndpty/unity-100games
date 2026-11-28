@@ -27,7 +27,10 @@ namespace Game.App
     /// <summary>
     /// 画面の流れと、プレイヤーの操作を Core へ渡す窓口。入力は意図の列にため、フレームの始めに順に当てはめる。
     /// クリックは押した画面の版を持ち、版（画面の切り替え・局面の変化・死石の切り替えで進む）が違えば捨てる。
-    /// 実時間を固定 Tick に変え、Tick ごとに CPU の探索を少しずつ進める。一時停止・対局の外では Tick（探索も）が止まる。
+    /// 意図を当てはめて画面が変わったら、同じフレームにたまった残りの意図（キーも）を捨てる（前の画面で押したキーを次の画面に効かせない）。
+    /// 実時間を固定 Tick に変える。探索（CPU と終局後の死石の推定）は <see cref="SearchInTicks"/> なら Tick ごとに決まった数だけ、
+    /// そうでなければ <see cref="Think"/>（フレームの時間の予算）だけで回す。どちらも総数で止まるので、手と推定は回し方に依らない。
+    /// 一時停止・対局の外では Tick（探索も）が止まる。
     /// </summary>
     public sealed class GoFlow
     {
@@ -58,6 +61,7 @@ namespace Game.App
         private readonly Queue<Intent> _intents = new();
         private int _nextSeed;
         private double _accumulator;
+        private bool _noticeIsRejection;
 
         public GoFlow(GoConfig config, MctsConfig mcts, int firstSeed, FlowSettings? settings = null)
         {
@@ -131,6 +135,18 @@ namespace Game.App
 
         public Outcome? Outcome { get; private set; }
 
+        /// <summary>終局後の死石の推定（死石の確定の画面で、回し終えるまで印を付けず入力も受け付けない）。</summary>
+        public OwnershipSearch? Estimate { get; private set; }
+
+        /// <summary>死石を推定している（死石の確定の画面で、推定を回し終えていない）。</summary>
+        public bool IsEstimating => Screen == FlowScreen.Scoring && Estimate != null && !Estimate.IsDone;
+
+        /// <summary>
+        /// true（既定、テスト・撮影）なら探索を Tick ごとに <see cref="FlowSettings.PlayoutsPerTick"/> だけ回す。
+        /// false（Unity の対局）なら Tick は時間（考える間・演出・通知）だけを進め、探索は <see cref="Think"/> だけで回す。
+        /// </summary>
+        public bool SearchInTicks { get; set; } = true;
+
         /// <summary>対局の作り方。テストと撮影が決まった局面から始めるときに差し替える（引数は試合シード）。</summary>
         public Func<int, GoGame>? GameFactory { get; set; }
 
@@ -174,7 +190,7 @@ namespace Game.App
         public void UpdateFrame(double deltaSeconds)
         {
             FlushIntents();
-            if (Screen != FlowScreen.Playing || !HasFocus)
+            if (!IsTicking || !HasFocus)
             {
                 _accumulator = 0;
                 return;
@@ -195,18 +211,25 @@ namespace Game.App
         }
 
         /// <summary>
-        /// CPU の探索を Tick と別に進める（Unity がフレームの残り時間で呼ぶ）。対局中で CPU が考えているときだけ。戻り値は回した数。
+        /// 探索を Tick と別に進める（Unity がフレームの時間の予算で呼ぶ）。CPU が考えているとき、または死石を推定しているときだけ。戻り値は回した数。
         /// 一時停止・演出中・フォーカス喪失中は回さない。
         /// </summary>
         public int Think(int maxPlayouts)
         {
-            if (!HasFocus || !IsCpuThinking || BusyTicks > 0) { return 0; }
+            if (!HasFocus) { return 0; }
+            if (IsEstimating) { return RunEstimate(maxPlayouts); }
+            if (!IsCpuThinking || BusyTicks > 0) { return 0; }
             return Cpu!.Think(Game!, maxPlayouts);
         }
 
         public void FlushIntents()
         {
-            while (_intents.Count > 0) { Apply(_intents.Dequeue()); }
+            while (_intents.Count > 0)
+            {
+                var screen = Screen;
+                Apply(_intents.Dequeue());
+                if (Screen != screen) { _intents.Clear(); }
+            }
         }
 
         /// <summary>フォーカスを失ったら保留の入力を捨て、対局中なら一時停止にする（戻っても手で再開する）。</summary>
@@ -301,6 +324,8 @@ namespace Game.App
 
         private void ApplyScoring(Intent intent)
         {
+            // 推定を回し終えるまでは印がないので、切り替えも確定も受け付けない。
+            if (IsEstimating) { return; }
             switch (intent.Button)
             {
                 case InputButton.Cancel:
@@ -446,8 +471,10 @@ namespace Game.App
             BusyTicks = 0;
             Notice = null;
             NoticeTicks = 0;
+            _noticeIsRejection = false;
             LastRejection = null;
             DeadStones = PointSet.Empty;
+            Estimate = null;
             FinalScore = null;
             Outcome = null;
             _accumulator = 0;
@@ -467,6 +494,7 @@ namespace Game.App
             {
                 LastRejection = verdict;
                 ShowNotice(RejectionText(verdict));
+                _noticeIsRejection = true;
                 Cues.Reject++;
                 return;
             }
@@ -483,7 +511,7 @@ namespace Game.App
 
         private void AfterMove(Stone side, int capturesBefore)
         {
-            LastRejection = null;
+            ClearRejection();
             Cues.Place++;
             if (Game!.Captures(side) > capturesBefore) { Cues.Capture++; }
             BusyTicks = _settings.PlaceAnimTicks;
@@ -492,7 +520,7 @@ namespace Game.App
 
         private void AfterPass(Stone side)
         {
-            LastRejection = null;
+            ClearRejection();
             Cues.Pass++;
             ShowNotice($"{side.Label()}がパスしました");
             Changed();
@@ -514,12 +542,37 @@ namespace Game.App
         {
             Notice = text;
             NoticeTicks = _settings.NoticeTicks;
+            _noticeIsRejection = false;
+        }
+
+        /// <summary>着手・パスが通ったら、前の拒否の理由を消す（パスなどの通知は残す）。</summary>
+        private void ClearRejection()
+        {
+            LastRejection = null;
+            if (!_noticeIsRejection) { return; }
+            Notice = null;
+            NoticeTicks = 0;
+            _noticeIsRejection = false;
         }
 
         private void StartScoring()
         {
-            DeadStones = Ownership.EstimateDead(Game!, _mcts, MatchSeed);
+            // 推定は Tick（SearchInTicks）か Think で少しずつ回し、回し終えたら印を付ける。
+            DeadStones = PointSet.Empty;
+            Estimate = Ownership.Start(Game!, _mcts, MatchSeed);
             SetScreen(FlowScreen.Scoring);
+        }
+
+        private int RunEstimate(int maxPlayouts)
+        {
+            var ran = Estimate!.Run(maxPlayouts);
+            if (Estimate.IsDone)
+            {
+                DeadStones = Estimate.EstimateDead(_mcts.DeadPercent);
+                Version++;
+            }
+
+            return ran;
         }
 
         private void ToggleDead(int point)
@@ -546,24 +599,40 @@ namespace Game.App
             Outcome = winner == Stone.Empty ? App.Outcome.Draw : winner == MatchPlayerSide ? App.Outcome.Win : App.Outcome.Loss;
             Notice = null;
             NoticeTicks = 0;
+            _noticeIsRejection = false;
             MenuCursor = ResultAgain;
             SetScreen(FlowScreen.Result);
         }
 
+        /// <summary>Tick を進める画面（対局中か、死石の推定中）。</summary>
+        private bool IsTicking => (Screen == FlowScreen.Playing && Game != null && !Game.IsOver) || IsEstimating;
+
         private void TickOnce()
         {
             // 一時停止・対局の外では時計も探索も止める（044）。
-            if (Screen != FlowScreen.Playing || Game == null || Game.IsOver) { return; }
-            if (NoticeTicks > 0 && --NoticeTicks == 0) { Notice = null; }
+            if (!IsTicking) { return; }
+            if (IsEstimating)
+            {
+                if (SearchInTicks) { RunEstimate(_settings.PlayoutsPerTick); }
+                return;
+            }
+
+            if (NoticeTicks > 0 && --NoticeTicks == 0)
+            {
+                Notice = null;
+                _noticeIsRejection = false;
+            }
+
             if (BusyTicks > 0)
             {
                 BusyTicks--;
                 return;
             }
 
-            if (Game.ToMove != CpuSide) { return; }
-            var before = Game.Captures(CpuSide);
-            switch (Cpu!.Tick(Game))
+            var game = Game!;
+            if (game.ToMove != CpuSide) { return; }
+            var before = game.Captures(CpuSide);
+            switch (Cpu!.Tick(game, SearchInTicks))
             {
                 case CpuAction.Played:
                     AfterMove(CpuSide, before);
