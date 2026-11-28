@@ -311,6 +311,12 @@
     <Project Path="games/052-tower-defense/dotnet/Core.Tests/G052.Core.Tests.csproj" />
     <Project Path="games/052-tower-defense/dotnet/Core/G052.Core.csproj" />
   </Folder>
+  <Folder Name="/053-soccer/">
+    <Project Path="games/053-soccer/dotnet/App.Tests/G053.App.Tests.csproj" />
+    <Project Path="games/053-soccer/dotnet/App/G053.App.csproj" />
+    <Project Path="games/053-soccer/dotnet/Core.Tests/G053.Core.Tests.csproj" />
+    <Project Path="games/053-soccer/dotnet/Core/G053.Core.csproj" />
+  </Folder>
   <Folder Name="/packages/">
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry.Tests/IntGeometry.Tests.csproj" />
     <Project Path="packages/com.games100.int-geometry/dotnet~/IntGeometry/IntGeometry.csproj" />
