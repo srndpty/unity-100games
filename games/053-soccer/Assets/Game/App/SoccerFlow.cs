@@ -73,9 +73,9 @@ namespace Game.App
             var errors = config.Validate();
             if (errors.Count > 0) { throw new ArgumentException(string.Join("\n", errors), nameof(config)); }
             _config = config.Copy();
-            _settings = settings?.Copy() ?? new FlowSettings();
-            var flowErrors = _settings.Validate();
+            var flowErrors = (settings ?? new FlowSettings()).Validate(config);
             if (flowErrors.Count > 0) { throw new ArgumentException(string.Join("\n", flowErrors), nameof(settings)); }
+            _settings = settings?.Copy() ?? new FlowSettings();
             _nextSeed = firstSeed;
             _human = new HumanControl(_settings.AutoSwitchOnDefense);
             _pauseItems = Array.AsReadOnly(new[] { new MenuItem("つづける"), new MenuItem("タイトルへ") });
@@ -124,8 +124,6 @@ namespace Game.App
 
         /// <summary>人間が操作している選手。</summary>
         public int Controlled => _human.Controlled;
-
-        /// <summary>切替の後、移動キーを離すのを待っているか（HUD の案内）。</summary>
 
         public TeamAi? BlueAi => _blueAi;
 

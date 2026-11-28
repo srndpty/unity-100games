@@ -171,5 +171,20 @@ namespace Game.App.Tests
 
             Assert.That(Run(), Is.EqualTo(Run()));
         }
+
+        [Test]
+        public void Settings_WithoutCpu_OrWithATackleMarginBeyondTheReach_AreRejected()
+        {
+            var noCpu = new FlowSettings { Cpu = null! };
+            Assert.That(noCpu.Validate(), Has.Some.Contains("Cpu"));
+            Assert.That(noCpu.Copy().Cpu, Is.Null, "コピーは検証より先に呼ばれても例外にしない");
+            var ex = Assert.Throws<ArgumentException>(() => _ = new SoccerFlow(new SoccerConfig(), 1, noCpu));
+            Assert.That(ex!.Message, Does.Contain("Cpu"));
+
+            var margin = new FlowSettings { Cpu = new AiSkill { TackleMargin = 400 } };
+            Assert.That(margin.Validate(), Is.Empty, "単独では範囲内");
+            Assert.That(margin.Validate(new SoccerConfig { TackleRadius = 400 }), Has.Some.Contains("TackleMargin"));
+            Assert.Throws<ArgumentException>(() => _ = new SoccerFlow(new SoccerConfig { TackleRadius = 400 }, 1, margin));
+        }
     }
 }

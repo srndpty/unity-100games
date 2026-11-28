@@ -56,6 +56,12 @@ namespace Game.Core
         public int PlayerMaxSpeed = 100;
         public int PlayerAcceleration = 8;
 
+        /// <summary>
+        /// 赤（相手の CPU）の走る速さ（<see cref="PlayerMaxSpeed"/> の %）。ドリブルの割合と掛け合わせる（ドリブル中は 85 % × この割合）。
+        /// 到着の予測もこの速さで行う。青（人間とその味方）は 100 %。
+        /// </summary>
+        public int RedSpeedPercent = 100;
+
         /// <summary>球を持っている選手の最高速（%）。</summary>
         public int DribbleSpeedPercent = 85;
 
@@ -135,6 +141,7 @@ namespace Game.Core
             Range(nameof(PlayerRadius), PlayerRadius, 100, 600);
             Range(nameof(PlayerMaxSpeed), PlayerMaxSpeed, 20, 300);
             Range(nameof(PlayerAcceleration), PlayerAcceleration, 1, 300);
+            Range(nameof(RedSpeedPercent), RedSpeedPercent, 30, 100);
             Range(nameof(DribbleSpeedPercent), DribbleSpeedPercent, 10, 100);
             Range(nameof(DribbleOffset), DribbleOffset, 0, 1000);
             Range(nameof(ControlRadius), ControlRadius, 100, 1500);

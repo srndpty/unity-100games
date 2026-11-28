@@ -204,47 +204,179 @@ namespace Game.Core.Tests
         }
 
         [Test]
-        public void WeakSkill_RunsSlower_AndIsEasierForAHuman()
+        public void RedSpeed_IsAMatchRule_AndMultipliesTheDribbleSpeed()
         {
-            var m = new Match(Lab.Exact, 1);
-            m.ForcePlay();
-            var weak = new TeamAi(Team.Red, Tactics.Balanced, AiSkill.Weak);
-            var c = Lab.Idle();
-            var max = new SoccerConfig().PlayerMaxSpeed * AiSkill.Weak.SpeedPercent / 100;
-            for (int t = 0; t < 60; t++)
-            {
-                weak.Decide(m, -1, c);
-                for (int i = 3; i < Match.PlayerCount; i++)
-                {
-                    if (m.Owner == i) { continue; }
-                    Assert.That(IntMath.Sqrt(c[i].Move.LengthSquared), Is.LessThanOrEqualTo(max), "最高速の一部しか出さない（丸めの誤差だけ）");
-                }
+            // 赤の走る速さは試合の規則。ドリブル中はドリブルの割合と掛け合わせる（75 % × 85 % = 63）。
+            var c = new SoccerConfig { ShotSpread = 0, PassSpread = 0, RedSpeedPercent = 75 };
+            var m = Lab.Open(c);
+            m.PlacePlayer(4, new Vec2i(0, -6000));
+            m.PlacePlayer(1, new Vec2i(-6000, 6000));
+            m.PlacePlayer(5, new Vec2i(4000, 6000));
+            m.PlaceBall(new Vec2i(4000 + c.DribbleOffset, 6000), Vec2i.Zero);
+            m.GiveBall(5);
+            Lab.Run(m, 60, (x, i) => i is 1 or 4 or 5 ? new PlayerCommand(new Vec2i(1000, 0)) : PlayerCommand.Idle);
+            Assert.That(m.MaxSpeedOf(4), Is.EqualTo(75));
+            Assert.That(m.MaxSpeedOf(1), Is.EqualTo(100));
+            Assert.That(m.Players[4].Velocity.X, Is.EqualTo(75), "赤は 75 % で走る");
+            Assert.That(m.Players[1].Velocity.X, Is.EqualTo(100), "青は 100 %");
+            Assert.That(m.Owner, Is.EqualTo(5));
+            Assert.That(m.Players[5].Velocity.X, Is.EqualTo(75 * c.DribbleSpeedPercent / 100), "赤のドリブルは 75 % × 85 %");
+        }
 
-                m.Step(c);
+        [Test]
+        public void ArrivalPrediction_UsesTheSlowerRedSpeed_AndMatchesThePlay()
+        {
+            // 止まった球まで、止まった赤の選手がまっすぐ走る。赤の速さで予測した Tick に届く。
+            var c = new SoccerConfig { ShotSpread = 0, PassSpread = 0, RedSpeedPercent = 75 };
+            var m = Lab.Open(c);
+            m.PlaceBall(new Vec2i(-6000, 0), Vec2i.Zero);
+            m.PlacePlayer(4, new Vec2i(2000, 0));
+            var trajectory = BallPredictor.Trajectory(m.Ball, c, 10);
+            var expected = BallPredictor.ArrivalTick(trajectory, m.Players[4].Position, m.MaxSpeedOf(4), c.PlayerAcceleration, c.ControlRadius, c.KneeHeight, 600);
+            var full = BallPredictor.ArrivalTick(trajectory, m.Players[4].Position, c.PlayerMaxSpeed, c.PlayerAcceleration, c.ControlRadius, c.KneeHeight, 600);
+            Assert.That(expected, Is.GreaterThan(full), "遅い分だけ遅く着く");
+            Assert.That(PassEvaluator.OpponentArrival(m, Team.Red, trajectory, 600), Is.EqualTo(expected), "パス候補評価の「相手が届く Tick」も赤の速さで");
+            var arrived = -1;
+            for (int t = 1; t <= 600 && arrived < 0; t++)
+            {
+                Lab.Run(m, 1, (x, i) => i == 4 ? new PlayerCommand(new Vec2i(-1000, 0)) : PlayerCommand.Idle);
+                if (m.Owner == 4) { arrived = t; }
             }
 
-            Assert.Throws<System.ArgumentException>(() => _ = new TeamAi(Team.Red, Tactics.Balanced, new AiSkill { SpeedPercent = 10 }));
+            Assert.That(arrived, Is.EqualTo(expected));
 
-            // 素朴な人間役との試合：Weak が相手なら人間役の得点が多く、失点が少ない。
-            var config = new SoccerConfig { MatchTicks = 3 * 60 * Pitch.TickRate };
-            (int Blue, int Red) Total(AiSkill skill)
+        }
+
+        [Test]
+        public void Roles_AreReassignedAtOnce_WhenTheHumanSwitches_OrTheCarrierChanges()
+        {
+            // 役割の見直しは 240 Tick ごと（遅い）。それでも人間の選手と保持者が変わった Tick に決め直す。
+            var m = Lab.Open();
+            m.PlacePlayer(4, new Vec2i(0, 0));
+            m.GiveBall(4);
+            m.PlacePlayer(0, new Vec2i(-8000, -3000));
+            m.PlacePlayer(1, new Vec2i(-2500, 0));
+            m.PlacePlayer(2, new Vec2i(-8000, 7000));
+            var ai = new TeamAi(Team.Blue, _possession, new AiSkill { RoleTicks = 240 });
+            ai.Decide(m, 1, Lab.Idle());
+            Assert.That(ai.RoleOf(1), Is.EqualTo(Role.None), "人間の選手");
+            m.Step(Lab.Idle());
+
+            // 人間が 1 → 2 に切り替えた次の Tick：1 は CPU の役割を持ち、2 は役割を外れる。
+            ai.Decide(m, 2, Lab.Idle());
+            Assert.That(ai.RoleOf(1), Is.Not.EqualTo(Role.None), "手放した選手にすぐ役割が付く");
+            Assert.That(ai.RoleOf(2), Is.EqualTo(Role.None));
+
+            // 同じチームの中で保持者が変わる（赤 4 → 赤 5）：赤のチームは同じ局面のまま決め直す。
+            var red = new TeamAi(Team.Red, _possession, new AiSkill { RoleTicks = 240 });
+            m.PlacePlayer(5, new Vec2i(3000, 4000));
+            red.Decide(m, -1, Lab.Idle());
+            Assert.That(red.RoleOf(4), Is.EqualTo(Role.Carrier));
+            var before5 = red.RoleOf(5);
+            Assert.That(before5, Is.Not.EqualTo(Role.None));
+            m.GiveBall(5);
+            m.Step(Lab.Idle());
+            red.Decide(m, -1, Lab.Idle());
+            Assert.That(red.RoleOf(5), Is.EqualTo(Role.Carrier));
+            Assert.That(red.RoleOf(4), Is.Not.EqualTo(Role.None).And.Not.EqualTo(Role.Carrier), "前の保持者にすぐ役割が付く");
+
+            // 複製も同じ判断をする（決め直しの記録を写す）。
+            var clone = red.Clone();
+            var c1 = Lab.Idle();
+            var c2 = Lab.Idle();
+            red.Decide(m, -1, c1);
+            clone.Decide(m, -1, c2);
+            Assert.That(c2, Is.EqualTo(c1));
+        }
+
+        [Test]
+        public void TackleMargin_AtOrBeyondTheReach_NeverTackles()
+        {
+            // 届く距離 300 に慎重さ 500：縮めた距離は 0（負の二乗で広がらない）。比べに慎重さ 100 ならタックルする。
+            var c = new SoccerConfig { ShotSpread = 0, PassSpread = 0, TackleRadius = 300 };
+            PlayerAction ActionOf(int margin)
             {
+                var m = Lab.Open(c);
+                m.PlacePlayer(1, new Vec2i(0, 0));
+                m.GiveBall(1);
+                m.PlacePlayer(4, m.Ball.Position + new Vec2i(150, 0));
+                var ai = new TeamAi(Team.Red, _possession, new AiSkill { TackleMargin = margin });
+                var cmd = Lab.Idle();
+                ai.Decide(m, -1, cmd);
+                Assert.That(ai.RoleOf(4), Is.EqualTo(Role.Press));
+                return cmd[4].Action;
+            }
+
+            Assert.That(ActionOf(100), Is.EqualTo(PlayerAction.Tackle));
+            Assert.That(ActionOf(500), Is.EqualTo(PlayerAction.None));
+        }
+
+        [Test]
+        public void WeakCpu_IsEasierForAHuman()
+        {
+            // 素朴な人間役との試合：既定の弱い相手（走る速さ 75 %・AiSkill.Weak）なら、人間役の得失点差が良く、勝ち越せる。
+            (int Blue, int Red) Total(int redSpeed, AiSkill skill)
+            {
+                var config = new SoccerConfig { MatchTicks = 3 * 60 * Pitch.TickRate, RedSpeedPercent = redSpeed };
                 int b = 0, r = 0;
                 for (int seed = 0; seed < 3; seed++)
                 {
-                    var (gb, gr) = Lab.NaiveHumanMatch(new Match(config, seed + 60), skill);
-                    b += gb;
-                    r += gr;
+                    var stats = Lab.NaiveHumanMatch(new Match(config, seed + 60), skill);
+                    b += stats.Of(Team.Blue).Goals;
+                    r += stats.Of(Team.Red).Goals;
                 }
 
                 return (b, r);
             }
 
-            var full = Total(AiSkill.Full);
-            var weakResult = Total(AiSkill.Weak);
-            TestContext.WriteLine($"vs Full {full.Blue}-{full.Red}  vs Weak {weakResult.Blue}-{weakResult.Red}");
-            Assert.That(weakResult.Blue - weakResult.Red, Is.GreaterThan(full.Blue - full.Red), "Weak の方が人間に易しい");
-            Assert.That(weakResult.Blue, Is.GreaterThan(weakResult.Red), "Weak には素朴な操作でも勝ち越せる");
+            var full = Total(100, AiSkill.Full);
+            var weak = Total(75, AiSkill.Weak);
+            TestContext.WriteLine($"vs Full {full.Blue}-{full.Red}  vs Weak {weak.Blue}-{weak.Red}");
+            Assert.That(weak.Blue - weak.Red, Is.GreaterThan(full.Blue - full.Red), "弱い相手の方が人間に易しい");
+            Assert.That(weak.Blue, Is.GreaterThan(weak.Red), "素朴な操作でも勝ち越せる");
+        }
+
+        /// <summary>比較実験：素朴な人間役（相手の方針はバランス、各条件 16 シード × 3 分）。App の KeyPilot の実験と同じ条件。結果は README に記録する。</summary>
+        [Test]
+        [Explicit("比較実験（数十秒）")]
+        public void Ablation_NaiveHuman()
+        {
+            var conditions = new (string Name, int Speed, int RoleTicks, int TackleMargin)[]
+            {
+                ("A Full", 100, 15, 100),
+                ("B 速さだけ 75%", 75, 15, 100),
+                ("C 決め直しだけ 30", 100, 30, 100),
+                ("D 慎重さだけ 300", 100, 15, 300),
+                ("E 既定（弱め）", 75, 30, 300),
+            };
+            TestContext.Progress.WriteLine("| 条件 | 得点 | シュート | 青の保持率 | パス成功率 | タックル |");
+            foreach (var (name, speed, roleTicks, margin) in conditions)
+            {
+                var config = new SoccerConfig { MatchTicks = 3 * 60 * Pitch.TickRate, RedSpeedPercent = speed };
+                var skill = new AiSkill { RoleTicks = roleTicks, TackleMargin = margin };
+                int bg = 0, rg = 0, bs = 0, rs = 0, bp = 0, rp = 0, bpass = 0, bdone = 0, rpass = 0, rdone = 0, bt = 0, rt = 0;
+                for (int i = 0; i < 16; i++)
+                {
+                    var st = Lab.NaiveHumanMatch(new Match(config, i + 500), skill);
+                    var b = st.Of(Team.Blue);
+                    var r = st.Of(Team.Red);
+                    bg += b.Goals;
+                    rg += r.Goals;
+                    bs += b.Shots;
+                    rs += r.Shots;
+                    bp += b.PossessionTicks;
+                    rp += r.PossessionTicks;
+                    bpass += b.Passes;
+                    bdone += b.PassesCompleted;
+                    rpass += r.Passes;
+                    rdone += r.PassesCompleted;
+                    bt += b.Tackles;
+                    rt += r.Tackles;
+                }
+
+                static string Rate(int a, int b) => b == 0 ? "-" : $"{a * 100 / b}%";
+                TestContext.Progress.WriteLine($"| {name} | {bg}-{rg} | {bs}-{rs} | {Rate(bp, bp + rp)} | {Rate(bdone, bpass)}-{Rate(rdone, rpass)} | {bt}-{rt} |");
+            }
         }
 
         // ---- CPU の試合と戦術差 ----
@@ -300,7 +432,7 @@ namespace Game.Core.Tests
             var m = new Match(new SoccerConfig { MatchTicks = 2 * 60 * Pitch.TickRate }, 2026);
             var stats = Lab.CpuMatch(m, Tactics.Balanced, new Tactics(DefenseStyle.SitBack, AttackStyle.Direct));
             TestContext.WriteLine($"hash 0x{m.Hash():X8} score {m.Score(Team.Blue)}-{m.Score(Team.Red)} passes {stats.Of(Team.Blue).Passes}");
-            Assert.That(m.Hash(), Is.EqualTo(0x1EAE48A3u));
+            Assert.That(m.Hash(), Is.EqualTo(0x6CC97930u));
         }
     }
 }

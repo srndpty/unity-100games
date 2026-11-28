@@ -29,10 +29,10 @@ namespace Game.Core.Tests
             var r = config.BallRadius;
             m.PlaceBall(new Vec2i(0, Pitch.HalfWidth - r - 99), new Vec2i(0, 300));
 
-            // 転がりの摩擦で 299 になり、壁を 200 越える。
+            // 転がりの摩擦で 299 になり、Tick の 99/299 で壁に触れる。残りの 200/299 は反発の後の速さ（−149）で戻る。
             Lab.Run(m, 1);
             Assert.That(m.Ball.Velocity.Y, Is.EqualTo(-299 * 50 / 100));
-            Assert.That(m.Ball.Position.Y, Is.EqualTo(Pitch.HalfWidth - r - 200), "越えた分だけ折り返す");
+            Assert.That(m.Ball.Position.Y, Is.EqualTo(Pitch.HalfWidth - r - (149 * 200 / 299)), "残りの移動にも反発が効く");
         }
 
         [Test]

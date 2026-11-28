@@ -106,7 +106,16 @@ namespace Game.Core.Tests
             for (int seed = 0; seed < 12; seed++)
             {
                 var m = new Match(new SoccerConfig { MatchTicks = 3 * 60 * Pitch.TickRate }, seed);
-                var events = Lab.Run(m, 3 * 60 * Pitch.TickRate + 10, Lab.Random(seed + 100));
+                var random = Lab.Random(seed + 100);
+                var events = Lab.Run(m, 3 * 60 * Pitch.TickRate + 10, (x, i) =>
+                {
+                    if (i == 0 && x.Events.Any(e => e.Kind == MatchEventKind.Goal))
+                    {
+                        Assert.That(System.Math.Abs(x.Ball.Position.Y), Is.LessThan(Pitch.GoalHalfWidth), $"seed {seed}：得点の球はポストの間");
+                    }
+
+                    return random(x, i);
+                });
                 Assert.That(m.Phase, Is.EqualTo(MatchPhase.Ended));
                 Assert.That(Lab.Count(events, MatchEventKind.Goal), Is.EqualTo(m.Score(Team.Blue) + m.Score(Team.Red)), $"seed {seed}");
                 Assert.That(Lab.Count(events, MatchEventKind.Whistle), Is.EqualTo(1));

@@ -134,6 +134,51 @@ namespace Game.Core.Tests
 
         // ---- タックル ----
 
+        /// <summary>壁の近くの保持を見るための設定：届く距離を小さく、止められる速さを大きく、壁は速さを落とさない。</summary>
+        private static SoccerConfig Fine => new()
+        {
+            ShotSpread = 0,
+            PassSpread = 0,
+            ControlRadius = 250,
+            DribbleOffset = 50,
+            TrapSpeed = 2000,
+            WallRestitutionPercent = 100,
+            RollFrictionPerMille = 1,
+        };
+
+        [Test]
+        public void Capture_FollowsTheBentPathAtTheWall()
+        {
+            // 球は (0, 壁 − 500) から斜めに壁へ当たり、(500, 壁) で折れて戻る。始めと終わりを結ぶ直線は壁から 500 離れている。
+            var c = Fine;
+            var wallY = Pitch.HalfWidth - c.BallRadius;
+            var apex = Lab.Open(c);
+            apex.PlacePlayer(1, new Vec2i(500, Pitch.HalfWidth - c.PlayerRadius));
+            apex.PlaceBall(new Vec2i(0, wallY - 500), new Vec2i(1000, 1000));
+            var e1 = Lab.Run(apex, 1);
+            Assert.That(e1.Any(e => e.Kind == MatchEventKind.Wall), Is.True);
+            Assert.That(apex.Owner, Is.EqualTo(1), "折れた点（壁際）の選手が止める（直線の掃引では届かない）");
+
+            var chord = Lab.Open(c);
+            chord.PlacePlayer(1, new Vec2i(500, wallY - 500));
+            chord.PlaceBall(new Vec2i(0, wallY - 500), new Vec2i(1000, 1000));
+            Lab.Run(chord, 1);
+            Assert.That(chord.Owner, Is.EqualTo(-1), "球が通っていない直線の上の選手は止められない");
+        }
+
+        [Test]
+        public void Capture_UsesTheVelocityOfTheSegment_AfterTheWallSlowsTheBall()
+        {
+            // 壁へ向かう速い球（止められない）が、壁で 20 % になって戻ってきたところを止める。
+            var c = new SoccerConfig { ShotSpread = 0, PassSpread = 0, TrapSpeed = 300, WallRestitutionPercent = 20 };
+            var wallY = Pitch.HalfWidth - c.BallRadius;
+            var m = Lab.Open(c);
+            m.PlacePlayer(1, new Vec2i(0, Pitch.HalfWidth - c.PlayerRadius));
+            m.PlaceBall(new Vec2i(0, wallY - 100), new Vec2i(0, 500));
+            Lab.Run(m, 1);
+            Assert.That(m.Owner, Is.EqualTo(1), "跳ね返った後の区間の速さで判定する");
+        }
+
         [Test]
         public void Tackle_InReach_PokesTheBall_OutOfReach_IsAMiss()
         {
@@ -241,7 +286,7 @@ namespace Game.Core.Tests
             var m = new Match(new SoccerConfig(), 2026);
             Lab.Run(m, 6000, Lab.Random(77));
             TestContext.WriteLine($"hash 0x{m.Hash():X8} score {m.Score(Team.Blue)}-{m.Score(Team.Red)} kicks {m.KickCount}");
-            Assert.That(m.Hash(), Is.EqualTo(0xED833FCDu));
+            Assert.That(m.Hash(), Is.EqualTo(0x5E141709u));
         }
 
         // ---- 設定 ----

@@ -17,6 +17,91 @@ namespace Game.Core.Tests
             return b;
         }
 
+        private static int WallX => Pitch.HalfLength - C.BallRadius;
+
+        private static int WallY => Pitch.HalfWidth - C.BallRadius;
+
+        [Test]
+        public void WallBounce_SplitsTheTickIntoTwoSegments_AtTheContactPoint()
+        {
+            var b = Rolling(new Vec2i(0, WallY - 300), new Vec2i(400, 400));
+            var hit = b.Step(C);
+            Assert.That(hit & BallHit.Wall, Is.EqualTo(BallHit.Wall));
+            Assert.That(b.SegmentCount, Is.EqualTo(2));
+            var first = b.Segment(0);
+            var second = b.Segment(1);
+            Assert.That(first.From, Is.EqualTo(new Vec2i(0, WallY - 300)));
+            Assert.That(first.To.Y, Is.EqualTo(WallY), "球の端が壁に触れた位置");
+            Assert.That(second.From, Is.EqualTo(first.To));
+            Assert.That(second.To, Is.EqualTo(b.Position));
+            Assert.That(first.End, Is.EqualTo(second.Start));
+            Assert.That(first.Start, Is.EqualTo(TickTime.Zero));
+            Assert.That(second.End, Is.EqualTo(TickTime.One));
+            Assert.That(second.Velocity.Y, Is.LessThan(0));
+            Assert.That(first.Velocity.Y, Is.GreaterThan(0));
+        }
+
+        [Test]
+        public void Corner_ReflectsBothAxes_InTheSameTick()
+        {
+            var b = Rolling(new Vec2i(WallX - 100, WallY - 100), new Vec2i(300, 300));
+            b.Step(C);
+            Assert.That(b.Velocity.X, Is.LessThan(0));
+            Assert.That(b.Velocity.Y, Is.LessThan(0));
+            Assert.That(b.Position.X, Is.LessThanOrEqualTo(WallX));
+            Assert.That(b.Position.Y, Is.LessThanOrEqualTo(WallY));
+        }
+
+        [TestCase(1)]
+        [TestCase(-1)]
+        public void DescendingBall_AboveTheBarAtTheLine_HitsTheWall_EvenIfBelowAtTheTickEnd(int side)
+        {
+            // 落ちてくる球：壁に触れる時刻（Tick の半ば）の高さは 1780.5（全体がクロスバーの下ではない）、Tick の終わりは 1779。
+            var b = Rolling(new Vec2i(side * (WallX - 50), 0), new Vec2i(side * 100, 0), 1782);
+            var hit = b.Step(C);
+            Assert.That(hit & BallHit.Wall, Is.EqualTo(BallHit.Wall));
+            Assert.That(b.Velocity.X * side, Is.LessThan(0));
+            Assert.That(System.Math.Abs(b.Position.X), Is.LessThanOrEqualTo(WallX));
+            Assert.That(b.Height + (2 * C.BallRadius), Is.LessThanOrEqualTo(Pitch.CrossbarHeight), "Tick の終わりの高さだけで見るとくぐれる場面");
+        }
+
+        [TestCase(1)]
+        [TestCase(-1)]
+        public void RisingBall_BelowTheBarAtTheLine_GoesIn_EvenIfAboveAtTheTickEnd(int side)
+        {
+            // 触れる時刻（Tick の 1/10）の高さは 1719、Tick の終わりは 1897（全体がクロスバーより上）。
+            var b = Rolling(new Vec2i(side * (WallX - 10), 0), new Vec2i(side * 100, 0), 1700, 200);
+            var hit = b.Step(C);
+            Assert.That(hit & BallHit.Wall, Is.EqualTo(BallHit.None));
+            Assert.That(System.Math.Abs(b.Position.X), Is.GreaterThan(WallX));
+            Assert.That(b.Height + (2 * C.BallRadius), Is.GreaterThan(Pitch.CrossbarHeight), "Tick の終わりの高さだけで見ると跳ね返る場面");
+        }
+
+        [TestCase(1)]
+        [TestCase(-1)]
+        public void DiagonalBall_OutsideThePostsAtTheLine_DoesNotGetIn_EvenIfInsideAtTheTickEnd(int side)
+        {
+            // ラインに触れる時刻の横の位置は 1550（ポストの外）、Tick の終わりは 1400（ポストの間）。
+            var b = Rolling(new Vec2i(side * (WallX - 100), 1700), new Vec2i(side * 200, -300));
+            var hit = b.Step(C);
+            Assert.That(hit & (BallHit.Wall | BallHit.Post), Is.Not.EqualTo(BallHit.None), "ポストか壁に当たる");
+            Assert.That(System.Math.Abs(b.Position.X), Is.LessThanOrEqualTo(WallX), "ゴールの中に入らない");
+            Assert.That(b.Velocity.X * side, Is.LessThan(0));
+        }
+
+        [Test]
+        public void WallAndPost_TheEarlierContactWins()
+        {
+            // ポストへまっすぐ向かう球：ゴールラインの壁（ポストの外）より先にポストに触れて止まる。
+            var post = Pitch.Posts[3];
+            var b = Rolling(post - new Vec2i(400, 0), new Vec2i(300, 0));
+            var hit = b.Step(C);
+            Assert.That(hit & BallHit.Post, Is.EqualTo(BallHit.Post));
+            Assert.That(hit & BallHit.Wall, Is.EqualTo(BallHit.None));
+            Assert.That(b.SegmentCount, Is.EqualTo(1));
+            Assert.That(b.Segment(0).End, Is.LessThan(TickTime.One), "ポストの時刻で止まる");
+        }
+
         [Test]
         public void RollingBall_SlowsDown_AndStops()
         {

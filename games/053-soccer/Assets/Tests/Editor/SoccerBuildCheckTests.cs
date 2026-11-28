@@ -34,6 +34,19 @@ namespace Game.Unity.EditorTests
                 bad.ShotSpeed = 430;
                 bad.Volume = float.NaN;
                 Assert.That(SoccerBuildCheck.Check(bad), Does.Contain("Volume"));
+                bad.Volume = 0.05f;
+
+                // 仕様変更で足した値：壁の反発・相手の CPU の速さと判断。
+                bad.WallRestitutionPercent = 150;
+                Assert.That(SoccerBuildCheck.Check(bad), Does.Contain("WallRestitutionPercent"));
+                bad.WallRestitutionPercent = 70;
+                bad.CpuSpeedPercent = 500;
+                Assert.That(SoccerBuildCheck.Check(bad), Does.Contain("RedSpeedPercent"));
+                bad.CpuSpeedPercent = 75;
+                bad.CpuRoleTicks = 0;
+                Assert.That(SoccerBuildCheck.Check(bad), Does.Contain("RoleTicks"));
+                bad.CpuRoleTicks = 30;
+                Assert.That(SoccerBuildCheck.Check(bad), Is.Null, "戻せば通る");
             }
             finally
             {

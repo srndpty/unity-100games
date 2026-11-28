@@ -1,0 +1,84 @@
+{
+    "Product": "Mini Pitch",
+    "Version": "1.0",
+    "UnityVersion": "6000.6.9f1",
+    "BuildGuid": "617d6d14d6d447faa4d312b6995c5407",
+    "Seed": 1,
+    "CapturedAtUtc": "2026-11-28T06:10:23.1700277Z",
+    "Info": [
+        {
+            "Key": "imageEncoding",
+            "Value": "JPEG (quality 85)"
+        },
+        {
+            "Key": "autopilot",
+            "Value": "青・赤とも CPU（青は前から奪う・つなぐ）"
+        },
+        {
+            "Key": "matchMinutes",
+            "Value": "5"
+        }
+    ],
+    "Shots": [
+        {
+            "File": "01_title.jpg",
+            "Sha256": "9ad16d4689eade74c5f0f3420100ad2859dec12d1ff2f3be1420821b63ff2a10",
+            "Note": "タイトル"
+        },
+        {
+            "File": "02_tactics.jpg",
+            "Sha256": "a1228b458da9ba7573a252911e0fb5396d2f173b9c5a783bd7d8c5fe9922111a",
+            "Note": "相手の方針を選ぶ（前から奪う・蹴り込む）"
+        },
+        {
+            "File": "03_howto.jpg",
+            "Sha256": "33e4a53fbb3d23af3997e8a935991a92b18d5b4d41baf937fb164687005263d9",
+            "Note": "操作説明"
+        },
+        {
+            "File": "04_kickoff.jpg",
+            "Sha256": "74cc128a072f12608cec6c93fbc74775ed0877716da2a1550f31c0fe7ead89ff",
+            "Note": "キックオフ (tick=1, score=0-0, hash=0x9F1DF390)"
+        },
+        {
+            "File": "05_attack_roles.jpg",
+            "Sha256": "33fda52a39c0567c46e2834101aa6e7d49b483f8f57c5c64fe16a65d8ec5808e",
+            "Note": "青の攻撃：保持者以外の味方が支援の点へ（役割の表示） (tick=461, score=0-0, hash=0xFAC1D2F5)"
+        },
+        {
+            "File": "06_defense_roles.jpg",
+            "Sha256": "0fcf4d66ac1b59512a68e72ac537e22398feafb4364f87950010e9d61e6cd755",
+            "Note": "青の守備：寄せ・ゴール前・カバー（役割の表示） (tick=701, score=0-0, hash=0xBF9D9C0B)"
+        },
+        {
+            "File": "07_goal.jpg",
+            "Sha256": "2a5f3bb90aee40a2cec97bffc857f4f29383a4793c4ad66f5096445a52ea0bcb",
+            "Note": "ゴール (tick=2679, score=0-1, hash=0xEEF59A64)"
+        },
+        {
+            "File": "08_lob.jpg",
+            "Sha256": "dbcfdf3dbad78a2f01d319bc3033dbc07b37f35481d202257a1c6c83b2ba8607",
+            "Note": "浮き球（影と高さ） (tick=10675, score=0-4, hash=0xFC7FF4EE)"
+        },
+        {
+            "File": "09_wall.jpg",
+            "Sha256": "3433ec42a454c701e31efd9d2bcbf75c62f2d3f04495786c1f718232043be4d6",
+            "Note": "壁で跳ね返る球（ライン外はない） (tick=12310, score=0-5, hash=0x915D783F)"
+        },
+        {
+            "File": "10_pause.jpg",
+            "Sha256": "70871d60ac9075e857525b000882f3f1c15d98455ec679b4ba16aaa6221acc0e",
+            "Note": "一時停止 (tick=12310, score=0-5, hash=0x915D783F)"
+        },
+        {
+            "File": "11_full_time.jpg",
+            "Sha256": "853c288d23001a463055aa912d6441f3693fdd319e90b72e8dffef8c114a464a",
+            "Note": "試合終了 (tick=18000, score=0-9, hash=0xE47A66B4)"
+        },
+        {
+            "File": "12_result.jpg",
+            "Sha256": "e4454d457fc031c966577aed0128abd7be988d91f0d51e9294c804d91d27fe7b",
+            "Note": "結果 (tick=18000, score=0-9, hash=0xE47A66B4)"
+        }
+    ]
+}

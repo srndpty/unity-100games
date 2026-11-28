@@ -28,7 +28,7 @@ namespace Game.Unity
         [Tooltip("壁で跳ね返るときに残す速さ（%）")]
         public int WallRestitutionPercent = 70;
 
-        [Tooltip("相手の CPU の走る速さ（最高速の %）。小さいほど弱い")]
+        [Tooltip("相手の CPU の走る速さ（最高速の %。ドリブル中はドリブルの割合と掛け合わせる）。小さいほど弱い")]
         public int CpuSpeedPercent = 75;
 
         [Tooltip("相手の CPU が役割を決め直す間隔（Tick）。大きいほど弱い")]
@@ -54,19 +54,21 @@ namespace Game.Unity
             ShotSpeed = ShotSpeed,
             PassArriveSpeed = PassArriveSpeed,
             WallRestitutionPercent = WallRestitutionPercent,
+            RedSpeedPercent = CpuSpeedPercent,
         };
 
         public FlowSettings ToFlowSettings() => new()
         {
             AutoSwitchOnDefense = AutoSwitchOnDefense,
-            Cpu = new AiSkill { SpeedPercent = CpuSpeedPercent, RoleTicks = CpuRoleTicks, DecisionTicks = CpuDecisionTicks, TackleMargin = CpuTackleMargin },
+            Cpu = new AiSkill { RoleTicks = CpuRoleTicks, DecisionTicks = CpuDecisionTicks, TackleMargin = CpuTackleMargin },
         };
 
         public void Validate()
         {
-            var errors = ToConfig().Validate();
+            var config = ToConfig();
+            var errors = config.Validate();
             if (errors.Count > 0) { throw new InvalidOperationException(string.Join("\n", errors)); }
-            var flow = ToFlowSettings().Validate();
+            var flow = ToFlowSettings().Validate(config);
             if (flow.Count > 0) { throw new InvalidOperationException(string.Join("\n", flow)); }
             if (!float.IsFinite(Volume) || Volume < 0f || Volume > 1f) { throw new InvalidOperationException($"Volume が不正です: {Volume}"); }
         }

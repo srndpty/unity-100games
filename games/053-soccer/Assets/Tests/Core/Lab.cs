@@ -71,12 +71,14 @@ namespace Game.Core.Tests
 
         /// <summary>
         /// 素朴な人間役と CPU の試合（得点を返す）。人間役は球に一番近い青を操作し、球へ走り、持ったらゴールへ運んで 7 m 以内でシュートする。
-        /// 青のほかの 2 人は Full の CPU。CPU の強さが人間にとってどう効くかを測る。
+        /// 青のほかの 2 人は Full の CPU。CPU の強さが人間にとってどう効くかを測る（赤の走る速さは試合の設定）。
+        /// 毎 Tick 球に一番近い選手へ切り替え、行動を毎 Tick 命じる理想化した操作なので、実際のキー操作の難しさとは違う（App の <c>KeyPilot</c> と比べる）。
         /// </summary>
-        public static (int Blue, int Red) NaiveHumanMatch(Match m, AiSkill redSkill)
+        public static MatchStats NaiveHumanMatch(Match m, AiSkill redSkill, Tactics? redTactics = null)
         {
             var blue = new TeamAi(Team.Blue, Tactics.Balanced);
-            var red = new TeamAi(Team.Red, Tactics.Balanced, redSkill);
+            var red = new TeamAi(Team.Red, redTactics ?? Tactics.Balanced, redSkill);
+            var stats = new MatchStats();
             var c = Idle();
             var goal = new Vec2i(Pitch.HalfLength, 0);
             while (m.Phase != MatchPhase.Ended)
@@ -110,9 +112,10 @@ namespace Game.Core.Tests
                 }
 
                 m.Step(c);
+                stats.Observe(m);
             }
 
-            return (m.Score(Team.Blue), m.Score(Team.Red));
+            return stats;
         }
 
         /// <summary>シード付きの乱択の命令（移動・行動）。長い通しの検査に使う。</summary>

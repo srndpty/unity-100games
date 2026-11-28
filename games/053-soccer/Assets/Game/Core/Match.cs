@@ -187,6 +187,10 @@ namespace Game.Core
 
         public static Team TeamOf(int player) => player < TeamSize ? Team.Blue : Team.Red;
 
+        /// <summary>球を持っていないときの選手の最高速（赤は <see cref="SoccerConfig.RedSpeedPercent"/>）。移動と到着の予測の両方で使う。</summary>
+        public int MaxSpeedOf(int player) =>
+            TeamOf(player) == Team.Red ? _config.PlayerMaxSpeed * _config.RedSpeedPercent / 100 : _config.PlayerMaxSpeed;
+
         /// <summary>
         /// 1 Tick 進める。<paramref name="commands"/> は選手の番号順に 6 つ。終わった試合では何もしない。
         /// </summary>
@@ -491,7 +495,7 @@ namespace Game.Core
             foreach (var p in _players)
             {
                 Vec2i desired;
-                var max = _config.PlayerMaxSpeed;
+                var max = MaxSpeedOf(p.Index);
                 if (Owner == p.Index) { max = max * _config.DribbleSpeedPercent / 100; }
                 if (!p.CanAct || (Phase == MatchPhase.Kickoff && Taker == p.Index) || Phase is MatchPhase.Ended or MatchPhase.Stopped or MatchPhase.Goal)
                 {
@@ -578,12 +582,10 @@ namespace Game.Core
             }
 
             if (Phase is not MatchPhase.Play) { return; }
-            var from = _ball.Position;
-            var before = _ball.Velocity;
             var hit = _ball.Step(_config);
             if ((hit & BallHit.Post) != 0) { _events.Add(new MatchEvent(MatchEventKind.Post)); }
             if ((hit & BallHit.Wall) != 0) { _events.Add(new MatchEvent(MatchEventKind.Wall)); }
-            Capture(starts, from, before);
+            Capture(starts);
         }
 
         private void CarryBall()
@@ -599,25 +601,36 @@ namespace Game.Core
         }
 
         /// <summary>
-        /// 球を止める選手を決める。Tick の中の選手と球の軌跡どうしが「届く距離」より近づき、高さが膝以下で、相対速度が止められる速さ以下の選手のうち、
-        /// 終わりの位置で球に最も近い選手（同じなら番号の小さい方）。
+        /// 球を止める選手を決める。球の区間（壁で跳ね返ると折れ線）ごとに、同じ時間の選手の動き（Tick の始めから終わりへの直線を区間の時刻で切った線分）と掃引し、
+        /// 「届く距離」より近づき、その区間の速度との相対速度が止められる速さ以下の選手を候補にする。球の下端は膝以下（Tick の終わりの高さ）。
+        /// 一番早い区間で触れた選手、同じ区間なら区間の終わりの球に近い選手（同じなら番号の小さい方）。
         /// </summary>
-        private void Capture(Vec2i[] starts, Vec2i ballFrom, Vec2i ballVelocity)
+        private void Capture(Vec2i[] starts)
         {
+            if (_ball.Height > _config.KneeHeight) { return; }
             var best = -1;
+            var bestSegment = int.MaxValue;
             var bestDistance = long.MaxValue;
             for (int i = 0; i < PlayerCount; i++)
             {
                 var p = _players[i];
                 if (!p.CanAct || p.KickCooldown > 0) { continue; }
-                if (_ball.Height > _config.KneeHeight) { continue; }
-                if ((ballVelocity - p.Velocity).LengthSquared > (long)_config.TrapSpeed * _config.TrapSpeed) { continue; }
-                if (!Sweep.Touches(ballFrom, _ball.Position, starts[i], p.Position, _config.ControlRadius)) { continue; }
-                var dist = Vec2i.DistanceSquared(p.Position, _ball.Position);
-                if (dist < bestDistance)
+                for (int k = 0; k < _ball.SegmentCount && k <= bestSegment; k++)
                 {
-                    best = i;
-                    bestDistance = dist;
+                    var seg = _ball.Segment(k);
+                    if ((seg.Velocity - p.Velocity).LengthSquared > (long)_config.TrapSpeed * _config.TrapSpeed) { continue; }
+                    var from = seg.Start.Lerp(starts[i], p.Position);
+                    var to = seg.End.Lerp(starts[i], p.Position);
+                    if (!Sweep.Touches(seg.From, seg.To, from, to, _config.ControlRadius)) { continue; }
+                    var dist = Vec2i.DistanceSquared(to, seg.To);
+                    if (k < bestSegment || dist < bestDistance)
+                    {
+                        best = i;
+                        bestSegment = k;
+                        bestDistance = dist;
+                    }
+
+                    break;
                 }
             }
 
@@ -634,8 +647,9 @@ namespace Game.Core
         // ---- 得点 ----
 
         /// <summary>
-        /// 球の全体がゴールの口（ポストの間・クロスバーの下）からゴールラインを越えたら得点（得点の間に入り、以後は判定しない）。
-        /// ゴールの口の外は壁なので、球はそれ以外でラインを越えない（<see cref="Ball.Step"/>）。
+        /// 球の全体がゴールラインを越えたら得点（得点の間に入り、以後は判定しない）。
+        /// 球がゴールラインの壁を越えられるのは、触れた時刻にゴールの口（ポストの間・全体がクロスバーの下）にあったときだけで（<see cref="Ball.Step"/>）、
+        /// 口と線の間の 1 直径ぶんはポストが横を塞ぐ。だからラインを越えた球は口を通っている（テストで確かめる）。
         /// </summary>
         private void Judge()
         {

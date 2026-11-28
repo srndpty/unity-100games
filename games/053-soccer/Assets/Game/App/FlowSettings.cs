@@ -21,17 +21,25 @@ namespace Game.App
         public FlowSettings Copy()
         {
             var c = (FlowSettings)MemberwiseClone();
-            c.Cpu = Cpu.Copy();
+            c.Cpu = Cpu?.Copy()!;
             return c;
         }
 
-        public IReadOnlyList<string> Validate()
+        /// <summary>値の検証。<paramref name="config"/> を渡すと、試合の規則との組み合わせ（タックルの慎重さが届く距離より小さいか）も見る。</summary>
+        public IReadOnlyList<string> Validate(SoccerConfig? config = null)
         {
             var e = new List<string>();
             if (MaxTicksPerFrame < 1 || MaxTicksPerFrame > 60) { e.Add($"MaxTicksPerFrame は 1〜60（{MaxTicksPerFrame}）"); }
             if (EndBannerTicks < 1 || EndBannerTicks > 600) { e.Add($"EndBannerTicks は 1〜600（{EndBannerTicks}）"); }
             if (Cpu == null) { e.Add("Cpu がない"); }
-            else { e.AddRange(Cpu.Validate()); }
+            else
+            {
+                e.AddRange(Cpu.Validate());
+                if (config != null && Cpu.TackleMargin >= config.TackleRadius)
+                {
+                    e.Add($"Cpu.TackleMargin（{Cpu.TackleMargin}）は TackleRadius（{config.TackleRadius}）より小さくします（CPU がタックルしなくなる）");
+                }
+            }
             return e;
         }
     }

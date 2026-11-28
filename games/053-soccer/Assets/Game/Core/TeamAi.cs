@@ -34,7 +34,10 @@ namespace Game.Core
         Hold,
     }
 
-    /// <summary>CPU の強さ（判断の間隔・役割を決め直す間隔・走る速さ・タックルの慎重さ）。</summary>
+    /// <summary>
+    /// CPU の判断の強さ（判断の間隔・役割を決め直す間隔・タックルの慎重さ）。走る速さは体の能力なので試合の規則（<see cref="SoccerConfig.RedSpeedPercent"/>）に置き、
+    /// 到着の予測も同じ速さで行う。
+    /// </summary>
     public sealed class AiSkill
     {
         /// <summary>保持者が判断する間隔（Tick）。</summary>
@@ -43,24 +46,20 @@ namespace Game.Core
         /// <summary>役割を決め直す間隔（Tick）。</summary>
         public int RoleTicks { get; set; } = 15;
 
-        /// <summary>走る速さ（最高速の %）。</summary>
-        public int SpeedPercent { get; set; } = 100;
-
         /// <summary>タックルを始める距離を、届く距離からこれだけ縮める（大きいほど慎重）。</summary>
         public int TackleMargin { get; set; } = 100;
 
         /// <summary>人間の味方と同じ強さ。</summary>
         public static AiSkill Full => new();
 
-        /// <summary>CPU の既定（弱め）：役割を決め直すのが遅く、走るのが遅く、タックルが慎重。</summary>
-        public static AiSkill Weak => new() { DecisionTicks = 8, RoleTicks = 30, SpeedPercent = 75, TackleMargin = 300 };
+        /// <summary>CPU の既定（弱め）：役割を決め直すのが遅く、タックルが慎重。</summary>
+        public static AiSkill Weak => new() { DecisionTicks = 8, RoleTicks = 30, TackleMargin = 300 };
 
         public IReadOnlyList<string> Validate()
         {
             var e = new List<string>();
             if (DecisionTicks < 1 || DecisionTicks > 120) { e.Add($"DecisionTicks は 1〜120（{DecisionTicks}）"); }
             if (RoleTicks < 1 || RoleTicks > 240) { e.Add($"RoleTicks は 1〜240（{RoleTicks}）"); }
-            if (SpeedPercent < 30 || SpeedPercent > 100) { e.Add($"SpeedPercent は 30〜100（{SpeedPercent}）"); }
             if (TackleMargin < 0 || TackleMargin > 500) { e.Add($"TackleMargin は 0〜500（{TackleMargin}）"); }
             return e;
         }
@@ -86,6 +85,9 @@ namespace Game.Core
         private readonly Vec2i[] _targets = new Vec2i[Match.PlayerCount];
         private readonly AiSkill _skill;
         private int _lastState = -1;
+        private int _lastHuman = -1;
+        private int _lastOwner = -1;
+        private int _lastTaker = -1;
         private int _lastAssigned = int.MinValue;
 
         public TeamAi(Team team, Tactics tactics, AiSkill? skill = null)
@@ -101,7 +103,7 @@ namespace Game.Core
 
         public Tactics Tactics { get; }
 
-        public int SpeedPercent => _skill.SpeedPercent;
+        public AiSkill Skill => _skill.Copy();
 
         public Role RoleOf(int player) => _roles[player];
 
@@ -110,7 +112,14 @@ namespace Game.Core
 
         public TeamAi Clone()
         {
-            var c = new TeamAi(Team, Tactics, _skill) { _lastState = _lastState, _lastAssigned = _lastAssigned };
+            var c = new TeamAi(Team, Tactics, _skill)
+            {
+                _lastState = _lastState,
+                _lastHuman = _lastHuman,
+                _lastOwner = _lastOwner,
+                _lastTaker = _lastTaker,
+                _lastAssigned = _lastAssigned,
+            };
             _roles.CopyTo(c._roles, 0);
             _targets.CopyTo(c._targets, 0);
             return c;
@@ -138,10 +147,16 @@ namespace Game.Core
             }
 
             var state = State(match);
-            if (state != _lastState || match.Clock - _lastAssigned >= _skill.RoleTicks)
+            // 局面・人間の選手・保持者・キックオフの蹴る人が変わったらすぐ、そうでなければ一定 Tick ごとに決め直す
+            // （CPU の弱さの「決め直しの遅さ」は同じ顔ぶれの見直しだけに効かせ、人間が手放した選手を役割なしで残さない）。
+            if (state != _lastState || human != _lastHuman || match.Owner != _lastOwner || match.Taker != _lastTaker
+                || match.Clock - _lastAssigned >= _skill.RoleTicks)
             {
                 Assign(match, human, team, state);
                 _lastState = state;
+                _lastHuman = human;
+                _lastOwner = match.Owner;
+                _lastTaker = match.Taker;
                 _lastAssigned = match.Clock;
             }
 
@@ -159,14 +174,15 @@ namespace Game.Core
                 _targets[f] = target;
                 var p = match.Players[f];
                 var action = PlayerAction.None;
-                var reach = match.Config.TackleRadius - _skill.TackleMargin;
+                // 慎重さの分だけ縮めた距離（負にはしない。0 ならタックルしない）。
+                var reach = Math.Max(0, match.Config.TackleRadius - _skill.TackleMargin);
                 if (_roles[f] is Role.Press or Role.Chase or Role.Guard && match.Owner >= 0 && match.Players[match.Owner].Team != Team
                     && Vec2i.DistanceSquared(p.Position, match.Ball.Position) < (long)reach * reach)
                 {
                     action = PlayerAction.Tackle;
                 }
 
-                commands[f] = new PlayerCommand(Cap(match, target - p.Position), action);
+                commands[f] = new PlayerCommand(target - p.Position, action);
             }
         }
 
@@ -288,14 +304,16 @@ namespace Game.Core
         }
 
         /// <summary>役割の目標の点へ、止まった状態から走って着く Tick。</summary>
-        private long Cost(Match m, int player, Role role) => TicksTo(m, m.Players[player].Position, Target(m, player, role));
+        private long Cost(Match m, int player, Role role) => TicksTo(m, player, Target(m, player, role));
 
-        internal static long TicksTo(Match m, Vec2i from, Vec2i to)
+        /// <summary>選手が止まった状態から点へ走って着く Tick（その選手の最高速で、5 Tick 刻み）。</summary>
+        internal static long TicksTo(Match m, int player, Vec2i to)
         {
             var c = m.Config;
-            var d = IntMath.Sqrt(Vec2i.DistanceSquared(from, to));
+            var d = IntMath.Sqrt(Vec2i.DistanceSquared(m.Players[player].Position, to));
+            var max = m.MaxSpeedOf(player);
             var t = 0;
-            while (BallPredictor.Reach(t, c.PlayerMaxSpeed, c.PlayerAcceleration) < d && t < 100000) { t += 5; }
+            while (BallPredictor.Reach(t, max, c.PlayerAcceleration) < d && t < 100000) { t += 5; }
             return t;
         }
 
@@ -307,7 +325,7 @@ namespace Game.Core
             var bestTick = int.MaxValue;
             foreach (var f in team)
             {
-                var t = BallPredictor.ArrivalTick(trajectory, m.Players[f].Position, c.PlayerMaxSpeed, c.PlayerAcceleration, c.ControlRadius, c.KneeHeight, PassEvaluator.Horizon * 2);
+                var t = BallPredictor.ArrivalTick(trajectory, m.Players[f].Position, m.MaxSpeedOf(f), c.PlayerAcceleration, c.ControlRadius, c.KneeHeight, PassEvaluator.Horizon * 2);
                 if (t < 0) { t = int.MaxValue - 1; }
                 if (t < bestTick)
                 {
@@ -317,13 +335,6 @@ namespace Game.Core
             }
 
             return best;
-        }
-
-        /// <summary>移動を CPU の速さに抑える（最高速の SpeedPercent %）。</summary>
-        private Vec2i Cap(Match m, Vec2i move)
-        {
-            var max = m.Config.PlayerMaxSpeed * _skill.SpeedPercent / 100;
-            return move.LengthSquared > (long)max * max ? IntMath.Scale(move, max) : move;
         }
 
         // ---- 目標の点 ----
@@ -374,7 +385,7 @@ namespace Game.Core
                     {
                         var c = m.Config;
                         var trajectory = BallPredictor.Trajectory(m.Ball, c, PassEvaluator.Horizon);
-                        var t = BallPredictor.ArrivalTick(trajectory, p.Position, c.PlayerMaxSpeed, c.PlayerAcceleration, c.ControlRadius, c.KneeHeight, PassEvaluator.Horizon * 2);
+                        var t = BallPredictor.ArrivalTick(trajectory, p.Position, m.MaxSpeedOf(player), c.PlayerAcceleration, c.ControlRadius, c.KneeHeight, PassEvaluator.Horizon * 2);
                         if (t <= 0 || trajectory.Count == 0) { return ball; }
                         return trajectory[Math.Min(trajectory.Count, t) - 1].Position;
                     }
@@ -529,7 +540,7 @@ namespace Game.Core
                 return restartPass.HasValue ? new PlayerCommand(Vec2i.Zero, restartPass.Value.Kind, restartPass.Value.Target) : PlayerCommand.Idle;
             }
 
-            var dribble = Cap(m, DribbleDirection(m, carrier));
+            var dribble = DribbleDirection(m, carrier);
             if ((m.Clock + carrier) % _skill.DecisionTicks != 0) { return new PlayerCommand(dribble); }
 
             var shot = PassEvaluator.BestShot(m, carrier);

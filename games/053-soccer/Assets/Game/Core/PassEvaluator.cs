@@ -131,7 +131,7 @@ namespace Game.Core
             var team = match.Players[carrier].Team;
             var trajectory = Launch(match, kind, target);
             var r = match.Players[receiver];
-            var receiverTick = BallPredictor.ArrivalTick(trajectory, r.Position, c.PlayerMaxSpeed, c.PlayerAcceleration, c.ControlRadius, c.KneeHeight, Horizon);
+            var receiverTick = BallPredictor.ArrivalTick(trajectory, r.Position, match.MaxSpeedOf(receiver), c.PlayerAcceleration, c.ControlRadius, c.KneeHeight, Horizon);
             var opponentTick = OpponentArrival(match, Pitch.Opponent(team), trajectory, Horizon);
             var dir = Pitch.Direction(team);
             var progress = (target.X - match.Ball.Position.X) * dir;
@@ -198,7 +198,7 @@ namespace Game.Core
             foreach (var o in match.Players)
             {
                 if (o.Team != team) { continue; }
-                var t = BallPredictor.ArrivalTick(trajectory, o.Position, c.PlayerMaxSpeed, c.PlayerAcceleration, c.ControlRadius, c.KneeHeight, horizon);
+                var t = BallPredictor.ArrivalTick(trajectory, o.Position, match.MaxSpeedOf(o.Index), c.PlayerAcceleration, c.ControlRadius, c.KneeHeight, horizon);
                 if (t >= 0 && (best < 0 || t < best)) { best = t; }
             }
 
