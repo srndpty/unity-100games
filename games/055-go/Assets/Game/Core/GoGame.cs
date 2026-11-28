@@ -110,6 +110,9 @@ namespace Game.Core
 
         public int Move(int index) => _moves[index];
 
+        /// <summary>盤の上のその色の石の数。</summary>
+        public int StoneCount(Stone color) => _board.StoneCount(color);
+
         /// <summary>盤の複製（画面・計点・探索用。対局の盤は変わらない）。</summary>
         public Board CopyBoard() => _board.Clone();
 

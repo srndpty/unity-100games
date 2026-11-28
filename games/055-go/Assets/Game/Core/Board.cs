@@ -14,12 +14,16 @@ namespace Game.Core
     /// <summary>着手を適用する前の見積もり。適用後の盤面のハッシュと取れる石が分かる。</summary>
     public readonly struct PlacementPreview
     {
-        public PlacementPreview(PlacementVerdict verdict, PointSet captured, ulong hashAfter)
+        public PlacementPreview(PlacementVerdict verdict, PointSet captured, ulong hashAfter, int libertiesBeforeCapture = 0)
         {
             Verdict = verdict;
             Captured = captured;
             HashAfter = hashAfter;
+            LibertiesBeforeCapture = libertiesBeforeCapture;
         }
+
+        /// <summary>置いた石の連の呼吸点の数（取る石の跡を足す前）。プレイアウトの「逃げる」の判定に使う。</summary>
+        public int LibertiesBeforeCapture { get; }
 
         public PlacementVerdict Verdict { get; }
 
@@ -160,7 +164,7 @@ namespace Game.Core
             var hash = Hash ^ Zobrist.Key(point, color);
             var opponent = color.Opponent();
             foreach (var q in captured) { hash ^= Zobrist.Key(q, opponent); }
-            return new PlacementPreview(PlacementVerdict.Ok, captured, hash);
+            return new PlacementPreview(PlacementVerdict.Ok, captured, hash, ownLiberties.Count);
         }
 
         /// <summary>
